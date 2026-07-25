@@ -7,14 +7,14 @@
 <style>
   @font-face {
     font-family: 'BaigeTianxing';
-    src: url('Assets/Fonts/zihun-baige-tianxing.ttf') format('truetype');
+    src: url('Assets/Fonts/zihun-baige-tianxing.woff2') format('woff2');
     font-weight: 400 900;
     font-style: normal;
     font-display: swap;
   }
   @font-face {
     font-family: 'SSRock';
-    src: url('Assets/Fonts/SSRockRegular.ttf') format('truetype');
+    src: url('Assets/Fonts/SSRockRegular.woff2') format('woff2');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -34,7 +34,7 @@
     background-color: #1a3a28;
     background-image:
       linear-gradient(180deg, rgba(8, 22, 14, .52), rgba(6, 18, 12, .65)),
-      url('Assets/Background.png');
+      url('Assets/Background.webp');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -2169,7 +2169,7 @@
     background-color: #1a3a28;
     background-image:
       linear-gradient(180deg, rgba(8, 22, 14, .58), rgba(6, 18, 12, .72)),
-      url('Assets/Background.png');
+      url('Assets/Background.webp');
     background-size: cover;
     background-position: center;
     transition: opacity .45s ease, visibility .45s ease;
@@ -2386,54 +2386,54 @@ function buildDeck() {
   const d = [];
   const add = (month, type, tags = [], art) =>
     d.push({ month, type, tags, faceDown: false, art });
-  add(1, 'kwang', [], 'Assets/01_january/1-gwang.png');
-  add(1, 'tti', ['hongdan'], 'Assets/01_january/1-tti-hongdan.png');
-  add(1, 'pi', [], 'Assets/01_january/1-pi-1.png');
-  add(1, 'pi', [], 'Assets/01_january/1-pi-2.png');
-  add(2, 'yeol', ['godori'], 'Assets/02_february/2-yeolkkeut-warbler.png');
-  add(2, 'tti', ['hongdan'], 'Assets/02_february/2-tti-hongdan.png');
-  add(2, 'pi', [], 'Assets/02_february/2-pi-1.png');
-  add(2, 'pi', [], 'Assets/02_february/2-pi-2.png');
-  add(3, 'kwang', [], 'Assets/03_march/3-gwang.png');
-  add(3, 'tti', ['hongdan'], 'Assets/03_march/3-tti-hongdan.png');
-  add(3, 'pi', [], 'Assets/03_march/3-pi-1.png');
-  add(3, 'pi', [], 'Assets/03_march/3-pi-2.png');
-  add(4, 'yeol', ['godori'], 'Assets/04_april/4-yeolkkeut.png');
-  add(4, 'tti', ['chodan'], 'Assets/04_april/4-tti-chodan.png');
-  add(4, 'pi', [], 'Assets/04_april/4-pi-1.png');
-  add(4, 'pi', [], 'Assets/04_april/4-pi-2.png');
-  add(5, 'yeol', [], 'Assets/05_may/5-yeolkkeut.png');
-  add(5, 'tti', ['chodan'], 'Assets/05_may/5-tti-chodan.png');
-  add(5, 'pi', [], 'Assets/05_may/5-pi-1.png');
-  add(5, 'pi', [], 'Assets/05_may/5-pi-2.png');
-  add(6, 'yeol', [], 'Assets/06_june/6-yeolkkeut.png');
-  add(6, 'tti', ['cheongdan'], 'Assets/06_june/6-tti-cheongdan.png');
-  add(6, 'pi', [], 'Assets/06_june/6-pi-1.png');
-  add(6, 'pi', [], 'Assets/06_june/6-pi-2.png');
-  add(7, 'yeol', [], 'Assets/07_july/7-yeolkkeut.png');
-  add(7, 'tti', ['chodan'], 'Assets/07_july/7-tti-chodan.png');
-  add(7, 'pi', [], 'Assets/07_july/7-pi-1.png');
-  add(7, 'pi', [], 'Assets/07_july/7-pi-2.png');
-  add(8, 'kwang', [], 'Assets/08_august/8-gwang.png');
-  add(8, 'yeol', ['godori'], 'Assets/08_august/8-yeolkkeut.png');
-  add(8, 'pi', [], 'Assets/08_august/8-pi-1.png');
-  add(8, 'pi', [], 'Assets/08_august/8-pi-2.png');
-  add(9, 'yeol', [], 'Assets/09_september/9-yeolkkeut.png');
-  add(9, 'tti', ['cheongdan'], 'Assets/09_september/9-tti-cheongdan.png');
-  add(9, 'pi', [], 'Assets/09_september/9-pi-1.png');
-  add(9, 'pi', [], 'Assets/09_september/9-pi-2.png');
-  add(10, 'yeol', [], 'Assets/10_october/10-yeolkkeut.png');
-  add(10, 'tti', ['cheongdan'], 'Assets/10_october/10-tti-cheongdan.png');
-  add(10, 'pi', [], 'Assets/10_october/10-pi-1.png');
-  add(10, 'pi', [], 'Assets/10_october/10-pi-2.png');
-  add(11, 'kwang', [], 'Assets/11_november/11-gwang.png');
-  add(11, 'ssangpi', [], 'Assets/11_november/11-pi-3.png');
-  add(11, 'pi', [], 'Assets/11_november/11-pi-1.png');
-  add(11, 'pi', [], 'Assets/11_november/11-pi-2.png');
-  add(12, 'kwang', ['bikwang'], 'Assets/12_december/12-gwang-umbrella.png');
-  add(12, 'yeol', [], 'Assets/12_december/12-yeolkkeut-swallow.png');
-  add(12, 'tti', ['bi_tti'], 'Assets/12_december/12-tti-bitti.png');
-  add(12, 'ssangpi', [], 'Assets/12_december/12-pi-ssangpi.png');
+  add(1, 'kwang', [], 'Assets/01_january/1-gwang.webp');
+  add(1, 'tti', ['hongdan'], 'Assets/01_january/1-tti-hongdan.webp');
+  add(1, 'pi', [], 'Assets/01_january/1-pi-1.webp');
+  add(1, 'pi', [], 'Assets/01_january/1-pi-2.webp');
+  add(2, 'yeol', ['godori'], 'Assets/02_february/2-yeolkkeut-warbler.webp');
+  add(2, 'tti', ['hongdan'], 'Assets/02_february/2-tti-hongdan.webp');
+  add(2, 'pi', [], 'Assets/02_february/2-pi-1.webp');
+  add(2, 'pi', [], 'Assets/02_february/2-pi-2.webp');
+  add(3, 'kwang', [], 'Assets/03_march/3-gwang.webp');
+  add(3, 'tti', ['hongdan'], 'Assets/03_march/3-tti-hongdan.webp');
+  add(3, 'pi', [], 'Assets/03_march/3-pi-1.webp');
+  add(3, 'pi', [], 'Assets/03_march/3-pi-2.webp');
+  add(4, 'yeol', ['godori'], 'Assets/04_april/4-yeolkkeut.webp');
+  add(4, 'tti', ['chodan'], 'Assets/04_april/4-tti-chodan.webp');
+  add(4, 'pi', [], 'Assets/04_april/4-pi-1.webp');
+  add(4, 'pi', [], 'Assets/04_april/4-pi-2.webp');
+  add(5, 'yeol', [], 'Assets/05_may/5-yeolkkeut.webp');
+  add(5, 'tti', ['chodan'], 'Assets/05_may/5-tti-chodan.webp');
+  add(5, 'pi', [], 'Assets/05_may/5-pi-1.webp');
+  add(5, 'pi', [], 'Assets/05_may/5-pi-2.webp');
+  add(6, 'yeol', [], 'Assets/06_june/6-yeolkkeut.webp');
+  add(6, 'tti', ['cheongdan'], 'Assets/06_june/6-tti-cheongdan.webp');
+  add(6, 'pi', [], 'Assets/06_june/6-pi-1.webp');
+  add(6, 'pi', [], 'Assets/06_june/6-pi-2.webp');
+  add(7, 'yeol', [], 'Assets/07_july/7-yeolkkeut.webp');
+  add(7, 'tti', ['chodan'], 'Assets/07_july/7-tti-chodan.webp');
+  add(7, 'pi', [], 'Assets/07_july/7-pi-1.webp');
+  add(7, 'pi', [], 'Assets/07_july/7-pi-2.webp');
+  add(8, 'kwang', [], 'Assets/08_august/8-gwang.webp');
+  add(8, 'yeol', ['godori'], 'Assets/08_august/8-yeolkkeut.webp');
+  add(8, 'pi', [], 'Assets/08_august/8-pi-1.webp');
+  add(8, 'pi', [], 'Assets/08_august/8-pi-2.webp');
+  add(9, 'yeol', [], 'Assets/09_september/9-yeolkkeut.webp');
+  add(9, 'tti', ['cheongdan'], 'Assets/09_september/9-tti-cheongdan.webp');
+  add(9, 'pi', [], 'Assets/09_september/9-pi-1.webp');
+  add(9, 'pi', [], 'Assets/09_september/9-pi-2.webp');
+  add(10, 'yeol', [], 'Assets/10_october/10-yeolkkeut.webp');
+  add(10, 'tti', ['cheongdan'], 'Assets/10_october/10-tti-cheongdan.webp');
+  add(10, 'pi', [], 'Assets/10_october/10-pi-1.webp');
+  add(10, 'pi', [], 'Assets/10_october/10-pi-2.webp');
+  add(11, 'kwang', [], 'Assets/11_november/11-gwang.webp');
+  add(11, 'ssangpi', [], 'Assets/11_november/11-pi-3.webp');
+  add(11, 'pi', [], 'Assets/11_november/11-pi-1.webp');
+  add(11, 'pi', [], 'Assets/11_november/11-pi-2.webp');
+  add(12, 'kwang', ['bikwang'], 'Assets/12_december/12-gwang-umbrella.webp');
+  add(12, 'yeol', [], 'Assets/12_december/12-yeolkkeut-swallow.webp');
+  add(12, 'tti', ['bi_tti'], 'Assets/12_december/12-tti-bitti.webp');
+  add(12, 'ssangpi', [], 'Assets/12_december/12-pi-ssangpi.webp');
   d.forEach((c, i) => (c.uid = i));
   return d;
 }
@@ -4025,7 +4025,7 @@ async function mapPool(items, limit, worker) {
 async function preloadCardImages(onProgress) {
   const arts = [...new Set(buildDeck().map((c) => c.art).filter(Boolean))];
   const overlays = [...new Set(Object.values(CARD_OVERLAY))];
-  const urls = ['Assets/Background.png'].concat(arts, overlays);
+  const urls = ['Assets/Background.webp'].concat(arts, overlays);
   const total = urls.length || 1;
   let done = 0;
   onProgress(0, total);
@@ -4278,11 +4278,11 @@ function auraCardCls(opts, uid) {
 
 /** 종류별 하단 서예 오버레이 (일러스트 카드용) */
 const CARD_OVERLAY = {
-  kwang: 'Assets/Overlay/overlay_gwang.png',
-  yeol: 'Assets/Overlay/overlay_yeolkkeut.png',
-  tti: 'Assets/Overlay/overlay_tti.png',
-  pi: 'Assets/Overlay/overlay_pi.png',
-  ssangpi: 'Assets/Overlay/overlay_pi.png',
+  kwang: 'Assets/Overlay/overlay_gwang.webp',
+  yeol: 'Assets/Overlay/overlay_yeolkkeut.webp',
+  tti: 'Assets/Overlay/overlay_tti.webp',
+  pi: 'Assets/Overlay/overlay_pi.webp',
+  ssangpi: 'Assets/Overlay/overlay_pi.webp',
 };
 
 function cardHTML(card, opts = {}) {
