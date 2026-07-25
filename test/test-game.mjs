@@ -13,7 +13,8 @@ const src = html.slice(codeStart, codeEnd);
 const E = new Function(src + `
 return { mulberry32, shuffle, buildDeck, CHIP, effType, baseChip, HANDS, HAND_BY_ID,
   ROUNDS, TARGETS, BOSS_ROUNDS, MILD_BOSSES, goMult, goBonus, goThreshold, goLevelReached, detectHand, detectHandInfo, cardChip,
-  combosOf, evaluateHand, JOKERS, JOKER_BY_ID, BOSSES, BOSS_BY_ID, computeScore };`)();
+  combosOf, evaluateHand, JOKERS, JOKER_BY_ID, BOSSES, BOSS_BY_ID, computeScore,
+  rollJokerRarity, RARITY_ORDER };`)();
 
 let fails = 0;
 const assert = (cond, msg) => {
@@ -52,6 +53,11 @@ console.log('[2] 족보 판정');
   const pi3 = pick((c) => c.type === 'pi').slice(0, 3);
   const sp = pick((c) => c.type === 'ssangpi')[0];
   assert(det([...pi3, sp]) === 'pi5', '쌍피=2 환산으로 피3+쌍피1 → 피5');
+  // 열끗 섞어도 피 환산≥5면 피5, 열끗은 코어 밖(flat)
+  const yeolExtra = pick((c) => c.type === 'yeol')[0];
+  const pi5plusYeol = E.detectHandInfo([...pi3, sp, yeolExtra]);
+  assert(pi5plusYeol.handId === 'pi5' && !pi5plusYeol.core.includes(yeolExtra),
+    '피5+열끗 → 피5, 열끗은 flat');
   // 비단은 띠 셋에서 제외: 홍단+청단+비단 → 띠셋 아님
   const hong1 = pick((c) => c.tags.includes('hongdan'))[0];
   const cheong1 = pick((c) => c.tags.includes('cheongdan'))[0];
@@ -115,7 +121,7 @@ console.log('[3.5] 코어/플랫 분리');
   const r3 = E.computeScore(noneCards, env());
   assert(r3.handId === 'none' && r3.flat === 0 && r3.score === 12 + 2, `무조합 카드합 (실제 ${r3.score}, flat ${r3.flat})`);
   // 열끗 5장: 코어 3장만 배수, 나머지 2장은 flat
-  const yeol5 = pick((c) => c.type === 'yeol' && !c.tags.includes('dual')).slice(0, 5);
+  const yeol5 = pick((c) => c.type === 'yeol').slice(0, 5);
   const ry = E.computeScore(yeol5, env());
   assert(ry.handId === 'yeol3' && ry.flat === 16 && ry.score === 8 * 3 * 3 + 16,
     `열끗5 = (24)×3 + 16 = 88 (실제 score ${ry.score}, flat ${ry.flat})`);
@@ -147,14 +153,13 @@ console.log('[5] 특수패·박 회귀');
   const d = E.buildDeck();
   const pick = (p) => d.filter(p);
   const hong = pick((c) => c.tags.includes('hongdan'));
-  assert(E.computeScore(hong, env({ jokerIds: ['dangol'] })).mult === 10, '단골 dan +6배수');
+  assert(E.computeScore(hong, env({ jokerIds: ['dangol'] })).mult === 11, '단골 dan +7배수');
   const m1pi2 = pick((c) => c.month === 1 && c.type === 'pi');
   assert(E.computeScore(m1pi2, env({ jokerIds: ['heundeulgi'] })).mult === 3, '흔들기 ×1.5');
   assert(E.computeScore(m1pi2, env({ jokerIds: ['heundeulgi'], boss: 'no_shake' })).handId === 'none', 'no_shake 강등');
-  const guk = pick((c) => c.tags.includes('dual'))[0];
-  guk.asPi = true;
-  assert(E.computeScore([guk], env({ boss: 'meongbak' })).chips === 5, '국진 쌍피 모드 멍박 면제');
-  guk.asPi = false;
+  // 멍박: 열끗 칩 0
+  const yeol1 = pick((c) => c.type === 'yeol')[0];
+  assert(E.computeScore([yeol1], env({ boss: 'meongbak' })).chips === 0, '멍박 시 열끗 칩 0');
   // 비광우산: 코어에 12월이 있을 때만 ×2, 무조합/flat만으로는 미발동
   const bikwang = pick((c) => c.tags.includes('bikwang'))[0];
   const sam = pick((c) => c.type === 'kwang' && !c.tags.includes('bikwang')).slice(0, 2);
@@ -172,14 +177,33 @@ console.log('[5] 특수패·박 회귀');
   const rNone = E.computeScore(none12, env({ jokerIds: ['bigwang_usan'] }));
   assert(rNone.handId === 'none' && rNone.mult === 1, `무조합+12월 우산 미발동 (실제 ${rNone.mult})`);
   // +칩 특수패는 flat(배수 밖)
-  const yeol3 = pick((c) => c.type === 'yeol' && !c.tags.includes('dual')).slice(0, 3);
+  const yeol3 = pick((c) => c.type === 'yeol').slice(0, 3);
   const rMeong = E.computeScore(yeol3, env({ jokerIds: ['meongtta'] }));
   assert(rMeong.handId === 'yeol3' && rMeong.chips === 24 && rMeong.flat === 18 && rMeong.score === 24 * 3 + 18,
     `멍따는 flat +18 (실제 chips ${rMeong.chips} flat ${rMeong.flat} score ${rMeong.score})`);
   const pi2 = pick((c) => c.type === 'pi').slice(0, 2);
   const rPi = E.computeScore(pi2, env({ jokerIds: ['pi_merchant'] }));
   assert(rPi.flat === 8 && rPi.score === rPi.chips * rPi.mult + 8,
-    `피장사꾼도 flat (실제 flat ${rPi.flat} score ${rPi.score})`);
+    `피장사도 flat (실제 flat ${rPi.flat} score ${rPi.score})`);
+  // 4티어 로스터·신규 훅
+  assert(E.JOKERS.length === 22, `특수패 22종 (실제 ${E.JOKERS.length})`);
+  const byR = (r) => E.JOKERS.filter((j) => j.rarity === r).length;
+  assert(byR('common') === 6 && byR('rare') === 7 && byR('epic') === 6 && byR('legendary') === 3,
+    `티어 분포 6/7/6/3 (실제 ${byR('common')}/${byR('rare')}/${byR('epic')}/${byR('legendary')})`);
+  const ssang = pick((c) => c.type === 'ssangpi').slice(0, 1);
+  const rSs = E.computeScore(ssang, env({ jokerIds: ['ssangpi_sarang'] }));
+  assert(rSs.flat === 12, `쌍피보따리 flat +12 (실제 ${rSs.flat})`);
+  const rYj = E.computeScore(yeol3, env({ jokerIds: ['yeol_janchi'] }));
+  assert(rYj.handId === 'yeol3' && rYj.mult === 6, `멍잔치 ×2 (실제 mult ${rYj.mult})`);
+  const mixed = [yeol3[0], pick((c) => c.month === 1 && c.type === 'pi')[0], pick((c) => c.month === 3 && c.type === 'pi')[0]];
+  const rSip = E.computeScore(mixed, env({ jokerIds: ['sipidal'] }));
+  assert(rSip.mult === E.HAND_BY_ID[rSip.handId].mult + 6, `열두사철 달3 × +2 (실제 mult ${rSip.mult})`);
+  const rPae = E.computeScore(yeol3, env({ jokerIds: ['paewang'] }));
+  assert(rPae.mult === 6, `명인 무조합 아니면 ×2 (실제 ${rPae.mult})`);
+  const rPaeNone = E.computeScore([yeol1], env({ jokerIds: ['paewang'] }));
+  assert(rPaeNone.handId === 'none' && rPaeNone.mult === 1, '명인 무조합 ×1');
+  const rOg = E.computeScore([...sam, bikwang], env({ jokerIds: ['ogwang_kkum'] }));
+  assert(rOg.mult === 10, `오광소원 비삼광 ×2.5 (실제 ${rOg.mult})`); // 4 × 2.5
 }
 
 // ─── 6. evaluateHand (춘향 훈수 엔진) ─────────────────────
@@ -195,17 +219,47 @@ console.log('[6] evaluateHand');
   const best2 = E.evaluateHand(hand, env());
   assert(best2.handId !== 'dan', '뒷면 카드는 후보에서 제외');
   hand[0].faceDown = false;
-  // 국진 모드 자동 탐색: 열끗2 + 국진 → 열끗셋이 최적이면 gukAsPi=false 선택
-  const guk = pick((c) => c.tags.includes('dual'))[0];
-  const y2 = pick((c) => c.type === 'yeol' && !c.tags.includes('dual')).slice(0, 2);
-  const best3 = E.evaluateHand([guk, ...y2], env());
-  assert(best3.handId === 'yeol3' && best3.gukAsPi === false, '국진 양모드 탐색 → 열끗 모드 선택');
-  assert(guk.asPi === false, 'evaluateHand 후 국진 상태 원복');
+  // 열끗 3장 → 열끗셋
+  const y3 = pick((c) => c.type === 'yeol').slice(0, 3);
+  const best3 = E.evaluateHand(y3, env());
+  assert(best3.handId === 'yeol3', '열끗 3장 → 열끗셋');
 }
 
 // ─── 7. 풀런 시뮬레이션 (12판 · 계절 · 밤낮) ──────────────
 console.log('[7] 풀런 시뮬레이션');
 {
+  const tierRank = { common: 1, rare: 2, epic: 3, legendary: 4 };
+  /** 가성비: 티어↑·가격↓ 우선, 최소 예비금 2냥 유지 */
+  function shopBuy(money, jokers, rng) {
+    const owned = new Set(jokers);
+    const pool = E.JOKERS.filter((j) => !owned.has(j.id));
+    const offers = [];
+    for (let i = 0; i < 3; i++) {
+      const avail = pool.filter((j) => !offers.includes(j));
+      if (!avail.length) break;
+      const want = E.rollJokerRarity(rng);
+      let cands = avail.filter((j) => j.rarity === want);
+      if (!cands.length) {
+        for (const r of E.RARITY_ORDER) {
+          cands = avail.filter((j) => j.rarity === r);
+          if (cands.length) break;
+        }
+      }
+      if (!cands.length) cands = avail;
+      offers.push(cands[Math.floor(rng() * cands.length)]);
+    }
+    offers.sort((a, b) => {
+      const va = (tierRank[a.rarity] || 0) * 10 - a.price;
+      const vb = (tierRank[b.rarity] || 0) * 10 - b.price;
+      return vb - va;
+    });
+    for (const o of offers) {
+      if (jokers.length >= 5) break;
+      if (money >= o.price + 2) { money -= o.price; jokers.push(o.id); }
+    }
+    return money;
+  }
+
   function simulate(seed, buyAI) {
     const rng = E.mulberry32(seed);
     let money = 4, jokers = [], mitjangChips = 0;
@@ -233,7 +287,7 @@ console.log('[7] 풀런 시뮬레이션');
           const junk = hand.filter((c) => !keep.has(c.uid)).sort((a, b) => E.baseChip(a) - E.baseChip(b)).slice(0, 3);
           if (junk.length) {
             discardsLeft--;
-            if (jokers.includes('mitjang')) mitjangChips += 8;
+            if (jokers.includes('mitjang')) mitjangChips += 10;
             hand = hand.filter((c) => !junk.includes(c));
             refill();
             best = E.evaluateHand(hand, e());
@@ -249,17 +303,12 @@ console.log('[7] 풀런 시뮬레이션');
       if (score < target) return { cleared: round - 1 };
       const interest = Math.min(Math.floor(money / 5), 5);
       money += interest + (E.BOSS_ROUNDS.includes(round) ? 6 : 4) + playsLeft + (jokers.includes('pibak_boheom') ? 1 : 0);
-      if (round < E.ROUNDS && buyAI) {
-        const pool = E.JOKERS.filter((j) => !jokers.includes(j.id));
-        E.shuffle(pool, rng);
-        const offers = pool.slice(0, 3).sort((a, b) => a.price - b.price);
-        for (const o of offers) if (jokers.length < 5 && money >= o.price + 2) { money -= o.price; jokers.push(o.id); }
-      }
+      if (round < E.ROUNDS && buyAI) money = shopBuy(money, jokers, rng);
     }
     return { cleared: E.ROUNDS };
   }
 
-  const N = 150;
+  const N = 300;
   const hist = { shop: Array(13).fill(0), noShop: Array(13).fill(0) };
   let errors = 0;
   for (let s = 1; s <= N; s++) {
