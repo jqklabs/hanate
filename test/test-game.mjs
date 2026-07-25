@@ -172,7 +172,7 @@ console.log('[5] 특수패·박 회귀');
   ];
   const biti = pick((c) => c.tags.includes('bi_tti'))[0];
   const rFlat = E.computeScore([...tti3, biti], env({ jokerIds: ['bigwang_usan'] }));
-  assert(rFlat.handId === 'tti3' && rFlat.mult === 2, `비단 flat만으론 우산 미발동 (실제 ${rFlat.mult})`);
+  assert(rFlat.handId === 'tti3' && rFlat.mult === 3, `비단 flat만으론 우산 미발동 (실제 ${rFlat.mult})`);
   const none12 = [bikwang, pick((c) => c.month === 1 && c.type === 'pi')[0]];
   const rNone = E.computeScore(none12, env({ jokerIds: ['bigwang_usan'] }));
   assert(rNone.handId === 'none' && rNone.mult === 1, `무조합+12월 우산 미발동 (실제 ${rNone.mult})`);

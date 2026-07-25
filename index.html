@@ -5,16 +5,40 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>화투로 — 고스톱: 무한의 판</title>
 <style>
+  @font-face {
+    font-family: 'BaigeTianxing';
+    src: url('Assets/Fonts/zihun-baige-tianxing.ttf') format('truetype');
+    font-weight: 400 900;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'SSRock';
+    src: url('Assets/Fonts/SSRockRegular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
   :root {
     --felt: #1a4a2e; --felt-dark: #113020;
-    --panel: rgba(0,0,0,.34); --panel-line: rgba(255,255,255,.12);
+    --panel: rgba(8, 16, 12, .88); --panel-line: rgba(255,255,255,.14);
     --ink: #1f2937; --red: #c0392b; --gold: #d4af37; --gold-soft: #e8cd7a;
     --chip-blue: #60a5fa; --mult-red: #f87171;
+    --font-overlay: 'BaigeTianxing', 'SSRock', 'Malgun Gothic', sans-serif;
+    --font-overlay-num: 'SSRock', 'BaigeTianxing', 'Malgun Gothic', sans-serif;
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body {
-    margin: 0; background: radial-gradient(ellipse at 50% 20%, var(--felt), var(--felt-dark) 75%);
+    margin: 0;
+    background-color: #1a3a28;
+    background-image:
+      linear-gradient(180deg, rgba(8, 22, 14, .52), rgba(6, 18, 12, .65)),
+      url('Assets/Background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
     color: #f1f5f9; overflow-x: hidden;
   }
@@ -24,11 +48,17 @@
   /* ── 상단바 ─────────────────────────── */
   #topbar {
     display: flex; align-items: center; gap: 14px; padding: 10px 16px;
-    background: rgba(0,0,0,.35); border-bottom: 1px solid var(--panel-line);
+    background: rgba(8, 16, 12, .9); border-bottom: 1px solid var(--panel-line);
     flex-wrap: wrap; position: relative; z-index: 40;
   }
-  #logo { font-weight: 900; font-size: 20px; color: var(--gold-soft); letter-spacing: 1px; white-space: nowrap; }
-  #logo small { display: block; font-size: 11px; font-weight: 400; color: #cbd5e1; letter-spacing: 2px; }
+  #logo {
+    font-family: var(--font-overlay); font-weight: 400; font-size: 22px;
+    color: var(--gold-soft); letter-spacing: 1px; white-space: nowrap;
+  }
+  #logo small {
+    display: block; font-family: var(--font-overlay); font-size: 11px; font-weight: 400;
+    color: #cbd5e1; letter-spacing: 2px;
+  }
   #jokerbar { display: flex; gap: 8px; flex: 1; flex-wrap: wrap; }
   .jokerslot {
     width: 140px; min-height: 50px; border-radius: 9px; padding: 9px;
@@ -124,16 +154,26 @@
     transition: background .35s ease, border-color .35s ease;
   }
   #roundpanel.day {
-    background: linear-gradient(145deg, rgba(250,204,21,.14), rgba(255,255,255,.06) 45%, rgba(0,0,0,.12));
+    background:
+      linear-gradient(145deg, rgba(250,204,21,.16), rgba(255,255,255,.04) 45%, transparent),
+      rgba(8, 16, 12, .88);
     border-color: rgba(253,224,71,.28);
   }
   #roundpanel.night {
-    background: linear-gradient(145deg, rgba(59,130,246,.16), rgba(30,58,138,.18) 50%, rgba(0,0,0,.16));
+    background:
+      linear-gradient(145deg, rgba(59,130,246,.18), rgba(30,58,138,.14) 50%, transparent),
+      rgba(8, 16, 12, .88);
     border-color: rgba(147,197,253,.28);
   }
-  #roundlabel { font-size: 17px; font-weight: 900; color: #f8fafc; letter-spacing: -0.2px; }
+  #roundlabel {
+    font-family: var(--font-overlay); font-size: 18px; font-weight: 400;
+    color: #f8fafc; letter-spacing: -0.06em;
+  }
   #roundlabel .bak { color: #fca5a5; }
-  #roundlabel .round-meta { color: #94a3b8; font-size: 12px; font-weight: 700; margin-left: 4px; }
+  #roundlabel .round-meta {
+    font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+    color: #94a3b8; font-size: 12px; font-weight: 700; margin-left: 4px; letter-spacing: 0;
+  }
   #seasonline { font-size: 12.5px; color: #cbd5e1; margin-top: 6px; line-height: 1.55; }
   #seasonline b { color: #fde68a; }
   #bossbanner {
@@ -167,7 +207,7 @@
   #previewbox .pv-box {
     border-radius: 9px; padding: 7px 6px; text-align: center;
     border: 1px solid rgba(255,255,255,.1);
-    background: rgba(0,0,0,.22);
+    background: rgba(0,0,0,.45);
     min-width: 0;
   }
   #previewbox .pv-box .lbl {
@@ -402,7 +442,11 @@
   #btn-hint.off { color: rgba(100, 116, 139, .4); }
   #btn-hint.off:hover, #btn-hint.off:focus-visible { color: #64748b; }
   #btn-hint.locked { cursor: default; }
-  .smallbtn { background: rgba(255,255,255,.14); color: #e2e8f0; padding: 7px 12px; font-size: 12px; font-weight: 700; }
+  .smallbtn {
+    background: rgba(12, 24, 18, .92); color: #e2e8f0;
+    border: 1px solid rgba(255,255,255,.14);
+    padding: 7px 12px; font-size: 12px; font-weight: 700;
+  }
 
   /* ── 카드 ────────────────────────────── */
   .card {
@@ -428,10 +472,21 @@
   }
   .card.static { cursor: default; }
   .card.static:hover { transform: none; }
-  .card .month { font-size: 13px; font-weight: 800; line-height: 1; color: var(--red); align-self: flex-start; margin-left: 2px; }
-  .card .mname { font-size: 10px; color: #8a6d3b; align-self: flex-start; margin: 1px 0 0 2px; letter-spacing: -0.5px; }
+  .card .month {
+    font-family: var(--font-overlay); font-size: 14px; font-weight: 400; line-height: 1;
+    letter-spacing: -0.08em;
+    color: var(--red); align-self: flex-start; margin-left: 2px;
+  }
+  .card .mname {
+    font-family: var(--font-overlay); font-size: 11px; font-weight: 400;
+    color: #8a6d3b; align-self: flex-start; margin: 1px 0 0 2px; letter-spacing: -0.5px;
+  }
   .card .art { font-size: 30px; line-height: 1; margin-top: 8px; filter: drop-shadow(0 1px 1px rgba(0,0,0,.25)); }
-  .card .tag { position: absolute; bottom: 5px; left: 5px; right: 5px; font-size: 10px; font-weight: 700; text-align: center; border-radius: 4px; padding: 2px 0; letter-spacing: .5px; z-index: 2; }
+  .card .tag {
+    position: absolute; bottom: 5px; left: 5px; right: 5px;
+    font-family: var(--font-overlay); font-size: 12px; font-weight: 400;
+    text-align: center; border-radius: 4px; padding: 2px 0; letter-spacing: .5px; z-index: 2;
+  }
   .card.kwang { background: linear-gradient(160deg, #fff8dc, #f3e5ab); box-shadow: 0 3px 8px rgba(0,0,0,.45), inset 0 0 0 2.5px var(--gold), inset 0 0 0 4px rgba(255,255,255,.6); }
   .card.kwang.sel {
     box-shadow:
@@ -464,7 +519,8 @@
   .card.pi .tag { background: #e5e7eb; color: #4b5563; }
   .card.ssangpi .tag { background: #7c3aed; color: #ede9fe; }
   .card .chipbadge {
-    position: absolute; top: 3px; right: 3px; font-size: 10px; font-weight: 800;
+    position: absolute; top: 3px; right: 3px;
+    font-family: var(--font-overlay-num); font-size: 12px; font-weight: 400;
     background: rgba(37,99,235,.14); color: #1d4ed8; border-radius: 4px; padding: 1px 3px;
     z-index: 2;
   }
@@ -515,6 +571,8 @@
   }
   .card.has-art .chipbadge {
     top: 3px; right: 3px;
+    font-family: var(--font-overlay-num);
+    font-size: 13px;
     background: rgba(15, 23, 42, .72); color: #f8fafc;
     border: 1px solid rgba(255,255,255,.35);
     backdrop-filter: blur(2px);
@@ -522,11 +580,12 @@
   .card.has-art .tag { display: none; }
   .card.has-art .month-badge {
     position: absolute; top: 3px; left: 3px; z-index: 2;
-    font-size: 9px; font-weight: 800; line-height: 1;
+    font-family: var(--font-overlay); font-size: 12px; font-weight: 400; line-height: 1;
+    letter-spacing: -0.1em;
     color: #7c2d12;
     background: rgba(255,251,235,.88);
     border: 1px solid rgba(192,57,43,.45);
-    border-radius: 4px; padding: 2px 4px;
+    border-radius: 4px; padding: 3px 5px;
   }
   .card.facedown {
     background: repeating-linear-gradient(135deg, #7f1d1d 0 8px, #991b1b 8px 16px);
@@ -962,7 +1021,8 @@
     position: absolute;
     left: -6px; bottom: -6px;
     z-index: 3;
-    font-size: 11px; font-weight: 900; line-height: 1;
+    font-family: var(--font-overlay-num);
+    font-size: 12px; font-weight: 400; line-height: 1;
     color: #7c2d12;
     background: linear-gradient(180deg, #fef3c7, #f59e0b);
     border: 1.5px solid #c2410c;
@@ -970,7 +1030,7 @@
     padding: 3px 6px;
     box-shadow: 0 2px 5px rgba(0,0,0,.4);
     pointer-events: none;
-    letter-spacing: -0.5px;
+    letter-spacing: -0.06em;
   }
 
   /* ── 춘향 조력자 ─────────────────────── */
@@ -1151,9 +1211,18 @@
   }
   #hand-banner {
     position: fixed; left: 50%; top: 28vh; transform: translate(-50%, -50%) scale(.3);
-    z-index: 60; font-size: clamp(26px, 5.5vw, 48px); font-weight: 900;
+    z-index: 60;
+    font-family: var(--font-overlay);
+    font-weight: 900;
+    font-synthesis: weight;
+    -webkit-text-stroke: 2.2px #0b1220;
+    paint-order: stroke fill;
+    font-size: clamp(26px, 5.5vw, 48px);
     letter-spacing: 2px; opacity: 0; pointer-events: none; white-space: nowrap;
-    text-shadow: 0 4px 0 rgba(0,0,0,.35), 0 0 40px rgba(0,0,0,.5);
+    text-shadow:
+      0 0 2px #0b1220,
+      0 2px 0 #0b1220,
+      0 0 18px rgba(0,0,0,.55);
   }
   #hand-banner.show {
     animation: bannerSlam .64s cubic-bezier(.15,1.5,.35,1) forwards;
@@ -1169,11 +1238,31 @@
   @keyframes bannerOut {
     to { opacity: 0; transform: translate(-50%, -70%) scale(1.1); }
   }
-  #hand-banner.tier-S { color: #fde68a; text-shadow: 0 0 28px rgba(251,191,36,.7), 0 4px 0 #78350f; }
-  #hand-banner.tier-A { color: #fca5a5; text-shadow: 0 0 24px rgba(248,113,113,.55), 0 4px 0 #7f1d1d; }
-  #hand-banner.tier-B { color: #fdba74; text-shadow: 0 0 20px rgba(251,146,60,.45), 0 3px 0 #9a3412; }
-  #hand-banner.tier-C { color: #93c5fd; text-shadow: 0 0 16px rgba(96,165,250,.4), 0 3px 0 #1e3a8a; }
-  #hand-banner.tier-D { color: #cbd5e1; text-shadow: 0 2px 0 #334155; }
+  #hand-banner.tier-S {
+    color: #fde68a;
+    -webkit-text-stroke-color: #3b2206;
+    text-shadow: 0 0 2px #3b2206, 0 3px 0 #3b2206, 0 0 26px rgba(251,191,36,.65);
+  }
+  #hand-banner.tier-A {
+    color: #fecaca;
+    -webkit-text-stroke-color: #450a0a;
+    text-shadow: 0 0 2px #450a0a, 0 3px 0 #450a0a, 0 0 22px rgba(248,113,113,.55);
+  }
+  #hand-banner.tier-B {
+    color: #fdba74;
+    -webkit-text-stroke-color: #431407;
+    text-shadow: 0 0 2px #431407, 0 3px 0 #431407, 0 0 20px rgba(251,146,60,.5);
+  }
+  #hand-banner.tier-C {
+    color: #bfdbfe;
+    -webkit-text-stroke-color: #0f172a;
+    text-shadow: 0 0 2px #0f172a, 0 3px 0 #0f172a, 0 0 18px rgba(96,165,250,.45);
+  }
+  #hand-banner.tier-D {
+    color: #f1f5f9;
+    -webkit-text-stroke-color: #0f172a;
+    text-shadow: 0 0 2px #0f172a, 0 2px 0 #0f172a, 0 0 14px rgba(0,0,0,.45);
+  }
 
   /* ── 밀치기 고 하이퍼버닝 연출 ─────────── */
   #go-cascade {
@@ -1196,7 +1285,8 @@
   #go-cascade .go-num {
     position: absolute; left: 50%; top: 50%;
     transform: translate(-50%, -50%);
-    font-weight: 900; font-variant-numeric: tabular-nums;
+    font-family: var(--font-overlay-num); font-weight: 400;
+    font-variant-numeric: tabular-nums;
     font-size: clamp(52px, 11vw, 120px);
     line-height: 1;
     color: #fff7ed; letter-spacing: -0.04em; white-space: nowrap;
@@ -1211,7 +1301,7 @@
   #go-cascade .go-num.push-out { animation: goPushOut .32s ease-in forwards; }
   #go-cascade .go-shard {
     position: absolute; left: 50%; top: 50%;
-    font-weight: 900; color: #fde68a; pointer-events: none;
+    font-family: var(--font-overlay); font-weight: 400; color: #fde68a; pointer-events: none;
     text-shadow: 0 0 12px rgba(251,191,36,.8);
     animation: goShardFly .55s cubic-bezier(.2,.7,.3,1) forwards;
   }
@@ -1708,7 +1798,10 @@
   /* ── 모바일 / 플레이 가능 레이아웃 ───────────────── */
   @media (max-width: 720px) {
     html, body { height: auto; min-height: 100%; }
-    body { padding-bottom: env(safe-area-inset-bottom, 0px); }
+    body {
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      background-attachment: scroll; /* fixed는 모바일에서 깨지기 쉬움 */
+    }
     button, .card { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
     #topbar {
@@ -1781,7 +1874,7 @@
       border-radius: 12px 0 0 12px;
       border: 1px solid rgba(255,255,255,.12);
       border-right: none;
-      background: rgba(0,0,0,.28);
+      background: var(--panel);
     }
     #scorepanel {
       grid-area: score; min-width: 0;
@@ -1789,10 +1882,10 @@
       border-radius: 0 12px 12px 0;
       border: 1px solid rgba(255,255,255,.12);
       border-left: 1px solid rgba(255,255,255,.08);
-      background: rgba(0,0,0,.28);
+      background: var(--panel);
     }
     #roundpanel.day, #roundpanel.night {
-      background: rgba(0,0,0,.28);
+      background: var(--panel);
       border-color: rgba(255,255,255,.12);
     }
     #previewbox {
@@ -2073,21 +2166,26 @@
     position: fixed; inset: 0; z-index: 200;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 18px; padding: 28px;
-    background:
-      radial-gradient(ellipse at 50% 28%, #245a38 0%, transparent 55%),
-      radial-gradient(ellipse at 50% 100%, #0c1c14 0%, #113020 55%, #0a1510 100%);
+    background-color: #1a3a28;
+    background-image:
+      linear-gradient(180deg, rgba(8, 22, 14, .58), rgba(6, 18, 12, .72)),
+      url('Assets/Background.png');
+    background-size: cover;
+    background-position: center;
     transition: opacity .45s ease, visibility .45s ease;
   }
   #boot-load.done {
     opacity: 0; visibility: hidden; pointer-events: none;
   }
   #boot-load .bl-brand {
-    font-weight: 900; font-size: clamp(34px, 9vw, 52px);
+    font-family: var(--font-overlay); font-weight: 400;
+    font-size: clamp(34px, 9vw, 52px);
     color: var(--gold-soft); letter-spacing: 0.08em;
     text-shadow: 0 2px 0 rgba(0,0,0,.35), 0 0 40px rgba(212,175,55,.2);
   }
   #boot-load .bl-sub {
-    font-size: 13px; font-weight: 700; color: #94a3b8; letter-spacing: 0.28em;
+    font-family: var(--font-overlay); font-size: 13px; font-weight: 400;
+    color: #94a3b8; letter-spacing: 0.28em;
     margin-top: -8px;
   }
   #boot-load .bl-msg {
@@ -2279,6 +2377,7 @@ const MONTHS = [
   { n: 11, name: '오동',   flower: '🍂', yeolArt: null,  gwangArt: '🐔' },
   { n: 12, name: '비',     flower: '🌧️', yeolArt: '🐦', gwangArt: '☔' },
 ];
+function hanjaMonth(n) { return `${n}月`; }
 
 // type: kwang | yeol | tti | ssangpi | pi
 // tags: hongdan | cheongdan | chodan | bi_tti | godori | bikwang
@@ -2356,8 +2455,8 @@ const HANDS = [
   { id: 'dan',        name: '홍단/청단/초단', mult: 4  },
   { id: 'month3',     name: '같은 달 3장',    mult: 3  },
   { id: 'yeol3',      name: '열끗 셋',        mult: 3  },
-  { id: 'tti3',       name: '띠 셋',          mult: 2  },
-  { id: 'pi5',        name: '피 5장',         mult: 3  },
+  { id: 'tti3',       name: '띠 셋',          mult: 3  },
+  { id: 'pi5',        name: '피 5장',         mult: 2  },
   { id: 'month2',     name: '같은 달 2장',    mult: 2  },
   { id: 'none',       name: '무조합',         mult: 1  },
 ];
@@ -3926,7 +4025,7 @@ async function mapPool(items, limit, worker) {
 async function preloadCardImages(onProgress) {
   const arts = [...new Set(buildDeck().map((c) => c.art).filter(Boolean))];
   const overlays = [...new Set(Object.values(CARD_OVERLAY))];
-  const urls = arts.concat(overlays);
+  const urls = ['Assets/Background.png'].concat(arts, overlays);
   const total = urls.length || 1;
   let done = 0;
   onProgress(0, total);
@@ -3970,6 +4069,16 @@ function hideBootLoad() {
   setTimeout(() => { if (el.parentNode) el.remove(); }, 500);
 }
 
+async function preloadOverlayFonts() {
+  try {
+    if (!document.fonts || !document.fonts.load) return;
+    await Promise.all([
+      document.fonts.load('16px BaigeTianxing'),
+      document.fonts.load('16px SSRock'),
+    ]);
+  } catch (_) {}
+}
+
 async function boot() {
   setCardLabelsHidden(cardLabelsHidden());
   resetRun();
@@ -3980,7 +4089,10 @@ async function boot() {
   }
   const t0 = performance.now();
   try {
-    await preloadCardImages(setBootLoadProgress);
+    await Promise.all([
+      preloadOverlayFonts(),
+      preloadCardImages(setBootLoadProgress),
+    ]);
   } catch (_) {
     setBootLoadProgress(1, 1);
   }
@@ -4230,8 +4342,8 @@ function cardHTML(card, opts = {}) {
   const styleAttr = styleBits.length ? ` style="${styleBits.join(';')}"` : '';
   const click = opts.selectable && !discarding ? ` onclick="toggleSelect(${card.uid})"` : '';
   const monthLabel = card.art
-    ? `<div class="month-badge">${card.month}月</div>`
-    : `<div class="month">${card.month}月</div><div class="mname">${M.name}</div>`;
+    ? `<div class="month-badge">${hanjaMonth(card.month)}</div>`
+    : `<div class="month">${hanjaMonth(card.month)}</div><div class="mname">${M.name}</div>`;
   const tagHtml = card.art ? '' : `<div class="tag">${tag}</div>`;
   return `<div class="${cls}${selCls}${dealCls}${discCls}${auraCls}${opts.selectable && !discarding ? '' : ' static'}" data-uid="${card.uid}"${styleAttr}${click}>
     <div class="chipbadge">+${chip}</div>
@@ -4381,9 +4493,9 @@ function renderSide() {
     rp.classList.toggle('day', !night);
     rp.classList.toggle('night', night);
   }
-  $('roundlabel').innerHTML = `${M.flower} ${state.round}월 · ${M.name} ${night ? '🌙' : '☀️'}` +
+  $('roundlabel').innerHTML = `${M.flower} ${hanjaMonth(state.round)} · ${M.name} ${night ? '🌙' : '☀️'}` +
     ` <span class="round-meta">(판 ${state.round}/${ROUNDS})</span>${bossTag}`;
-  $('seasonline').innerHTML = `이달의 패: <b>${state.round}월 카드 칩 ×2</b><br>` +
+  $('seasonline').innerHTML = `이달의 패: <b>${hanjaMonth(state.round)} 카드 칩 ×2</b><br>` +
     (night ? '밤 — 띠·피·쌍피 칩 +2' : '낮 — 광·열끗 칩 +2');
 
   const bb = $('bossbanner');
