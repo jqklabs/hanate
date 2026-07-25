@@ -3888,6 +3888,12 @@ function restart() {
   render();
 }
 
+/** 원본 경로 → blob URL (프리로드된 이미지는 네트워크 재요청 없음) */
+const IMG_URL_CACHE = Object.create(null);
+function assetSrc(url) {
+  return (url && IMG_URL_CACHE[url]) || url;
+}
+
 function setBootLoadProgress(done, total) {
   const pct = total <= 0 ? 100 : Math.min(100, Math.round((done / total) * 100));
   const fill = $('boot-load-fill');
@@ -3902,40 +3908,58 @@ function setBootLoadProgress(done, total) {
   }
 }
 
-/** 카드 일러스트 + SFX 프리로드. 실패·타임아웃도 진행으로 쳐 막히지 않게. */
-function preloadAssets(onProgress) {
+async function mapPool(items, limit, worker) {
+  let i = 0;
+  const n = Math.min(limit, Math.max(1, items.length));
+  await Promise.all(Array.from({ length: n }, async () => {
+    while (i < items.length) {
+      const idx = i++;
+      await worker(items[idx], idx);
+    }
+  }));
+}
+
+/**
+ * 카드/오버레이만 게이트. fetch→blob→decode까지 끝난 뒤 blob URL 캐시.
+ * SFX는 화면 전환 후 백그라운드 (소리 때문에 로딩이 끝난 척 하는 일 방지).
+ */
+async function preloadCardImages(onProgress) {
   const arts = [...new Set(buildDeck().map((c) => c.art).filter(Boolean))];
   const overlays = [...new Set(Object.values(CARD_OVERLAY))];
-  const urls = arts.concat(overlays, Object.values(SFX));
-  const total = urls.length;
+  const urls = arts.concat(overlays);
+  const total = urls.length || 1;
   let done = 0;
-  const tick = () => {
-    done++;
-    onProgress(done, total);
-  };
   onProgress(0, total);
-  return Promise.all(urls.map((url) => new Promise((resolve) => {
-    let settled = false;
-    const finish = () => {
-      if (settled) return;
-      settled = true;
-      tick();
-      resolve();
-    };
-    const timer = setTimeout(finish, 12000);
-    if (/\.mp3($|\?)/i.test(url)) {
+
+  await mapPool(urls, 6, async (url) => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(String(res.status));
+      const blob = await res.blob();
+      const obj = URL.createObjectURL(blob);
+      const img = new Image();
+      img.src = obj;
+      if (img.decode) await img.decode();
+      else await new Promise((r) => { img.onload = img.onerror = r; });
+      IMG_URL_CACHE[url] = obj;
+    } catch (_) {
+      // 캐시 실패 시 원본 URL로 폴백 (DOM이 다시 받음)
+    } finally {
+      done++;
+      onProgress(done, total);
+    }
+  });
+}
+
+function warmSfxInBackground() {
+  try {
+    Object.values(SFX).forEach((url) => {
       const a = new Audio();
       a.preload = 'auto';
-      a.addEventListener('canplaythrough', () => { clearTimeout(timer); finish(); }, { once: true });
-      a.addEventListener('error', () => { clearTimeout(timer); finish(); }, { once: true });
       a.src = url;
-      try { a.load(); } catch (_) { clearTimeout(timer); finish(); }
-    } else {
-      const img = new Image();
-      img.onload = img.onerror = () => { clearTimeout(timer); finish(); };
-      img.src = url;
-    }
-  })));
+      try { a.load(); } catch (_) {}
+    });
+  } catch (_) {}
 }
 
 function hideBootLoad() {
@@ -3956,7 +3980,7 @@ async function boot() {
   }
   const t0 = performance.now();
   try {
-    await preloadAssets(setBootLoadProgress);
+    await preloadCardImages(setBootLoadProgress);
   } catch (_) {
     setBootLoadProgress(1, 1);
   }
@@ -3964,6 +3988,7 @@ async function boot() {
   const wait = Math.max(0, 550 - (performance.now() - t0));
   if (wait) await new Promise((r) => setTimeout(r, wait));
   hideBootLoad();
+  warmSfxInBackground();
   state.screen = hasSeenHowto() ? 'prep' : 'welcome';
   render();
 }
@@ -4181,8 +4206,8 @@ function cardHTML(card, opts = {}) {
   const overlaySrc = CARD_OVERLAY[card.type] || CARD_OVERLAY.pi;
   if (card.art) {
     cls += ' has-art';
-    body = `<img class="face-img" src="${esc(card.art)}" alt="${esc(M.name)} ${esc(tag)}" draggable="false">`
-      + `<img class="face-overlay" src="${esc(overlaySrc)}" alt="" draggable="false">`;
+    body = `<img class="face-img" src="${esc(assetSrc(card.art))}" alt="${esc(M.name)} ${esc(tag)}" draggable="false">`
+      + `<img class="face-overlay" src="${esc(assetSrc(overlaySrc))}" alt="" draggable="false">`;
   } else if (card.type === 'kwang') {
     body = `<div class="art">${M.gwangArt}</div><div class="gwangmark">光</div>`;
   } else if (card.type === 'yeol') {
