@@ -37,6 +37,9 @@ jobs:
         run: |
           mkdir _site
           cp index.html _site/
+          cp -R Assets _site/
+          # Actions Pages는 Jekyll을 안 타지만, 정적 배포 명시용
+          touch _site/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
