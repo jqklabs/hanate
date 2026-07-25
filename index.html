@@ -88,6 +88,9 @@
     background: rgba(255,255,255,.12); color: #f8fafc;
     font-size: 14px; font-weight: 800; border-radius: 10px; border: 1px solid rgba(255,255,255,.18);
   }
+  #topbar-right {
+    display: contents; /* 데스크톱: 자식이 topbar flex에 직접 참여 */
+  }
   #moneybox { font-size: 19px; font-weight: 800; color: #fbbf24; white-space: nowrap; }
   #moneybox .delta { font-size: 13px; color: #a3e635; }
   #top-help, #top-tutor, #top-labels {
@@ -97,6 +100,7 @@
   }
   /* 카드 종류·월·칩 오버레이 숨김 */
   body.hide-card-labels .card .tag,
+  body.hide-card-labels .card .face-overlay,
   body.hide-card-labels .card .chipbadge,
   body.hide-card-labels .card .month-badge,
   body.hide-card-labels .card .month,
@@ -495,6 +499,19 @@
     pointer-events: none;
     user-select: none;
     border-radius: 4px;
+    z-index: 0;
+  }
+  .card.has-art .face-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center bottom;
+    pointer-events: none;
+    user-select: none;
+    border-radius: 4px;
+    z-index: 1;
   }
   .card.has-art .chipbadge {
     top: 3px; right: 3px;
@@ -502,10 +519,7 @@
     border: 1px solid rgba(255,255,255,.35);
     backdrop-filter: blur(2px);
   }
-  .card.has-art .tag {
-    bottom: 4px; left: 4px; right: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,.35);
-  }
+  .card.has-art .tag { display: none; }
   .card.has-art .month-badge {
     position: absolute; top: 3px; left: 3px; z-index: 2;
     font-size: 9px; font-weight: 800; line-height: 1;
@@ -1698,21 +1712,22 @@
     button, .card { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
     #topbar {
-      gap: 6px; padding: 6px 8px;
+      gap: 8px; padding: 8px 10px;
       align-items: center; position: sticky; top: 0; z-index: 42;
+      flex-wrap: nowrap;
       background: rgba(10, 28, 18, .94); backdrop-filter: blur(8px);
     }
-    #logo { font-size: 13px; line-height: 1.15; flex-shrink: 0; }
-    #logo small { display: none; }
+    #logo { display: none; }
+    /* 로고 자리 → 특수패를 왼쪽부터 채움, 우측은 냥·버튼 묶음 */
     #jokerbar {
-      order: 0; flex: 1 1 auto; min-width: 0;
-      gap: 4px; flex-wrap: nowrap; overflow-x: auto;
+      flex: 1 1 auto; min-width: 0;
+      gap: 5px; flex-wrap: nowrap; overflow-x: auto;
       -webkit-overflow-scrolling: touch; scrollbar-width: none;
-      justify-content: flex-end;
+      justify-content: flex-start;
     }
     #jokerbar::-webkit-scrollbar { display: none; }
     .jokerslot {
-      width: 36px; min-width: 36px; min-height: 32px;
+      width: 38px; min-width: 38px; min-height: 34px;
       padding: 4px 2px; font-size: 0; flex-shrink: 0;
       border-radius: 8px;
     }
@@ -1720,18 +1735,29 @@
       content: '＋'; font-size: 14px; color: #64748b; font-weight: 700;
     }
     .jokerslot.filled {
-      width: auto; min-width: 56px; max-width: 88px; padding: 5px 7px;
+      width: auto; min-width: 58px; max-width: 96px; padding: 5px 8px;
     }
     .jokerslot .jname {
       font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .jokerslot .jdesc { display: none; }
     .jokerslot.filled .jtip {
-      left: auto; right: 0; transform: none; max-width: min(220px, 72vw);
+      left: 0; right: auto; transform: none; max-width: min(220px, 72vw);
       top: calc(100% + 6px);
     }
-    #moneybox { font-size: 13px; margin-left: 0; flex-shrink: 0; }
-    #top-help, #top-tutor, #top-labels { display: inline-flex; padding: 6px 8px; }
+    #topbar-right {
+      display: flex; align-items: center; gap: 6px;
+      flex: 0 0 auto; margin-left: auto;
+    }
+    #moneybox {
+      font-size: 14px; margin: 0; flex-shrink: 0;
+      padding: 5px 8px; border-radius: 8px;
+      background: rgba(0,0,0,.28); border: 1px solid rgba(251,191,36,.28);
+    }
+    #top-help, #top-tutor, #top-labels {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 0; width: 34px; height: 34px; font-size: 15px;
+    }
 
     #main {
       display: grid;
@@ -2042,17 +2068,67 @@
     .jokerslot.filled .jtip { display: none !important; }
   }
 
+  /* ── 부트 로딩 ───────────────────────── */
+  #boot-load {
+    position: fixed; inset: 0; z-index: 200;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 18px; padding: 28px;
+    background:
+      radial-gradient(ellipse at 50% 28%, #245a38 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 100%, #0c1c14 0%, #113020 55%, #0a1510 100%);
+    transition: opacity .45s ease, visibility .45s ease;
+  }
+  #boot-load.done {
+    opacity: 0; visibility: hidden; pointer-events: none;
+  }
+  #boot-load .bl-brand {
+    font-weight: 900; font-size: clamp(34px, 9vw, 52px);
+    color: var(--gold-soft); letter-spacing: 0.08em;
+    text-shadow: 0 2px 0 rgba(0,0,0,.35), 0 0 40px rgba(212,175,55,.2);
+  }
+  #boot-load .bl-sub {
+    font-size: 13px; font-weight: 700; color: #94a3b8; letter-spacing: 0.28em;
+    margin-top: -8px;
+  }
+  #boot-load .bl-msg {
+    margin-top: 10px; font-size: 14px; font-weight: 700; color: #cbd5e1;
+  }
+  #boot-load .bl-bar {
+    width: min(280px, 70vw); height: 8px; border-radius: 999px;
+    background: rgba(0,0,0,.45); border: 1px solid rgba(253,230,138,.28);
+    overflow: hidden;
+  }
+  #boot-load .bl-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #b45309, #fbbf24 55%, #fde68a);
+    transition: width .12s ease-out;
+  }
+  #boot-load .bl-pct {
+    font-size: 12px; font-weight: 800; color: #fde68a;
+    font-variant-numeric: tabular-nums; letter-spacing: 0.04em;
+  }
+
 </style>
 </head>
 <body>
 
+<div id="boot-load" role="status" aria-live="polite" aria-busy="true">
+  <div class="bl-brand">화투로</div>
+  <div class="bl-sub">고스톱 · 무한의 판</div>
+  <div class="bl-msg" id="boot-load-msg">패를 섞는 중…</div>
+  <div class="bl-bar"><div class="bl-fill" id="boot-load-fill"></div></div>
+  <div class="bl-pct" id="boot-load-pct">0%</div>
+</div>
+
 <div id="topbar">
   <div id="logo">화투로<small>고스톱 · 무한의 판</small></div>
   <div id="jokerbar"></div>
-  <div id="moneybox"></div>
-  <button type="button" id="top-help" class="smallbtn" onclick="openHelp()" title="족보표 / 도움말">📖</button>
-  <button type="button" id="top-tutor" class="smallbtn" onclick="replayTutorials()" title="튜토리얼 다시 보기">✨</button>
-  <button type="button" id="top-labels" class="smallbtn" onclick="toggleCardLabels()" title="카드 표기 토글">🏷</button>
+  <div id="topbar-right">
+    <div id="moneybox"></div>
+    <button type="button" id="top-help" class="smallbtn" onclick="openHelp()" title="족보표 / 도움말">📖</button>
+    <button type="button" id="top-tutor" class="smallbtn" onclick="replayTutorials()" title="튜토리얼 다시 보기">✨</button>
+    <button type="button" id="top-labels" class="smallbtn" onclick="toggleCardLabels()" title="카드 표기 토글">🏷</button>
+  </div>
 </div>
 
 <div id="main">
@@ -3812,13 +3888,82 @@ function restart() {
   render();
 }
 
-function boot() {
+function setBootLoadProgress(done, total) {
+  const pct = total <= 0 ? 100 : Math.min(100, Math.round((done / total) * 100));
+  const fill = $('boot-load-fill');
+  const pctEl = $('boot-load-pct');
+  const msg = $('boot-load-msg');
+  if (fill) fill.style.width = pct + '%';
+  if (pctEl) pctEl.textContent = pct + '%';
+  if (msg) {
+    msg.textContent = pct < 100
+      ? (pct < 40 ? '패를 섞는 중…' : pct < 80 ? '그림을 펼치는 중…' : '거의 다 됐습니다…')
+      : '판을 여는 중…';
+  }
+}
+
+/** 카드 일러스트 + SFX 프리로드. 실패·타임아웃도 진행으로 쳐 막히지 않게. */
+function preloadAssets(onProgress) {
+  const arts = [...new Set(buildDeck().map((c) => c.art).filter(Boolean))];
+  const overlays = [...new Set(Object.values(CARD_OVERLAY))];
+  const urls = arts.concat(overlays, Object.values(SFX));
+  const total = urls.length;
+  let done = 0;
+  const tick = () => {
+    done++;
+    onProgress(done, total);
+  };
+  onProgress(0, total);
+  return Promise.all(urls.map((url) => new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      tick();
+      resolve();
+    };
+    const timer = setTimeout(finish, 12000);
+    if (/\.mp3($|\?)/i.test(url)) {
+      const a = new Audio();
+      a.preload = 'auto';
+      a.addEventListener('canplaythrough', () => { clearTimeout(timer); finish(); }, { once: true });
+      a.addEventListener('error', () => { clearTimeout(timer); finish(); }, { once: true });
+      a.src = url;
+      try { a.load(); } catch (_) { clearTimeout(timer); finish(); }
+    } else {
+      const img = new Image();
+      img.onload = img.onerror = () => { clearTimeout(timer); finish(); };
+      img.src = url;
+    }
+  })));
+}
+
+function hideBootLoad() {
+  const el = $('boot-load');
+  if (!el) return;
+  el.classList.add('done');
+  el.setAttribute('aria-busy', 'false');
+  setTimeout(() => { if (el.parentNode) el.remove(); }, 500);
+}
+
+async function boot() {
   setCardLabelsHidden(cardLabelsHidden());
   resetRun();
   if (new URLSearchParams(location.search).get('goPreview') === '1') {
+    hideBootLoad();
     openGoAnimPreview();
     return;
   }
+  const t0 = performance.now();
+  try {
+    await preloadAssets(setBootLoadProgress);
+  } catch (_) {
+    setBootLoadProgress(1, 1);
+  }
+  // 캐시 히트 시 깜빡임 방지 — 최소 ~0.55초
+  const wait = Math.max(0, 550 - (performance.now() - t0));
+  if (wait) await new Promise((r) => setTimeout(r, wait));
+  hideBootLoad();
   state.screen = hasSeenHowto() ? 'prep' : 'welcome';
   render();
 }
@@ -3994,6 +4139,15 @@ function auraCardCls(opts, uid) {
   return opts.auraKind === 'junk' ? ' coach-aura-junk' : ' coach-aura';
 }
 
+/** 종류별 하단 서예 오버레이 (일러스트 카드용) */
+const CARD_OVERLAY = {
+  kwang: 'Assets/Overlay/overlay_gwang.png',
+  yeol: 'Assets/Overlay/overlay_yeolkkeut.png',
+  tti: 'Assets/Overlay/overlay_tti.png',
+  pi: 'Assets/Overlay/overlay_pi.png',
+  ssangpi: 'Assets/Overlay/overlay_pi.png',
+};
+
 function cardHTML(card, opts = {}) {
   const M = MONTHS[card.month - 1];
   const discarding = state.discardAnimUids && state.discardAnimUids.includes(card.uid);
@@ -4024,9 +4178,11 @@ function cardHTML(card, opts = {}) {
   } else {
     tag = card.type === 'ssangpi' ? '쌍피' : '피';
   }
+  const overlaySrc = CARD_OVERLAY[card.type] || CARD_OVERLAY.pi;
   if (card.art) {
     cls += ' has-art';
-    body = `<img class="face-img" src="${esc(card.art)}" alt="${esc(M.name)} ${esc(tag)}" draggable="false">`;
+    body = `<img class="face-img" src="${esc(card.art)}" alt="${esc(M.name)} ${esc(tag)}" draggable="false">`
+      + `<img class="face-overlay" src="${esc(overlaySrc)}" alt="" draggable="false">`;
   } else if (card.type === 'kwang') {
     body = `<div class="art">${M.gwangArt}</div><div class="gwangmark">光</div>`;
   } else if (card.type === 'yeol') {
@@ -4051,11 +4207,12 @@ function cardHTML(card, opts = {}) {
   const monthLabel = card.art
     ? `<div class="month-badge">${card.month}月</div>`
     : `<div class="month">${card.month}月</div><div class="mname">${M.name}</div>`;
+  const tagHtml = card.art ? '' : `<div class="tag">${tag}</div>`;
   return `<div class="${cls}${selCls}${dealCls}${discCls}${auraCls}${opts.selectable && !discarding ? '' : ' static'}" data-uid="${card.uid}"${styleAttr}${click}>
     <div class="chipbadge">+${chip}</div>
     ${monthLabel}
     ${body}
-    <div class="tag">${tag}</div>
+    ${tagHtml}
   </div>`;
 }
 
@@ -6176,7 +6333,7 @@ async function playJuiceSequence(snap, fromRects = null) {
 window.addEventListener('resize', () => {
   if (state.coachStep) renderCoach();
 });
-boot(); // 첫 방문이면 룰 안내 → 이후 prep (1월 시작 전 훈수 예약)
+boot(); // 에셋 프리로드 → 첫 방문이면 룰 안내 → prep
 </script>
 </body>
 </html>
