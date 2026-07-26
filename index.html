@@ -635,6 +635,11 @@
     user-select: none;
     border-radius: 4px;
     z-index: 0;
+    /* 일러스트만 — 오버레이 미적용. ?cardTune=1 슬라이더로 조정 */
+    filter:
+      brightness(var(--card-bright, 0.90))
+      saturate(var(--card-sat, 0.96))
+      sepia(var(--card-sepia, 0.20));
   }
   .card.has-art .face-overlay {
     position: absolute;
@@ -2310,6 +2315,51 @@
     font-variant-numeric: tabular-nums; letter-spacing: 0.04em;
   }
 
+  /* ── 카드 일러스트 색조 튜너 (?cardTune=1) ── */
+  #card-tune {
+    display: none; position: fixed; right: 14px; bottom: 14px; z-index: 140;
+    width: min(300px, calc(100vw - 28px));
+    padding: 12px 14px 14px;
+    border-radius: 12px;
+    background: rgba(10, 18, 14, .94);
+    border: 1px solid rgba(196, 162, 90, .5);
+    box-shadow: 0 12px 36px rgba(0,0,0,.5);
+    font-size: 12px; color: #e2e8f0;
+  }
+  #card-tune.on { display: block; }
+  #card-tune .ct-title {
+    font-weight: 900; color: #fde68a; margin-bottom: 4px; font-size: 13px;
+  }
+  #card-tune .ct-sub {
+    color: #94a3b8; font-size: 11px; line-height: 1.4; margin-bottom: 10px;
+  }
+  #card-tune .ct-row {
+    display: grid; grid-template-columns: 52px 1fr 42px;
+    gap: 8px; align-items: center; margin: 7px 0;
+  }
+  #card-tune .ct-row label { color: #cbd5e1; font-weight: 700; }
+  #card-tune .ct-row output {
+    font-variant-numeric: tabular-nums; text-align: right; color: #f8fafc; font-weight: 800;
+  }
+  #card-tune input[type="range"] { width: 100%; accent-color: #c4a25a; }
+  #card-tune .ct-css {
+    margin-top: 10px; padding: 8px 9px; border-radius: 8px;
+    background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.1);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10.5px; color: #a5f3fc; word-break: break-all; line-height: 1.4;
+  }
+  #card-tune .ct-actions {
+    display: flex; gap: 6px; margin-top: 10px;
+  }
+  #card-tune .ct-actions button {
+    flex: 1; padding: 8px 6px; border-radius: 8px; font-size: 11px; font-weight: 800;
+    background: rgba(255,255,255,.1); color: #f1f5f9;
+    border: 1px solid rgba(255,255,255,.16);
+  }
+  #card-tune .ct-actions button.primary {
+    background: linear-gradient(180deg, #b45309, #92400e); border-color: rgba(251,191,36,.35);
+  }
+
 </style>
 </head>
 <body>
@@ -2419,6 +2469,31 @@
 </div>
 <div id="go-cascade" aria-hidden="true"><div class="go-stage" id="go-cascade-stage"></div></div>
 <div id="coach-root" aria-hidden="true"></div>
+
+<div id="card-tune" aria-hidden="true">
+  <div class="ct-title">카드 일러스트 색조</div>
+  <div class="ct-sub">오버레이 제외 · 일러스트만 적용. 맞추면 값을 복사해 알려주세요.</div>
+  <div class="ct-row">
+    <label for="ct-bright">노출</label>
+    <input type="range" id="ct-bright" min="0.85" max="1.10" step="0.01" value="0.90">
+    <output id="ct-bright-val">0.90</output>
+  </div>
+  <div class="ct-row">
+    <label for="ct-sat">채도</label>
+    <input type="range" id="ct-sat" min="0.70" max="1.20" step="0.01" value="0.96">
+    <output id="ct-sat-val">0.96</output>
+  </div>
+  <div class="ct-row">
+    <label for="ct-sepia">온도</label>
+    <input type="range" id="ct-sepia" min="0" max="0.40" step="0.01" value="0.20">
+    <output id="ct-sepia-val">0.20</output>
+  </div>
+  <div class="ct-css" id="ct-css">filter: brightness(0.90) saturate(0.96) sepia(0.20);</div>
+  <div class="ct-actions">
+    <button type="button" onclick="resetCardTune()">초기화</button>
+    <button type="button" class="primary" onclick="copyCardTune()">값 복사</button>
+  </div>
+</div>
 
 <div id="go-anim-preview" aria-hidden="true">
   <div class="gap-inner">
@@ -4183,9 +4258,87 @@ async function preloadOverlayFonts() {
   } catch (_) {}
 }
 
+const CARD_TUNE_DEFAULTS = { bright: 0.90, sat: 0.96, sepia: 0.20 };
+
+function cardTuneValues() {
+  const bright = +($('ct-bright')?.value ?? CARD_TUNE_DEFAULTS.bright);
+  const sat = +($('ct-sat')?.value ?? CARD_TUNE_DEFAULTS.sat);
+  const sepia = +($('ct-sepia')?.value ?? CARD_TUNE_DEFAULTS.sepia);
+  return { bright, sat, sepia };
+}
+
+function cardTuneCss({ bright, sat, sepia }) {
+  return `brightness(${bright.toFixed(2)}) saturate(${sat.toFixed(2)}) sepia(${sepia.toFixed(2)})`;
+}
+
+function applyCardTune() {
+  const v = cardTuneValues();
+  const root = document.documentElement;
+  root.style.setProperty('--card-bright', v.bright.toFixed(2));
+  root.style.setProperty('--card-sat', v.sat.toFixed(2));
+  root.style.setProperty('--card-sepia', v.sepia.toFixed(2));
+  const b = $('ct-bright-val');
+  const s = $('ct-sat-val');
+  const e = $('ct-sepia-val');
+  const css = $('ct-css');
+  if (b) b.textContent = v.bright.toFixed(2);
+  if (s) s.textContent = v.sat.toFixed(2);
+  if (e) e.textContent = v.sepia.toFixed(2);
+  if (css) css.textContent = `filter: ${cardTuneCss(v)};`;
+  try {
+    localStorage.setItem('hwatro_card_tune', JSON.stringify(v));
+  } catch (_) {}
+}
+
+function resetCardTune() {
+  const d = CARD_TUNE_DEFAULTS;
+  if ($('ct-bright')) $('ct-bright').value = d.bright;
+  if ($('ct-sat')) $('ct-sat').value = d.sat;
+  if ($('ct-sepia')) $('ct-sepia').value = d.sepia;
+  applyCardTune();
+}
+
+async function copyCardTune() {
+  const text = cardTuneCss(cardTuneValues());
+  try {
+    await navigator.clipboard.writeText(text);
+    const btn = document.querySelector('#card-tune .ct-actions .primary');
+    if (btn) {
+      const prev = btn.textContent;
+      btn.textContent = '복사됨!';
+      setTimeout(() => { btn.textContent = prev; }, 1200);
+    }
+  } catch (_) {
+    prompt('이 값을 복사하세요', text);
+  }
+}
+
+function initCardTune() {
+  const panel = $('card-tune');
+  if (!panel) return;
+  const enabled = new URLSearchParams(location.search).get('cardTune') === '1';
+  if (!enabled) return;
+  try {
+    const saved = JSON.parse(localStorage.getItem('hwatro_card_tune') || 'null');
+    if (saved && typeof saved === 'object') {
+      if ($('ct-bright') && saved.bright != null) $('ct-bright').value = saved.bright;
+      if ($('ct-sat') && saved.sat != null) $('ct-sat').value = saved.sat;
+      if ($('ct-sepia') && saved.sepia != null) $('ct-sepia').value = saved.sepia;
+    }
+  } catch (_) {}
+  ['ct-bright', 'ct-sat', 'ct-sepia'].forEach((id) => {
+    const el = $(id);
+    if (el) el.addEventListener('input', applyCardTune);
+  });
+  applyCardTune();
+  panel.classList.add('on');
+  panel.setAttribute('aria-hidden', 'false');
+}
+
 async function boot() {
   setCardLabelsHidden(cardLabelsHidden());
   resetRun();
+  initCardTune();
   if (new URLSearchParams(location.search).get('goPreview') === '1') {
     hideBootLoad();
     openGoAnimPreview();
