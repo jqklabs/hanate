@@ -1,0 +1,7 @@
+.github
+.cursor
+design
+docs
+test
+*.md
+.git
