@@ -1,0 +1,1103 @@
+<title>화투로 v5 — 화면 플로우 &amp; 와이어프레임</title>
+
+<style>
+:root {
+  --felt:      #12281b;
+  --felt-deep: #0b1a11;
+  --bronze:    #a8873f;
+  --bronze-lo: #8a6e3a;
+  --gold:      #c9a94e;
+  --hong:      #b2372a;
+  --ok:        #3f7d52;
+  --warn:      #a8760f;
+
+  --ground:    #e8ebe4;
+  --raised:    #f3f5ef;
+  --sunken:    #dde1d7;
+  --ink:       #191f1a;
+  --ink-mid:   #4a534b;
+  --ink-lo:    #6f786f;
+  --rule:      #c6ccc0;
+  --rule-soft: #d8ddd2;
+
+  --accent:    var(--bronze);
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --sans: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+
+  --step--1: 0.78rem;
+  --step-0:  0.94rem;
+  --step-1:  1.15rem;
+  --step-2:  1.5rem;
+  --step-3:  2.1rem;
+  --step-4:  3rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground:    #0e1712;
+    --raised:    #15211a;
+    --sunken:    #0a120d;
+    --ink:       #e4e9e2;
+    --ink-mid:   #a3ada4;
+    --ink-lo:    #7b857c;
+    --rule:      #2b3a2f;
+    --rule-soft: #223028;
+    --bronze:    #c4a25a;
+    --bronze-lo: #9d7f42;
+    --gold:      #e8cd7a;
+    --hong:      #d4614f;
+    --ok:        #6aab7d;
+    --warn:      #d6a233;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:    #0e1712;
+  --raised:    #15211a;
+  --sunken:    #0a120d;
+  --ink:       #e4e9e2;
+  --ink-mid:   #a3ada4;
+  --ink-lo:    #7b857c;
+  --rule:      #2b3a2f;
+  --rule-soft: #223028;
+  --bronze:    #c4a25a;
+  --bronze-lo: #9d7f42;
+  --gold:      #e8cd7a;
+  --hong:      #d4614f;
+  --ok:        #6aab7d;
+  --warn:      #d6a233;
+}
+:root[data-theme="light"] {
+  --ground:    #e8ebe4;
+  --raised:    #f3f5ef;
+  --sunken:    #dde1d7;
+  --ink:       #191f1a;
+  --ink-mid:   #4a534b;
+  --ink-lo:    #6f786f;
+  --rule:      #c6ccc0;
+  --rule-soft: #d8ddd2;
+  --bronze:    #a8873f;
+  --bronze-lo: #8a6e3a;
+  --gold:      #c9a94e;
+  --hong:      #b2372a;
+  --ok:        #3f7d52;
+  --warn:      #a8760f;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: var(--step-0);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── 상단 표제 ─────────────────────────────── */
+.masthead {
+  background: var(--felt);
+  color: #e9ece6;
+  border-bottom: 3px solid var(--bronze);
+  padding: clamp(2.2rem, 6vw, 4rem) clamp(1.2rem, 5vw, 3rem) clamp(1.8rem, 4vw, 2.6rem);
+  position: relative;
+}
+.masthead::after {
+  content: "";
+  position: absolute;
+  inset: 10px 10px auto 10px;
+  height: 1px;
+  background: rgba(196,162,90,.35);
+}
+.mh-inner { max-width: 78rem; margin: 0 auto; }
+.mh-eyebrow {
+  font-family: var(--mono);
+  font-size: var(--step--1);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0 0 .9rem;
+}
+.masthead h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 5.5vw, var(--step-4));
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  text-wrap: balance;
+  color: #f2f4ee;
+}
+.mh-sub {
+  margin: .9rem 0 0;
+  max-width: 46ch;
+  color: #b9c2b6;
+  font-size: var(--step-0);
+}
+.mh-meta {
+  margin-top: 1.8rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 2.2rem;
+  font-family: var(--mono);
+  font-size: var(--step--1);
+  color: #9aa89b;
+}
+.mh-meta b { color: var(--gold); font-weight: 600; }
+
+/* ── 레이아웃 ─────────────────────────────── */
+.shell {
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: 0 clamp(1.2rem, 5vw, 3rem) 6rem;
+  display: grid;
+  grid-template-columns: 13.5rem minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .rail { position: static; border-right: 0; border-bottom: 1px solid var(--rule); padding-bottom: 1.5rem; }
+}
+
+.rail {
+  position: sticky;
+  top: 0;
+  padding: 2.5rem 0 2rem;
+  font-family: var(--mono);
+  font-size: var(--step--1);
+}
+.rail h2 {
+  font-size: var(--step--1);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-lo);
+  margin: 0 0 .9rem;
+  font-weight: 600;
+}
+.rail ul { list-style: none; margin: 0 0 1.6rem; padding: 0; display: flex; flex-direction: column; gap: .1rem; }
+.rail a {
+  display: block;
+  padding: .3rem .55rem;
+  color: var(--ink-mid);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.rail a:hover, .rail a:focus-visible {
+  color: var(--ink);
+  border-left-color: var(--bronze);
+  background: var(--sunken);
+}
+.rail a.on { color: var(--ink); border-left-color: var(--bronze); font-weight: 600; }
+
+main { padding-top: 2.5rem; min-width: 0; }
+
+/* ── 섹션 ─────────────────────────────── */
+.sec { margin-bottom: 4.5rem; scroll-margin-top: 1.5rem; }
+.sec > h2 {
+  font-size: var(--step-2);
+  font-weight: 750;
+  letter-spacing: -.015em;
+  margin: 0 0 .3rem;
+  text-wrap: balance;
+}
+.sec-note { color: var(--ink-mid); margin: 0 0 1.8rem; max-width: 62ch; }
+
+.divider {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 0 0 2.5rem;
+}
+
+/* ── 화면 카드 ─────────────────────────────── */
+.screen {
+  background: var(--raised);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--bronze);
+  margin-bottom: 2.5rem;
+  scroll-margin-top: 1.5rem;
+}
+.scr-head {
+  padding: 1.25rem clamp(1rem, 3vw, 1.75rem);
+  border-bottom: 1px solid var(--rule-soft);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .5rem 1rem;
+}
+.scr-id {
+  font-family: var(--mono);
+  font-size: var(--step--1);
+  letter-spacing: .08em;
+  color: var(--bronze-lo);
+  font-weight: 600;
+}
+.scr-name { font-size: var(--step-1); font-weight: 700; margin: 0; }
+.scr-purpose { flex-basis: 100%; color: var(--ink-mid); font-size: var(--step--1); margin: 0; }
+
+.scr-body { padding: clamp(1rem, 3vw, 1.75rem); }
+
+dl.meta {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: .45rem 1.1rem;
+  margin: 0 0 1.6rem;
+  font-size: var(--step--1);
+}
+dl.meta dt {
+  font-family: var(--mono);
+  color: var(--ink-lo);
+  letter-spacing: .04em;
+}
+dl.meta dd { margin: 0; color: var(--ink-mid); }
+dl.meta dd b { color: var(--ink); font-weight: 600; }
+
+/* ── ASCII 와이어 ─────────────────────────────── */
+.wire {
+  background: var(--felt-deep);
+  border: 1px solid var(--bronze-lo);
+  padding: 1.1rem;
+  overflow-x: auto;
+  margin: 0 0 1.5rem;
+}
+.wire pre {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: .68rem;
+  line-height: 1.5;
+  color: #cbd6c8;
+  white-space: pre;
+}
+.wire pre b { color: var(--gold); font-weight: 400; }
+.wire pre i { color: #7f9a86; font-style: normal; }
+.wire-cap {
+  font-family: var(--mono);
+  font-size: var(--step--1);
+  color: var(--ink-lo);
+  margin: -1rem 0 1.5rem;
+}
+
+/* ── 표 ─────────────────────────────── */
+.tw { overflow-x: auto; margin: 0 0 1.5rem; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: var(--step--1);
+  min-width: 34rem;
+}
+caption {
+  text-align: left;
+  font-family: var(--mono);
+  font-size: var(--step--1);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-lo);
+  padding: 0 0 .55rem;
+}
+th, td {
+  text-align: left;
+  padding: .5rem .7rem;
+  border-bottom: 1px solid var(--rule-soft);
+  vertical-align: top;
+}
+thead th {
+  border-bottom: 1.5px solid var(--rule);
+  font-weight: 600;
+  color: var(--ink-mid);
+  white-space: nowrap;
+}
+tbody tr:last-child td { border-bottom: 0; }
+td.n, th.n { font-family: var(--mono); white-space: nowrap; font-variant-numeric: tabular-nums; }
+td code, p code, li code, dd code {
+  font-family: var(--mono);
+  font-size: .92em;
+  background: var(--sunken);
+  padding: .08em .35em;
+  color: var(--ink);
+}
+
+/* ── 위계 / 심각도 칩 ─────────────────────────────── */
+.chip {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: .7rem;
+  letter-spacing: .04em;
+  padding: .1rem .45rem;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+.chip.p1 { color: var(--hong); font-weight: 600; }
+.chip.p2 { color: var(--bronze-lo); }
+.chip.p3 { color: var(--ink-lo); }
+.chip.bg { color: var(--ink-lo); border-style: dashed; }
+.chip.ok   { color: var(--ok); }
+.chip.warn { color: var(--warn); }
+.chip.bad  { color: var(--hong); font-weight: 600; }
+
+/* ── 예외 목록 ─────────────────────────────── */
+.exc {
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--rule);
+  background: var(--raised);
+  padding: 1rem 1.25rem;
+  margin-bottom: .75rem;
+}
+.exc.warn { border-left-color: var(--warn); }
+.exc.bad  { border-left-color: var(--hong); }
+.exc.ok   { border-left-color: var(--ok); }
+.exc-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .4rem .8rem;
+  margin-bottom: .4rem;
+}
+.exc-id { font-family: var(--mono); font-size: var(--step--1); color: var(--bronze-lo); font-weight: 600; }
+.exc-name { font-weight: 650; }
+.exc p { margin: .3rem 0 0; font-size: var(--step--1); color: var(--ink-mid); }
+.exc p b { color: var(--ink); }
+
+/* ── 총평 박스 ─────────────────────────────── */
+.verdict {
+  background: var(--felt);
+  color: #dde3da;
+  border-left: 3px solid var(--gold);
+  padding: 1.25rem 1.5rem;
+  margin: 0 0 2rem;
+}
+.verdict h3 {
+  margin: 0 0 .5rem;
+  font-size: var(--step-0);
+  color: var(--gold);
+  font-family: var(--mono);
+  letter-spacing: .06em;
+  font-weight: 600;
+}
+.verdict p { margin: .35rem 0 0; font-size: var(--step--1); }
+.verdict b { color: #fff; }
+
+/* ── mermaid ─────────────────────────────── */
+.mermaid-wrap {
+  background: var(--raised);
+  border: 1px solid var(--rule);
+  padding: 1.25rem;
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+}
+pre.mermaid { margin: 0; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem 1.2rem;
+  font-family: var(--mono);
+  font-size: var(--step--1);
+  color: var(--ink-lo);
+  margin: 0 0 2rem;
+  padding: .8rem 1rem;
+  border: 1px dashed var(--rule);
+}
+.legend span b { color: var(--ink-mid); font-weight: 600; }
+
+a { color: var(--bronze-lo); }
+:focus-visible { outline: 2px solid var(--bronze); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+html { scroll-behavior: smooth; }
+</style>
+
+<header class="masthead">
+  <div class="mh-inner">
+    <p class="mh-eyebrow">화투로 · 고스톱: 무한의 판 — as-built v5</p>
+    <h1>화면 플로우 &amp; 와이어프레임</h1>
+    <p class="mh-sub">구현 실물에서 역추출한 화면 명세. 화면 10종, 핫스팟 전수, 상태 매트릭스, 예외 14종.</p>
+    <div class="mh-meta">
+      <span>기준 <b>index.html 6,749줄</b></span>
+      <span>작성 <b>2026-07-28</b></span>
+      <span>Tier <b>S</b></span>
+      <span>원본 <b>02_flow.md</b></span>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+
+  <nav class="rail" aria-label="화면 목록">
+    <h2>흐름</h2>
+    <ul>
+      <li><a href="#map">스크린맵</a></li>
+    </ul>
+    <h2>화면</h2>
+    <ul>
+      <li><a href="#play">SCR-PLAY-01</a></li>
+      <li><a href="#gostop">SCR-GOSTOP-01</a></li>
+      <li><a href="#shop">SCR-SHOP-01</a></li>
+      <li><a href="#settle">SCR-SETTLE-01</a></li>
+      <li><a href="#minor">그 외 6종</a></li>
+      <li><a href="#coach">OVL-COACH-01</a></li>
+    </ul>
+    <h2>예외</h2>
+    <ul>
+      <li><a href="#exc">EXC-01 … 14</a></li>
+    </ul>
+  </nav>
+
+  <main>
+
+    <!-- ══════════ 스크린맵 ══════════ -->
+    <section class="sec" id="map">
+      <h2>스크린맵</h2>
+      <p class="sec-note">
+        이 게임은 단일 페이지다. “화면”은 라우트가 아니라 <code>state.screen</code> 값 하나와 모달 오버레이로 구현된다.
+        실제 값은 <code>welcome · prep · play · gostop · settle · shop · gameover · victory · help</code>.
+      </p>
+
+      <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart TD
+  BOOT[SCR-BOOT-01<br/>프리로드] -->|howto 미확인| WEL[SCR-WELCOME-01<br/>웰컴]
+  BOOT -->|howto 확인됨| PREP[SCR-PREP-01<br/>1월 준비]
+  WEL -->|시작하기| PREP
+  PREP -->|1월 시작| PLAY[SCR-PLAY-01<br/>본판]
+
+  PLAY -->|목표 도달 · 패 남음| GS[SCR-GOSTOP-01<br/>고 / 스톱]
+  PLAY -->|목표 도달 · 12월| WIN[SCR-VICTORY-01<br/>승리]
+  PLAY -->|목표 도달 · 패 0| SET[SCR-SETTLE-01<br/>정산]
+  PLAY -->|내기 소진 · 미달| OVER[SCR-GAMEOVER-01<br/>런 종료]
+
+  GS -->|스톱| SET
+  GS -->|고 · 밀치기| PLAY
+  SET -->|상점으로| SHOP[SCR-SHOP-01<br/>상점]
+  SHOP -->|다음 판으로| PLAY
+
+  OVER -->|다시 도전| PREP
+  WIN -->|새 런 시작| PREP
+
+  PLAY -->|도움말| HELP[SCR-HELP-01<br/>족보표]
+  SHOP -->|도움말| HELP
+  HELP -->|닫기 · helpReturn 복원| PLAY
+
+  classDef exception fill:#f6dcd8,stroke:#b2372a,color:#5c1a13
+  class OVER exception
+</pre>
+      </div>
+
+      <div class="tw">
+        <table>
+          <caption>플로우 검증</caption>
+          <thead><tr><th>규칙</th><th>결과</th><th>비고</th></tr></thead>
+          <tbody>
+            <tr><td>고아 화면 없음 (진입 ≥ 1)</td><td><span class="chip ok">통과</span></td><td>전 화면</td></tr>
+            <tr><td>막다른 골목 없음 (이탈 ≥ 1)</td><td><span class="chip ok">통과</span></td><td>전 화면</td></tr>
+            <tr><td>1차 목적까지 3탭 이내</td><td><span class="chip ok">통과</span></td><td>부팅 → 웰컴 → 준비 → 본판 = 2탭. 재방문 시 1탭</td></tr>
+            <tr><td>모달 비스택</td><td><span class="chip ok">통과</span></td><td><code>state.screen</code> 단일값이 활성 모달 하나를 결정</td></tr>
+            <tr><td>되돌아가기 상태 보존</td><td><span class="chip warn">부분</span></td><td>도움말만 <code>helpReturn</code>으로 복원. 런 전체는 새로고침 시 소실</td></tr>
+            <tr><td>전 화면에서 도움말 접근</td><td><span class="chip bad">미달</span></td><td>정산 화면에서 족보표로 갈 수 없다 — 구조상 사각지대</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <div class="legend" aria-label="표기 규약">
+      <span><b>[ 라벨 ]</b> 버튼</span>
+      <span><b>[[ 라벨 ]]</b> 1차 행동</span>
+      <span><b>▢</b> 카드·이미지</span>
+      <span><b>{{ }}</b> 데이터 바인딩</span>
+      <span><b>⟨ ⟩</b> 조건부 노출</span>
+      <span><b>①</b> 핫스팟 번호</span>
+    </div>
+
+    <!-- ══════════ PLAY ══════════ -->
+    <section class="sec" id="play">
+      <h2>본판</h2>
+      <p class="sec-note">게임 시간의 95%가 여기서 소비된다. 무게감 Tier S — 스코어링 서브시스템의 유일한 조작면.</p>
+
+      <article class="screen">
+        <div class="scr-head">
+          <span class="scr-id">SCR-PLAY-01</span>
+          <h3 class="scr-name">본판</h3>
+          <p class="scr-purpose">손패 8장에서 1~5장을 골라 내기·버리기로 목표 점수를 넘긴다.</p>
+        </div>
+        <div class="scr-body">
+
+          <dl class="meta">
+            <dt>디바이스</dt><dd>데스크톱 좌측 사이드 + 우측 테이블 2단 / 모바일 1단 세로 스택 (<code>max-width:720px</code>에서 버튼 라벨 축약)</dd>
+            <dt>진입점</dt><dd>SCR-PREP-01 <b>[1월 시작]</b> · SCR-SHOP-01 <b>[다음 판으로]</b> · SCR-GOSTOP-01 <b>[고]</b> · SCR-HELP-01 <b>[닫기]</b></dd>
+            <dt>이탈점</dt><dd>고/스톱 · 정산 · 승리 · 런 종료 · 도움말</dd>
+            <dt>백스택</dt><dd>없음 — 되돌아가기 개념 자체가 없다 (한 방향 진행)</dd>
+            <dt>위계</dt><dd><span class="chip p1">1차 내기</span> <span class="chip p2">2차 손패·버리기·프리뷰</span> <span class="chip p3">3차 도움말·튜토·라벨·hint</span> <span class="chip bg">배경 게이지·박 배너·기록</span></dd>
+          </dl>
+
+          <div class="wire">
+<pre>┌──────────────────────────────────────────────────────────────────────────────┐
+│ <b>화투로</b>          ┌────┬────┬────┬────┬────┐      💰<b>{{money}}</b>냥  <i>[📖][✨][🏷]</i> │
+│ <i>고스톱·무한의 판</i>  │ J1 │ J2 │ J3 │    │    │                             │
+│  <i>①</i>              └────┴────┴────┴────┴────┘         <i>③</i>       <i>④ ⑤ ⑥</i>   │
+│                            <i>②</i>                                            │
+├────────────────────────┬─────────────────────────────────────────────────────┤
+│ ┌─ 라운드 ───────────┐ │ ┌─ 낸 패 ─────────────────────────────────────────┐ │
+│ │{{flower}} {{n}}月 · {{name}} ☀│ │ │                                                 │ │
+│ │<i>(판 {{round}}/12)</i> ⟨(박)⟩ │ │ │   ▢    ▢    ▢    ▢    ▢                         │ │
+│ │이달의 패: {{n}}月 <b>×2</b>  │ │ │                                                 │ │
+│ │낮 — 광·열끗 칩 <b>+2</b>   │ │ │   <b>{{HANDS.name}}</b>                                 │ │
+│ │⟨⚠ {{boss}} — {{desc}}⟩ │ │ │   {{chips}}칩 × {{mult}}배 + {{flat}}           │ │
+│ └────────────────────┘ │ │   <b>+{{score}}점</b>                                  │ │
+│           <i>⑦</i>            │ └─────────────────────────────────────────────────┘ │
+│ ┌─ 점수 ─────────────┐ │                       <i>⑧</i>                            │
+│ │점수  {{score}} / {{target}}  │ │ <i>✨ 내기 추천 · 무료 {{janAuraLeft}}회</i>              <i>⑨</i> │
+│ │▓▓▓▓▓▓▓░░░░░░░░░░░░ │ │ ┌─ 손패 ─────────────────────────────────────────┐ │
+│ │남은 점수  {{need}}    │ │ │                                                 │ │
+│ │⟨🔥{{goLevel}}고! ×{{goMult}} +{{bonus}}냥⟩│ │ │  ▢  ▢  ▢  ▢  ▢  ▢  ▢  ▢                        │ │
+│ └────────────────────┘ │ │  <i>⟨선택 시 들림⟩ ⟨안개: 뒷면⟩ ⟨오라: 연두/빨강⟩</i>    │ │
+│         <i>⑪ ⑫</i>           │ └─────────────────────────────────────────────────┘ │
+│ ┌─ 프리뷰 ───────────┐ │                       <i>⑩</i>                            │
+│ │<b>{{HANDS.name}}</b>          │ │ ┌─ 액션 ─────────────────────────────────────────┐ │
+│ │┌기본합┐×┌배수┐+┌+점수┐│ │ │  <b>[[  내기 ({{playsLeft}}회 남음)  ]]</b>   <i>⑬ ★1차</i>       │ │
+│ ││{{chips}}││{{mult}}││{{flat}}││ │ │  <i>[   버리기 ({{discardsLeft}}회 남음)   ]</i>   <i>⑭</i>          │ │
+│ │└──────┘ └────┘ └────┘│ │ │                              🂠 덱 <b>{{deck}}</b>  <i>⑮</i>  │ │
+│ │예상 점수  <b>{{score}}</b>     │ │ └─────────────────────────────────────────────────┘ │
+│ └────────────────────┘ │                                                     │
+│ <i>[📖 족보표/도움말]      ⑯</i> │                                                     │
+│ <i>[✨ 튜토리얼 다시 보기]  ⑰</i> │                                                     │
+│ <i>[🏷 월·열끗·쌍피 숨기기] ⑱</i> │                                                     │
+│ ┌─ 이번 판 내기 기록 ─┐ │                                                     │
+│ │1. {{log.hand}}   {{score}} │ │                                          <i>[hint ㉑]</i> │
+│ └────────────────────┘ <i>⑲</i>│                                             ⟨1월⟩   │
+│ <i>seed: {{runSeed}}        ⑳</i> │                                                     │
+└────────────────────────┴─────────────────────────────────────────────────────┘</pre>
+          </div>
+
+          <div class="tw">
+            <table>
+              <caption>핫스팟 — 와이어의 모든 번호</caption>
+              <thead><tr><th class="n">#</th><th>요소</th><th>위계</th><th>바인딩</th><th>액션</th><th>예외 분기</th></tr></thead>
+              <tbody>
+                <tr><td class="n">①</td><td>로고</td><td><span class="chip bg">배경</span></td><td>고정 문자열 ⚠</td><td>—</td><td>—</td></tr>
+                <tr><td class="n">②</td><td>특수패 바 (5칸)</td><td><span class="chip bg">배경</span></td><td class="n">{{jokers[]}}</td><td>데스크톱 hover 툴팁 / 터치 <code>showJokerPop</code></td><td>빈 칸 = “특수패 빈 슬롯”</td></tr>
+                <tr><td class="n">③</td><td>보유 냥</td><td><span class="chip bg">배경</span></td><td class="n">{{money}}</td><td>—</td><td>—</td></tr>
+                <tr><td class="n">④</td><td>도움말</td><td><span class="chip p3">3차</span></td><td>—</td><td><code>openHelp()</code></td><td>이미 help면 무시</td></tr>
+                <tr><td class="n">⑤</td><td>튜토 재생</td><td><span class="chip p3">3차</span></td><td>—</td><td><code>replayTutorials()</code></td><td><b>EXC-13</b> 진행 중 런 소실 · 확인 없음</td></tr>
+                <tr><td class="n">⑥</td><td>라벨 토글</td><td><span class="chip p3">3차</span></td><td class="n">{{hwatro_card_labels}}</td><td><code>toggleCardLabels()</code></td><td>—</td></tr>
+                <tr><td class="n">⑦</td><td>라운드 패널</td><td><span class="chip bg">배경</span></td><td class="n">{{MONTHS[n]}} {{isNight}} {{boss}}</td><td>—</td><td>박 없으면 배너 숨김 · 피박보험 시 “→ 무효!”</td></tr>
+                <tr><td class="n">⑧</td><td>낸 패 영역</td><td><span class="chip bg">배경</span></td><td class="n">{{lastPlay}}</td><td>—</td><td>없으면 “카드를 고르고 내기를 누르세요”</td></tr>
+                <tr><td class="n">⑨</td><td>오라 안내</td><td><span class="chip p3">3차</span></td><td class="n">{{getActiveCoachHint()}}</td><td>—</td><td>힌트 없으면 숨김</td></tr>
+                <tr><td class="n">⑩</td><td>손패 카드</td><td><span class="chip p2">2차</span></td><td class="n">{{hand[]}}</td><td><code>toggleSelect(uid)</code> · 오라 클릭 시 묶음 선택</td><td><b>EXC-08</b> 뒷면 프리뷰 불가 · <b>EXC-11</b> 연출 중 잠금</td></tr>
+                <tr><td class="n">⑪</td><td>게이지</td><td><span class="chip bg">배경</span></td><td class="n">score/target ×100%</td><td>—</td><td>—</td></tr>
+                <tr><td class="n">⑫</td><td>고 레벨</td><td><span class="chip bg">배경</span></td><td class="n">{{goLevel}} {{goMult}} {{goBonus}}</td><td>—</td><td><code>goLevel=0</code>이면 숨김</td></tr>
+                <tr><td class="n">⑬</td><td><b>내기</b></td><td><span class="chip p1">1차</span></td><td class="n">{{playsLeft}}</td><td><code>playSelected()</code></td><td>0장·6장↑·내기 0 → 비활성 · <b>EXC-12</b> 코치 잠금</td></tr>
+                <tr><td class="n">⑭</td><td>버리기</td><td><span class="chip p2">2차</span></td><td class="n">{{discardsLeft}}</td><td><code>discardSelected()</code></td><td><b>EXC-06</b> 비바람 시 0회</td></tr>
+                <tr><td class="n">⑮</td><td>덱 카운트</td><td><span class="chip bg">배경</span></td><td class="n">{{deck.length}}</td><td>—</td><td><b>EXC-07</b> 0이면 보충 없음</td></tr>
+                <tr><td class="n">⑯⑰⑱</td><td>사이드 버튼</td><td><span class="chip p3">3차</span></td><td>—</td><td>④⑤⑥과 동일</td><td>동일</td></tr>
+                <tr><td class="n">⑲</td><td>내기 기록</td><td><span class="chip bg">배경</span></td><td class="n">{{playLog[]}}</td><td>—</td><td>0건이면 패널 숨김</td></tr>
+                <tr><td class="n">⑳</td><td>시드</td><td><span class="chip bg">배경</span></td><td class="n">{{runSeed}}</td><td>—</td><td>—</td></tr>
+                <tr><td class="n">㉑</td><td>hint 토글</td><td><span class="chip p3">3차</span></td><td class="n">{{janAuraLeft}} {{hintEnabled}}</td><td><code>toggleHintEnabled()</code></td><td><b>1월에만 노출.</b> 무료 3회 남으면 강제 ON</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="verdict">
+            <h3>바인딩 미달</h3>
+            <p>①의 로고, ⑬⑭의 버튼 라벨, ⑦의 “이달의 패:” 등 <b>전 UI 문자열이 JS 템플릿 리터럴에 하드코딩</b>되어 있다. 로컬라이즈 키가 존재하지 않는다. 위 표의 <code>{{ }}</code> 표기는 <b>목표 스키마</b>이지 현재 구현이 아니다.</p>
+          </div>
+
+          <div class="tw">
+            <table>
+              <caption>상태 매트릭스</caption>
+              <thead><tr><th>상태</th><th>발생 조건</th><th>화면</th></tr></thead>
+              <tbody>
+                <tr><td>기본</td><td class="n">screen==='play'</td><td>위 와이어, 손패 8장</td></tr>
+                <tr><td>배분 중</td><td class="n">dealing===true</td><td>손패 자리가 비었다가 한 장씩 착지. 힌트 오라 숨김, 버튼 비활성</td></tr>
+                <tr><td>연출 중</td><td class="n">juicing===true</td><td>낸 패 영역을 juice 시퀀스가 소유. 화면 흔들림·파티클. 클릭 시 스킵</td></tr>
+                <tr><td>고 대기</td><td class="n">pendingGoStop===true</td><td>보충 중단 후 즉시 고/스톱 모달 — <b>드로우 금지가 규칙</b></td></tr>
+                <tr><td>박 라운드</td><td class="n">isBossRound(round)</td><td>라운드 패널에 ⚠ 배너. 피박보험 보유 시 “무효” 표기</td></tr>
+                <tr><td>안개</td><td class="n">boss==='angae'</td><td>손패 중 2장이 뒷면. 선택 시 프리뷰 차단</td></tr>
+                <tr><td>비바람</td><td class="n">boss==='bibaram'</td><td>버리기 0회 · 버튼 비활성</td></tr>
+                <tr><td>코치</td><td class="n">coachStep!==null</td><td>스포트라이트 오버레이 (1월 한정)</td></tr>
+                <tr><td>덱 소진</td><td class="n">deck.length===0</td><td>덱 0 표시, 보충 없음. 목표 도달 시 고 없이 자동 정산</td></tr>
+                <tr><td>손패 0</td><td>덱·손패 모두 소진</td><td>액션 전부 비활성 — <code>checkAfterPlay</code>가 정산/종료로 처리</td></tr>
+                <tr><td>힌트 OFF</td><td>1월 · 무료 소진 · 토글 OFF</td><td>오라 없음 (기본 OFF)</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="tw">
+            <table>
+              <caption>전이</caption>
+              <thead><tr><th>트리거</th><th>대상</th><th>전환</th><th>복귀 시</th></tr></thead>
+              <tbody>
+                <tr><td>내기 · 목표 미달</td><td class="n">SCR-PLAY-01</td><td>juice 시퀀스 → 낸 패 페이드아웃 420ms → 보충</td><td>손패 재정렬</td></tr>
+                <tr><td>내기 · 목표 도달 · 패 남음</td><td class="n">SCR-GOSTOP-01</td><td>연출 완료 후 모달</td><td><b>보충하지 않음</b></td></tr>
+                <tr><td>내기 · 목표 도달 · 12월</td><td class="n">SCR-VICTORY-01</td><td>즉시</td><td>—</td></tr>
+                <tr><td>내기 · 목표 도달 · 패 0</td><td class="n">SCR-SETTLE-01</td><td>고 선택지 없이 직행</td><td>—</td></tr>
+                <tr><td>내기 · 내기 소진 · 미달</td><td class="n">SCR-GAMEOVER-01</td><td>즉시</td><td>사유 = <code>goLevel&gt;0 ? '고박' : '목표 미달'</code></td></tr>
+                <tr><td>버리기</td><td class="n">SCR-PLAY-01</td><td>카드 날아감 480ms → 보충</td><td>보충 후 목표 초과 시 고/스톱 진입</td></tr>
+                <tr><td>도움말</td><td class="n">SCR-HELP-01</td><td>모달</td><td><code>helpReturn</code>으로 원래 화면 복원</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </article>
+    </section>
+
+    <!-- ══════════ GOSTOP ══════════ -->
+    <section class="sec" id="gostop">
+      <h2>고 / 스톱</h2>
+      <p class="sec-note">게임의 정체성이자 유일한 도박 결정. 연출 예산의 대부분이 이 화면에 있다.</p>
+
+      <article class="screen">
+        <div class="scr-head">
+          <span class="scr-id">SCR-GOSTOP-01</span>
+          <h3 class="scr-name">고 / 스톱</h3>
+          <p class="scr-purpose">목표를 넘긴 순간, 정산할지 더 밀지 결정한다.</p>
+        </div>
+        <div class="scr-body">
+
+          <dl class="meta">
+            <dt>진입점</dt><dd><code>playSelected()</code> / <code>discardSelected()</code> 후 <code>checkAfterPlay()</code> → <code>screen='gostop'</code></dd>
+            <dt>이탈점</dt><dd><b>[스톱]</b> → 정산 · <b>[고]</b> → 본판</dd>
+            <dt>백스택</dt><dd>없음 — <b>되돌릴 수 없는 결정</b></dd>
+            <dt>위계</dt><dd><span class="chip p1">1차 고</span> <span class="chip p1">1차 스톱</span> — 의도적 2택. 위계 규칙의 명시적 예외로, <b>선택 자체가 콘텐츠</b>라 우열을 두지 않는다</dd>
+          </dl>
+
+          <div class="wire">
+<pre>            ┌──────────────────────────────────────────────────────┐
+            │                                                      │
+            │            <b>🎉 목표 달성!</b>                     <i>①</i>    │
+            │                                                      │
+            │  <i>{{roundScore}} / {{target}}점 · 내기 {{playsLeft}} · 패 {{cardsRemaining}}</i>   <i>②</i>  │
+            │                                                      │
+            │  ┌────────────────────┐  ┌────────────────────────┐  │
+            │  │                    │  │                        │  │
+            │  │     <b>✋ 스톱</b>          │  │   <b>{{goBtnStage}}</b>          │  │
+            │  │                    │  │   <i>캐스케이드 연출 무대</i>   │  │
+            │  │ 지금 정산하고       │  │                        │  │
+            │  │ 다음 판으로         │  │ ⟨<b>{{jump}}단계 밀치기</b>⟩       │  │
+            │  │                    │  │ 새 목표 <b>{{newTarget}}점</b>      │  │
+            │  │ ⟨{{goLevel}}고 보너스      │  │ <i>(×{{goMult(n)}})</i>              │  │
+            │  │  <b>+{{bonus}}냥</b> 확보⟩      │  │ 내기 <b>+1</b> · 손패 보충      │  │
+            │  │                    │  │ 성공 시 <b>+{{goBonus}}냥</b>      │  │
+            │  │                    │  │ 실패 시 <b>고박 = 런 종료</b>    │  │
+            │  │        <i>③</i>           │  │          <i>④</i>             │  │
+            │  └────────────────────┘  └────────────────────────┘  │
+            │                                                      │
+            └──────────────────────────────────────────────────────┘</pre>
+          </div>
+
+          <div class="tw">
+            <table>
+              <caption>핫스팟</caption>
+              <thead><tr><th class="n">#</th><th>요소</th><th>위계</th><th>바인딩</th><th>액션</th><th>예외 분기</th></tr></thead>
+              <tbody>
+                <tr><td class="n">①</td><td>제목</td><td><span class="chip bg">배경</span></td><td>고정 ⚠</td><td>—</td><td>—</td></tr>
+                <tr><td class="n">②</td><td>현황</td><td><span class="chip bg">배경</span></td><td class="n">{{roundScore}} {{target}} {{playsLeft}} {{cardsRemaining()}}</td><td>—</td><td>—</td></tr>
+                <tr><td class="n">③</td><td><b>스톱</b></td><td><span class="chip p1">1차</span></td><td class="n">{{goBonus(goLevel, round)}}</td><td><code>chooseStop()</code></td><td>없음 — 항상 가능</td></tr>
+                <tr><td class="n">④</td><td><b>고</b></td><td><span class="chip p1">1차</span></td><td class="n">n = goLevelReached(base,score,goLevel)+1</td><td><code>chooseGo()</code></td><td>캐스케이드 중 재입력 차단 · 배분 중 차단</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="tw">
+            <table>
+              <caption>고 버튼 연출 — playGoBtnCascade(0, n)</caption>
+              <thead><tr><th>선언 단계 n</th><th>표기</th><th>연출</th></tr></thead>
+              <tbody>
+                <tr><td class="n">1</td><td>“1고” 텍스트</td><td>없음</td></tr>
+                <tr><td class="n">2 ~ 3</td><td>스테이지</td><td><code>animGoHyper</code> — 하이퍼번</td></tr>
+                <tr><td class="n">4 +</td><td>스테이지</td><td><code>animGoSlide</code> — 옆 밀치기 · 가짜 피날레</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="wire-cap">확정 후 풀스크린 <code>playGoCascade(from, to)</code>는 <b>실제 점프 구간만</b> 재생한다. 버튼 연출은 항상 1→N 전체. 프리뷰 <code>?goPreview=1</code>.</p>
+
+          <div class="tw">
+            <table>
+              <caption>상태 매트릭스</caption>
+              <thead><tr><th>상태</th><th>조건</th><th>화면</th></tr></thead>
+              <tbody>
+                <tr><td>일반 고</td><td class="n">jump === 1</td><td>④에 “1고” 또는 단일 단계</td></tr>
+                <tr><td>밀치기</td><td class="n">jump &gt;= 2</td><td>④에 “{{jump}}단계 밀치기” 강조 + 캐스케이드</td></tr>
+                <tr><td>내기 0</td><td class="n">playsLeft === 0</td><td><b>고는 여전히 선택 가능</b> — 고 시 내기 +1로 이어감</td></tr>
+                <tr><td>코치</td><td>최초 1회</td><td>OVL-COACH-01 <code>gostop</code> 스텝</td></tr>
+                <tr><td>재렌더 억제</td><td class="n">modalSig 동일</td><td>DOM 재생성 안 함 — 연출 중복 방지</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </article>
+    </section>
+
+    <!-- ══════════ SHOP ══════════ -->
+    <section class="sec" id="shop">
+      <h2>상점</h2>
+      <p class="sec-note">유일한 빌드 성장 경로. 12월 직전에는 박 후보 선택이 조건부로 1차 위계에 올라선다.</p>
+
+      <article class="screen">
+        <div class="scr-head">
+          <span class="scr-id">SCR-SHOP-01</span>
+          <h3 class="scr-name">상점</h3>
+          <p class="scr-purpose">정산으로 번 냥으로 특수패를 사서 다음 달 빌드를 강화한다.</p>
+        </div>
+        <div class="scr-body">
+
+          <dl class="meta">
+            <dt>진입점</dt><dd>SCR-SETTLE-01 <b>[상점으로]</b></dd>
+            <dt>이탈점</dt><dd><b>[다음 판으로 →]</b> → 본판</dd>
+            <dt>백스택</dt><dd>없음. 구매·판매는 <b>즉시 확정</b>, 되돌리기 불가</dd>
+            <dt>위계</dt><dd><span class="chip p1">1차 구매</span> <span class="chip p2">2차 다음판·리롤·박 선택</span> <span class="chip p3">3차 판매</span> <span class="chip bg">배경 보유 냥·슬롯·예고</span></dd>
+          </dl>
+
+          <div class="wire">
+<pre>┌──────────────────────────────────────────────────────────────────────────────┐
+│  <b>🏪 상점</b>                                          보유 <b>{{money}}냥</b>   <i>①  ②</i> │
+│  <i>{{round}}월 클리어 · 특수패를 사고 다음 달로 넘어가세요</i>                       │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  내 특수패  <b>{{jokers.length}}/5</b>                                              <i>③</i>  │
+│  ┌──────────┐┌──────────┐┌──────────┐┌──────────┐┌──────────┐              │
+│  │ ({{icon}})  ││    ＋    ││    ＋    ││    ＋    ││    ＋    │          <i>④</i>  │
+│  │ {{name}}    ││  빈 칸   ││  빈 칸   ││  빈 칸   ││  빈 칸   │              │
+│  │ {{rarity}}   ││          ││          ││          ││          │              │
+│  │ {{desc}}    ││          ││          ││          ││          │              │
+│  │ <i>[+{{sell}}냥]</i> ││          ││          ││          ││          │      <i>⑤</i>  │
+│  └──────────┘└──────────┘└──────────┘└──────────┘└──────────┘              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  오늘의 특수패                              <i>[🔄 리롤 {{rerollCost}}냥]</i>      <i>⑥</i>  │
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐                │
+│  │   ({{icon}})      │  │                │  │                │            <i>⑦</i>  │
+│  │   <b>{{name}}</b>        │  │                │  │                │                │
+│  │   {{rarity}} {{kind}} │  │                │  │                │                │
+│  │   {{desc}}        │  │                │  │                │                │
+│  │                │  │                │  │                │                │
+│  │ <b>[[{{price}}냥에 구매]]</b>│  │ <b>[[   구매   ]]</b> │  │ <i>[ 판매 완료 ]</i> │        <i>⑧ ⑨</i> │
+│  └────────────────┘  └────────────────┘  └────────────────┘                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  ⟨다음 달 준비⟩                                                              │
+│  ⟨<b>⚠ 다음 {{next}}월 박 라운드</b> — {{boss.name}}: {{boss.desc}}⟩              <i>⑩</i>  │
+│  ⟨<b>⚠ {{next}}월 대박 — 디버프 선택:</b>  [ {{cand1}} ]  [ {{cand2}} ]⟩   ⟨12월⟩ <i>⑪</i>  │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  다음 {{flower}} {{next}}월 · {{name}}                                          │
+│  목표 <b>{{TARGETS[next]}}점</b>                              <i>[ 다음 판으로 → ]</i>   <i>⑫</i> │
+└──────────────────────────────────────────────────────────────────────────────┘</pre>
+          </div>
+
+          <div class="tw">
+            <table>
+              <caption>핫스팟</caption>
+              <thead><tr><th class="n">#</th><th>요소</th><th>위계</th><th>바인딩</th><th>액션</th><th>예외 분기</th></tr></thead>
+              <tbody>
+                <tr><td class="n">①②</td><td>제목 · 보유 냥</td><td><span class="chip bg">배경</span></td><td class="n">{{round}} {{money}}</td><td>—</td><td>—</td></tr>
+                <tr><td class="n">③</td><td>슬롯 카운터</td><td><span class="chip bg">배경</span></td><td class="n">{{jokers.length}}/5</td><td>—</td><td>—</td></tr>
+                <tr><td class="n">④</td><td>보유 슬롯</td><td><span class="chip p3">3차</span></td><td class="n">{{JOKER_BY_ID[id]}} · 밑장빼기는 +{{mitjangChips}}</td><td>터치 <code>toggleOwnedTip(i)</code></td><td>빈 칸은 “＋ 빈 칸”</td></tr>
+                <tr><td class="n">⑤</td><td>판매</td><td><span class="chip p3">3차</span></td><td class="n">{{floor(paid/2)}}</td><td><code>sellJoker(i)</code></td><td><b>EXC-14</b> 확인 없음 · 되돌릴 수 없음</td></tr>
+                <tr><td class="n">⑥</td><td>리롤</td><td><span class="chip p2">2차</span></td><td class="n">{{rerollCost}} — 2 시작, 1회마다 +1</td><td><code>reroll()</code></td><td><b>EXC-02</b> 냥 부족 → 비활성</td></tr>
+                <tr><td class="n">⑦</td><td>오퍼 카드 (3)</td><td><span class="chip p1">1차군</span></td><td class="n">{{genOffers()}} — 미보유 중 티어 가중 추첨</td><td>—</td><td><b>EXC-09</b> 살 것 없으면 3개 미만</td></tr>
+                <tr><td class="n">⑧</td><td><b>구매</b></td><td><span class="chip p1">1차</span></td><td class="n">{{joker.price}}</td><td><code>buyJoker(i)</code></td><td><b>EXC-01</b> 냥 부족 / 슬롯 5칸 → 비활성</td></tr>
+                <tr><td class="n">⑨</td><td>판매 완료 태그</td><td>—</td><td class="n">{{offer.sold}}</td><td>—</td><td>같은 상점 내 재구매 불가</td></tr>
+                <tr><td class="n">⑩</td><td>박 예고</td><td><span class="chip bg">배경</span></td><td class="n">{{BOSS_BY_ID[nextBoss]}}</td><td>—</td><td>다음 달이 박이 아니면 영역 없음</td></tr>
+                <tr><td class="n">⑪</td><td>박 후보 2택</td><td><span class="chip p1">조건부 1차</span></td><td class="n">{{bossCandidates[]}}</td><td><code>pickBossCandidate(id)</code></td><td><b>EXC-03</b> 미선택 시 ⑫ 비활성</td></tr>
+                <tr><td class="n">⑫</td><td>다음 판으로</td><td><span class="chip p2">2차</span></td><td class="n">{{MONTHS[next]}} {{TARGETS[next]}}</td><td><code>nextRound()</code></td><td>박 미선택 → 비활성 + 흔들림</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="tw">
+            <table>
+              <caption>상태 매트릭스</caption>
+              <thead><tr><th>상태</th><th>조건</th><th>화면</th></tr></thead>
+              <tbody>
+                <tr><td>기본</td><td>오퍼 3개</td><td>위 와이어</td></tr>
+                <tr><td>냥 부족</td><td class="n">money &lt; price</td><td>해당 구매 버튼만 비활성</td></tr>
+                <tr><td>슬롯 가득</td><td class="n">jokers.length &gt;= 5</td><td><b>전 구매 버튼 비활성 — 안내 문구 없음</b> <span class="chip warn">주의</span></td></tr>
+                <tr><td>매진</td><td class="n">offer.sold</td><td>“판매 완료” 태그로 교체</td></tr>
+                <tr><td>오퍼 고갈</td><td>미보유 &lt; 3종</td><td>카드 2개 또는 1개만 (빈 자리 없이 축소)</td></tr>
+                <tr><td>박 예고</td><td class="n">isBossRound(round+1)</td><td>⑩ 표시</td></tr>
+                <tr><td>박 2택</td><td class="n">round+1 === 12</td><td>⑪ 표시, 선택 전 ⑫ 잠금</td></tr>
+                <tr><td>첫 구매</td><td>—</td><td>보유 슬롯 <code>pop</code> 애니 420ms</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </article>
+    </section>
+
+    <!-- ══════════ SETTLE ══════════ -->
+    <section class="sec" id="settle">
+      <h2>정산</h2>
+
+      <article class="screen">
+        <div class="scr-head">
+          <span class="scr-id">SCR-SETTLE-01</span>
+          <h3 class="scr-name">정산</h3>
+          <p class="scr-purpose">이번 판 수익을 항목별로 보여주고 상점으로 넘긴다.</p>
+        </div>
+        <div class="scr-body">
+
+          <dl class="meta">
+            <dt>진입점</dt><dd><code>chooseStop()</code> · 덱 소진 자동 정산</dd>
+            <dt>이탈점</dt><dd><b>[🏪 상점으로]</b> — 유일 액션</dd>
+            <dt>사각지대</dt><dd>이 화면에서는 <b>족보표에 접근할 수 없다</b> (도움말 버튼이 사이드바에만 존재)</dd>
+          </dl>
+
+          <div class="wire">
+<pre>          ┌────────────────────────────────────────────────────────┐
+          │                                                        │
+          │   <b>💰 {{round}}월 ({{month.name}}) 클리어!</b>                       │
+          │                                                        │
+          │   ┌──────────────────────────────────┬──────────────┐  │
+          │   │ 이자 (보유 {{moneyBefore}}냥 →           │  +{{interest}}냥     │  │
+          │   │       5냥당 1냥, 최대 5냥)         │              │  │
+          │   │ 기본 상금 ⟨(박 라운드)⟩            │  +{{base}}냥     │  │
+          │   │ 남은 내기 {{playBonus}}회                 │  +{{playBonus}}냥     │  │
+          │   │ ⟨고 보너스 ({{goLevel}}고)⟩              │  +{{goBonus}}냥     │  │
+          │   │ ⟨피박보험⟩                        │  +{{insBonus}}냥     │  │
+          │   ├──────────────────────────────────┼──────────────┤  │
+          │   │ <b>합계</b>                             │ <b>+{{total}}냥</b>      │  │
+          │   │                                  │ <i>→ 보유 {{money}}냥</i> │  │
+          │   └──────────────────────────────────┴──────────────┘  │
+          │                                                        │
+          │              <b>[[     🏪 상점으로     ]]</b>                  │
+          │                                                        │
+          └────────────────────────────────────────────────────────┘</pre>
+          </div>
+
+          <div class="tw">
+            <table>
+              <caption>계산 순서 — settle()</caption>
+              <thead><tr><th>항목</th><th>식</th><th>비고</th></tr></thead>
+              <tbody>
+                <tr><td>이자</td><td class="n">min(floor(money / 5), 5)</td><td><b>가산 전</b> 보유금 기준, 가장 먼저</td></tr>
+                <tr><td>기본 상금</td><td class="n">isBossRound(round) ? 6 : 4</td><td>3·6·9·12월이 6냥</td></tr>
+                <tr><td>남은 내기</td><td class="n">playsLeft</td><td>1회당 1냥</td></tr>
+                <tr><td>고 보너스</td><td class="n">goLevel &gt; 0 ? goLevel × round : 0</td><td>월에 비례</td></tr>
+                <tr><td>피박보험</td><td class="n">hasJoker('pibak_boheom') ? 1 : 0</td><td>—</td></tr>
+                <tr><td><b>합계</b></td><td class="n">interest + base + playBonus + goB + insBonus</td><td>—</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </article>
+    </section>
+
+    <!-- ══════════ 그 외 ══════════ -->
+    <section class="sec" id="minor">
+      <h2>그 외 화면 6종</h2>
+      <p class="sec-note">전부 전체 모달이며 1차 액션이 하나씩이다.</p>
+
+      <div class="tw">
+        <table>
+          <thead><tr><th>화면</th><th>목적</th><th>1차 액션</th><th>특이사항</th></tr></thead>
+          <tbody>
+            <tr><td class="n">SCR-BOOT-01</td><td>48장 카드 + 폰트 프리로드</td><td>—</td><td>진행률 표시, 최소 550ms 유지(깜빡임 방지). <b>실패해도 진행</b></td></tr>
+            <tr><td class="n">SCR-WELCOME-01</td><td>최초 1회 규칙 4카드 안내</td><td>[알겠어요 — 시작하기]</td><td><code>hwatro_howto_seen</code> 기록</td></tr>
+            <tr><td class="n">SCR-PREP-01</td><td>1월 시작 전 목표·보유 확인</td><td>[▶ 1월 시작]</td><td>춘향 활성 시 예약 블록 노출 — <b>현재 비활성</b></td></tr>
+            <tr><td class="n">SCR-HELP-01</td><td>족보 13종 + 칩 + 규칙 조회</td><td>[닫기]</td><td><code>helpReturn</code>으로 복원. 정산 화면에서는 진입 불가</td></tr>
+            <tr><td class="n">SCR-GAMEOVER-01</td><td>사유·도달 월·최고 한 방·총 획득</td><td>[🔄 다시 도전]</td><td>사유 = <code>고박</code> 또는 <code>목표 미달</code></td></tr>
+            <tr><td class="n">SCR-VICTORY-01</td><td>12월 완주 결과</td><td>[🔄 새 런 시작]</td><td><code>restart()</code> = 전체 리셋 후 준비 화면</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ══════════ COACH ══════════ -->
+    <section class="sec" id="coach">
+      <h2>1월 코치</h2>
+      <p class="sec-note">
+        대상 요소를 제외한 화면 전체를 4장의 블록으로 가리고 링 + 패널을 배치한다.
+        1월 첫 손패는 <code>ensureJanOpeningCombo()</code>로 <b>족보 1개 이상</b>이, 버리기 튜토 손패는
+        <code>ensureJanJunkTutorialHand()</code>로 <b>무조합 + 버릴 피 2장 이상</b>이 보장된다.
+      </p>
+
+      <div class="wire">
+<pre>┌──────────────────────────────────────────────────────────────────────────────┐
+│▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓│
+│▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ <i>coach-block (딤 4장)</i> ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓│
+│▓▓▓▓▓┌────────────────────────────────────────────────────────┐▓▓▓▓▓▓▓▓▓▓▓▓▓│
+│▓▓▓▓▓│                                                        │▓▓▓▓▓▓▓▓▓▓▓▓▓│
+│▓▓▓▓▓│   ▢  ▢  ▢  ▢  ▢  ▢  ▢  ▢     <i>← coach-ring (강조 대상)</i>  │▓▓▓▓▓▓▓▓▓▓▓▓▓│
+│▓▓▓▓▓│                                                        │▓▓▓▓▓▓▓▓▓▓▓▓▓│
+│▓▓▓▓▓└────────────────────────────────────────────────────────┘▓▓▓▓▓▓▓▓▓▓▓▓▓│
+│▓▓▓▓▓                                                          ▓▓▓▓▓▓▓▓▓▓▓▓▓│
+│▓▓▓▓▓┌─ coach-panel ──────────────────────────┐▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓│
+│▓▓▓▓▓│ <b>✨ 조합 힌트</b>                            │▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓│
+│▓▓▓▓▓│ <b>연두 빛</b>이 도는 패를 눌러 보세요.        │▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓│
+│▓▓▓▓▓│ <b>{{hand.name}}</b>이 한 번에 골라집니다.         │▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓│
+│▓▓▓▓▓│ <i>처음 3회 무료 · 이후 추천 ON/OFF</i>         │▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓│
+│▓▓▓▓▓│                          <i>[건너뛰기]</i>     │▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓│
+│▓▓▓▓▓└────────────────────────────────────────┘▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓│
+└──────────────────────────────────────────────────────────────────────────────┘</pre>
+      </div>
+
+      <div class="tw">
+        <table>
+          <caption>OVL-COACH-01 — 6스텝</caption>
+          <thead><tr><th>step</th><th>대상</th><th>제목</th><th>진행 조건</th><th>저장 키</th></tr></thead>
+          <tbody>
+            <tr><td class="n">hand</td><td class="n">#handarea</td><td>✨ 조합 힌트</td><td>오라 카드 클릭</td><td class="n">hwatro_jan_coach_v1</td></tr>
+            <tr><td class="n">play</td><td class="n">#btn-play</td><td>🎯 내기</td><td>내기 실행</td><td class="n">〃</td></tr>
+            <tr><td class="n">scored</td><td class="n">#playedarea</td><td>✨ 점수 획득!</td><td>[알겠어요]</td><td class="n">〃</td></tr>
+            <tr><td class="n">junk</td><td class="n">#handarea → #btn-discard</td><td>🗑️ 버리기</td><td>버리기 실행</td><td class="n">〃</td></tr>
+            <tr><td class="n">gostop</td><td class="n">#gs-actions</td><td>🔥 고 / 스톱</td><td>고 또는 스톱 선택</td><td class="n">hwatro_gostop_coach_v1</td></tr>
+            <tr><td class="n">shop</td><td class="n">#shop-offers</td><td>🏪 상점</td><td>[알겠어요]</td><td class="n">hwatro_shop_coach_v1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="wire-cap">전 스텝에 [건너뛰기] 제공. <code>junk</code> 단계에서는 <b>내기 버튼이 강제 비활성</b>된다 — 버리기를 학습시키기 위한 의도적 잠금(EXC-12).</p>
+    </section>
+
+    <!-- ══════════ 예외 ══════════ -->
+    <section class="sec" id="exc">
+      <h2>예외 14종</h2>
+
+      <div class="verdict">
+        <h3>핵심 결론</h3>
+        <p>as-built의 예외 처리는 거의 전부 <b>버튼 비활성 + 흔들림</b>이다.
+        팝업이 존재하는 예외는 <b>0건</b>, “해결 경로”를 제시하는 예외도 <b>0건</b>.
+        원인을 문구로 설명하는 것은 EXC-03 하나뿐이며, 그마저 <code>title</code> 속성이라 모바일에서 보이지 않는다.</p>
+      </div>
+
+      <div class="tw">
+        <table>
+          <caption>커버리지 대조</caption>
+          <thead><tr><th>규칙</th><th>결과</th><th>비고</th></tr></thead>
+          <tbody>
+            <tr><td>비용 소모 액션에 부족 케이스</td><td><span class="chip ok">있음</span></td><td>구매·리롤 — 단 비활성만</td></tr>
+            <tr><td>획득 액션에 수용 한계</td><td><span class="chip warn">부분</span></td><td>슬롯 5칸 — <b>안내 문구 없음</b></td></tr>
+            <tr><td>모든 리스트에 빈 상태</td><td><span class="chip warn">부분</span></td><td>오퍼 고갈 시 조용히 축소</td></tr>
+            <tr><td>네트워크 실패</td><td><span class="chip ok">해당 없음</span></td><td>프리로드만, try/catch 흡수</td></tr>
+            <tr><td>모든 제한에 초과 케이스</td><td><span class="chip ok">있음</span></td><td>내기·버리기·고·광팔이 3회</td></tr>
+            <tr><td>확률 요소에 실패 결과</td><td><span class="chip ok">있음</span></td><td>고박 → 런 종료</td></tr>
+            <tr><td>되돌릴 수 없는 행동에 확인</td><td><span class="chip bad">없음</span></td><td>판매·리롤·튜토 재생 전부</td></tr>
+            <tr><td>1차 버튼이 해결 경로</td><td><span class="chip bad">없음</span></td><td>팝업 자체가 없음</td></tr>
+            <tr><td>Return Intent</td><td><span class="chip ok">해당 없음</span></td><td>예외가 전부 제자리 차단이라 이탈 동선이 없다</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="exc bad">
+        <div class="exc-head"><span class="exc-id">EXC-13</span><span class="exc-name">튜토리얼 다시 보기 — 런 소실</span><span class="chip bad">확인 필요</span></div>
+        <p>✨ 버튼 → <code>replayTutorials()</code>가 localStorage 3키를 지우고 <b>즉시 <code>restart()</code>를 호출한다.</b> 진행 중이던 런이 확인 없이 폐기된다.</p>
+        <p><b>제안 POP-02</b> — “지금 판({{round}}월)을 버리고 1월부터 다시 시작해요. 계속할까요?” <code>[1월부터 다시]</code> <code>[그만두기]</code>. 1월 시작 직후에는 확인 없이 즉시 실행.</p>
+      </div>
+
+      <div class="exc bad">
+        <div class="exc-head"><span class="exc-id">EXC-14</span><span class="exc-name">특수패 판매 — 되돌릴 수 없음</span><span class="chip bad">확인 필요</span></div>
+        <p>슬롯 안 작은 <code>[+N냥]</code> 버튼으로 즉시 판매. 회수액 <code>floor(paid/2)</code>. <b>밑장빼기는 누적칩이 0으로 리셋</b>되어 손실이 특히 크다. 오탭 위험이 높다.</p>
+        <p><b>제안 POP-03</b> — 밑장빼기 보유 시에만 강제 확인. “쌓인 +{{mitjangChips}}점이 사라져요.”</p>
+      </div>
+
+      <div class="exc warn">
+        <div class="exc-head"><span class="exc-id">EXC-01</span><span class="exc-name">냥 부족 / 슬롯 가득 — 구매 불가</span><span class="chip warn">개선 제안</span></div>
+        <p>버튼 <code>disabled</code>(opacity .38). <b>두 원인을 구분해 주지 않는다</b> — 슬롯이 꽉 차면 전 오퍼가 회색이 되는데 이유가 화면에 없다. 재화 차감은 없어 안전.</p>
+      </div>
+
+      <div class="exc warn">
+        <div class="exc-head"><span class="exc-id">EXC-03</span><span class="exc-name">12월 박 미선택</span><span class="chip warn">모바일 미대응</span></div>
+        <p><code>[다음 판으로]</code> 비활성 + <code>title="디버프를 먼저 선택하세요"</code> + 흔들림. <b>유일하게 이유가 명시된 예외</b>지만 <code>title</code>이라 터치 기기에서 보이지 않는다.</p>
+      </div>
+
+      <div class="exc warn">
+        <div class="exc-head"><span class="exc-id">EXC-07</span><span class="exc-name">덱 소진</span><span class="chip warn">사유 미표시</span></div>
+        <p>보충 없음. <code>cardsRemaining()===0</code> + 목표 도달 시 <b>고 없이 자동 정산</b>으로 안전 착지한다. 다만 “왜 고를 못 했는지”가 설명되지 않는다.</p>
+      </div>
+
+      <div class="exc warn">
+        <div class="exc-head"><span class="exc-id">EXC-12</span><span class="exc-name">코치 junk 단계 — 내기 잠금</span><span class="chip warn">사유 미표시</span></div>
+        <p>1월 튜토리얼에서 버리기를 반드시 체험시키려 내기를 막는다. 의도적이지만 <b>왜 못 누르는지 문구가 없다</b> — 코치 패널은 “버리기를 누르세요”만 말한다.</p>
+      </div>
+
+      <div class="exc warn">
+        <div class="exc-head"><span class="exc-id">EXC-09</span><span class="exc-name">상점 오퍼 고갈</span><span class="chip warn">도달 불가</span></div>
+        <p>미보유 특수패가 3종 미만이면 오퍼가 축소된다. 22종 중 최대 5종만 보유 가능하므로 <b>정상 플레이에서는 발생하지 않는다</b> — 방어 코드로만 존재.</p>
+      </div>
+
+      <div class="exc ok">
+        <div class="exc-head"><span class="exc-id">EXC-02</span><span class="exc-name">리롤 냥 부족</span><span class="chip ok">양호</span></div>
+        <p>비용이 버튼 라벨(<code>🔄 리롤 {{rerollCost}}냥</code>)에 있어 원인이 자명하다. 추가 조치 불필요.</p>
+      </div>
+
+      <div class="exc ok">
+        <div class="exc-head"><span class="exc-id">EXC-04</span><span class="exc-name">고박 / 목표 미달 — 런 종료</span><span class="chip ok">양호</span></div>
+        <p>사유·도달 월·최고 한 방·총 획득을 표시하고 <code>[🔄 다시 도전]</code>이 1차 버튼이다. <b>유일하게 해결 경로가 1차 버튼인 예외.</b></p>
+      </div>
+
+      <div class="exc ok">
+        <div class="exc-head"><span class="exc-id">EXC-06</span><span class="exc-name">비바람 — 버리기 불가</span><span class="chip ok">양호</span></div>
+        <p>버튼 라벨이 <code>버리기 (0회 남음)</code>이고 박 배너가 “이 판 동안 버리기 사용 불가”를 명시한다. <b>원인과 결과가 둘 다 화면에 있다.</b></p>
+      </div>
+
+      <div class="exc ok">
+        <div class="exc-head"><span class="exc-id">EXC-08</span><span class="exc-name">안개 — 뒷면 프리뷰 불가</span><span class="chip ok">양호</span></div>
+        <p>프리뷰가 “뒷면 포함 · 미리보기 불가”로 바뀌고 수치가 전부 <code>—</code>. 내는 순간 공개. 한 번 공개된 카드는 다시 뒤집히지 않는다.</p>
+      </div>
+
+      <div class="exc ok">
+        <div class="exc-head"><span class="exc-id">EXC-10</span><span class="exc-name">리소스 로드 실패</span><span class="chip ok">양호</span></div>
+        <p>카드 이미지 실패 → 프레임+라벨만 / 폰트 → 시스템 폴백 / SFX → 무음 후 <code>beep()</code> 이중 폴백 / localStorage 차단 → try/catch. <b>크래시 경로 0.</b></p>
+      </div>
+
+      <div class="exc ok">
+        <div class="exc-head"><span class="exc-id">EXC-11</span><span class="exc-name">연출 중 입력</span><span class="chip ok">견고</span></div>
+        <p><code>juicing</code>/<code>dealing</code> 플래그로 차단하고 클릭 시 스킵. <code>playFadeGen</code>/<code>dealGen</code> 세대 토큰이 지연된 async 콜백을 무효화한다.</p>
+      </div>
+
+      <div class="exc">
+        <div class="exc-head"><span class="exc-id">EXC-05</span><span class="exc-name">12월 승리 — 고 선택지 없음</span><span class="chip">확인필요</span></div>
+        <p>12월은 목표를 넘는 순간 <code>victory()</code>로 직행한다. <b>고/스톱 모달이 나오지 않는다.</b> 최고 점수 경쟁을 열지 말지는 미결정 사항.</p>
+      </div>
+
+    </section>
+
+    <hr class="divider">
+
+    <section class="sec">
+      <h2>문서 체크리스트</h2>
+      <div class="tw">
+        <table>
+          <thead><tr><th>항목</th><th>결과</th></tr></thead>
+          <tbody>
+            <tr><td>스크린맵에 정상·예외 경로 모두 표기</td><td><span class="chip ok">통과</span></td></tr>
+            <tr><td>전 화면 진입 ≥ 1, 이탈 ≥ 1</td><td><span class="chip ok">통과</span></td></tr>
+            <tr><td>핫스팟 표가 와이어의 모든 번호를 커버</td><td><span class="chip ok">통과</span></td></tr>
+            <tr><td>모든 액션에 예외 분기 명시</td><td><span class="chip ok">통과</span></td></tr>
+            <tr><td>상태 매트릭스에 로딩·빈·오류 계열 포함</td><td><span class="chip ok">통과</span></td></tr>
+            <tr><td>전이표의 모든 이탈에 복귀 규칙 명시</td><td><span class="chip ok">통과</span></td></tr>
+            <tr><td>와이어프레임 텍스트의 바인딩 표기</td><td><span class="chip bad">미달</span> — as-built는 전부 하드코딩, 로컬라이즈 키 0개</td></tr>
+            <tr><td>1차 행동 화면당 1개</td><td><span class="chip warn">위반 2건</span> — PLAY(내기/버리기 동급) · GOSTOP(의도적 예외)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function () {
+  var links = Array.prototype.slice.call(document.querySelectorAll('.rail a'));
+  var targets = links.map(function (a) {
+    return document.getElementById(a.getAttribute('href').slice(1));
+  }).filter(Boolean);
+  if (!('IntersectionObserver' in window) || !targets.length) return;
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (!en.isIntersecting) return;
+      links.forEach(function (a) { a.classList.remove('on'); });
+      var match = links.filter(function (a) {
+        return a.getAttribute('href') === '#' + en.target.id;
+      })[0];
+      if (match) match.classList.add('on');
+    });
+  }, { rootMargin: '-10% 0px -80% 0px', threshold: 0 });
+
+  targets.forEach(function (t) { io.observe(t); });
+})();
+</script>
