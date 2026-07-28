@@ -157,7 +157,9 @@
     display: contents; /* 데스크톱: 자식이 topbar flex에 직접 참여 */
   }
   #moneybox {
-    font-size: 18px; font-weight: 800; color: #fbbf24; white-space: nowrap;
+    font-family: var(--font-overlay); font-weight: 400; font-synthesis: none;
+    font-size: 20px; color: #fbbf24; white-space: nowrap;
+    letter-spacing: 0.04em;
     padding: 6px 12px; border-radius: 8px;
     background: rgba(8, 16, 12, .45);
     border: 1px solid rgba(196, 162, 90, .4);
@@ -169,7 +171,7 @@
     background: rgba(255,255,255,.14); color: #e2e8f0;
     padding: 7px 10px; font-size: 13px; font-weight: 800; border-radius: 8px;
   }
-  /* 옵션 오버레이(월·열끗·쌍피) 숨김 — 광은 항상, 띠·피·점수는 미표시 */
+  /* 옵션 오버레이(월·열끗) 숨김 — 광은 항상, 쌍피는 이중 점, 띠·피·점수는 미표시 */
   body.hide-card-labels .card .month-badge,
   body.hide-card-labels .card .month,
   body.hide-card-labels .card .mname,
@@ -483,12 +485,106 @@
     background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.14);
     font-size: 14px; font-weight: 800; color: #e2e8f0;
     white-space: nowrap; user-select: none;
+    cursor: pointer;
+  }
+  #deckbox:hover {
+    border-color: rgba(253, 230, 138, .45);
+    background: rgba(0,0,0,.38);
+  }
+  #deckbox:focus-visible {
+    outline: 2px solid rgba(253, 230, 138, .65);
+    outline-offset: 2px;
   }
   #deckbox .deck-ico { font-size: 15px; opacity: .9; }
   #deckbox b { color: #fde68a; font-variant-numeric: tabular-nums; }
-  .bigbtn { padding: 14px 28px; font-size: 17px; font-weight: 900; border-radius: 10px; box-shadow: 0 3px 0 rgba(0,0,0,.4); }
+  /* 덱 5장 미만 — 바깥 은은한 빨간 호흡 글로우 */
+  #deckbox.deck-low {
+    border-color: rgba(248, 113, 113, .42);
+    color: #fecaca;
+    background: linear-gradient(180deg, rgba(127, 29, 29, .38), rgba(69, 10, 10, .45));
+    animation: deck-low-breathe 2.4s ease-in-out infinite;
+  }
+  #deckbox.deck-low b { color: #fff1f2; }
+  @keyframes deck-low-breathe {
+    0%, 100% {
+      box-shadow:
+        0 0 0 1px rgba(248, 113, 113, .18),
+        0 0 10px 2px rgba(220, 38, 38, .22),
+        0 0 22px 6px rgba(185, 28, 28, .12);
+    }
+    50% {
+      box-shadow:
+        0 0 0 1px rgba(252, 165, 165, .32),
+        0 0 14px 4px rgba(239, 68, 68, .38),
+        0 0 28px 10px rgba(220, 38, 38, .2);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #deckbox.deck-low {
+      animation: none;
+      box-shadow:
+        0 0 0 1px rgba(248, 113, 113, .25),
+        0 0 12px 3px rgba(220, 38, 38, .28);
+    }
+  }
+  .bigbtn {
+    display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px;
+    padding: 11px 28px 10px; font-size: 26px; font-weight: 400;
+    font-family: var(--font-overlay); font-synthesis: none;
+    letter-spacing: 0.06em;
+    border-radius: 10px; box-shadow: 0 3px 0 rgba(0,0,0,.4);
+  }
+  .bigbtn .abtn-label {
+    font-family: var(--font-overlay); font-weight: 400; font-synthesis: none;
+    font-size: inherit; line-height: 1;
+  }
+  /* 시안 D 레이아웃 + 시안 B 젤리(스쿼시&스트레치) */
+  .bigbtn .act-pips {
+    display: flex; align-items: center; justify-content: center;
+    gap: 5px; min-height: 8px; pointer-events: none;
+  }
+  .bigbtn .act-pips i {
+    display: block; width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255, 251, 235, .92);
+    border: 1px solid rgba(255, 255, 255, .75);
+    box-shadow: 0 1px 2px rgba(0,0,0,.35);
+    flex-shrink: 0;
+    transform-origin: center center;
+    transition:
+      width .18s cubic-bezier(.22, 1.2, .36, 1),
+      margin .18s cubic-bezier(.22, 1.2, .36, 1),
+      opacity .12s ease;
+  }
+  .bigbtn .act-pips i.pip-in {
+    animation: act-pip-b-in .36s cubic-bezier(.34, 1.4, .64, 1) both;
+  }
+  .bigbtn .act-pips i.pip-out {
+    animation: act-pip-b-out .28s cubic-bezier(.4, 0, .2, 1) forwards;
+  }
+  @keyframes act-pip-b-out {
+    0% { opacity: 1; transform: scale(1, 1); }
+    35% { opacity: 1; transform: scale(1.35, .55); }
+    100% {
+      opacity: 0; transform: scale(0, 1.4);
+      width: 0; margin: 0; border-width: 0; box-shadow: none;
+    }
+  }
+  @keyframes act-pip-b-in {
+    0% { opacity: 0; transform: scale(0, 1.6); }
+    55% { opacity: 1; transform: scale(1.2, .7); }
+    78% { transform: scale(.88, 1.18); }
+    100% { opacity: 1; transform: scale(1, 1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bigbtn .act-pips i { transition: none; }
+    .bigbtn .act-pips i.pip-in,
+    .bigbtn .act-pips i.pip-out { animation: none; }
+  }
   #btn-play { background: linear-gradient(180deg, #dc2626, #991b1b); color: #fff; }
+  #btn-play .act-pips i { background: #fecaca; border-color: rgba(255, 248, 235, .95); }
   #btn-discard { background: linear-gradient(180deg, #2563eb, #1e40af); color: #fff; }
+  #btn-discard .act-pips i { background: #bfdbfe; border-color: rgba(255, 248, 235, .95); }
   @media (min-width: 721px) {
     #btn-play, #btn-discard { width: 210px; box-sizing: border-box; }
   }
@@ -670,6 +766,25 @@
     border: 1px solid rgba(192,57,43,.45);
     border-radius: 4px; padding: 3px 5px;
   }
+  /* 쌍피 — 시안 C: 하단 이중 점 (서예 오버레이 대신) */
+  .card .ssang-pips {
+    position: absolute; left: 50%; bottom: 5px; z-index: 2;
+    transform: translateX(-50%);
+    display: flex; gap: 5px; align-items: center;
+    pointer-events: none;
+  }
+  .card .ssang-pips i {
+    display: block; width: 7px; height: 7px; border-radius: 50%;
+    background: #7f1d1d;
+    border: 1px solid rgba(255, 248, 235, .85);
+    box-shadow: 0 1px 2px rgba(0,0,0,.35);
+  }
+  .card.has-art .ssang-pips { bottom: 6px; }
+  .card.has-art .ssang-pips i {
+    width: 8px; height: 8px;
+    background: rgba(127, 29, 29, .9);
+    border-color: rgba(255, 251, 235, .9);
+  }
   .card.facedown {
     background: repeating-linear-gradient(135deg, #7f1d1d 0 8px, #991b1b 8px 16px);
     box-shadow: 0 3px 8px rgba(0,0,0,.45), inset 0 0 0 2.5px rgba(0,0,0,.4);
@@ -740,6 +855,116 @@
     max-width: 860px;
     padding: 18px 20px 16px;
     background: linear-gradient(165deg, #1a3326 0%, #122018 55%, #0e1a14 100%);
+  }
+  /* 남은 덱 피크 */
+  #modal.deckpeek-modal {
+    max-width: min(1100px, 98vw);
+    width: fit-content;
+    max-height: min(90vh, 960px);
+    overflow: auto;
+    text-align: left;
+  }
+  .deck-peek-title {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    margin: 0 0 14px;
+  }
+  .deck-peek-title .dp-heading {
+    font-size: inherit; font-weight: inherit; color: inherit;
+  }
+  .deck-peek-count {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 999px;
+    background: rgba(0,0,0,.35);
+    border: 1px solid rgba(255,255,255,.18);
+    font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+    font-size: 14px; font-weight: 800; color: #e2e8f0;
+    letter-spacing: 0; line-height: 1;
+    box-shadow: 0 2px 0 rgba(0,0,0,.25);
+  }
+  .deck-peek-count b {
+    color: #fde68a; font-variant-numeric: tabular-nums;
+  }
+  .deck-peek-count.deck-low {
+    border-color: rgba(248, 113, 113, .42);
+    color: #fecaca;
+    background: linear-gradient(180deg, rgba(127, 29, 29, .38), rgba(69, 10, 10, .45));
+  }
+  .deck-peek-count.deck-low b { color: #fff1f2; }
+  .deck-peek-cols {
+    display: grid;
+    grid-template-columns: max-content max-content;
+    gap: 10px 10px;
+    align-items: start;
+    justify-content: start;
+  }
+  .deck-peek-col { display: flex; flex-direction: column; gap: 8px; width: max-content; }
+  .dp-row {
+    display: grid;
+    grid-template-columns: 7.5em max-content;
+    gap: 3px;
+    align-items: center;
+    padding: 7px 10px 7px 8px;
+    border-radius: 10px;
+    background: rgba(0,0,0,.22);
+    border: 1px solid rgba(255,255,255,.06);
+    width: max-content;
+  }
+  .dp-month {
+    font-family: var(--font-overlay);
+    font-weight: 400;
+    font-size: 28px;
+    color: #fde68a;
+    line-height: 1.1;
+    letter-spacing: -0.06em;
+    padding-left: 10px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .dp-month small {
+    display: block;
+    font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+    font-size: 11px;
+    color: #94a3b8;
+    letter-spacing: 0;
+    margin-top: 3px;
+  }
+  .dp-cards {
+    display: flex; flex-wrap: nowrap; gap: 9px; align-items: center;
+  }
+  .dp-cards .card {
+    width: 58px; height: 88px;
+    padding: 4px 3px 3px;
+    cursor: default;
+    border-width: 2px;
+    box-shadow: 0 2px 5px rgba(0,0,0,.35), inset 0 0 0 1px rgba(192,57,43,.7), inset 0 0 0 2px rgba(255,255,255,.45);
+  }
+  .dp-cards .card.has-art {
+    border-width: 2.5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,.35);
+  }
+  .dp-cards .card.dp-played {
+    filter: grayscale(1);
+    opacity: 0.38;
+  }
+  .dp-cards .card.dp-discarded {
+    filter: grayscale(0.85);
+    opacity: 0.42;
+  }
+  .dp-cards .card .month-badge,
+  .dp-cards .card .month,
+  .dp-cards .card .mname { display: none !important; }
+  .dp-cards .card.season::after { display: none !important; }
+  .dp-cards .card .face-img,
+  .dp-cards .card .face-overlay { border-radius: 4px; }
+  .dp-cards .card .ssang-pips { bottom: 4px; gap: 3px; }
+  .dp-cards .card .ssang-pips i { width: 6px; height: 6px; }
+  @media (max-width: 720px) {
+    #modal.deckpeek-modal { width: auto; max-width: 98vw; }
+    .deck-peek-cols { grid-template-columns: max-content; gap: 8px; }
+    .dp-row { grid-template-columns: 6.2em max-content; gap: 3px; padding: 5px 8px 5px 6px; }
+    .dp-month { font-size: 22px; }
+    .dp-cards { flex-wrap: wrap; }
+    .dp-cards .card { width: 48px; height: 73px; }
   }
   .shop-head {
     display: flex; align-items: flex-start; justify-content: space-between;
@@ -1176,7 +1401,8 @@
     position: fixed; inset: 0; z-index: 120; pointer-events: none;
   }
   #juice-root.skipable { pointer-events: auto; cursor: pointer; }
-  body.juicing #actions button { pointer-events: none; opacity: .45; }
+  body.juicing #actions button,
+  body.juicing #deckbox { pointer-events: none; opacity: .45; }
   body.screen-shake { animation: screenShake .42s ease; }
   @keyframes screenShake {
     0%,100% { transform: translate(0,0); }
@@ -1311,8 +1537,8 @@
     position: fixed; left: 50%; top: 28vh; transform: translate(-50%, -50%) scale(.3);
     z-index: 60;
     font-family: var(--font-overlay);
-    font-weight: 900;
-    font-synthesis: weight;
+    font-weight: 400;
+    font-synthesis: none;
     -webkit-text-stroke: 2.2px #0b1220;
     paint-order: stroke fill;
     font-size: clamp(26px, 5.5vw, 48px);
@@ -1944,7 +2170,7 @@
       flex: 0 0 auto; margin-left: auto;
     }
     #moneybox {
-      font-size: 14px; margin: 0; flex-shrink: 0;
+      font-size: 16px; margin: 0; flex-shrink: 0;
       padding: 5px 8px; border-radius: 8px;
       background: rgba(0,0,0,.28); border: 1px solid rgba(251,191,36,.28);
     }
@@ -2089,10 +2315,12 @@
       width: auto;
     }
     .bigbtn {
-      width: 100%; min-width: 0; min-height: 46px;
-      padding: 11px 8px; font-size: 14px;
+      width: 100%; min-width: 0; min-height: 52px;
+      padding: 9px 8px 8px; font-size: 22px;
       box-shadow: 0 2px 0 rgba(0,0,0,.35);
     }
+    .bigbtn .act-pips { gap: 4px; min-height: 7px; }
+    .bigbtn .act-pips i { width: 7px; height: 7px; }
     #btn-play, #btn-discard { width: 100%; }
     #deckbox {
       display: inline-flex; align-items: center; justify-content: center;
@@ -2378,7 +2606,7 @@
     <div id="moneybox"></div>
     <button type="button" id="top-help" class="smallbtn" onclick="openHelp()" title="족보표 / 도움말">📖</button>
     <button type="button" id="top-tutor" class="smallbtn" onclick="replayTutorials()" title="튜토리얼 다시 보기">✨</button>
-    <button type="button" id="top-labels" class="smallbtn" onclick="toggleCardLabels()" title="월·열끗·쌍피 표기 토글">🏷</button>
+    <button type="button" id="top-labels" class="smallbtn" onclick="toggleCardLabels()" title="월·열끗 표기 토글">🏷</button>
   </div>
 </div>
 
@@ -2399,7 +2627,7 @@
     <div class="side-nav">
       <button class="smallbtn side-help" onclick="openHelp()">📖 족보표 / 도움말</button>
       <button class="smallbtn side-tutor" onclick="replayTutorials()">✨ 튜토리얼 다시 보기</button>
-      <button class="smallbtn side-labels" onclick="toggleCardLabels()">🏷 월·열끗·쌍피 숨기기</button>
+      <button class="smallbtn side-labels" onclick="toggleCardLabels()">🏷 월·열끗 숨기기</button>
     </div>
     <div class="panel" id="playlog-panel" style="display:none;">
       <div style="font-size:11px; color:var(--gold-soft); font-weight:800; margin-bottom:5px;">이번 판 내기 기록</div>
@@ -2414,7 +2642,10 @@
     <div id="actions">
       <button id="btn-play" class="bigbtn" onclick="playSelected()"></button>
       <button id="btn-discard" class="bigbtn" onclick="discardSelected()"></button>
-      <div id="deckbox" title="남은 덱"><span class="deck-ico">🂠</span>덱 <b id="deck-val">0</b></div>
+      <div id="deckbox" role="button" tabindex="0" title="남은 덱 (클릭하여 보기)"
+           onclick="openDeckPeek()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDeckPeek();}">
+        <span class="deck-ico">🂠</span>덱 <b id="deck-val">0</b>
+      </div>
     </div>
   </main>
 </div>
@@ -2558,7 +2789,7 @@ const MONTHS = [
 function hanjaMonth(n) { return `${n}月`; }
 
 // type: kwang | yeol | tti | ssangpi | pi
-// tags: hongdan | cheongdan | chodan | bi_tti | godori | bikwang
+// tags: hongdan | cheongdan | chodan | bi_tti | godori | bikwang | biyeol
 // art: Assets/ 상대경로 (UI용, 엔진 로직에는 미사용)
 function buildDeck() {
   const d = [];
@@ -2609,7 +2840,7 @@ function buildDeck() {
   add(11, 'pi', [], 'Assets/11_november/11-pi-1.webp');
   add(11, 'pi', [], 'Assets/11_november/11-pi-2.webp');
   add(12, 'kwang', ['bikwang'], 'Assets/12_december/12-gwang-umbrella.webp');
-  add(12, 'yeol', [], 'Assets/12_december/12-yeolkkeut-swallow.webp');
+  add(12, 'yeol', ['biyeol'], 'Assets/12_december/12-yeolkkeut-swallow.webp');
   add(12, 'tti', ['bi_tti'], 'Assets/12_december/12-tti-bitti.webp');
   add(12, 'ssangpi', [], 'Assets/12_december/12-pi-ssangpi.webp');
   d.forEach((c, i) => (c.uid = i));
@@ -2628,10 +2859,12 @@ const HANDS = [
   { id: 'sagwang',    name: '사광',           mult: 8  },
   { id: 'chongtong',  name: '총통',           mult: 7  },
   { id: 'godori',     name: '고도리',         mult: 6  },
+  { id: 'bigodori',   name: '비고도리',       mult: 5  },
   { id: 'samgwang',   name: '삼광',           mult: 5  },
   { id: 'bisamgwang', name: '비삼광',         mult: 4  },
   { id: 'dan',        name: '홍단/청단/초단', mult: 4  },
-  { id: 'month3',     name: '같은 달 3장',    mult: 3  },
+  { id: 'byeongpung', name: '병풍',           mult: 3  },
+  { id: 'month3',     name: '폭탄',           mult: 3  },
   { id: 'yeol3',      name: '열끗 셋',        mult: 3  },
   { id: 'tti3',       name: '띠 셋',          mult: 3  },
   { id: 'pi5',        name: '피 5장',         mult: 2  },
@@ -2639,6 +2872,19 @@ const HANDS = [
   { id: 'none',       name: '무조합',         mult: 1  },
 ];
 const HAND_BY_ID = Object.fromEntries(HANDS.map((h) => [h.id, h]));
+const DAN_LABEL = { hongdan: '홍단', cheongdan: '청단', chodan: '초단' };
+
+/** 연출·프리뷰용 표시명 (족보 id/표 이름은 유지) */
+function handDisplayName(handId, core) {
+  if (handId === 'month2' && core && core.length)
+    return `${core[0].month}월 2장`;
+  if (handId === 'dan' && core && core.length) {
+    for (const t of ['hongdan', 'cheongdan', 'chodan']) {
+      if (core.every((c) => c.tags.includes(t))) return DAN_LABEL[t];
+    }
+  }
+  return HAND_BY_ID[handId] ? HAND_BY_ID[handId].name : handId;
+}
 
 // 12판 = 1월(송학) → 12월(비). 3·6·9·12월(환절기)은 박 라운드.
 const ROUNDS = 12;
@@ -2676,11 +2922,31 @@ function detectHandInfo(cards) {
   if (maxMonth >= 4) return { handId: 'chongtong', core: monthGroups[0] };
   const birds = cards.filter((c) => c.tags.includes('godori'));
   if (birds.length === 3) return { handId: 'godori', core: birds };
+  // 비고도리: 12월 제비 + 고도리 새 2장 (2·4·8 중 둘)
+  const swallow = cards.filter((c) => c.tags.includes('biyeol'));
+  if (swallow.length >= 1 && birds.length >= 2) {
+    return { handId: 'bigodori', core: [swallow[0], ...topByBaseChip(birds, 2)] };
+  }
   if (kw.length === 3)
     return { handId: kw.some((c) => c.tags.includes('bikwang')) ? 'bisamgwang' : 'samgwang', core: kw };
   for (const t of ['hongdan', 'cheongdan', 'chodan']) {
     const set = cards.filter((c) => c.tags.includes(t));
     if (set.length === 3) return { handId: 'dan', core: set };
+  }
+  // 병풍: 연속된 달 5개 (스트레이트 · 달마다 칩 최고 1장 코어)
+  const monthsAsc = Object.keys(byMonth).map(Number).sort((a, b) => a - b);
+  let bestRun = [];
+  let run = [];
+  for (const m of monthsAsc) {
+    if (!run.length || m === run[run.length - 1] + 1) run.push(m);
+    else run = [m];
+    if (run.length > bestRun.length) bestRun = run;
+  }
+  if (bestRun.length >= 5) {
+    return {
+      handId: 'byeongpung',
+      core: bestRun.slice(0, 5).map((m) => topByBaseChip(byMonth[m], 1)[0]),
+    };
   }
   if (maxMonth >= 3) return { handId: 'month3', core: topByBaseChip(monthGroups[0], 3) };
   const yeol = cards.filter((c) => effType(c) === 'yeol');
@@ -2762,7 +3028,7 @@ const JOKERS = [
       return x.core.some((c) => c.month === 12) ? 2 : 1;
     } },
   { id: 'poktan', name: '폭탄', icon: '💥', rarity: 'epic', price: 10, kind: '×배수',
-    desc: '같은 달 세 장이나 총통이면 배수 ×3',
+    desc: '폭탄(같은 달 3장)이나 총통이면 배수 ×3',
     xMult: (x) => (x.handId === 'month3' || x.handId === 'chongtong' ? 3 : 1) },
   { id: 'mitjang', name: '밑장빼기', icon: '🎴', rarity: 'epic', price: 9, kind: '성장',
     desc: '버릴 때마다 영구 +10점 쌓임 (배수 밖, 팔면 리셋)',
@@ -2851,7 +3117,7 @@ function computeScore(cards, env) {
   for (const id of env.jokerIds) { const j = JOKER_BY_ID[id]; if (j.xMult)    mult  *= j.xMult(ctx); }
 
   return {
-    handId, chips, mult, flat,
+    handId, core, chips, mult, flat,
     score: Math.floor(chips * mult + flat),
     kwangPlayed: cards.filter((c) => c.type === 'kwang').length,
   };
@@ -2894,7 +3160,7 @@ let rng = mulberry32(runSeed);
 const JAN_AURA_USES = 3; // 1월 조합 오라·일괄선택 횟수
 
 const state = {
-  screen: 'play', // play | gostop | settle | shop | gameover | victory | help | prep | welcome
+  screen: 'play', // play | gostop | settle | shop | gameover | victory | help | deckpeek | prep | welcome
   round: 1,
   baseTarget: TARGETS[0],
   target: TARGETS[0],
@@ -2925,10 +3191,13 @@ const state = {
   dealing: false,       // 손패 드로우 연출 중
   pendingGoStop: false, // 목표 달성 → 고/스톱 대기 (이때 드로우 금지)
   playLog: [],
+  playedCards: [],      // 이번 판에 낸 패 (덱 피크용)
+  discardedCards: [],   // 이번 판에 버린 패 (덱 피크용)
   settleData: null,
   gameOverReason: '',
   stats: { bestSingle: 0, bestSingleHand: '', totalEarned: 0 },
   helpReturn: null,
+  deckPeekReturn: null,
   janAuraLeft: 0,       // 1월 무료 추천 일괄선택 남은 횟수 (처음 3회 강제 ON)
   janAuraCharged: false, // 이번 추천 선택이 횟수를 이미 썼는지 (전부 해제 시 환불)
   hintEnabled: false,   // 무료 3회 소진 후 토글 (기본 OFF)
@@ -2975,6 +3244,8 @@ function startRound() {
   state.hoverReact = null;
   state.lastPlay = null;
   state.playLog = [];
+  state.playedCards = [];
+  state.discardedCards = [];
   state.pendingGoStop = false;
   state.dealing = false;
   state.janAuraLeft = state.round === 1 ? JAN_AURA_USES : 0;
@@ -3440,10 +3711,13 @@ function playSelected() {
   state.roundScore += result.score;
   if (result.score > state.stats.bestSingle) {
     state.stats.bestSingle = result.score;
-    state.stats.bestSingleHand = HAND_BY_ID[result.handId].name;
+    state.stats.bestSingleHand = handDisplayName(result.handId, result.core);
   }
   state.playsLeft--;
-  state.playLog.push({ hand: HAND_BY_ID[result.handId].name, score: result.score });
+  state.playLog.push({ hand: handDisplayName(result.handId, result.core), score: result.score });
+  for (const c of cards) {
+    state.playedCards.push({ ...c, tags: [...(c.tags || [])], faceDown: false });
+  }
 
   // 낸 패 스냅샷 — 코어→flat, 월·칩 순으로 정렬해 연출/표시
   // 선택 transform(들림·scale) 없이 측정해야 슬롯 착지가 안 어긋남
@@ -3569,8 +3843,8 @@ function cardsRemaining() {
 function checkAfterPlay() {
   if (state.roundScore >= state.target) {
     if (state.round === ROUNDS) { victory(); return; }
-    // 더 낼 패가 없으면 고 불가 → 바로 정산
-    if (cardsRemaining() === 0) {
+    // 덱이 비면 고 불가(보충 없음) → 바로 정산
+    if (state.deck.length === 0) {
       state.pendingGoStop = false;
       settle();
       return;
@@ -3585,6 +3859,11 @@ function checkAfterPlay() {
 
 async function chooseGo() {
   if (state.screen !== 'gostop' || state.dealing || goBtnCascadeBusy) return;
+  // 덱 없으면 고 차단 → 정산으로
+  if (state.deck.length === 0) {
+    chooseStop();
+    return;
+  }
   if (state.coachStep === 'gostop') {
     state.coachStep = null;
     markGoStopCoachSeen();
@@ -3646,6 +3925,10 @@ function discardSelected() {
   sfxDiscard();
 
   const finish = async () => {
+    const gone = state.hand.filter((c) => uids.includes(c.uid));
+    for (const c of gone) {
+      state.discardedCards.push({ ...c, tags: [...(c.tags || [])], faceDown: false });
+    }
     state.hand = state.hand.filter((c) => !uids.includes(c.uid));
     state.discardAnimUids = null;
     state.juicing = false;
@@ -3653,10 +3936,16 @@ function discardSelected() {
     state.dealing = true; // 드로우·정렬 끝날 때까지 조합 힌트 숨김
     render(); // 버린 뒤 빈 자리
     await dealToHand();
-    if (state.roundScore >= state.target && state.round !== ROUNDS && cardsRemaining() > 0) {
-      state.pendingGoStop = true;
-      state.screen = 'gostop';
-      maybeStartGoStopCoach();
+    if (state.roundScore >= state.target && state.round !== ROUNDS) {
+      if (state.deck.length === 0) {
+        state.pendingGoStop = false;
+        settle();
+      } else {
+        state.pendingGoStop = true;
+        state.screen = 'gostop';
+        maybeStartGoStopCoach();
+      }
+      render();
     }
   };
 
@@ -3803,6 +4092,7 @@ function resetRun() {
     kwangSoldThisRound: 0, mitjangChips: 0, makgeolli: 0,
     chunhyangNext: false, drunk: false, hoverReact: null, tempReact: null, touchHintMode: 'play',
     lastPlay: null, juicing: false, dealing: false, pendingGoStop: false, playLog: [],
+    playedCards: [], discardedCards: [],
     settleData: null, gameOverReason: '',
     stats: { bestSingle: 0, bestSingleHand: '', totalEarned: 0 },
     janAuraLeft: 0, janAuraCharged: false, hintEnabled: false,
@@ -3821,9 +4111,9 @@ function setCardLabelsHidden(hidden) {
   catch (_) {}
   document.body.classList.toggle('hide-card-labels', hidden);
   const side = document.querySelector('.side-labels');
-  if (side) side.textContent = hidden ? '🏷 월·열끗·쌍피 보이기' : '🏷 월·열끗·쌍피 숨기기';
+  if (side) side.textContent = hidden ? '🏷 월·열끗 보이기' : '🏷 월·열끗 숨기기';
   const top = $('top-labels');
-  if (top) top.title = hidden ? '월·열끗·쌍피 보이기' : '월·열끗·쌍피 숨기기';
+  if (top) top.title = hidden ? '월·열끗 보이기' : '월·열끗 숨기기';
 }
 function toggleCardLabels() {
   setCardLabelsHidden(!cardLabelsHidden());
@@ -3926,6 +4216,7 @@ function replayTutorials() {
   abortTransientUI();
   resetRun();
   state.helpReturn = null;
+  state.deckPeekReturn = null;
   state.coachStep = null;
   state.coachPendingScored = false;
   state.coachAfterDeal = null;
@@ -3974,7 +4265,7 @@ function findBestPlayHint() {
       kind: 'play',
       uids: picks.map((c) => c.uid),
       handId: best.handId,
-      name: HAND_BY_ID[best.handId].name,
+      name: handDisplayName(best.handId, core),
       score: best.score,
     };
   }
@@ -4251,8 +4542,8 @@ async function preloadOverlayFonts() {
   try {
     if (!document.fonts || !document.fonts.load) return;
     await Promise.all([
-      document.fonts.load('16px BaigeTianxing'),
-      document.fonts.load('16px SSRock'),
+      document.fonts.load('16px BaigeTianxing', '화투로 병풍 고도리'),
+      document.fonts.load('16px SSRock', '화투로 병풍 123'),
     ]);
   } catch (_) {}
 }
@@ -4364,6 +4655,7 @@ async function boot() {
 // ── 도움말 ─────────────────────────────────────────────────
 function openHelp() {
   if (state.screen === 'help') return;
+  if (state.screen === 'deckpeek') closeDeckPeek();
   state.helpReturn = state.screen;
   state.screen = 'help';
   render();
@@ -4371,6 +4663,25 @@ function openHelp() {
 function closeHelp() {
   state.screen = state.helpReturn || 'play';
   state.helpReturn = null;
+  render();
+}
+
+// ── 남은 덱 보기 ───────────────────────────────────────────
+function openDeckPeek() {
+  if (state.screen === 'deckpeek') {
+    closeDeckPeek();
+    return;
+  }
+  if (state.juicing || state.dealing) return;
+  if (state.screen !== 'play') return;
+  state.deckPeekReturn = state.screen;
+  state.screen = 'deckpeek';
+  render();
+}
+function closeDeckPeek() {
+  if (state.screen !== 'deckpeek') return;
+  state.screen = state.deckPeekReturn || 'play';
+  state.deckPeekReturn = null;
   render();
 }
 
@@ -4399,7 +4710,7 @@ function chunhyangHint() {
   const pace = Math.max(1, state.target - state.roundScore) / Math.max(1, state.playsLeft);
   const tier = HANDS.findIndex((h) => h.id === best.handId);
   if (tier >= 0 && tier <= 6)
-    return { mood: '😍', text: `${HAND_BY_ID[best.handId].name}이 손에 있어요! 지금이 찬스예요!` };
+    return { mood: '😍', text: `${handDisplayName(best.handId, detectHandInfo(best.cards).core)}이 손에 있어요! 지금이 찬스예요!` };
   if (best.score >= pace * 1.5)
     return { mood: '😊', text: '이 손패면 넉넉해요~ 자신 있게 나가봐요.' };
   if (best.score >= pace * 0.9)
@@ -4532,12 +4843,52 @@ function auraCardCls(opts, uid) {
   return opts.auraKind === 'junk' ? ' coach-aura-junk' : ' coach-aura';
 }
 
-/** 종류별 하단 서예 오버레이 — 광 상시 / 열끗·쌍피 옵션 / 띠·피는 없음 */
+/** 종류별 하단 서예 오버레이 — 광 상시 / 열끗 옵션 / 쌍피·띠·피는 없음 */
 const CARD_OVERLAY = {
   kwang: 'Assets/Overlay/overlay_gwang.webp',
   yeol: 'Assets/Overlay/overlay_yeolkkeut.webp',
-  ssangpi: 'Assets/Overlay/overlay_pi.webp',
 };
+
+/** 내기/버리기 버튼 — 시안 D: 라벨 + 남은 횟수 점만 */
+function actionBtnHTML(label, left) {
+  const n = Math.max(0, Math.min(Math.floor(left) || 0, 12));
+  const pips = n ? '<i></i>'.repeat(n) : '';
+  return `<span class="abtn-label">${label}</span><span class="act-pips" aria-hidden="true">${pips}</span>`;
+}
+
+function syncActionBtn(btn, label, left) {
+  const want = Math.max(0, Math.min(Math.floor(left) || 0, 12));
+  let labelEl = btn.querySelector('.abtn-label');
+  let pipsEl = btn.querySelector('.act-pips');
+  if (!labelEl || !pipsEl) {
+    btn.innerHTML = actionBtnHTML(label, want);
+    return;
+  }
+  labelEl.textContent = label;
+  const live = [...pipsEl.querySelectorAll('i:not(.pip-out)')];
+  const have = live.length;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (want > have) {
+    for (let i = have; i < want; i++) {
+      const pip = document.createElement('i');
+      if (!reduceMotion) pip.className = 'pip-in';
+      pipsEl.appendChild(pip);
+    }
+  } else if (want < have) {
+    const remove = live.slice(want);
+    for (const pip of remove) {
+      if (reduceMotion) {
+        pip.remove();
+        continue;
+      }
+      pip.classList.remove('pip-in');
+      pip.classList.add('pip-out');
+      const done = () => { if (pip.parentNode) pip.remove(); };
+      pip.addEventListener('animationend', done, { once: true });
+      setTimeout(done, 320);
+    }
+  }
+}
 
 function cardHTML(card, opts = {}) {
   const M = MONTHS[card.month - 1];
@@ -4569,12 +4920,11 @@ function cardHTML(card, opts = {}) {
     tag = TTI_LABEL[color];
   } else if (card.type === 'ssangpi') {
     tag = '쌍피';
-    tagOpt = true;
   } else {
     tag = '피';
   }
   const overlaySrc = CARD_OVERLAY[card.type];
-  const overlayOpt = card.type === 'yeol' || card.type === 'ssangpi';
+  const overlayOpt = card.type === 'yeol';
   if (card.art) {
     cls += ' has-art';
     body = `<img class="face-img" src="${esc(assetSrc(card.art))}" alt="${esc(M.name)} ${esc(tag)}" draggable="false">`;
@@ -4592,7 +4942,7 @@ function cardHTML(card, opts = {}) {
   } else {
     body = `<div class="art">${M.flower}</div>`;
   }
-  if (card.month === state.round) cls += ' season'; // 이달의 패 강조
+  if (!opts.noSeason && card.month === state.round) cls += ' season'; // 이달의 패 강조
   const selCls = opts.selectable && state.selected.includes(card.uid) && !discarding ? ' sel' : '';
   const dealCls = state.dealInUids && state.dealInUids.includes(card.uid) ? ' deal-in' : '';
   const discCls = discarding ? ' discarding' : '';
@@ -4605,14 +4955,18 @@ function cardHTML(card, opts = {}) {
   const monthLabel = card.art
     ? `<div class="month-badge">${hanjaMonth(card.month)}</div>`
     : `<div class="month">${hanjaMonth(card.month)}</div><div class="mname">${M.name}</div>`;
-  // 이모지 폴백: 광 상시 / 열끗·쌍피 옵션 / 띠·피는 그림만으로
+  // 이모지 폴백: 광 상시 / 열끗 옵션 / 띠·피·쌍피는 그림(+쌍피 점)
   const showTag = !card.art && (card.type === 'kwang' || tagOpt);
   const tagHtml = showTag
     ? `<div class="tag${tagOpt ? ' tag-opt' : ''}">${tag}</div>`
     : '';
+  const ssangPips = card.type === 'ssangpi'
+    ? `<div class="ssang-pips" aria-hidden="true"><i></i><i></i></div>`
+    : '';
   return `<div class="${cls}${selCls}${dealCls}${discCls}${auraCls}${opts.selectable && !discarding ? '' : ' static'}" data-uid="${card.uid}"${styleAttr}${click}>
     ${monthLabel}
     ${body}
+    ${ssangPips}
     ${tagHtml}
   </div>`;
 }
@@ -4799,7 +5153,7 @@ function renderSide() {
     handName = '뒷면 포함 · 미리보기 불가';
   } else {
     const r = computeScore(sel, scoreEnv());
-    handName = HAND_BY_ID[r.handId].name;
+    handName = handDisplayName(r.handId, r.core);
     chips = fmt(r.chips);
     mult = fmtMult(r.mult);
     flat = fmt(r.flat);
@@ -4818,6 +5172,10 @@ function renderSide() {
     <div class="pv-total"><span class="tl">예상 점수</span><span class="tv">${score}</span></div>`;
 
   $('deck-val').textContent = `${state.deck.length}`;
+  $('deckbox').classList.toggle('deck-low', state.deck.length > 0 && state.deck.length <= 5);
+  $('deckbox').title = state.deck.length > 0 && state.deck.length <= 5
+    ? `남은 덱 ${state.deck.length}장 · 부족! (클릭하여 보기)`
+    : '남은 덱 (클릭하여 보기)';
 
   const lp = $('playlog-panel');
   if (state.playLog.length > 0) {
@@ -4844,7 +5202,7 @@ function renderTable() {
       pa.innerHTML =
         state.lastPlay.cards.map((c) => cardHTML(c, { reveal: true })).join('') +
         `<div id="playresult">
-          <div class="r-hand">${HAND_BY_ID[r.handId].name}</div>
+          <div class="r-hand">${handDisplayName(r.handId, r.core)}</div>
           <div class="r-formula"><span class="c">${fmt(r.chips)}칩</span> × <span class="m">${fmtMult(r.mult)}배</span>${r.flat ? ` + ${fmt(r.flat)}` : ''}</div>
           <div class="r-score">+${fmt(r.score)}점</div>
         </div>`;
@@ -4914,11 +5272,14 @@ function renderTable() {
 
   const n = state.selected.length;
   const canAct = state.screen === 'play' && !state.juicing && !state.dealing;
-  const shortAct = window.matchMedia('(max-width: 720px)').matches;
-  $('btn-play').textContent = shortAct ? `내기 (${state.playsLeft})` : `내기 (${state.playsLeft}회 남음)`;
-  $('btn-play').disabled = !canAct || n < 1 || n > 5 || state.playsLeft <= 0 || state.coachStep === 'junk';
-  $('btn-discard').textContent = shortAct ? `버리기 (${state.discardsLeft})` : `버리기 (${state.discardsLeft}회 남음)`;
-  $('btn-discard').disabled = !canAct || n < 1 || n > 5 || state.discardsLeft <= 0;
+  const playBtn = $('btn-play');
+  const discardBtn = $('btn-discard');
+  syncActionBtn(playBtn, '내기', state.playsLeft);
+  playBtn.title = `내기 · ${state.playsLeft}회 남음`;
+  playBtn.disabled = !canAct || n < 1 || n > 5 || state.playsLeft <= 0 || state.coachStep === 'junk';
+  syncActionBtn(discardBtn, '버리기', state.discardsLeft);
+  discardBtn.title = `버리기 · ${state.discardsLeft}회 남음`;
+  discardBtn.disabled = !canAct || n < 1 || n > 5 || state.discardsLeft <= 0;
   if (CHUNHYANG_ENABLED) {
     $('btn-play').onmouseenter = () => setChunhyangHover('play');
     $('btn-play').onmouseleave = () => clearChunhyangHover();
@@ -4962,7 +5323,7 @@ function renderCoach() {
 
   const playRes = state.lastPlay && state.lastPlay.result;
   const scoredBody = playRes
-    ? `방금 <b>${HAND_BY_ID[playRes.handId].name}</b>으로 <b>+${fmt(playRes.score)}점</b>!<br>
+    ? `방금 <b>${handDisplayName(playRes.handId, playRes.core)}</b>으로 <b>+${fmt(playRes.score)}점</b>!<br>
        점수 = (<b>족보 칩 ${fmt(playRes.chips)}</b> × <b>${fmtMult(playRes.mult)}배</b>)${playRes.flat ? ` + <b>${fmt(playRes.flat)}</b>` : ''}.<br>
        목표까지 <b>남은 점수 ${fmt(Math.max(0, state.target - state.roundScore))}</b> · 게이지를 확인하세요.`
     : `점수가 쌓였어요! 점수 = <b>족보 칩</b> × <b>배수</b> + 나머지.`;
@@ -5052,11 +5413,11 @@ function renderModal() {
   const m = $('modal');
   const screens = {
     welcome: welcomeHTML, prep: prepHTML, gostop: gostopHTML, settle: settleHTML, shop: shopHTML,
-    gameover: gameoverHTML, victory: victoryHTML, help: helpHTML,
+    gameover: gameoverHTML, victory: victoryHTML, help: helpHTML, deckpeek: deckpeekHTML,
   };
   const fn = screens[state.screen];
   if (!fn) {
-    m.classList.remove('gostop-modal');
+    m.classList.remove('gostop-modal', 'shop-modal', 'deckpeek-modal');
     m.dataset.modalSig = '';
     ov.classList.remove('show', 'gostop-open');
     return;
@@ -5082,8 +5443,9 @@ function renderModal() {
   }
 
   m.dataset.modalSig = state.screen;
-  m.classList.remove('gostop-modal', 'shop-modal');
+  m.classList.remove('gostop-modal', 'shop-modal', 'deckpeek-modal');
   if (state.screen === 'shop') m.classList.add('shop-modal');
+  if (state.screen === 'deckpeek') m.classList.add('deckpeek-modal');
   ov.classList.remove('gostop-open');
   m.innerHTML = fn();
   ov.classList.add('show');
@@ -5336,23 +5698,73 @@ function victoryHTML() {
     <div class="modal-actions"><button class="choicebtn btn-stop" style="text-align:center" onclick="restart()"><div class="t">🔄 새 런 시작</div></button></div>`;
 }
 
+function deckpeekHTML() {
+  const playedUids = new Set((state.playedCards || []).map((c) => c.uid));
+  const discardedUids = new Set((state.discardedCards || []).map((c) => c.uid));
+  const all = [
+    ...state.deck,
+    ...state.hand,
+    ...(state.playedCards || []),
+    ...(state.discardedCards || []),
+  ];
+  const byMonth = {};
+  for (let m = 1; m <= 12; m++) byMonth[m] = [];
+  for (const c of all) byMonth[c.month].push(c);
+  for (let m = 1; m <= 12; m++) {
+    byMonth[m].sort((a, b) => TYPE_ORDER[a.type] - TYPE_ORDER[b.type]);
+  }
+  const rowHTML = (M) => {
+    const cards = byMonth[M.n];
+    const cardsHtml = cards.map((c) => {
+      let html = cardHTML(c, { reveal: true, noSeason: true });
+      if (playedUids.has(c.uid)) html = html.replace('class="card ', 'class="card dp-played ');
+      else if (discardedUids.has(c.uid)) html = html.replace('class="card ', 'class="card dp-discarded ');
+      return html;
+    }).join('');
+    return `<div class="dp-row">
+      <div class="dp-month">${hanjaMonth(M.n)}<small>${esc(M.name)}</small></div>
+      <div class="dp-cards">${cardsHtml}</div>
+    </div>`;
+  };
+  const left = MONTHS.filter((M) => M.n <= 6).map(rowHTML).join('');
+  const right = MONTHS.filter((M) => M.n >= 7).map(rowHTML).join('');
+  const low = state.deck.length > 0 && state.deck.length <= 5;
+  return `
+    <h2 class="deck-peek-title">
+      <span class="dp-heading">🂠 패 보기</span>
+      <span class="deck-peek-count${low ? ' deck-low' : ''}">남은 덱 <b>${state.deck.length}</b>장</span>
+    </h2>
+    <div class="deck-peek-cols">
+      <div class="deck-peek-col">${left}</div>
+      <div class="deck-peek-col">${right}</div>
+    </div>
+    <div class="modal-actions">
+      <button class="choicebtn btn-stop" style="text-align:center" onclick="closeDeckPeek()">
+        <div class="t">닫기</div>
+      </button>
+    </div>`;
+}
+
 function helpHTML() {
   const conds = {
     ogwang: '광 5장 전부', sagwang: '광 4장 (비광 무관)', chongtong: '같은 달 4장',
-    godori: '2·4·8월 열끗(새) 3장', samgwang: '광 3장 (비광 제외)', bisamgwang: '광 3장 (비광 포함)',
-    dan: '홍단·청단·초단 중 한 세트 3장', month3: '같은 달 3장',
+    godori: '2·4·8월 열끗(새) 3장', bigodori: '12월 제비 + 고도리 새 2장',
+    samgwang: '광 3장 (비광 제외)', bisamgwang: '광 3장 (비광 포함)',
+    dan: '홍단·청단·초단 중 한 세트 3장',
+    byeongpung: '연속된 달 5장 (스트레이트)', month3: '같은 달 3장',
     yeol3: '열끗 3장 이상 (배수 타는 건 칩 높은 3장)',
     tti3: '띠 3장 이상 (비단 제외, 배수 타는 건 칩 높은 3장)',
     pi5: '피·쌍피 환산 합 5 이상 (나머지는 +점수)', month2: '같은 달 2장', none: '해당 없음',
   };
   const HAND_VIS = {
-    ogwang: '🕊️', sagwang: '🏯', chongtong: '🎴', godori: '🐦',
-    samgwang: '🌕', bisamgwang: '☔', dan: '🎀', month3: '3️⃣',
+    ogwang: '🕊️', sagwang: '🏯', chongtong: '🎴', godori: '🐦', bigodori: '🌧️🐦',
+    samgwang: '🌕', bisamgwang: '☔', dan: '🎀',
+    byeongpung: '📜', month3: '💥',
     yeol3: '🂠', tti3: '🎗️', pi5: '🍂', month2: '2️⃣', none: '·',
   };
   const rows = HANDS.map((h, i) => {
     const tier = h.id === 'bisamgwang' ? 'bi'
-      : i <= 1 ? 's' : i <= 5 ? 'a' : i <= 8 ? 'b' : i <= 11 ? 'c' : 'd';
+      : i <= 1 ? 's' : i <= 5 ? 'a' : i <= 8 ? 'b' : i <= 12 ? 'c' : 'd';
     return `<div class="hb-row t-${tier}">
       <div class="hb-rank">${i + 1}</div>
       <div class="hb-vis" aria-hidden="true">${HAND_VIS[h.id] || '🎴'}</div>
@@ -5463,8 +5875,8 @@ function juiceTier(handId) {
   const i = HANDS.findIndex((h) => h.id === handId);
   if (i <= 1) return 'S';
   if (i <= 5) return 'A';
-  if (i <= 8) return 'B';
-  if (i <= 11) return 'C';
+  if (i <= 9) return 'B';
+  if (i <= 13) return 'C';
   return 'D';
 }
 
@@ -5484,7 +5896,7 @@ function juiceBreakdown(snap) {
   const coreSum = steps.filter((s) => s.isCore).reduce((a, s) => a + s.chip, 0);
   const cardFlat = steps.filter((s) => !s.isCore).reduce((a, s) => a + s.chip, 0);
   const jokerChips = Math.max(0, result.flat - cardFlat);
-  return { handBase: 0, steps, jokerChips, flatSum: result.flat, mult: result.mult, score: result.score, handId: result.handId };
+  return { handBase: 0, steps, jokerChips, flatSum: result.flat, mult: result.mult, score: result.score, handId: result.handId, core: result.core || core };
 }
 
 // ── SFX 샘플 재생 (Assets/SFX/*.mp3) ──────────────────────
@@ -6522,7 +6934,7 @@ async function playJuiceSequence(snap, fromRects = null) {
   const pa = $('playedarea');
   const banner = $('hand-banner');
   const hitTarget = snap.scoreBefore < state.target && state.roundScore >= state.target;
-  const bigHand = HANDS.findIndex((h) => h.id === bd.handId) <= 4; // 삼광 이상 (배너 길이용)
+  const bigHand = HANDS.findIndex((h) => h.id === bd.handId) <= 5; // 삼광·비고도리 이상 (배너 길이용)
 
   try {
     if (reduce) {
@@ -6561,7 +6973,7 @@ async function playJuiceSequence(snap, fromRects = null) {
 
     // 1) 족보 배너 슬램
     const tier = juiceTier(bd.handId);
-    const handName = HAND_BY_ID[bd.handId].name;
+    const handName = handDisplayName(bd.handId, bd.core);
     const anchor = handBannerAnchor();
     banner.style.left = anchor.cx + 'px';
     banner.style.top = anchor.cy + 'px';
@@ -6624,17 +7036,17 @@ async function playJuiceSequence(snap, fromRects = null) {
       sfxChip();
       if (step.isCore) {
         chips += step.chip;
-        await animateNumber(chipsEl, chips - step.chip, chips, juiceMs(140));
+        await animateNumber(chipsEl, chips - step.chip, chips, juiceMs(125));
       } else {
         ensureFlatUI();
         const from = flat;
         flat += step.chip;
-        await animateNumber(flatEl, from, flat, juiceMs(160));
+        await animateNumber(flatEl, from, flat, juiceMs(145));
         flatEl.style.transform = 'scale(1.18)';
-        await juiceWait(90);
+        await juiceWait(80);
         flatEl.style.transform = '';
       }
-      await juiceWait(230);
+      await juiceWait(200);
       w.classList.remove('pulse');
     }
 
@@ -6642,10 +7054,10 @@ async function playJuiceSequence(snap, fromRects = null) {
       ensureFlatUI();
       const from = flat;
       flat += bd.jokerChips;
-      await animateNumber(flatEl, from, flat, juiceMs(200));
+      await animateNumber(flatEl, from, flat, juiceMs(180));
       flatEl.style.transform = 'scale(1.18)';
       sfxChip();
-      await juiceWait(110);
+      await juiceWait(95);
       flatEl.style.transform = '';
     }
 

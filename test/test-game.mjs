@@ -11,7 +11,7 @@ const codeEnd = html.lastIndexOf('/*', endMark);
 const src = html.slice(codeStart, codeEnd);
 
 const E = new Function(src + `
-return { mulberry32, shuffle, buildDeck, CHIP, effType, baseChip, HANDS, HAND_BY_ID,
+return { mulberry32, shuffle, buildDeck, CHIP, effType, baseChip, HANDS, HAND_BY_ID, handDisplayName,
   ROUNDS, TARGETS, BOSS_ROUNDS, MILD_BOSSES, goMult, goBonus, goThreshold, goLevelReached, detectHand, detectHandInfo, cardChip,
   combosOf, evaluateHand, JOKERS, JOKER_BY_ID, BOSSES, BOSS_BY_ID, computeScore,
   rollJokerRarity, RARITY_ORDER };`)();
@@ -47,21 +47,49 @@ console.log('[2] 족보 판정');
   assert(det(pick((c) => c.month === 1)) === 'chongtong', '총통');
   assert(det(pick((c) => c.tags.includes('godori'))) === 'godori', '고도리');
   assert(det(pick((c) => c.tags.includes('hongdan'))) === 'dan', '홍단');
-  const pisSameMonth = [...pick((c) => c.type === 'pi' && c.month === 1), ...pick((c) => c.type === 'pi' && [2, 3].includes(c.month)).slice(0, 3)];
-  assert(det(pisSameMonth) === 'pi5', '피5 > 같은달2 우선순위');
+  // 비고도리: 12월 제비 + 고도리 새 2장
+  const birds = pick((c) => c.tags.includes('godori'));
+  const swallow = pick((c) => c.tags.includes('biyeol'))[0];
+  assert(det([swallow, birds[0], birds[1]]) === 'bigodori', '비고도리');
+  // 병풍: 연속 달 5개 (단·폭탄에 안 걸리게 피만)
+  const mByeong = [1, 2, 3, 4, 5].map((m) => pick((c) => c.month === m && c.type === 'pi')[0]);
+  assert(det(mByeong) === 'byeongpung', '병풍(1~5월)');
+  assert(E.HAND_BY_ID.byeongpung.mult === 3, '병풍 ×3');
+  assert(det([1, 2, 3].map((m) => pick((c) => c.month === m && c.type === 'pi')[0])) !== 'byeongpung',
+    '연속 3달은 병풍 아님');
+  // 폭탄(같은 달 3장)
+  const m1three = pick((c) => c.month === 1).slice(0, 3);
+  assert(det(m1three) === 'month3', '폭탄(같은 달 3장)');
+  assert(E.HAND_BY_ID.month3.name === '폭탄', 'month3 표시명 = 폭탄');
+  // 팝업 표시명
+  const m1two = pick((c) => c.month === 1).slice(0, 2);
+  assert(E.handDisplayName('month2', m1two) === '1월 2장', 'month2 팝업 = N월 2장');
+  assert(E.handDisplayName('dan', pick((c) => c.tags.includes('hongdan'))) === '홍단', 'dan 팝업 = 홍단');
+  assert(E.handDisplayName('dan', pick((c) => c.tags.includes('cheongdan'))) === '청단', 'dan 팝업 = 청단');
+  assert(E.handDisplayName('dan', pick((c) => c.tags.includes('chodan'))) === '초단', 'dan 팝업 = 초단');
+  // 비초단은 삭제됨 — 비띠+초단2는 병풍/띠셋/무조합 등으로만
+  const cho = pick((c) => c.tags.includes('chodan'));
+  const biti = pick((c) => c.tags.includes('bi_tti'))[0];
+  assert(det([biti, cho[0], cho[1]]) !== 'bichodan', '비초단 삭제');
+  // 피5: 연속 달이 아니게 흩어 병풍에 안 걸리게
+  const pisScattered = [
+    ...pick((c) => c.type === 'pi' && c.month === 1),
+    ...pick((c) => c.type === 'pi' && c.month === 5),
+    pick((c) => c.type === 'pi' && c.month === 8)[0],
+  ];
+  assert(det(pisScattered) === 'pi5', '피5 (비연속 달)');
   // 쌍피=2 환산: 피3 + 쌍피1 = 피 환산 5 → 피5 (카드 4장)
-  const pi3 = pick((c) => c.type === 'pi').slice(0, 3);
+  const pi3 = pick((c) => c.type === 'pi' && c.month === 1).concat(pick((c) => c.type === 'pi' && c.month === 5).slice(0, 1));
   const sp = pick((c) => c.type === 'ssangpi')[0];
   assert(det([...pi3, sp]) === 'pi5', '쌍피=2 환산으로 피3+쌍피1 → 피5');
-  // 열끗 섞어도 피 환산≥5면 피5, 열끗은 코어 밖(flat)
-  const yeolExtra = pick((c) => c.type === 'yeol')[0];
+  // 열끗 섞어도 피 환산≥5면 피5, 열끗은 코어 밖(flat) — 열끗 달이 병풍을 만들지 않게
+  const yeolExtra = pick((c) => c.type === 'yeol' && c.month === 9)[0];
   const pi5plusYeol = E.detectHandInfo([...pi3, sp, yeolExtra]);
   assert(pi5plusYeol.handId === 'pi5' && !pi5plusYeol.core.includes(yeolExtra),
     '피5+열끗 → 피5, 열끗은 flat');
   // 비단은 띠 셋에서 제외: 홍단+청단+비단 → 띠셋 아님
   const hong1 = pick((c) => c.tags.includes('hongdan'))[0];
   const cheong1 = pick((c) => c.tags.includes('cheongdan'))[0];
-  const biti = pick((c) => c.tags.includes('bi_tti'))[0];
   assert(det([hong1, cheong1, biti]) !== 'tti3', '비단 포함 3띠 → 띠셋 아님');
   // 홍단+청단+초단 → 띠셋
   const cho1 = pick((c) => c.tags.includes('chodan'))[0];
