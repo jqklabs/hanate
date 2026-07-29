@@ -2939,11 +2939,11 @@ function buildDeck() {
   add(3, 'pi', [], 'Assets/03_march/3-pi-1.webp');
   add(3, 'pi', [], 'Assets/03_march/3-pi-2.webp');
   add(4, 'yeol', ['godori'], 'Assets/04_april/4-yeolkkeut.webp');
-  add(4, 'tti', ['chodan'], 'Assets/04_april/4-tti-chodan.webp');
+  add(4, 'tti', ['chodan'], 'Assets/04_april/4-tti-chodan.webp?v=2');
   add(4, 'pi', [], 'Assets/04_april/4-pi-1.webp');
   add(4, 'pi', [], 'Assets/04_april/4-pi-2.webp');
   add(5, 'yeol', [], 'Assets/05_may/5-yeolkkeut.webp');
-  add(5, 'tti', ['chodan'], 'Assets/05_may/5-tti-chodan.webp');
+  add(5, 'tti', ['chodan'], 'Assets/05_may/5-tti-chodan.webp?v=2');
   add(5, 'pi', [], 'Assets/05_may/5-pi-1.webp');
   add(5, 'pi', [], 'Assets/05_may/5-pi-2.webp');
   add(6, 'yeol', [], 'Assets/06_june/6-yeolkkeut.webp');
@@ -2951,7 +2951,7 @@ function buildDeck() {
   add(6, 'pi', [], 'Assets/06_june/6-pi-1.webp');
   add(6, 'pi', [], 'Assets/06_june/6-pi-2.webp');
   add(7, 'yeol', [], 'Assets/07_july/7-yeolkkeut.webp');
-  add(7, 'tti', ['chodan'], 'Assets/07_july/7-tti-chodan.webp');
+  add(7, 'tti', ['chodan'], 'Assets/07_july/7-tti-chodan.webp?v=2');
   add(7, 'pi', [], 'Assets/07_july/7-pi-1.webp');
   add(7, 'pi', [], 'Assets/07_july/7-pi-2.webp');
   add(8, 'kwang', [], 'Assets/08_august/8-gwang.webp');
@@ -4675,7 +4675,9 @@ async function preloadCardImages(onProgress) {
 
   await mapPool(urls, 6, async (url) => {
     try {
-      const fetchUrl = String(url).split('?')[0];
+      // file:// 은 쿼리 불가. http(s)는 ?v= 유지해 immutable 에셋 캐시 무효화.
+      const bare = String(url).split('?')[0];
+      const fetchUrl = location.protocol === 'file:' ? bare : url;
       const res = await fetch(fetchUrl);
       if (!res.ok) throw new Error(String(res.status));
       const blob = await res.blob();
@@ -4685,7 +4687,7 @@ async function preloadCardImages(onProgress) {
       if (img.decode) await img.decode();
       else await new Promise((r) => { img.onload = img.onerror = r; });
       IMG_URL_CACHE[url] = obj;
-      IMG_URL_CACHE[fetchUrl] = obj;
+      IMG_URL_CACHE[bare] = obj;
     } catch (_) {
       // 캐시 실패 시 원본 URL로 폴백 (DOM이 다시 받음)
     } finally {
