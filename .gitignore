@@ -1,0 +1,9 @@
+# Firebase 로컬 설정 (키 포함)
+firebase-config.js
+
+# npm (이 프로젝트는 Firebase CDN 사용 — npm 불필요)
+node_modules/
+package-lock.json
+
+# macOS
+.DS_Store

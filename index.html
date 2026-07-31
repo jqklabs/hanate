@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>화투로 — 고스톱: 무한의 판</title>
+<script>window.FIREBASE_CONFIG = window.FIREBASE_CONFIG ?? null;</script>
+<script src="firebase-config.js"></script>
 <style>
   @font-face {
     font-family: 'BaigeTianxing';
@@ -3170,8 +3172,8 @@ const JOKERS = [
     desc: '멍셋(열끗 셋)이면 배수 ×2',
     xMult: (x) => (x.handId === 'yeol3' ? 2 : 1) },
   { id: 'samgwang_nori', name: '삼광판', icon: '✨', rarity: 'epic', price: 10, kind: '+배수',
-    desc: '삼광·비삼광이면 +8배수',
-    addMult: (x) => (x.handId === 'samgwang' || x.handId === 'bisamgwang' ? 8 : 0) },
+    desc: '낸 광마다 +3배수 (비광 포함)',
+    addMult: (x) => x.cards.filter((c) => c.type === 'kwang').length * 3 },
   // ── 레전더리 ───────────────────────────────────────────
   { id: 'sipidal', name: '열두사철', icon: '🗓️', rarity: 'legendary', price: 13, kind: '+배수',
     desc: '낸 패에 섞인 달 수만큼 × +2배수',
@@ -3327,6 +3329,7 @@ const state = {
   settleData: null,
   gameOverReason: '',
   stats: { bestSingle: 0, bestSingleHand: '', totalEarned: 0 },
+  runStats: null,
   helpReturn: null,
   deckPeekReturn: null,
   janAuraLeft: 0,       // 1월 무료 추천 일괄선택 남은 횟수 (처음 3회 강제 ON)
@@ -3842,6 +3845,9 @@ function playSelected() {
     const n = Math.min(result.kwangPlayed, 3 - state.kwangSoldThisRound);
     if (n > 0) { addMoney(n); state.kwangSoldThisRound += n; }
   }
+  if (state.runStats && result.kwangPlayed > 0) {
+    state.runStats.gwangPlayed += result.kwangPlayed;
+  }
 
   state.roundScore += result.score;
   if (result.score > state.stats.bestSingle) {
@@ -4012,6 +4018,7 @@ async function chooseGo() {
   // 밀치기 고: 이미 넘어 있는 문턱 전부를 소급 인정, 선언 단계 = 아직 못 넘은 첫 문턱
   state.goLevel = goLevelReached(state.baseTarget, state.roundScore, state.goLevel) + 1;
   state.target = goThreshold(state.baseTarget, state.goLevel);
+  if (state.runStats) state.runStats.goCount++;
   state.playsLeft++; // 고 보상: 내기 +1 (밀친 단계 수와 무관하게 선언 1회당 1개)
   state.pendingGoStop = false;
   state.screen = 'play';
@@ -4057,6 +4064,7 @@ function discardSelected() {
   }
   const uids = cards.map((c) => c.uid);
   state.discardsLeft--;
+  if (state.runStats) state.runStats.discardsUsed++;
   if (hasJoker('mitjang')) state.mitjangChips += 10;
   state.selected = [];
   state.janAuraCharged = false; // 버리기로 확정 → 횟수 소모 확정
@@ -4160,6 +4168,7 @@ function buyJoker(i) {
   if (!offer || offer.sold) return;
   if (state.jokers.length >= 5 || state.money < offer.joker.price) { flashActions(); return; }
   state.money -= offer.joker.price;
+  if (state.runStats) state.runStats.shopSpent += offer.joker.price;
   state.jokers.push({ id: offer.joker.id, paid: offer.joker.price });
   offer.sold = true;
   state.shopFlashOwned = state.jokers.length - 1;
@@ -4195,6 +4204,7 @@ function sellJoker(i) {
 function reroll() {
   if (state.screen !== 'shop' || state.money < state.rerollCost) return;
   state.money -= state.rerollCost;
+  if (state.runStats) state.runStats.shopSpent += state.rerollCost;
   state.rerollCost++;
   state.shopOffers = genOffers();
   render();
@@ -4217,12 +4227,82 @@ function nextRound() {
   startRound();
 }
 
+// ── Firebase / 런 통계 ─────────────────────────────────────
+let _firebaseTelemetry = null;
+
+function initRunStats() {
+  state.runStats = {
+    startedAt: performance.now(),
+    activeMs: 0,
+    lastActiveAt: performance.now(),
+    gwangPlayed: 0,
+    goCount: 0,
+    discardsUsed: 0,
+    shopSpent: 0,
+  };
+}
+
+function tickRunActiveMs() {
+  const rs = state.runStats;
+  if (!rs?.lastActiveAt) return;
+  rs.activeMs += performance.now() - rs.lastActiveAt;
+  rs.lastActiveAt = 0;
+}
+
+function resumeRunActiveMs() {
+  if (state.runStats) state.runStats.lastActiveAt = performance.now();
+}
+
+function initFirebaseTelemetry() {
+  const cfg = window.FIREBASE_CONFIG;
+  if (!cfg?.apiKey) return;
+  _firebaseTelemetry = import('./firebase-telemetry.mjs')
+    .then((m) => m.setup(cfg))
+    .catch(() => null);
+}
+
+function flushRunTelemetry(outcome, reason) {
+  const cfg = window.FIREBASE_CONFIG;
+  if (!cfg?.apiKey || !_firebaseTelemetry) return;
+  tickRunActiveMs();
+  const rs = state.runStats || {};
+  const payload = {
+    outcome,
+    reason: reason || '',
+    month: state.round,
+    durationSec: Math.round((rs.activeMs || 0) / 1000),
+    gwangPlayed: rs.gwangPlayed || 0,
+    goCount: rs.goCount || 0,
+    discardsUsed: rs.discardsUsed || 0,
+    shopSpent: rs.shopSpent || 0,
+    bestSingle: state.stats.bestSingle,
+    totalEarned: state.stats.totalEarned,
+    jokerIds: state.jokers.map((j) => j.id),
+    seed: runSeed >>> 0,
+    endedAt: new Date().toISOString(),
+  };
+  _firebaseTelemetry
+    .then((t) => t?.sendRun(payload))
+    .catch(() => {});
+}
+
+function hookRunVisibility() {
+  if (window._hwatroVisHook) return;
+  window._hwatroVisHook = true;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) tickRunActiveMs();
+    else resumeRunActiveMs();
+  });
+}
+
 // ── 종료 ───────────────────────────────────────────────────
 function gameOver(reason) {
+  flushRunTelemetry('lose', reason);
   state.gameOverReason = reason;
   state.screen = 'gameover';
 }
 function victory() {
+  flushRunTelemetry('win');
   state.screen = 'victory';
 }
 function resetRun() {
@@ -4238,11 +4318,13 @@ function resetRun() {
     playedCards: [], discardedCards: [],
     settleData: null, gameOverReason: '',
     stats: { bestSingle: 0, bestSingleHand: '', totalEarned: 0 },
+    runStats: null,
     janAuraLeft: 0, janAuraCharged: false, hintEnabled: false,
     coachStep: null, coachPendingScored: false, coachAfterDeal: null, janTutorJunkPending: false,
   });
   state.baseTarget = TARGETS[0];
   state.target = TARGETS[0];
+  initRunStats();
 }
 
 function cardLabelsHidden() {
@@ -4804,6 +4886,8 @@ function initCardTune() {
 }
 
 async function boot() {
+  hookRunVisibility();
+  initFirebaseTelemetry();
   setCardLabelsHidden(cardLabelsHidden());
   resetRun();
   initCardTune();
@@ -4874,6 +4958,7 @@ function buyChunhyangNext() {
   if (!(state.screen === 'shop' || state.screen === 'prep')) return;
   if (state.chunhyangNext || state.money < 3) return;
   state.money -= 3;
+  if (state.runStats) state.runStats.shopSpent += 3;
   state.chunhyangNext = true;
   render();
 }

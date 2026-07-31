@@ -8,12 +8,15 @@
 
 ## 실행
 
-`index.html`을 브라우저에서 열면 끝. 외부 리소스·빌드·서버 불필요.
+`index.html`을 브라우저에서 열면 끝. 빌드·서버 불필요 (로컬 Firebase 테스트는 HTTP 서버 권장).
 
-- 플레이: https://sleeeppy.github.io/hwatro/
-- 시드 고정: `index.html?seed=42` (또는 배포 URL에 `?seed=42`)
+- 배포: **Vercel** (Git push 시 자동)
+- 시드 고정: `?seed=42`
 
-`main` 푸시 시 GitHub Actions가 테스트 후 GitHub Pages로 배포합니다.
+```bash
+python3 -m http.server 8080   # 로컬 (Firebase 테스트)
+node test/test-game.mjs       # 엔진 테스트
+```
 
 ## 게임 규칙
 
@@ -24,7 +27,7 @@
 - **시간 시스템**: 이달의 패(현재 월 카드 칩 ×2), 밤일낮장(홀수 달 낮☀️ = 광·열끗 +2칩, 짝수 달 밤🌙 = 띠·피 +2칩).
 - **고/스톱 (무제한 · 밀치기)**: 목표 도달 시 스톱(정산) 또는 고. n고 문턱 = 기본 목표 ×(1+0.6n), 성공 시 보너스 n×m냥(m=월). 고 선언 시 현재 점수가 이미 넘은 문턱은 **전부 소급 인정(밀치기)** — 큰 한 방이면 1고→3고처럼 여러 단계를 한 번에 점프하고, 선언 목표는 "아직 못 넘은 첫 문턱"이라 항상 현재 점수보다 높다(공짜 연쇄 고 없음). 실패하면 **고박 = 런 종료**.
 - **정산**: 이자(보유 5냥당 1냥, 최대 5) + 기본 상금 + 남은 내기 보너스 + 고 보너스.
-- **상점**: 특수패(조커) 22종 · 티어 커먼/레어/에픽/레전더리 (출현 55/28/13/4%). 커먼(광팔이·피장사·멍따·쪽집게·쌍피보따리·띠장수), 레어(싹쓸이·고도리꾼·단골·흔들기·광모이·피오장·초단꾼), 에픽(비광우산·폭탄·밑장빼기·피박보험·멍잔치·삼광판), 레전더리(열두사철·오광소원·명인). 소지 5개, 리롤 가능.
+- **상점**: 특수패(조커) 22종 · 티어 커먼/레어/에픽/레전더리 (출현 55/28/13/4%). 커먼(광팔이·피장사·멍따·쪽집게·쌍피보따리·띠장수), 레어(싹쓸이·고도리꾼·단골·흔들기·광모이·피오장·초단꾼), 에픽(비광우산·폭탄·밑장빼기·피박보험·멍잔치·삼광판), 레전더리(열두사철·오광소원·명인). 소지 5개, 리롤 가능. 삼광판은 낸 광마다 +3배수.
 - **박 라운드(보스)**: 3·6·9·12월. 피박/광박/멍박/흔들기 금지/비바람/안개 중 하나가 걸림 (직전 상점에서 예고, 12월은 2종 중 선택).
 - **조력자 춘향** 🍶: 준비/상점에서 다음 달 훈수를 예약(3냥). 해당 월 내내 손패를 평가하고, 패를 고른 뒤 내기·버리기에 마우스를 올리면 덱 위 패를 엿봐 표정으로 알려줌.
 
@@ -38,6 +41,30 @@ test/test-game.mjs  엔진 추출 단위 테스트 + 그리디 봇 풀런 시뮬
 ```bash
 node test/test-game.mjs   # 단위 테스트 + 300런 시뮬레이션
 ```
+
+## Firebase Analytics (선택)
+
+런 종료(승리/패배) 시 **Firebase Analytics** 커스텀 이벤트 `run_end` 전송.
+
+### 로컬
+
+1. Firebase Console → 웹 앱 + **Google Analytics(GA4)** 연결 (`measurementId` 필요)
+2. `firebase-config.example.js` → `firebase-config.js` 복사 후 값 입력
+3. Authorized domains: `localhost` 추가
+4. `python3 -m http.server 8080` → 한 팔 플레이 → Console **Analytics → DebugView** 또는 **Realtime**
+
+### Vercel 배포
+
+1. Vercel → hwatro → **Settings → Environment Variables**
+2. `FIREBASE_CONFIG_JSON` = firebaseConfig JSON 한 줄 (`measurementId` 포함)
+3. **Redeploy**
+4. Firebase → Authorized domains에 `hwatro.jqklabs.com` 추가
+
+### `run_end` 파라미터
+
+`month`, `duration_sec`, `gwang_played`, `go_count`, `shop_spent`, `best_single`, `total_earned`, `won`, `reason` 등
+
+Firebase Console → **Analytics → Events → run_end** / BigQuery 연동으로 집계.
 
 ## 밸런스 (시뮬레이션 기준)
 
