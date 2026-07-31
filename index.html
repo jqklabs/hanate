@@ -3390,6 +3390,11 @@ function startRound() {
   // 튜토 미완이면: 첫 손 조합 → 바로 다음 보충은 버리기
   state.janTutorJunkPending = state.round === 1 && !hasSeenJanCoach();
 
+  if (state.runStats) {
+    state.runStats.playTurnInRound = 0;
+    state.runStats.discardTurnInRound = 0;
+  }
+
   state.boss = isBossRound(state.round) ? state.nextBoss : null;
   state.nextBoss = null;
   state.bossCandidates = null;
@@ -3845,11 +3850,21 @@ function playSelected() {
     const n = Math.min(result.kwangPlayed, 3 - state.kwangSoldThisRound);
     if (n > 0) { addMoney(n); state.kwangSoldThisRound += n; }
   }
-  if (state.runStats && result.kwangPlayed > 0) {
-    state.runStats.gwangPlayed += result.kwangPlayed;
-  }
 
   state.roundScore += result.score;
+  if (state.runStats) {
+    state.runStats.playTurnInRound++;
+    trackEvent('hand_play', {
+      month: state.round,
+      play_turn: state.runStats.playTurnInRound,
+      hand_id: result.handId,
+      hand_label: handDisplayName(result.handId, result.core),
+      cards_played: cardsTelemetrySummary(cards),
+      score: result.score,
+      money: state.money,
+      round_score: state.roundScore,
+    });
+  }
   if (result.score > state.stats.bestSingle) {
     state.stats.bestSingle = result.score;
     state.stats.bestSingleHand = handDisplayName(result.handId, result.core);
@@ -4018,7 +4033,6 @@ async function chooseGo() {
   // 밀치기 고: 이미 넘어 있는 문턱 전부를 소급 인정, 선언 단계 = 아직 못 넘은 첫 문턱
   state.goLevel = goLevelReached(state.baseTarget, state.roundScore, state.goLevel) + 1;
   state.target = goThreshold(state.baseTarget, state.goLevel);
-  if (state.runStats) state.runStats.goCount++;
   state.playsLeft++; // 고 보상: 내기 +1 (밀친 단계 수와 무관하게 선언 1회당 1개)
   state.pendingGoStop = false;
   state.screen = 'play';
@@ -4064,7 +4078,6 @@ function discardSelected() {
   }
   const uids = cards.map((c) => c.uid);
   state.discardsLeft--;
-  if (state.runStats) state.runStats.discardsUsed++;
   if (hasJoker('mitjang')) state.mitjangChips += 10;
   state.selected = [];
   state.janAuraCharged = false; // 버리기로 확정 → 횟수 소모 확정
@@ -4079,6 +4092,16 @@ function discardSelected() {
     const gone = state.hand.filter((c) => uids.includes(c.uid));
     for (const c of gone) {
       state.discardedCards.push({ ...c, tags: [...(c.tags || [])], faceDown: false });
+    }
+    if (state.runStats && gone.length) {
+      state.runStats.discardTurnInRound++;
+      trackEvent('cards_discard', {
+        month: state.round,
+        discard_turn: state.runStats.discardTurnInRound,
+        cards: cardsTelemetrySummary(gone),
+        card_count: gone.length,
+        money: state.money,
+      });
     }
     state.hand = state.hand.filter((c) => !uids.includes(c.uid));
     state.discardAnimUids = null;
@@ -4114,6 +4137,7 @@ function settle() {
   const total = interest + base + playBonus + goB + insBonus;
   state.settleData = { interest, base, playBonus, goBonus: goB, insBonus, total, moneyBefore: state.money };
   addMoney(total);
+  trackEvent('settle', { money_after: state.money });
   state.screen = 'settle';
 }
 
@@ -4168,7 +4192,12 @@ function buyJoker(i) {
   if (!offer || offer.sold) return;
   if (state.jokers.length >= 5 || state.money < offer.joker.price) { flashActions(); return; }
   state.money -= offer.joker.price;
-  if (state.runStats) state.runStats.shopSpent += offer.joker.price;
+  trackEvent('shop_buy', {
+    month: state.round,
+    joker_id: offer.joker.id,
+    price: offer.joker.price,
+    money_after: state.money,
+  });
   state.jokers.push({ id: offer.joker.id, paid: offer.joker.price });
   offer.sold = true;
   state.shopFlashOwned = state.jokers.length - 1;
@@ -4204,7 +4233,11 @@ function sellJoker(i) {
 function reroll() {
   if (state.screen !== 'shop' || state.money < state.rerollCost) return;
   state.money -= state.rerollCost;
-  if (state.runStats) state.runStats.shopSpent += state.rerollCost;
+  trackEvent('shop_reroll', {
+    month: state.round,
+    cost: state.rerollCost,
+    money_after: state.money,
+  });
   state.rerollCost++;
   state.shopOffers = genOffers();
   render();
@@ -4227,18 +4260,69 @@ function nextRound() {
   startRound();
 }
 
-// ── Firebase / 런 통계 ─────────────────────────────────────
+// ── Firebase / Analytics ───────────────────────────────────
 let _firebaseTelemetry = null;
+const SESSION_STORE_KEY = 'hwatro_session_v1';
+
+function cardsTelemetrySummary(cards) {
+  const label = { kwang: '광', yeol: '열', tti: '띠', pi: '피', ssangpi: '쌍' };
+  return cards.map((c) => `${c.month}${label[c.type] || c.type}`).join(',');
+}
+
+function loadSessionStats() {
+  try {
+    const raw = sessionStorage.getItem(SESSION_STORE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (_) {}
+  return { activeMs: 0, lastActiveAt: 0 };
+}
+
+function saveSessionStats(s) {
+  try { sessionStorage.setItem(SESSION_STORE_KEY, JSON.stringify(s)); } catch (_) {}
+}
+
+function tickSessionActiveMs() {
+  const s = loadSessionStats();
+  if (!s.lastActiveAt) return;
+  s.activeMs += performance.now() - s.lastActiveAt;
+  s.lastActiveAt = 0;
+  saveSessionStats(s);
+}
+
+function resumeSessionActiveMs() {
+  const s = loadSessionStats();
+  s.lastActiveAt = performance.now();
+  saveSessionStats(s);
+}
+
+function sessionPlaySec() {
+  tickSessionActiveMs();
+  const s = loadSessionStats();
+  return Math.round((s.activeMs || 0) / 1000);
+}
+
+function initSessionStats() {
+  const s = loadSessionStats();
+  if (!s.lastActiveAt) {
+    s.lastActiveAt = performance.now();
+    saveSessionStats(s);
+  }
+}
+
+function trackEvent(name, params) {
+  if (!window.FIREBASE_CONFIG?.apiKey || !_firebaseTelemetry) return;
+  _firebaseTelemetry
+    .then((t) => t?.track(name, params))
+    .catch(() => {});
+}
 
 function initRunStats() {
   state.runStats = {
     startedAt: performance.now(),
     activeMs: 0,
     lastActiveAt: performance.now(),
-    gwangPlayed: 0,
-    goCount: 0,
-    discardsUsed: 0,
-    shopSpent: 0,
+    playTurnInRound: 0,
+    discardTurnInRound: 0,
   };
 }
 
@@ -4261,28 +4345,36 @@ function initFirebaseTelemetry() {
     .catch(() => null);
 }
 
-function flushRunTelemetry(outcome, reason) {
+function logSessionStartTelemetry() {
+  let returning = 0;
+  let daysSince = 0;
+  try {
+    returning = localStorage.getItem('hwatro_uid') ? 1 : 0;
+    const last = localStorage.getItem('hwatro_last_visit');
+    if (last) daysSince = Math.max(0, Math.floor((Date.now() - Date.parse(last)) / 86400000));
+    localStorage.setItem('hwatro_last_visit', new Date().toISOString());
+  } catch (_) {}
+  trackEvent('session_start', {
+    returning_user: returning,
+    days_since_last: daysSince,
+  });
+}
+
+function flushSessionEndTelemetry() {
+  trackEvent('session_end', { session_play_sec: sessionPlaySec() });
+}
+
+function flushRunTelemetry() {
   const cfg = window.FIREBASE_CONFIG;
   if (!cfg?.apiKey || !_firebaseTelemetry) return;
   tickRunActiveMs();
+  tickSessionActiveMs();
   const rs = state.runStats || {};
-  const payload = {
-    outcome,
-    reason: reason || '',
-    month: state.round,
-    durationSec: Math.round((rs.activeMs || 0) / 1000),
-    gwangPlayed: rs.gwangPlayed || 0,
-    goCount: rs.goCount || 0,
-    discardsUsed: rs.discardsUsed || 0,
-    shopSpent: rs.shopSpent || 0,
-    bestSingle: state.stats.bestSingle,
-    totalEarned: state.stats.totalEarned,
-    jokerIds: state.jokers.map((j) => j.id),
-    seed: runSeed >>> 0,
-    endedAt: new Date().toISOString(),
-  };
   _firebaseTelemetry
-    .then((t) => t?.sendRun(payload))
+    .then((t) => t?.sendRun({
+      durationSec: Math.round((rs.activeMs || 0) / 1000),
+      sessionPlaySec: sessionPlaySec(),
+    }))
     .catch(() => {});
 }
 
@@ -4290,19 +4382,27 @@ function hookRunVisibility() {
   if (window._hwatroVisHook) return;
   window._hwatroVisHook = true;
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) tickRunActiveMs();
-    else resumeRunActiveMs();
+    if (document.hidden) {
+      tickRunActiveMs();
+      tickSessionActiveMs();
+    } else {
+      resumeRunActiveMs();
+      resumeSessionActiveMs();
+    }
+  });
+  window.addEventListener('pagehide', () => {
+    flushSessionEndTelemetry();
   });
 }
 
 // ── 종료 ───────────────────────────────────────────────────
 function gameOver(reason) {
-  flushRunTelemetry('lose', reason);
+  flushRunTelemetry();
   state.gameOverReason = reason;
   state.screen = 'gameover';
 }
 function victory() {
-  flushRunTelemetry('win');
+  flushRunTelemetry();
   state.screen = 'victory';
 }
 function resetRun() {
@@ -4887,6 +4987,7 @@ function initCardTune() {
 
 async function boot() {
   hookRunVisibility();
+  initSessionStats();
   initFirebaseTelemetry();
   setCardLabelsHidden(cardLabelsHidden());
   resetRun();
@@ -4910,6 +5011,7 @@ async function boot() {
   if (wait) await new Promise((r) => setTimeout(r, wait));
   hideBootLoad();
   warmSfxInBackground();
+  logSessionStartTelemetry();
   state.screen = hasSeenHowto() ? 'prep' : 'welcome';
   render();
 }
@@ -4958,7 +5060,12 @@ function buyChunhyangNext() {
   if (!(state.screen === 'shop' || state.screen === 'prep')) return;
   if (state.chunhyangNext || state.money < 3) return;
   state.money -= 3;
-  if (state.runStats) state.runStats.shopSpent += 3;
+  trackEvent('shop_buy', {
+    month: state.round,
+    joker_id: 'chunhyang_coach',
+    price: 3,
+    money_after: state.money,
+  });
   state.chunhyangNext = true;
   render();
 }

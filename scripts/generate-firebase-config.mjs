@@ -7,9 +7,17 @@ function readConfig() {
   const raw = process.env.FIREBASE_CONFIG_JSON?.trim();
   if (raw) {
     try {
-      const parsed = JSON.parse(raw);
+      // window.FIREBASE_CONFIG = {...} 형태로 붙여넣은 경우 보정
+      const jsonText = raw.startsWith('{')
+        ? raw
+        : (raw.match(/\{[\s\S]*\}/)?.[0] || raw);
+      const parsed = JSON.parse(jsonText);
       if (parsed?.apiKey && parsed?.projectId) return parsed;
-    } catch (_) {}
+      console.warn('[firebase] FIREBASE_CONFIG_JSON: apiKey 또는 projectId 없음');
+    } catch (e) {
+      console.error('[firebase] FIREBASE_CONFIG_JSON JSON 파싱 실패:', e.message);
+      console.error('[firebase] 값은 {"apiKey":"...","projectId":"...",...} 형태의 JSON 한 줄이어야 합니다.');
+    }
   }
   const cfg = {
     apiKey: process.env.FIREBASE_API_KEY,

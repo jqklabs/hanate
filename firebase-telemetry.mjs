@@ -1,4 +1,4 @@
-/** Firebase Analytics 런 통계 (index.html UI 레이어에서만 import) */
+/** Firebase Analytics — 스펙 정의 이벤트만 전송 */
 const SDK = '11.6.0';
 
 /** @returns {string} */
@@ -15,6 +15,20 @@ function getUid() {
   }
 }
 
+/** @param {Record<string, unknown>} params */
+function sanitizeParams(params) {
+  const out = {};
+  let n = 0;
+  for (const [k, v] of Object.entries(params)) {
+    if (n >= 25) break;
+    const key = String(k).replace(/[^a-zA-Z0-9_]/g, '_').slice(0, 40);
+    if (typeof v === 'number' && Number.isFinite(v)) out[key] = v;
+    else out[key] = String(v ?? '').slice(0, 100);
+    n++;
+  }
+  return out;
+}
+
 /** @param {Record<string, unknown>} config */
 export async function setup(config) {
   if (!config?.apiKey || !config?.projectId) return null;
@@ -22,7 +36,7 @@ export async function setup(config) {
   const { initializeApp } = await import(
     `https://www.gstatic.com/firebasejs/${SDK}/firebase-app.js`
   );
-  const { getAnalytics, logEvent, setUserId, isSupported } = await import(
+  const { getAnalytics, logEvent, setUserId, isSupported, setDebugModeEnabled } = await import(
     `https://www.gstatic.com/firebasejs/${SDK}/firebase-analytics.js`
   );
 
@@ -30,27 +44,24 @@ export async function setup(config) {
   if (!(await isSupported())) return null;
 
   const analytics = getAnalytics(app);
-  const uid = getUid();
-  setUserId(analytics, uid);
+  try {
+    const q = new URLSearchParams(globalThis.location?.search || '');
+    if (q.get('ga_debug') === '1') setDebugModeEnabled(analytics, true);
+  } catch (_) {}
+  setUserId(analytics, getUid());
 
-  /** @param {Record<string, unknown>} payload */
+  /** @param {string} name @param {Record<string, unknown>} params */
+  function track(name, params) {
+    logEvent(analytics, String(name).slice(0, 40), sanitizeParams(params));
+  }
+
+  /** @param {{ durationSec: number, sessionPlaySec: number }} payload */
   function sendRun(payload) {
-    logEvent(analytics, 'run_end', {
-      outcome: String(payload.outcome || ''),
-      reason: String(payload.reason || '').slice(0, 100),
-      month: Number(payload.month) || 0,
-      duration_sec: Number(payload.durationSec) || 0,
-      gwang_played: Number(payload.gwangPlayed) || 0,
-      go_count: Number(payload.goCount) || 0,
-      discards_used: Number(payload.discardsUsed) || 0,
-      shop_spent: Number(payload.shopSpent) || 0,
-      best_single: Number(payload.bestSingle) || 0,
-      total_earned: Number(payload.totalEarned) || 0,
-      joker_count: Array.isArray(payload.jokerIds) ? payload.jokerIds.length : 0,
-      seed: Number(payload.seed) || 0,
-      won: payload.outcome === 'win' ? 1 : 0,
+    track('run_end', {
+      duration_sec: payload.durationSec,
+      session_play_sec: payload.sessionPlaySec,
     });
   }
 
-  return { sendRun, uid };
+  return { track, sendRun };
 }

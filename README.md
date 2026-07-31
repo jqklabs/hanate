@@ -44,7 +44,20 @@ node test/test-game.mjs   # 단위 테스트 + 300런 시뮬레이션
 
 ## Firebase Analytics (선택)
 
-런 종료(승리/패배) 시 **Firebase Analytics** 커스텀 이벤트 `run_end` 전송.
+수집 이벤트·파라미터만 전송 (그 외 없음).
+
+| 이벤트 | 파라미터 |
+|--------|----------|
+| `session_start` | `returning_user`, `days_since_last` |
+| `session_end` | `session_play_sec` |
+| `run_end` | `duration_sec`, `session_play_sec` |
+| `hand_play` | `month`, `play_turn`, `hand_id`, `hand_label`, `cards_played`, `score`, `money`, `round_score` |
+| `cards_discard` | `month`, `discard_turn`, `cards`, `card_count`, `money` |
+| `shop_buy` | `month`, `joker_id`, `price`, `money_after` |
+| `shop_reroll` | `month`, `cost`, `money_after` |
+| `settle` | `money_after` |
+
+리텐션: IP 불가 → `hwatro_uid` + GA4 Retention. DebugView: `?ga_debug=1`.
 
 ### 로컬
 
