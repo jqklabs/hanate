@@ -26,7 +26,8 @@ service cloud.firestore {
 
     match /users/{userId} {
       function validUser() {
-        return request.resource.data.keys().hasAll(['is_invite', 'created_at'])
+        // created_at(serverTimestamp)는 Rules 평가 시 absent — hasAll에 넣으면 항상 거부
+        return request.resource.data.keys().hasAll(['is_invite'])
           && request.resource.data.is_invite in [0, 1]
           && userId.size() <= 64;
       }
