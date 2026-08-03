@@ -12,7 +12,8 @@ service cloud.firestore {
         ];
       }
       function validPayload() {
-        return request.resource.data.keys().hasAll(['uid', 'event', 'params', 'ts'])
+        // ts(serverTimestamp)는 Rules 평가 시 request.resource.data에 없음 — hasAll에 넣으면 항상 거부됨
+        return request.resource.data.keys().hasAll(['uid', 'event', 'params'])
           && request.resource.data.uid is string
           && request.resource.data.uid.size() <= 64
           && request.resource.data.event is string

@@ -47,16 +47,7 @@ export async function setup(config) {
   );
 
   const app = initializeApp(config);
-  if (!(await isSupported())) return null;
-
-  const analytics = getAnalytics(app);
-  try {
-    const q = new URLSearchParams(globalThis.location?.search || '');
-    if (q.get('ga_debug') === '1') setDebugModeEnabled(analytics, true);
-  } catch (_) {}
-
   const uid = getUid();
-  setUserId(analytics, uid);
 
   const auth = getAuth(app);
   const db = getFirestore(app);
@@ -65,6 +56,18 @@ export async function setup(config) {
     await signInAnonymously(auth);
     firestoreReady = !!auth.currentUser;
   } catch (_) {}
+
+  let analytics = null;
+  if (await isSupported()) {
+    analytics = getAnalytics(app);
+    try {
+      const q = new URLSearchParams(globalThis.location?.search || '');
+      if (q.get('ga_debug') === '1') setDebugModeEnabled(analytics, true);
+    } catch (_) {}
+    setUserId(analytics, uid);
+  }
+
+  if (!analytics && !firestoreReady) return null;
 
   /** @param {string} name @param {Record<string, unknown>} params */
   function persistFirestore(name, params) {
@@ -81,7 +84,7 @@ export async function setup(config) {
   /** @param {string} name @param {Record<string, unknown>} params */
   function track(name, params) {
     const clean = sanitizeParams(params);
-    logEvent(analytics, String(name).slice(0, 40), clean);
+    if (analytics) logEvent(analytics, String(name).slice(0, 40), clean);
     persistFirestore(name, params);
   }
 
