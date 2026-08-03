@@ -4,6 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>화투로 — 고스톱: 무한의 판</title>
+<meta name="description" content="한국 화투 48장으로 하는 1인용 Balatro라이크. 족보·고/스톱·박·상점으로 12월까지 한 해를 완주하세요.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="화투로">
+<meta property="og:title" content="화투로 — 고스톱: 무한의 판">
+<meta property="og:description" content="한국 화투 48장으로 하는 1인용 Balatro라이크. 족보·고/스톱·박·상점으로 12월까지 한 해를 완주하세요.">
+<meta property="og:url" content="https://hwatro.jqklabs.com/">
+<meta property="og:image" content="https://hwatro.jqklabs.com/Assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="화투로 — 고스톱: 무한의 판">
+<meta name="twitter:description" content="한국 화투 48장으로 하는 1인용 Balatro라이크. 족보·고/스톱·박·상점으로 12월까지 한 해를 완주하세요.">
+<meta name="twitter:image" content="https://hwatro.jqklabs.com/Assets/og.jpg">
 <script>window.FIREBASE_CONFIG = window.FIREBASE_CONFIG ?? null;</script>
 <script src="firebase-config.js"></script>
 <style>
@@ -536,6 +551,10 @@
     animation: deck-low-breathe 2.4s ease-in-out infinite;
   }
   #deckbox.deck-low b { color: #fff1f2; }
+  #deckbox.deck-blocked {
+    opacity: .42; cursor: not-allowed; pointer-events: none;
+    border-color: rgba(148, 163, 184, .25);
+  }
   @keyframes deck-low-breathe {
     0%, 100% {
       box-shadow:
@@ -848,6 +867,18 @@
     gap: 14px; margin-top: 22px; overflow: visible;
   }
   #modal h2 { margin: 0 0 12px; color: var(--gold-soft); font-size: 19px; }
+  .modal-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 10px; margin-bottom: 12px;
+  }
+  .modal-head h2 { margin: 0; flex: 1; min-width: 0; }
+  .modal-close {
+    flex-shrink: 0; width: 32px; height: 32px; padding: 0;
+    border: 1px solid rgba(255,255,255,.22); border-radius: 8px;
+    background: rgba(0,0,0,.35); color: #e2e8f0;
+    font-size: 22px; line-height: 1; cursor: pointer;
+  }
+  .modal-close:hover { background: rgba(255,255,255,.14); color: #fff; }
   #modal .sub { color: #cbd5e1; font-size: 13px; line-height: 1.55; }
   .modal-actions { display: flex; gap: 10px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
   .choicebtn { flex: 1; min-width: 190px; padding: 14px; border-radius: 12px; text-align: left; position: relative; }
@@ -4309,10 +4340,27 @@ function initSessionStats() {
   }
 }
 
+function markInviteFromUrl() {
+  try {
+    const q = new URLSearchParams(location.search);
+    if (q.get('invite') === '1') localStorage.setItem('hwatro_from_invite', '1');
+  } catch (_) {}
+}
+
+function isInviteUser() {
+  try { return localStorage.getItem('hwatro_from_invite') === '1'; } catch (_) {}
+  return false;
+}
+
+/** 모든 telemetry 이벤트에 붙는 공통 파라미터 */
+function inviteTelemetryParams() {
+  return { is_invite: isInviteUser() ? 1 : 0 };
+}
+
 function trackEvent(name, params) {
   if (!window.FIREBASE_CONFIG?.apiKey || !_firebaseTelemetry) return;
   _firebaseTelemetry
-    .then((t) => t?.track(name, params))
+    .then((t) => t?.track(name, { ...inviteTelemetryParams(), ...params }))
     .catch(() => {});
 }
 
@@ -4365,17 +4413,13 @@ function flushSessionEndTelemetry() {
 }
 
 function flushRunTelemetry() {
-  const cfg = window.FIREBASE_CONFIG;
-  if (!cfg?.apiKey || !_firebaseTelemetry) return;
   tickRunActiveMs();
   tickSessionActiveMs();
   const rs = state.runStats || {};
-  _firebaseTelemetry
-    .then((t) => t?.sendRun({
-      durationSec: Math.round((rs.activeMs || 0) / 1000),
-      sessionPlaySec: sessionPlaySec(),
-    }))
-    .catch(() => {});
+  trackEvent('run_end', {
+    duration_sec: Math.round((rs.activeMs || 0) / 1000),
+    session_play_sec: sessionPlaySec(),
+  });
 }
 
 function hookRunVisibility() {
@@ -4986,7 +5030,9 @@ function initCardTune() {
 }
 
 async function boot() {
+  markInviteFromUrl();
   hookRunVisibility();
+  hookModalKeys();
   initSessionStats();
   initFirebaseTelemetry();
   setCardLabelsHidden(cardLabelsHidden());
@@ -5030,6 +5076,16 @@ function closeHelp() {
   render();
 }
 
+function hookModalKeys() {
+  if (window._hwatroModalKeys) return;
+  window._hwatroModalKeys = true;
+  window.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (state.screen === 'help') { e.preventDefault(); closeHelp(); }
+    else if (state.screen === 'deckpeek') { e.preventDefault(); closeDeckPeek(); }
+  });
+}
+
 // ── 남은 덱 보기 ───────────────────────────────────────────
 function openDeckPeek() {
   if (state.screen === 'deckpeek') {
@@ -5038,6 +5094,7 @@ function openDeckPeek() {
   }
   if (state.juicing || state.dealing) return;
   if (state.screen !== 'play') return;
+  if (state.boss === 'angae') return;
   if (state.coachStep === 'deck') {
     state.coachStep = null;
     markDeckCoachSeen();
@@ -5546,10 +5603,17 @@ function renderSide() {
     <div class="pv-total"><span class="tl">예상 점수</span><span class="tv">${score}</span></div>`;
 
   $('deck-val').textContent = `${state.deck.length}`;
-  $('deckbox').classList.toggle('deck-low', state.deck.length > 0 && state.deck.length <= 5);
-  $('deckbox').title = state.deck.length > 0 && state.deck.length <= 5
-    ? `남은 덱 ${state.deck.length}장 · 부족! (클릭하여 보기)`
-    : '남은 덱 (클릭하여 보기)';
+  const deckBlocked = state.boss === 'angae' && state.screen === 'play';
+  const deckbox = $('deckbox');
+  deckbox.classList.toggle('deck-low', !deckBlocked && state.deck.length > 0 && state.deck.length <= 5);
+  deckbox.classList.toggle('deck-blocked', deckBlocked);
+  deckbox.setAttribute('aria-disabled', deckBlocked ? 'true' : 'false');
+  deckbox.tabIndex = deckBlocked ? -1 : 0;
+  deckbox.title = deckBlocked
+    ? '안개 — 패 보기 불가'
+    : state.deck.length > 0 && state.deck.length <= 5
+      ? `남은 덱 ${state.deck.length}장 · 부족! (클릭하여 보기)`
+      : '남은 덱 (클릭하여 보기)';
 
   const lp = $('playlog-panel');
   if (state.playLog.length > 0) {
@@ -6110,10 +6174,13 @@ function deckpeekHTML() {
   const right = MONTHS.filter((M) => M.n >= 7).map(rowHTML).join('');
   const low = state.deck.length > 0 && state.deck.length <= 5;
   return `
-    <h2 class="deck-peek-title">
-      <span class="dp-heading">🂠 패 보기</span>
-      <span class="deck-peek-count${low ? ' deck-low' : ''}">남은 덱 <b>${state.deck.length}</b>장</span>
-    </h2>
+    <div class="modal-head">
+      <h2 class="deck-peek-title" style="margin:0;flex:1;min-width:0">
+        <span class="dp-heading">🂠 패 보기</span>
+        <span class="deck-peek-count${low ? ' deck-low' : ''}">남은 덱 <b>${state.deck.length}</b>장</span>
+      </h2>
+      <button type="button" class="modal-close" onclick="closeDeckPeek()" aria-label="닫기">×</button>
+    </div>
     <div class="deck-peek-cols">
       <div class="deck-peek-col">${left}</div>
       <div class="deck-peek-col">${right}</div>
@@ -6156,7 +6223,10 @@ function helpHTML() {
     </div>`;
   }).join('');
   return `
-    <h2>📖 족보표</h2>
+    <div class="modal-head">
+      <h2>📖 족보표</h2>
+      <button type="button" class="modal-close" onclick="closeHelp()" aria-label="닫기">×</button>
+    </div>
     <div class="sub" style="margin-bottom:6px">위에서부터 먼저 성립하는 족보 <b>하나</b>로 판정합니다.<br>
       점수 = (<b>족보 구성 카드</b> 칩) × 배수 + 나머지 낸 카드 칩</div>
     <div class="handbook-legend">

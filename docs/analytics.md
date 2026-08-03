@@ -1,73 +1,204 @@
 # Analytics 수집
 
-## session_start — 탭 진입
+게임 텔레메트리는 **Firebase Analytics(GA4)** 와 **Firestore** 에 동시 기록한다.
 
-| 파라미터 | 데이터 |
-|----------|--------|
-| `returning_user` | 재방문 여부 (0=첫 방문, 1=재방문) |
-| `days_since_last` | 마지막 방문 며칠 전 |
+| 경로 | 용도 |
+|------|------|
+| Analytics | 퍼널·DAU·리텐션 대시보드 (집계) |
+| Firestore `events` | 이벤트·파라미터 **원본 보관** (GA4처럼 휘발·집계만 보이지 않음) |
 
-## session_end — 탭 닫기
+코드: `firebase-telemetry.mjs` — `track()` 이 양쪽 모두 호출.
 
-| 파라미터 | 데이터 |
-|----------|--------|
-| `session_play_sec` | 이번 방문 누적 플레이 시간(초) |
+---
 
-## run_end — 런 종료
+## Firestore 스키마
 
-| 파라미터 | 데이터 |
-|----------|--------|
-| `duration_sec` | 이번 런 플레이 시간(초) |
-| `session_play_sec` | 이번 방문 누적 플레이 시간(초) |
+컬렉션: **`events`** (루트, 자동 ID)
 
-## hand_play — 내기
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `uid` | string | `hwatro_uid` (localStorage UUID, GA User-ID 와 동일) |
+| `event` | string | 이벤트 이름 (아래 표) |
+| `params` | map | 해당 이벤트 파라미터 전체 |
+| `ts` | timestamp | 서버 기록 시각 (`serverTimestamp`) |
 
-| 파라미터 | 데이터 |
-|----------|--------|
-| `month` | 몇 월 판 |
-| `play_turn` | 그 월에서 몇 번째 내기 |
-| `hand_id` | 족보 ID (예 `samgwang`) |
-| `hand_label` | 족보 이름 (예 `삼광`) |
-| `cards_played` | 낸 패 (예 `3광,5피,12피`) |
-| `score` | 이번 내기 점수 |
-| `round_score` | 그 월 누적 점수 |
-| `money` | 그 시점 보유 냥 |
+콘솔에서 조회 예:
 
-## cards_discard — 버리기
+- 전체: Firestore → `events` → 문서 목록
+- 이벤트별: 쿼리 `event == hand_play`
+- 유저별: 쿼리 `uid == <uuid>`
+- 월별 내기: `params.month` 는 map 안 필드 → 필요 시 콘솔 필터 또는 BigQuery(Blaze) / 내보내기
 
-| 파라미터 | 데이터 |
-|----------|--------|
-| `month` | 몇 월 판 |
-| `discard_turn` | 그 월에서 몇 번째 버리기 |
-| `cards` | 버린 패 (예 `3광,5피`) |
-| `card_count` | 버린 장수 |
-| `money` | 그 시점 보유 냥 |
+보안 규칙: [`firestore.rules`](../firestore.rules) — 익명 Auth 로 **create 만** 허용, read/update/delete 차단.
 
-## shop_buy — 구매
+---
 
-| 파라미터 | 데이터 |
-|----------|--------|
-| `month` | 구매 시점(월) |
-| `joker_id` | 특수패 ID (`chunhyang_coach` = 춘향 예약) |
-| `price` | 지불 냥 |
-| `money_after` | 구매 후 보유 냥 |
+## Spark(무료) 플랜 한도 · 운영
 
-## shop_reroll — 상점 리롤
+| 항목 | 무료 한도 | 대략적 여유 (본 게임) |
+|------|-----------|------------------------|
+| Firestore 저장 | 1 GiB | 이벤트 1건 ~500B → 수백만 건 전 |
+| 쓰기 | **20,000 / 일** | 세션당 ~30~80건 → **~250~650 세션/일** |
+| 읽기 | 50,000 / 일 | 콘솔 조회 위주면 충분 |
+| Analytics | GA4 무료 | 이벤트 수 제한 넉넉 |
 
-| 파라미터 | 데이터 |
-|----------|--------|
-| `month` | 리롤 시점(월) |
-| `cost` | 리롤 비용 |
-| `money_after` | 리롤 후 보유 냥 |
+한도 초과 시: 당일 Firestore 쓰기만 실패(게임은 정상). Analytics 는 계속 동작.
 
-## settle — 월 정산
+**용량 관리 (무료 유지):**
 
-| 파라미터 | 데이터 |
-|----------|--------|
-| `money_after` | 정산 후 보유 냥 |
+- 3~6개월마다 Firestore → Export → 오래된 `events` 수동 삭제 (또는 Blaze + scheduled delete)
+- 이벤트 추가·고빈도 로깅 전에 **일 쓰기량** 대략 계산
 
-## 리텐션 (별도 이벤트 없음)
+Anonymous Auth: 무료, Spark 에서 사용 가능.
+
+---
+
+## 이벤트 · 파라미터 (Firestore `params` 와 동일)
+
+### session_start — 탭 진입
+
+| 파라미터 | 타입 | 데이터 |
+|----------|------|--------|
+| `returning_user` | number | 재방문 (0=첫 방문, 1=재방문) |
+| `days_since_last` | number | 마지막 방문 며칠 전 |
+| `is_invite` | number | 지인 초대 링크(`/invite`) 유입 (0/1) — **모든 이벤트**에 공통 첨부 |
+
+### session_end — 탭 닫기
+
+| 파라미터 | 타입 | 데이터 |
+|----------|------|--------|
+| `session_play_sec` | number | 이번 방문 누적 플레이 시간(초) |
+
+### run_end — 런 종료
+
+| 파라미터 | 타입 | 데이터 |
+|----------|------|--------|
+| `duration_sec` | number | 이번 런 플레이 시간(초) |
+| `session_play_sec` | number | 이번 방문 누적 플레이 시간(초) |
+
+### hand_play — 내기
+
+| 파라미터 | 타입 | 데이터 |
+|----------|------|--------|
+| `month` | number | 몇 월 판 |
+| `play_turn` | number | 그 월에서 몇 번째 내기 |
+| `hand_id` | string | 족보 ID (예 `samgwang`) |
+| `hand_label` | string | 족보 이름 (예 `삼광`) |
+| `cards_played` | string | 낸 패 (예 `3광,5피,12피`) |
+| `score` | number | 이번 내기 점수 |
+| `round_score` | number | 그 월 누적 점수 |
+| `money` | number | 그 시점 보유 냥 |
+
+### cards_discard — 버리기
+
+| 파라미터 | 타입 | 데이터 |
+|----------|------|--------|
+| `month` | number | 몇 월 판 |
+| `discard_turn` | number | 그 월에서 몇 번째 버리기 |
+| `cards` | string | 버린 패 (예 `3광,5피`) |
+| `card_count` | number | 버린 장수 |
+| `money` | number | 그 시점 보유 냥 |
+
+### shop_buy — 구매
+
+| 파라미터 | 타입 | 데이터 |
+|----------|------|--------|
+| `month` | number | 구매 시점(월) |
+| `joker_id` | string | 특수패 ID (`chunhyang_coach` = 춘향 예약) |
+| `price` | number | 지불 냥 |
+| `money_after` | number | 구매 후 보유 냥 |
+
+### shop_reroll — 상점 리롤
+
+| 파라미터 | 타입 | 데이터 |
+|----------|------|--------|
+| `month` | number | 리롤 시점(월) |
+| `cost` | number | 리롤 비용 |
+| `money_after` | number | 리롤 후 보유 냥 |
+
+### settle — 월 정산
+
+| 파라미터 | 타입 | 데이터 |
+|----------|------|--------|
+| `money_after` | number | 정산 후 보유 냥 |
+
+### 리텐션 (별도 이벤트 없음)
 
 | 수단 | 데이터 |
 |------|--------|
-| User ID (`hwatro_uid`) | 기기별 익명 UUID (IP 대체) |
+| `uid` / GA User-ID | 기기별 익명 UUID (`hwatro_uid`) |
+| `session_start.returning_user` | 재방문 여부 |
+| `session_start.days_since_last` | 이탈 간격 |
+
+---
+
+## Firebase Console 설정 체크리스트 (해야 할 일)
+
+### 1. Firestore 켜기
+
+1. [Firebase Console](https://console.firebase.google.com) → 프로젝트 선택  
+2. **Build → Firestore Database → Create database**  
+3. **Production mode** 로 생성 (규칙은 아래에서 교체)  
+4. 리전: **`asia-northeast3`(서울)** 권장 — latency·무료 한도 동일
+
+### 2. 보안 규칙 배포
+
+1. Firestore → **Rules** 탭  
+2. 저장소 [`firestore.rules`](../firestore.rules) 내용 붙여넣기 → **Publish**
+
+### 3. Anonymous Authentication
+
+1. **Build → Authentication → Sign-in method**  
+2. **Anonymous** → **Enable** → 저장
+
+### 4. Authorized domains (기존 Analytics 와 동일)
+
+Authentication → Settings → Authorized domains:
+
+- `localhost`
+- `hwatro.jqklabs.com`
+- (필요 시) `*.vercel.app` 프리뷰 도메인
+
+### 5. Vercel 환경 변수 (배포)
+
+- `FIREBASE_CONFIG_JSON` — `projectId`, `apiKey`, `measurementId` 등 **기존과 동일 JSON**  
+- Firestore 는 같은 Firebase 프로젝트면 **추가 env 불필요**  
+- Redeploy 후 `https://hwatro.jqklabs.com/firebase-config.js` 가 `null` 이 아닌지 확인
+
+### 6. 동작 확인
+
+1. 로컬 또는 라이브에서 게임 플레이 (내기·버리기·상점 등)  
+2. Firestore → `events` — 문서가 쌓이는지 확인  
+3. (선택) `?ga_debug=1` → GA4 DebugView  
+4. Anonymous Auth 실패 시: Firestore 문서 없음, Analytics 만 동작
+
+### 7. GA4 맞춤 정의 (선택, Analytics 쪽)
+
+Firestore 에는 파라미터가 그대로 남으므로 **필수 아님**. GA4 리포트용으로만:
+
+| 이벤트 | 맞춤 정의 (범위: 이벤트) |
+|--------|-------------------------|
+| hand_play | `month`, `hand_id`, `score`, `money` … |
+| cards_discard | `month`, `card_count`, `money` |
+| shop_buy | `joker_id`, `price` |
+
+---
+
+## 코드 변경 요약 (완료)
+
+| 파일 | 내용 |
+|------|------|
+| `firebase-telemetry.mjs` | Analytics + Firestore 동시 기록, Anonymous Auth |
+| `firestore.rules` | create-only, 이벤트 화이트리스트 |
+| `index.html` | 변경 없음 (`trackEvent` 그대로) |
+
+---
+
+## 트러블슈팅
+
+| 증상 | 원인 | 조치 |
+|------|------|------|
+| `events` 에 문서 없음 | Anonymous Auth 미활성 | Auth → Anonymous Enable |
+| Permission denied | Rules 미배포 / 잘못된 rules | `firestore.rules` Publish |
+| `firebase-config.js` = null | Vercel env / 미배포 | `FIREBASE_CONFIG_JSON` + Redeploy |
+| 하루 중 쓰기 멈춤 | 20K writes/일 초과 | Export 후 old data 삭제 또는 Blaze |

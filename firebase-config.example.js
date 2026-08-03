@@ -1,9 +1,12 @@
 /**
- * Firebase Analytics 연동 설정
+ * Firebase Analytics + Firestore 설정
  *
  * 1. Firebase Console → 프로젝트 → 웹 앱 추가 → firebaseConfig 복사
  * 2. Google Analytics(GA4) 연결 — measurementId 필수
- * 3. 이 파일을 firebase-config.js 로 복사 후 값 입력
+ * 3. Firestore Database 생성 (Production) — docs/analytics.md 체크리스트
+ * 4. Authentication → Anonymous 활성화
+ * 5. Firestore Rules — firestore.rules 내용 Publish
+ * 6. 이 파일을 firebase-config.js 로 복사 후 값 입력
  *
  * Vercel: Settings → Environment Variables → FIREBASE_CONFIG_JSON
  *   (firebaseConfig 객체를 JSON 한 줄로. 배포 시 scripts/generate-firebase-config.mjs 가 생성)

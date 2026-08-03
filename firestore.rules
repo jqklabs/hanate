@@ -1,0 +1,28 @@
+rules_version = '2';
+// Firebase Console → Firestore → Rules 에 붙여넣기
+// Anonymous Auth 활성화 필수 (firebase-telemetry.mjs 가 signInAnonymously 사용)
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /events/{eventId} {
+      function allowedEvent() {
+        return request.resource.data.event in [
+          'session_start', 'session_end', 'run_end',
+          'hand_play', 'cards_discard', 'shop_buy', 'shop_reroll', 'settle'
+        ];
+      }
+      function validPayload() {
+        return request.resource.data.keys().hasAll(['uid', 'event', 'params', 'ts'])
+          && request.resource.data.uid is string
+          && request.resource.data.uid.size() <= 64
+          && request.resource.data.event is string
+          && request.resource.data.params is map
+          && request.resource.data.params.size() <= 25
+          && allowedEvent();
+      }
+      // 클라이언트: 익명 로그인 후 create 만 (조회·수정·삭제 불가)
+      allow create: if request.auth != null && validPayload();
+      allow read, update, delete: if false;
+    }
+  }
+}
