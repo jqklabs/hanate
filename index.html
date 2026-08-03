@@ -4352,15 +4352,10 @@ function isInviteUser() {
   return false;
 }
 
-/** 모든 telemetry 이벤트에 붙는 공통 파라미터 */
-function inviteTelemetryParams() {
-  return { is_invite: isInviteUser() ? 1 : 0 };
-}
-
 function trackEvent(name, params) {
   if (!window.FIREBASE_CONFIG?.apiKey || !_firebaseTelemetry) return;
   _firebaseTelemetry
-    .then((t) => t?.track(name, { ...inviteTelemetryParams(), ...params }))
+    .then((t) => t?.track(name, params))
     .catch(() => {});
 }
 
@@ -4389,7 +4384,11 @@ function initFirebaseTelemetry() {
   const cfg = window.FIREBASE_CONFIG;
   if (!cfg?.apiKey) return;
   _firebaseTelemetry = import('./firebase-telemetry.mjs')
-    .then((m) => m.setup(cfg))
+    .then(async (m) => {
+      const t = await m.setup(cfg);
+      if (t?.registerUser) await t.registerUser(isInviteUser());
+      return t;
+    })
     .catch(() => null);
 }
 

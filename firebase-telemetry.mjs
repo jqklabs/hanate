@@ -39,7 +39,7 @@ export async function setup(config) {
   const { getAnalytics, logEvent, setUserId, isSupported, setDebugModeEnabled } = await import(
     `https://www.gstatic.com/firebasejs/${SDK}/firebase-analytics.js`
   );
-  const { getFirestore, collection, addDoc, serverTimestamp } = await import(
+  const { getFirestore, collection, addDoc, doc, getDoc, setDoc, serverTimestamp } = await import(
     `https://www.gstatic.com/firebasejs/${SDK}/firebase-firestore.js`
   );
   const { getAuth, signInAnonymously } = await import(
@@ -69,6 +69,20 @@ export async function setup(config) {
 
   if (!analytics && !firestoreReady) return null;
 
+  /** 최초 1회 — users/{uid} 에 is_invite 기록 (이후 이벤트엔 uid만) */
+  async function registerUser(isInvite) {
+    if (!firestoreReady) return;
+    const ref = doc(db, 'users', uid);
+    try {
+      const snap = await getDoc(ref);
+      if (snap.exists()) return;
+      await setDoc(ref, {
+        is_invite: isInvite ? 1 : 0,
+        created_at: serverTimestamp(),
+      });
+    } catch (_) {}
+  }
+
   /** @param {string} name @param {Record<string, unknown>} params */
   function persistFirestore(name, params) {
     if (!firestoreReady) return;
@@ -96,5 +110,5 @@ export async function setup(config) {
     });
   }
 
-  return { track, sendRun };
+  return { track, sendRun, registerUser, uid };
 }

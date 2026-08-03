@@ -12,7 +12,6 @@ service cloud.firestore {
         ];
       }
       function validPayload() {
-        // ts(serverTimestamp)는 Rules 평가 시 request.resource.data에 없음 — hasAll에 넣으면 항상 거부됨
         return request.resource.data.keys().hasAll(['uid', 'event', 'params'])
           && request.resource.data.uid is string
           && request.resource.data.uid.size() <= 64
@@ -21,8 +20,17 @@ service cloud.firestore {
           && request.resource.data.params.size() <= 25
           && allowedEvent();
       }
-      // 클라이언트: 익명 로그인 후 create 만 (조회·수정·삭제 불가)
       allow create: if request.auth != null && validPayload();
+      allow read, update, delete: if false;
+    }
+
+    match /users/{userId} {
+      function validUser() {
+        return request.resource.data.keys().hasAll(['is_invite', 'created_at'])
+          && request.resource.data.is_invite in [0, 1]
+          && userId.size() <= 64;
+      }
+      allow create: if request.auth != null && validUser() && !exists(/databases/$(database)/documents/users/$(userId));
       allow read, update, delete: if false;
     }
   }

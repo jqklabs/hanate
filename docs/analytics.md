@@ -13,14 +13,27 @@
 
 ## Firestore 스키마
 
+### `events` — 게임 이벤트 로그
+
 컬렉션: **`events`** (루트, 자동 ID)
 
 | 필드 | 타입 | 설명 |
 |------|------|------|
-| `uid` | string | `hwatro_uid` (localStorage UUID, GA User-ID 와 동일) |
-| `event` | string | 이벤트 이름 (아래 표) |
-| `params` | map | 해당 이벤트 파라미터 전체 |
-| `ts` | timestamp | 서버 기록 시각 (`serverTimestamp`) |
+| `uid` | string | `hwatro_uid` (GA User-ID 와 동일) |
+| `event` | string | 이벤트 이름 |
+| `params` | map | 해당 이벤트 파라미터 (`is_invite` **없음**) |
+| `ts` | timestamp | 서버 기록 시각 |
+
+### `users` — 유저 1회 등록 (초대 여부)
+
+컬렉션: **`users/{uid}`** — `hwatro_uid` 최초 부여 시 **1문서만** 생성
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `is_invite` | number | `/invite` 유입 여부 (0/1), **최초 1회만** 기록 |
+| `created_at` | timestamp | 최초 등록 시각 |
+
+**분석:** `users` 에서 `is_invite == 1` 인 `uid` 목록 → `events` 를 `uid` 로 조인
 
 콘솔에서 조회 예:
 
@@ -61,7 +74,6 @@ Anonymous Auth: 무료, Spark 에서 사용 가능.
 |----------|------|--------|
 | `returning_user` | number | 재방문 (0=첫 방문, 1=재방문) |
 | `days_since_last` | number | 마지막 방문 며칠 전 |
-| `is_invite` | number | 지인 초대 링크(`/invite`) 유입 (0/1) — **모든 이벤트**에 공통 첨부 |
 
 ### session_end — 탭 닫기
 
