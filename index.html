@@ -10,15 +10,15 @@
 <meta property="og:title" content="화투로 — 고스톱: 무한의 판">
 <meta property="og:description" content="한국 화투 48장으로 하는 1인용 Balatro라이크. 족보·고/스톱·박·상점으로 12월까지 한 해를 완주하세요.">
 <meta property="og:url" content="https://hwatro.jqklabs.com/">
-<meta property="og:image" content="https://hwatro.jqklabs.com/Assets/og.jpg">
+<meta property="og:image" content="https://hwatro.jqklabs.com/Assets/OG/OG1.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:type" content="image/png">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="화투로 — 고스톱: 무한의 판">
 <meta name="twitter:description" content="한국 화투 48장으로 하는 1인용 Balatro라이크. 족보·고/스톱·박·상점으로 12월까지 한 해를 완주하세요.">
-<meta name="twitter:image" content="https://hwatro.jqklabs.com/Assets/og.jpg">
+<meta name="twitter:image" content="https://hwatro.jqklabs.com/Assets/OG/OG1.png">
 <script>window.FIREBASE_CONFIG = window.FIREBASE_CONFIG ?? null;</script>
 <script src="firebase-config.js"></script>
 <style>
@@ -4490,12 +4490,22 @@ function markInviteFromUrl() {
   try {
     const q = new URLSearchParams(location.search);
     if (q.get('invite') === '1') localStorage.setItem('hwatro_from_invite', '1');
+    const og = q.get('og');
+    if (og && /^[A-Za-z0-9_-]{1,32}$/.test(og)) {
+      localStorage.setItem('hwatro_from_invite', '1');
+      localStorage.setItem('hwatro_og_image', og);
+    }
   } catch (_) {}
 }
 
 function isInviteUser() {
   try { return localStorage.getItem('hwatro_from_invite') === '1'; } catch (_) {}
   return false;
+}
+
+function getOgImageAttr() {
+  try { return localStorage.getItem('hwatro_og_image') || ''; } catch (_) {}
+  return '';
 }
 
 function trackEvent(name, params) {
@@ -4532,7 +4542,7 @@ function initFirebaseTelemetry() {
   _firebaseTelemetry = import('./firebase-telemetry.mjs')
     .then(async (m) => {
       const t = await m.setup(cfg);
-      if (t?.registerUser) await t.registerUser(isInviteUser());
+      if (t?.registerUser) await t.registerUser(isInviteUser(), getOgImageAttr());
       return t;
     })
     .catch(() => null);
@@ -4547,10 +4557,13 @@ function logSessionStartTelemetry() {
     if (last) daysSince = Math.max(0, Math.floor((Date.now() - Date.parse(last)) / 86400000));
     localStorage.setItem('hwatro_last_visit', new Date().toISOString());
   } catch (_) {}
-  trackEvent('session_start', {
+  const params = {
     returning_user: returning,
     days_since_last: daysSince,
-  });
+  };
+  const og = getOgImageAttr();
+  if (og) params.og_image = og;
+  trackEvent('session_start', params);
 }
 
 function flushSessionEndTelemetry() {

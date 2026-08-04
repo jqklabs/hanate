@@ -31,9 +31,22 @@
 | 필드 | 타입 | 설명 |
 |------|------|------|
 | `is_invite` | number | `/invite` 유입 여부 (0/1), **최초 1회만** 기록 |
+| `og_image` | string | (선택) 유입 OG 변형 (`OG1`/`OG2`/`OGB1`/`OGB2`) |
 | `created_at` | timestamp | 최초 등록 시각 |
 
-**분석:** `users` 에서 `is_invite == 1` 인 `uid` 목록 → `events` 를 `uid` 로 조인
+**분석:** `users` 에서 `is_invite == 1` 인 `uid` 목록 → `events` 를 `uid` 로 조인. OG별 유입은 `users.og_image` 또는 `session_start.params.og_image` 로 집계.
+
+### OG A/B 유입 링크
+
+| URL | 동작 |
+|-----|------|
+| `/invite` | 미들웨어가 `OG1`/`OG2`/`OGB1`/`OGB2` 중 **랜덤**으로 `/invite/{name}` 302 |
+| `/invite/{name}` | 해당 OG 미리보기(`Assets/OG/{name}.png`) → 사람 클릭 시 `/{name}` |
+| `/{name}` | `hwatro_og_image` 저장 후 `/` 로 이동 → Firestore `og_image` 기록 |
+
+공유는 **`https://hwatro.jqklabs.com/invite`** 하나만 쓰면 됨. (요청마다 4장 중 랜덤 302 → named URL의 OG 미리보기)
+
+참고: 카카오 등이 `/invite` 미리보기를 한 번 캐시하면 미리보기 이미지는 고정될 수 있고, 클릭 시에는 다시 랜덤 배정됩니다. 유입 집계는 **착지한** `og_image`(Firestore) 기준입니다. 미리보기와 클릭을 1:1로 고정하려면 `/invite/OG1` 처럼 named URL을 직접 공유하세요.
 
 콘솔에서 조회 예:
 
@@ -74,6 +87,7 @@ Anonymous Auth: 무료, Spark 에서 사용 가능.
 |----------|------|--------|
 | `returning_user` | number | 재방문 (0=첫 방문, 1=재방문) |
 | `days_since_last` | number | 마지막 방문 며칠 전 |
+| `og_image` | string | (있을 때만) 유입 OG 변형 이름 |
 
 ### session_end — 탭 닫기
 

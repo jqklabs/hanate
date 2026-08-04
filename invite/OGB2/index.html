@@ -9,8 +9,8 @@
 <meta property="og:site_name" content="화투로">
 <meta property="og:title" content="화투로 — 고스톱: 무한의 판">
 <meta property="og:description" content="한국 화투 48장으로 하는 1인용 Balatro라이크. 족보·고/스톱·박·상점으로 12월까지 한 해를 완주하세요.">
-<meta property="og:url" content="https://hwatro.jqklabs.com/invite">
-<meta property="og:image" content="https://hwatro.jqklabs.com/Assets/OG/OG1.png">
+<meta property="og:url" content="https://hwatro.jqklabs.com/invite/OGB2">
+<meta property="og:image" content="https://hwatro.jqklabs.com/Assets/OG/OGB2.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:type" content="image/png">
@@ -18,16 +18,13 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="화투로 — 고스톱: 무한의 판">
 <meta name="twitter:description" content="한국 화투 48장으로 하는 1인용 Balatro라이크. 족보·고/스톱·박·상점으로 12월까지 한 해를 완주하세요.">
-<meta name="twitter:image" content="https://hwatro.jqklabs.com/Assets/OG/OG1.png">
+<meta name="twitter:image" content="https://hwatro.jqklabs.com/Assets/OG/OGB2.png">
 <script>
-/* Vercel middleware가 /invite 를 랜덤 named URL로 302.
-   로컬·미들웨어 미적용 환경용 폴백 */
-(function () {
-  var variants = ['OG1', 'OG2', 'OGB1', 'OGB2'];
-  var pick = variants[Math.floor(Math.random() * variants.length)];
-  var q = location.search;
-  location.replace('/invite/' + pick + (q && q !== '?' ? q : ''));
-})();
+try {
+  localStorage.setItem('hwatro_from_invite', '1');
+  localStorage.setItem('hwatro_og_image', "OGB2");
+} catch (_) {}
+location.replace('/OGB2');
 </script>
 </head>
 <body></body>
