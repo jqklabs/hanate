@@ -232,6 +232,16 @@ console.log('[5] 특수패·박 회귀');
   assert(rPaeNone.handId === 'none' && rPaeNone.mult === 1, '명인 무조합 ×1');
   const rOg = E.computeScore([...sam, bikwang], env({ jokerIds: ['ogwang_kkum'] }));
   assert(rOg.mult === 10, `오광소원 비삼광 ×2.5 (실제 ${rOg.mult})`); // 4 × 2.5
+  // 삼광판: 낸 광마다 +3 — 사광 배수가 비삼광보다 작아지지 않음 (역행 방지)
+  const gwang3 = pick((c) => c.type === 'kwang' && !c.tags.includes('bikwang')).slice(0, 3);
+  const gwang4 = [...gwang3.slice(0, 2), bikwang, gwang3[2]]; // 비광 포함 4장 → 사광
+  const rNori3 = E.computeScore(gwang3, env({ jokerIds: ['samgwang_nori'] }));
+  const rNori4 = E.computeScore(gwang4, env({ jokerIds: ['samgwang_nori'] }));
+  assert(rNori3.handId === 'samgwang' && rNori3.mult === 5 + 9,
+    `삼광판 광3 = 5+9 (실제 hand=${rNori3.handId} mult=${rNori3.mult})`);
+  assert(rNori4.handId === 'sagwang' && rNori4.mult === 8 + 12,
+    `삼광판 광4 = 8+12 (실제 hand=${rNori4.handId} mult=${rNori4.mult})`);
+  assert(rNori4.score > rNori3.score, `삼광판 광4 점수 > 광3 (실제 ${rNori4.score} vs ${rNori3.score})`);
 }
 
 // ─── 6. evaluateHand (춘향 훈수 엔진) ─────────────────────
