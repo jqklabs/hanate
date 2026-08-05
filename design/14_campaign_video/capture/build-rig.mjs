@@ -42,9 +42,13 @@ function build() {
   // 원본이 'Assets/...' 상대경로를 참조하므로 링크를 걸어준다
   const link = resolve(BUILD, 'Assets');
   if (!existsSync(link)) symlinkSync(resolve(ROOT, 'assets'), link, 'dir');
+  // 영상용 고해상도 카드(원본 1360px → 960px). 게임 에셋은 480px라 확대하면 뭉갠다.
+  const hi = resolve(BUILD, 'CardsHi');
+  if (!existsSync(hi)) symlinkSync(resolve(HERE, 'cards_hi'), hi, 'dir');
 
   // 리그 스크립트도 .build에서 바로 읽히도록 링크
-  for (const f of ['rig.js', 'scenes.js', 'vfx.js', 'chunhyang.png']) {
+  for (const f of ['rig.js', 'scenes.js', 'vfx.js', 'chunhyang.png', 'jumak.png',
+                   'fx_godori.png', 'fx_byeongpung.png', 'fx_ogwang.png']) {
     const l = resolve(BUILD, f);
     if (!existsSync(l)) symlinkSync(resolve(HERE, f), l, 'file');
   }

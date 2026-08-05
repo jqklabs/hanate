@@ -18,7 +18,19 @@ const OUT = resolve(HERE, 'out');
 /* 4:5가 주력 규격이다. 16:9로 찍어 크롭하면 좌우가 잘려 정작 안 보인다.
  * → 처음부터 4:5(1440×1800)로 녹화한다. 폭 1440 > 720이라 데스크톱 레이아웃이 뜨고,
  *   출력 1080×1350으로 내려가므로 다운스케일 = 선명하다. */
-const VIEW = { width: 1440, height: 1800 };
+/* 게임 UI는 높이 618px 고정이다. 1800으로 찍으면 하단 66%가 빈 판이 되고,
+ * 그걸 감추려고 카메라를 확대하다 좌측 UI·조커바·팝업이 잘렸다.
+ * → 4:5(860×1075)로 찍고 UI를 세로 중앙에 둔다. 확대는 거의 필요 없다. */
+/* 뷰포트 == 프레임으로 두면 여백이 0이라 카메라가 조금만 확대·이동해도
+ * 가장자리 요소가 바로 잘린다(실제로 상점 모달·조커바가 그랬다).
+ * → 뷰포트를 최종 프레임 크기(1080×1350)로 키우고, 게임은 그 안의
+ *   860×1075 '무대'에만 그린다(rig.js의 --cap-stage). 둘레는 게임 배경.
+ *   assemble의 기본 배율 Z = 1080/860 ≈ 1.256이 그 무대를 꽉 잡는다. */
+const VIEW = { width: 1080, height: 1350 };
+/* 브라우저 녹화는 25fps 고정이다. 60fps를 보간으로 지어내면 카드가 빠르게 움직일 때
+ * 픽셀이 뭉개진다 → 페이지를 SLOW배 느리게 돌려 실제 프레임을 더 얻고,
+ * 편집에서 SLOW배 빨리 감는다. 25 × 2.5 = 62.5fps 분량의 진짜 프레임. */
+const SLOW = 2.5;
 const DSF = 1;
 
 export async function record(only) {
@@ -57,12 +69,29 @@ export async function record(only) {
     });
 
     const page = await ctx.newPage();
+    /* 슬로모션 녹화라 씬 하나가 실수(real) 30~60초씩 걸린다.
+       Playwright 기본 30초로는 항상 타임아웃 난다. */
+    page.setDefaultTimeout(600000);
     const logs = [];
     page.on('console', (m) => logs.push(m.text()));
 
-    const url = `${pathToFileURL(BUILD).href}?capture=1&scene=${sc.id}&seed=42`;
+    // CSS 애니메이션도 같이 느리게 (setTimeout만 늦추면 VFX가 어긋난다)
+    const cdp = await ctx.newCDPSession(page);
+    await cdp.send('Animation.enable');
+    await cdp.send('Animation.setPlaybackRate', { playbackRate: 1 / SLOW });
+
+    const url = `${pathToFileURL(BUILD).href}?capture=1&scene=${sc.id}&seed=42&slow=${SLOW}`;
     await page.goto(url);
-    await page.waitForFunction('window.__captureDone === true', { timeout: sc.record + 60000 });
+    try {
+      await page.waitForFunction('window.__captureDone === true',
+        { timeout: 600000 });
+    } catch (e) {
+      // 어디서 멈췄는지 알려준다 — 마지막 마크와 콘솔 로그
+      const mk = await page.evaluate('(window.__captureMarks||[]).map(x=>x.name).join(">")');
+      console.error(`  ✗ ${sc.id} 타임아웃. 마지막까지 진행된 마크: ${mk || '(없음)'}`);
+      logs.slice(-6).forEach((l) => console.error('    ' + l));
+      throw e;
+    }
 
     const err = await page.evaluate('window.__captureError || null');
     // 씬이 실제로 시작한 지점(ms) — assemble이 여기서부터 자른다
@@ -90,8 +119,15 @@ export async function record(only) {
   // assemble이 읽을 매니페스트 — 컷별 시작 오프셋을 넘긴다
   const man = resolve(OUT, 'manifest.json');
   const prev = existsSync(man) ? JSON.parse(readFileSync(man, 'utf8')) : {};
-  for (const r of results)
-    prev[r.id] = { startMs: r.startMs, use: r.use, marks: r.marks, rectLog: r.rectLog };
+  for (const r of results) {
+    /* 마크·좌표 시각은 나누지 않는다.
+     * 리그가 performance.now()를 이미 SLOW배 느리게 패치했으므로
+     * 여기 담긴 값은 '빨리감기 기준(=최종 영상 기준)' 시각이다.
+     * 여기서 또 나누면 2.5로 두 번 나뉘어 마크가 실제의 40%로 찍히고,
+     * 컷들이 서로 겹쳐 같은 장면이 두 번 재생된다. 실제로 그랬다. */
+    prev[r.id] = { startMs: r.startMs, use: r.use, slow: SLOW,
+                   marks: r.marks, rectLog: r.rectLog };
+  }
   writeFileSync(man, JSON.stringify(prev, null, 2));
 
   return results;

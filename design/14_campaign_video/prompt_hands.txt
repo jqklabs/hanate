@@ -1,0 +1,14 @@
+Use your image generation tool three times. Do NOT draw with code.
+
+Create THREE separate emblem images for a Korean hwatu (flower card) game UI, each on a SOLID PURE BLACK (#000000) background so it can be keyed out. Korean sumi-e ink painting on off-white rice paper, loose brush strokes, gold leaf accents, deep crimson red. Ornate, symmetrical, cinematic game emblem. NO text, NO letters anywhere.
+
+1) File ./fx_godori.png — "Godori" emblem.
+Three ink-painted birds arranged in a radiating fan: a warbler on plum branch, a cuckoo on wisteria, and wild geese over a hill. Behind them, gold filigree cloud motifs burst outward in a circular halo. Warm amber glow.
+
+2) File ./fx_byeongpung.png — "Byeongpung" (folding screen) emblem.
+A five-panel Korean folding screen standing open, each panel painted with a different month's flower: pine and crane, plum with warbler, cherry blossom, wisteria, and iris. Gold-edged panel frames. Gold cloud filigree curling outward from both sides.
+
+3) File ./fx_ogwang.png — "Ogwang" (five brights) emblem.
+Five hwatu bright cards fanned in a radiating arc, each with a dark red band at its bottom edge bearing a pale circular medallion. Behind them an intense golden sunburst with long rays. The most ornate and explosive of the three.
+
+CRITICAL for all three: background must be SOLID PURE BLACK with nothing else — no scene, no floor, no gradient wash. Only the emblem floating on black.

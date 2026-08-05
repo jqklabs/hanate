@@ -1,0 +1,11 @@
+Use your image generation tool. Do NOT draw with code.
+
+A Korean traditional tavern signboard emblem for a game UI banner, centered on a PURE BLACK background.
+
+An aged hanging wooden signboard (주막 간판) with a weathered cloth banner, painted with a gold brush-stroke look. A small oil lamp glows warm amber beside it. A ceramic makgeolli bottle and a bowl sit at the base. Gold filigree cloud motifs curl outward from both sides like an ornate emblem frame.
+
+Style: Korean sumi-e ink painting with gold leaf accents, deep crimson red cloth, warm amber lamp glow. Ornate but clean. Cinematic game-UI emblem, symmetrical composition.
+
+CRITICAL: the background must be SOLID PURE BLACK (#000000) with nothing else — no scene, no floor, no walls, no gradient. Only the emblem floating on black, so it can be keyed out. Do not include any text or letters.
+
+Save to ./jumak_raw.png

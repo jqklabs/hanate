@@ -44,71 +44,156 @@ const FONT = resolve(HERE, 'fonts/SSRock.ttf');
  * **오프셋은 음수다.** 마크는 사건 시각에 찍히므로 양수를 주면 카메라가 항상
  * 사건 뒤에 도착한다. 미리 출발해야 카메라가 사건을 "받아내는" 박자가 된다.
  */
+/* 컷 = 사건 단위. 스토리보드(STORYBOARD.md) 확정본.
+ *
+ * 카메라 원칙
+ *   - 중심은 항상 'focus'(낸 패 + 수식). 사건이 일어나는 곳이 정중앙에 온다
+ *   - 배율은 전 컷 고정. 슬램·최종폭발에서만 들어가고 **빠지지 않는다**
+ *   - 강조는 카메라가 아니라 이펙트로 한다
+ *
+ * 구성 — 사이클마다 역할이 다르다 (같은 4비트 반복 금지)
+ *   ① 가르친다(8s, 전 과정) → ② 이유(4.2s) → ③ 엔진(6s, 조커 중심) → ④ 터뜨린다(5.8s)
+ */
+/* 뷰포트 = 최종 프레임. 레이아웃을 키워 채우므로 카메라 줌은 쓰지 않는다.
+   슬램·최종폭발만 아주 살짝 밀고 들어간다. */
+/* 배율을 1에 가깝게 둬야 카메라가 움직일 여유가 생긴다.
+   1.16으로 조이면 프레임이 꽉 차서 손패→낸패 이동이 불가능하다. */
+/* 녹화 뷰포트(1080×1350) 안에서 게임이 실제로 그려지는 '무대'.
+ * rig.js의 --cap-stage / record.mjs의 VIEW와 같은 값이어야 한다.
+ * 무대 둘레의 여백은 카메라가 확대·팬할 때 잘리지 않게 하는 예비 공간이다. */
+const VIEW_W = 1080, STAGE_W = 860;
+const Z = VIEW_W / STAGE_W;     // ≈ 1.256 — 무대를 프레임에 꽉 채우는 기본 배율
+/* 오버레이(엠블럼·족보 글자·점수 팝업)는 뷰포트 중앙 = 무대 중앙에 뜬다.
+ * 무대를 그대로 잡으면(배율 Z, look 'center') 프레임 중앙과 정확히 일치한다.
+ * 다른 배율로 크롭하면 그만큼 어긋나므로 오버레이 컷은 이 값을 쓴다. */
+const CENTER_CAM = { zoom: Z, ease: 'linear' };
+const ZA = Z;                   // 넓게 — 손패를 읽는 배율
+const ZB = Z * 1.07;            // 바짝 — 카드가 놓인 뒤 끝까지 이 배율로 간다
+const ZC = 2.00;                // 상품 하나 — 이름·설명이 읽힐 만큼
+
+/* 컷 사이 배율은 **이어져야 한다.** 앞 컷이 끝난 배율에서 다음 컷이 시작하지 않으면
+ * 매 컷마다 화면이 툭 튄다. 아래는 ZA → (land에서 밀고) → ZB로 한 번만 올라가고
+ * 사이클이 끝날 때까지 ZB를 유지한다. 되돌아가는 줌은 없다(R4). */
+const TR = 0.16;                // 컷 전환 — 0.08은 하드컷처럼 끊겼다
 const EDIT = [
-  // ── 오프닝 (Higgsfield) ──
   { id: 'H1', kind: 'plate', use: 1.8, trans: 'fade', transDur: 0.25,
-    cam: { z: [1.10, 1.00], ease: 'inout' } },
-
-  /* 사이클 1 : 1월 · 목표 160 · 체급 1.0
-     stage = 화투패 + 춘향. 주인공은 춘향이지만 화투패가 화면 중심이다. */
-  { src: 'A1', at: ['hand', 0.2], use: 1.4, look: 'action',
-    cam: { fill: [0.90, 1.02], ease: 'linear' } },                       // 고정
-  { src: 'A1', at: ['select', -0.25], use: 1.1, look: 'hand',
-    trans: 'fade', transDur: 0.1, cam: { fill: [0.96, 1.08], ease: 'linear' } },   // 고정(타이트)
-  { src: 'A1', at: ['slam', -0.40], use: 1.2, look: ['hand', 'played'], noSmooth: true,
-    trans: 'fade', transDur: 0.04, cam: { fill: [1.06, 0.92], ease: 'snap' } },  // ★ 과감
-  { src: 'A1', at: ['tally', -0.30], use: 1.4, look: 'tally',
-    trans: 'fade', transDur: 0.06, cam: { fill: [0.94, 1.06], ease: 'linear' } },  // 고정
-  { src: 'A1', at: ['burst', -0.30], use: 1.7, look: 'action',
-    trans: 'fadewhite', transDur: 0.1, cam: { fill: [1.10, 0.90], ease: 'snap' } }, // ★ 과감
-
-  // ── 상점 ──
-  { src: 'A2', at: ['shop', 0.25], use: 1.3, look: 'shop',
-    trans: 'fade', transDur: 0.18, cam: { fill: [0.88, 1.00], ease: 'linear' } },
-  { src: 'A2', at: ['buy', -0.25], use: 1.1, look: 'jokers',
-    trans: 'fade', transDur: 0.08, cam: { fill: [0.92, 1.04], ease: 'linear' } },
-
-  // ── 브릿지 (Higgsfield) ──
-  { id: 'H2', kind: 'plate', use: 1.2, trans: 'fade', transDur: 0.2,
     cam: { z: [1.08, 1.00], ease: 'inout' } },
 
-  // ── 사이클 2 : 5월 · 목표 600 · 체급 1.5 ──
-  { src: 'A3', at: ['hand', 0.25], use: 1.1, look: 'action',
-    trans: 'fade', transDur: 0.12, cam: { fill: [0.92, 1.04], ease: 'linear' } },
-  { src: 'A3', at: ['select', -0.30], use: 0.85, look: 'hand',
-    trans: 'fade', transDur: 0.06, cam: { fill: [1.00, 1.12], ease: 'linear' } },
-  { src: 'A3', at: ['slam', -0.45], use: 1.0, look: ['hand', 'played'], noSmooth: true,
-    trans: 'fade', transDur: 0.04, cam: { fill: [1.12, 0.94], ease: 'snap' } },  // ★
-  { src: 'A3', at: ['tally', -0.30], use: 1.2, look: 'tally',
-    trans: 'fade', transDur: 0.06, cam: { fill: [0.98, 1.10], ease: 'linear' } },
-  { src: 'A3', at: ['joker', -0.30], use: 1.3, look: 'jokers',
-    trans: 'fade', transDur: 0.05, cam: { fill: [0.94, 1.06], ease: 'linear' } },
-  { src: 'A3', at: ['burst', -0.30], use: 1.8, look: 'action',
-    trans: 'fadewhite', transDur: 0.09, cam: { fill: [1.14, 0.92], ease: 'snap' } }, // ★
+  // ── ① 가르친다 : 1월 · 고도리 ──
+  { src: 'A1', at: ['hand', +0.15], use: 0.60, still: true, look: 'cards',
+    trans: 'fade', transDur: 0.14, cam: { zoom: ZA, ease: 'linear' } },
+  /* 고른다 → 낸다 → 한 장씩 착지 → 슬램. **한 컷으로 이어 간다.**
+     여기서 컷을 나누면 "패를 내는 장면"이 아니라 "화면이 교차로 바뀐 것"으로 읽힌다.
+     카메라는 그동안 손패에서 낸 패로 한 번만 옮겨가며 밀고 들어간다. */
+  { src: 'A1', at: ['select', -0.30], to: ['emblem', -0.12],
+    look: ['cards', 'played'], noSmooth: true,
+    trans: 'fade', transDur: TR, cam: { zoom: [ZA, ZB], ease: 'inout' } },
+  // 엠블럼 — 문양 가운데 족보 이름이 박힌 한 덩어리
+  { src: 'A1', at: ['emblem', -0.12], use: 1.45, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  // 엠블럼이 사라진 '뒤' 수식 카운팅
+  // 엠블럼이 ×배수로 빨려 들어간다 — 족보가 배수를 만든다
+  { src: 'A1', at: ['absorb', -0.20], use: 1.44, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A1', at: ['tally', -0.20], use: 1.10, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A1', at: ['sum', -0.20], use: 0.72, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A1', at: ['burst', -0.20], use: 2.25, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  // 「스톱!」 — 선택 UI 대신 한 마디로 크게
+  { src: 'A1', at: ['call', -0.15], use: 1.35, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
 
-  // ── 사이클 3 : 9월 · 오광 · 체급 2.3 ──
-  { src: 'A4', at: ['hand', 0.25], use: 0.9, look: 'action',
-    trans: 'fade', transDur: 0.1, cam: { fill: [0.94, 1.06], ease: 'linear' } },
-  { src: 'A4', at: ['select', -0.30], use: 0.7, look: 'hand',
-    trans: 'fade', transDur: 0.06, cam: { fill: [1.04, 1.16], ease: 'linear' } },
-  { src: 'A4', at: ['slam', -0.50], use: 1.0, look: ['hand', 'played'], noSmooth: true,
-    trans: 'fade', transDur: 0.03, cam: { fill: [1.20, 0.96], ease: 'snap' } },  // ★ 가장 과감
-  { src: 'A4', at: ['tally', -0.30], use: 1.1, look: 'tally',
-    trans: 'fade', transDur: 0.05, cam: { fill: [1.00, 1.12], ease: 'linear' } },
-  { src: 'A4', at: ['joker', -0.35], use: 1.6, look: 'jokers',
-    trans: 'fade', transDur: 0.05, cam: { fill: [0.96, 1.08], ease: 'linear' } },
-  { src: 'A4', at: ['burst', -0.35], use: 2.6, look: 'action',
-    trans: 'fadewhite', transDur: 0.09, cam: { fill: [1.22, 0.90], ease: 'brake' } }, // ★ 절정
-
-  // ── 리액션 (Higgsfield) ──
-  { id: 'H3', kind: 'plate', use: 1.4, trans: 'fade', transDur: 0.22,
+  // ── ② 이유를 준다 : 상점 ──
+  /* 주막 — 판을 보던 상태에서 **줌을 싹 땡기고 위로 올려** 배너를 받는다.
+     한 방향·강한 감속. 미세하게 흘러내리는 무빙은 금지. */
+  /* 주막 — **카메라를 아예 움직이지 않는다.** 앞 컷이 끝난 배율(ZB) 그대로 받아
+     배너만 화면에 들이친다. 앞뒤 배율이 같아야 씬이 바뀐 게 아니라 이어진 것으로 읽힌다. */
+  { src: 'A2', at: ['discover', -0.05], use: 1.55, still: true, look: 'center',
+    trans: 'fade', transDur: 0.34, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A2', at: ['shop', 0.20], use: 0.95, still: true, look: 'center',
+    trans: 'fade', transDur: 0.18, cam: { zoom: ZA, ease: 'linear' } },
+  /* 상점 컷은 **전부 고정 프레임**이다.
+   * 확대한 채로 패닝하면 어두운 모달이 화면 안에서 미끄러져 "카메라가 흔들린다"로 읽힌다.
+   * 게다가 구매 직후 render()가 상품에 붙인 표식을 지워 주시점이 사라지면
+   * 카메라가 모달 뒤 카드로 튀어버린다. → 읽는 컷과 보는 컷을 나누고 둘 다 고정.
+   *   aim : 상품 하나만 크게 (이름·설명이 읽힌다)
+   *   fly : 모달 전체 고정 (진열 → 바로 위 보유 칸으로 날아가는 게 다 보인다) */
+  { src: 'A2', at: ['aim', -0.15], use: 0.95, still: true, look: 'buyitem',
+    trans: 'fade', transDur: 0.22, cam: { zoom: [ZA * 1.35, ZC], ease: 'inout' } },
+  { src: 'A2', at: ['fly', -0.10], use: 0.95, still: true, look: 'center',
+    trans: 'fade', transDur: 0.26, cam: { zoom: [ZC, ZA], ease: 'inout' } },
+  { src: 'A2', at: ['aim2', -0.10], use: 0.80, still: true, look: 'buyitem',
+    trans: 'fade', transDur: 0.22, cam: { zoom: [ZA * 1.35, ZC], ease: 'inout' } },
+  { src: 'A2', at: ['fly2', -0.10], use: 1.05, still: true, look: 'center',
+    trans: 'fade', transDur: 0.26, cam: { zoom: [ZC, ZA], ease: 'inout' } },
+  { id: 'H2', kind: 'plate', use: 1.0, trans: 'fade', transDur: 0.14,
     cam: { z: [1.06, 1.00], ease: 'inout' } },
 
-  // ── CTA ──
-  { id: 'C4', kind: 'plate', use: 2.0, trans: 'fadeblack', transDur: 0.3,
-    cam: { z: [1.12, 1.00], ease: 'inout' } },
-  { id: 'C6', kind: 'plate', use: 2.8, trans: 'fadeblack', transDur: 0.35,
-    cam: { z: [1.00, 1.08], ease: 'inout' } },
+  // ── ③ 엔진 : 5월 · 병풍 · 조커 3개 ──
+  /* 고른다 → 낸다 → 한 장씩 착지 → 슬램. **한 컷으로 이어 간다.**
+     여기서 컷을 나누면 "패를 내는 장면"이 아니라 "화면이 교차로 바뀐 것"으로 읽힌다.
+     카메라는 그동안 손패에서 낸 패로 한 번만 옮겨가며 밀고 들어간다. */
+  { src: 'A3', at: ['select', -0.30], to: ['emblem', -0.12],
+    look: ['cards', 'played'], noSmooth: true,
+    trans: 'fade', transDur: TR, cam: { zoom: [ZA, ZB], ease: 'inout' } },
+  { src: 'A3', at: ['emblem', -0.12], use: 1.40, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  // 엠블럼이 ×배수로 빨려 들어간다 — 족보가 배수를 만든다
+  { src: 'A3', at: ['absorb', -0.20], use: 1.44, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A3', at: ['tally', -0.20], use: 0.95, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A3', at: ['joker', -0.45], use: 1.05, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A3', at: ['sum', -0.20], use: 0.72, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A3', at: ['burst', -0.20], use: 2.30, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A3', at: ['call', -0.15], use: 1.30, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+
+  // ── ④ 터뜨린다 : 9월 · 오광 · 조커 5개 ──
+  /* 고른다 → 낸다 → 한 장씩 착지 → 슬램. **한 컷으로 이어 간다.**
+     여기서 컷을 나누면 "패를 내는 장면"이 아니라 "화면이 교차로 바뀐 것"으로 읽힌다.
+     카메라는 그동안 손패에서 낸 패로 한 번만 옮겨가며 밀고 들어간다. */
+  { src: 'A4', at: ['select', -0.30], to: ['emblem', -0.12],
+    look: ['cards', 'played'], noSmooth: true,
+    trans: 'fade', transDur: TR, cam: { zoom: [ZA, ZB], ease: 'inout' } },
+  // 오광 — 사다리의 꼭대기. 가장 길게 본다
+  { src: 'A4', at: ['emblem', -0.12], use: 1.55, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  // 엠블럼이 ×배수로 빨려 들어간다 — 족보가 배수를 만든다
+  { src: 'A4', at: ['absorb', -0.20], use: 1.44, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A4', at: ['tally', -0.20], use: 0.95, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A4', at: ['joker', -0.50], use: 1.15, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A4', at: ['sum', -0.20], use: 0.72, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A4', at: ['burst', -0.20], use: 2.20, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  // 여기서만 '고'를 외친다 — 앞의 두 판이 스톱이었기에 대비로 산다
+  { src: 'A4', at: ['call', -0.15], use: 1.30, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  // 1고 → 10고. 게임 자체 캐스케이드가 화면 전체를 쓰므로 넓게 받는다
+  { src: 'A4', at: ['go', 0.00], use: 2.60, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: [ZB, ZA], ease: 'glide' } },
+
+  // ── ⑤ 마무리 ──
+  /* 엔딩 — 부메랑(갔다가 원복) 금지.
+     화투를 바닥에 내리치듯 크게 들어왔다가 딱 박힌다. 한 방향, 강한 감속. */
+  { id: 'H3', kind: 'plate', use: 1.3, trans: 'fade', transDur: 0.18,
+    cam: { z: [1.45, 1.00], ease: 'brake' } },
+  { id: 'C4', kind: 'plate', use: 1.6, trans: 'fadeblack', transDur: 0.22,
+    cam: { z: [1.70, 1.00], ease: 'brake' } },
+  /* 로고 — 화투를 바닥에 내리치듯. 크게 들어와 있다가 한 방향으로 떨어지며
+     딱 멈추고, 멈추는 그 순간에만 짧게 쾅. 되돌아가는 무빙 없음. */
+  { id: 'C6', kind: 'plate', use: 2.9, trans: 'fadewhite', transDur: 0.12,
+    fx: { shake: 13, at: 0.62 },
+    cam: { z: [2.35, 1.00], pan: [[0, -0.10], [0, 0]], ease: 'brake' } },
 ];
 
 /* Higgsfield로 뽑아 끼울 시네마틱 슬롯.
@@ -192,10 +277,6 @@ function camera(cut, W, H) {
   const e = (EASE[cut.cam.ease || 'glide'])(P);
   const lerp = ([p, q]) => `(${p}+(${q}-${p})*${e})`;   // 괄호 필수 (연산자 우선순위)
 
-  /* 주시점을 크롭 창 좌상단 비율로 미리 바꾼다.
-   * 예전엔 ffmpeg 표현식 안에서 매 프레임 max/min 클램프를 걸었는데,
-   * 클램프가 걸리는 순간 이동 방향이 꺾여 화면이 자글거렸다.
-   * 여기서 양 끝점을 유효 범위로 보정해두면 표현식에 분기가 없어져 매끄러워진다. */
   const f = cut.focal || { cx: 0.5, cy: 0.5 };
   const arr = (v) => (Array.isArray(v) ? v : [v, v]);
 
@@ -209,7 +290,14 @@ function camera(cut, W, H) {
     return Math.max(1.05, Math.min(3.4, Math.min(zw, zh)));
   };
   let z0, z1;
-  if (cut.cam.fill) {
+  /* R4 — 배율을 대상 크기에서 계산하면 컷마다 달라진다.
+   * 수식(tally)은 가로로 길고 세로가 얇아서(h=0.02) 카드(h=0.20)와 같은 fill을 줘도
+   * 배율이 절반으로 나온다 → 줌인했다 빠졌다 다시 들어가는 것처럼 보인다.
+   * 게임 컷은 배율을 '고정'하고 주시점만 옮긴다. */
+  if (cut.cam.zoom) {
+    const zz = Array.isArray(cut.cam.zoom) ? cut.cam.zoom : [cut.cam.zoom, cut.cam.zoom];
+    [z0, z1] = zz;
+  } else if (cut.cam.fill) {
     const [fl0, fl1] = arr(cut.cam.fill);
     const [w0, w1] = arr(f.w), [h0, h1] = arr(f.h);
     z0 = fitZoom(fl0, w0, h0);
@@ -217,31 +305,39 @@ function camera(cut, W, H) {
   } else {
     [z0, z1] = cut.cam.z;
   }
-  const toTopLeft = (c, z) => {
-    const win = 1 / z;                       // 크롭 창 크기(비율)
-    return Math.max(0, Math.min(1 - win, c - win / 2)) / Math.max(1e-6, 1 - win);
-  };
+  /* 주시점은 **중심 좌표 그대로** 보간한다.
+   * 예전엔 양 끝점을 '크롭 창 좌상단 비율'로 미리 환산해 그 값을 이었는데,
+   * 이 환산은 배율에 따라 분모(1 - 1/z)가 달라지는 비선형 변환이다.
+   * 배율이 변하는 컷에서는 같은 중심(0.5)이 배율마다 다른 비율이 되어
+   * 화면이 옆으로 휘며 흘러갔다 — 로고가 수직으로 안 떨어지고 곡선을 그린 이유다.
+   * 중심에서 크롭 좌상단을 매 프레임 계산하면 배율과 무관하게 정확히 그 점을 본다. */
   const [cx0, cx1] = arr(f.cx), [cy0, cy1] = arr(f.cy);
-  const nx = [toTopLeft(cx0, z0), toTopLeft(cx1, z1)];
-  const ny = [toTopLeft(cy0, z0), toTopLeft(cy1, z1)];
+  const cxE = lerp([cx0, cx1]), cyE = lerp([cy0, cy1]);
 
   const up = `scale=${W * 2}:${H * 2}:force_original_aspect_ratio=increase`;
   const box = `crop='min(iw\\,ih*${W}/${H})':'min(ih\\,iw*${H}/${W})'`;
   return `fps=${FPS},${up},${box},` +
          `zoompan=z='${lerp([z0, z1])}':` +
-         `x='(iw-iw/zoom)*${lerp(nx)}':y='(ih-ih/zoom)*${lerp(ny)}':` +
+         `x='max(0\\,min(iw-iw/zoom\\,iw*${cxE}-iw/zoom/2))':` +
+         `y='max(0\\,min(ih-ih/zoom\\,ih*${cyE}-ih/zoom/2))':` +
          `d=1:s=${W}x${H}:fps=${FPS}`;
 }
 
 /* 임팩트 — 화면 안 VFX가 주력이라 후보정은 아주 약하게만 보탠다. */
-function impact({ shake = 0, flash = 0 } = {}) {
+function impact({ shake = 0, flash = 0, at: t0 = 0 } = {}, W = 0, H = 0) {
   let f = '';
   if (shake) {
-    const A = shake, D = 9, F = 34;
+    /* t0: 충격이 오는 시각. 착지하는 순간에 흔들려야 '쾅'으로 읽힌다 —
+       컷 시작에 흔들면 이미 멈춘 화면이 뒤늦게 떠는 꼴이 된다. */
+    const A = shake, D = 11, F = 38;
     const pad = Math.ceil(A) + 2;
+    const u = `max(0\,t-${t0})`;
+    const on = `gte(t\,${t0})`;
     f += `,crop=w=iw-${pad * 2}:h=ih-${pad * 2}` +
-         `:x='${pad}+${A}*sin(t*${F})*exp(-t*${D})'` +
-         `:y='${pad}+${A}*cos(t*${F * 1.3})*exp(-t*${D})'`;
+         `:x='${pad}+${A}*${on}*sin(${u}*${F})*exp(-${u}*${D})'` +
+         `:y='${pad}+${A}*${on}*cos(${u}*${F * 1.3})*exp(-${u}*${D})'`;
+    // 크롭한 만큼 다시 키운다 — 안 그러면 이 컷만 작아져 xfade가 크기 불일치로 죽는다
+    if (W && H) f += `,scale=${W}:${H}`;
   }
   if (flash) f += `,eq=brightness='${flash}*exp(-t*11)':eval=frame`;
   return f;
@@ -275,8 +371,15 @@ function rectsAt(srcId, tRelMs) {
 }
 
 const CENTER = { cx: 0.5, cy: 0.5 };
+/* 카메라 중심 결정.
+ * focus = 낸 패 + 수식(한 덩어리). 이게 없으면(아직 안 낸 단계) 손패를 본다.
+ * 어느 쪽이든 '지금 사건이 일어나는 곳'이 프레임 정중앙에 온다. */
+/* 'center'는 "화면 정중앙을 봐라"라는 뜻이다.
+ * 예전엔 null로 떨궈서 결국 focus로 흘러갔고, 오버레이(엠블럼·팝업) 컷에서
+ * 프레임 중앙과 뷰포트 중앙이 어긋났다. 명시적으로 CENTER를 돌려준다. */
 const one = (rects, want) =>
-  (want === 'center' ? null : rects[want]) || rects.cards || rects.played || rects.hand || CENTER;
+  (want === 'center' ? CENTER
+    : (rects[want] || rects.focus || rects.cards || rects.played || rects.hand || CENTER));
 
 /* 컷이 무엇을 보게 할지.
  * look: 'hand'            → 손패 8장을 화면 중앙에
@@ -286,9 +389,18 @@ function focalOf(cut, startRects, endRects) {
   const want = cut.look || 'hand';
   const [k0, k1] = Array.isArray(want) ? want : [want, want];
   const a = one(startRects, k0);
-  const b = one(endRects, k1);
+  /* still: 컷 내내 시작 좌표로 고정.
+   * 기본 동작은 시작·끝 실측 좌표를 잇는 것인데, 낸 패나 수식이 컷 도중에
+   * 사라지면 그 좌표가 통째로 바뀌어 카메라가 저 혼자 스르륵 흘러간다.
+   * "정적이어야 할 컷"에서 이 미세 이동이 계속 거슬렸다 → 아예 못 움직이게 한다. */
+  const b = cut.still ? a : one(endRects, k1);
+  /* pan: 실측 좌표에 얹는 의도적인 이동량(프레임 비율).
+     "줌을 땡기면서 위로 올린다" 같은 연출은 잡을 요소가 따로 없어서
+     좌표만으로는 표현이 안 된다. [시작, 끝] 오프셋으로 직접 준다. */
+  const [px0, px1] = cut.cam.pan ? cut.cam.pan.map((v) => v[0] ?? 0) : [0, 0];
+  const [py0, py1] = cut.cam.pan ? cut.cam.pan.map((v) => v[1] ?? 0) : [0, 0];
   // 크기도 넘긴다 — 줌을 손으로 정하지 않고 이 크기에서 역산한다
-  return { cx: [a.cx, b.cx], cy: [a.cy, b.cy],
+  return { cx: [a.cx + px0, b.cx + px1], cy: [a.cy + py0, b.cy + py1],
            w: [a.w || 0.4, b.w || 0.4], h: [a.h || 0.2, b.h || 0.2] };
 }
 
@@ -297,43 +409,39 @@ function buildClip(cut, idx, W, H) {
   const dst = resolve(WORK, `${String(idx).padStart(2, '0')}-${id}.mp4`);
   // 녹화 컷이면 시작·끝 시점의 실측 좌표를 각각 가져와 그 사이를 따라간다
   const at = cut.kind === 'plate' ? null : markAt(id, cut.at);
+  /* to: ['마크', 오프셋] — 컷을 그 마크까지 채운다.
+     use를 손으로 적으면 씬 타이밍이 조금만 바뀌어도 겹치거나 구멍이 난다. */
+  if (at && cut.to) cut.use = Math.max(0.2, markAt(id, cut.to).t - at.t);
   if (at) {
     const relStart = at.t * 1000 - (readManifest()[id].startMs || 0);
     const relEnd = relStart + cut.use * (cut.speed || 1) * 1000;
     cut.focal = focalOf(cut, rectsAt(id, relStart), rectsAt(id, relEnd));
   } else {
-    cut.focal = CENTER;
+    // 플레이트도 pan을 쓸 수 있어야 한다 (로고가 위에서 떨어지는 연출)
+    cut.focal = focalOf({ ...cut, look: 'center' }, {}, {});
   }
+  /* 소스는 SLOW배 느리게 찍혀 있다. 마크·좌표는 이미 빨리감기 기준으로 환산돼 있으므로
+   * 소스를 탐색·절취할 때만 SLOW를 다시 곱해준다. */
+  const slow = cut.kind === 'plate' ? 1 : (readManifest()[id]?.slow || 1);
   const speed = cut.speed || 1;
-  // speed>1이면 원본을 더 많이 떠와서 압축하고, <1이면 적게 떠와서 늘린다
-  const grab = cut.use * speed;
-  /* 녹화 원본은 25fps다. 그대로 60fps로 올리면 같은 프레임이 반복돼 이펙트가 딸려 보이고,
-   * 슬로우모션을 걸면 더 심해진다(0.75배 = 실질 18fps).
-   * smooth 컷은 모션 보간으로 중간 프레임을 합성한 뒤에 속도를 바꾼다. */
-  /* 녹화 원본은 25fps다. 보간 없이 60fps 컨테이너에 담으면 프레임만 복제돼
-   * "60프레임이 맞나" 싶은 뚝뚝 끊기는 움직임이 된다. 녹화 컷은 전부 보간한다. */
-  /* 녹화 원본은 25fps다. 보간 없이 60fps에 담으면 프레임 복제라 뚝뚝 끊긴다.
-   * 다만 카드가 빠르게 내리꽂히는 슬램 컷은 보간이 픽셀을 뭉개 워핑 잔상을 만든다
-   * → noSmooth로 명시적으로 뺀다. */
-  /* 녹화 원본은 25fps다. 보간 없이 60fps에 담으면 프레임 복제라 뚝뚝 끊긴다.
-   * 다만 카드가 빠르게 내리꽂히는 슬램 컷에서 mci(움직임 보상)는 픽셀을 지어내
-   * 워핑 잔상을 만든다 → 그런 컷은 blend로 바꾼다.
-   * blend는 픽셀을 지어내지 않고 섞기만 해서 잔상 대신 모션블러처럼 읽힌다.
-   * 어느 쪽이든 프레임은 전부 새로 생기므로 60fps가 유지된다. */
-  const smooth = cut.kind === 'plate'
-    ? ''
-    : (cut.noSmooth
-        ? `minterpolate=fps=${FPS}:mi_mode=blend,`
-        : `minterpolate=fps=${FPS}:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1,`);
-  const ramp = speed === 1 ? '' : `setpts=PTS/${speed},`;
-  const vf = `${smooth}${ramp}${camera(cut, W, H)}${impact(cut.fx)}${GRADE}` +
+  const grab = cut.use * speed * slow;          // 소스에서 떠올 길이(슬로 시간)
+  /* 프레임을 지어내지 않는다(minterpolate 폐기).
+   * 느리게 찍은 걸 그만큼 빨리 감으면 25 × SLOW fps 분량의
+   * '실제로 렌더된' 프레임이 그대로 살아난다. 지어낸 프레임 0장. */
+  const rate = slow * speed;
+  const ramp = rate === 1 ? '' : `setpts=PTS/${rate},`;
+  const vf = `${ramp}${camera(cut, W, H)}${impact(cut.fx, W, H)}${GRADE}` +
              `,format=yuv420p${drawtext(cut.caption, H)}`;
   const enc = ['-an', '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-r', String(FPS)];
 
   if (cut.kind !== 'plate') {
     const src = resolve(OUT, `scene-${id}.webm`);
     if (!existsSync(src)) throw new Error(`녹화분 없음: ${src} — record를 먼저 실행하세요`);
-    ff(['-ss', at.t.toFixed(2), '-i', src, '-t', grab.toFixed(2), '-vf', vf, ...enc, dst]);
+    /* -ss/-t 는 반드시 입력 옵션으로 둔다.
+     * 출력 옵션으로 두면 setpts로 압축된 '출력' 길이 기준으로 잘려서
+     * 클립이 slow배 길어진다. 여기서는 소스(슬로 시간)를 잘라야 한다. */
+    ff(['-ss', (at.t * slow).toFixed(2), '-t', grab.toFixed(2), '-i', src,
+        '-vf', vf, ...enc, dst]);
     return dst;
   }
 
@@ -391,6 +499,25 @@ function crossfade(clips, cuts, dst) {
       '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-pix_fmt', 'yuv420p', dst]);
 }
 
+/* 같은 녹화에서 온 이웃 컷이 소스 시간축에서 겹치면 같은 장면이 두 번 재생된다.
+ * 예전에 이걸 눈으로 찾느라 여러 번 다시 뽑았다 → 합성 전에 숫자로 잡는다. */
+function checkOverlaps(cuts) {
+  const last = {};
+  for (const c of cuts) {
+    if (c.kind === 'plate') continue;
+    const t = markAt(c.src, c.at).t;
+    const end = t + c.use * (c.speed || 1);
+    const prev = last[c.src];
+    if (prev && t < prev.end - 0.02)
+      console.warn(`  \u26a0 ${c.src}: '${prev.name}' 컷(${prev.end.toFixed(2)}s)과 ` +
+                   `'${c.at[0]}' 컷(${t.toFixed(2)}s)이 겹칩니다 — 같은 장면이 두 번 나옵니다`);
+    if (prev && t > prev.end + 1.2)
+      console.warn(`  \u26a0 ${c.src}: '${prev.name}' → '${c.at[0]}' 사이 ` +
+                   `${(t - prev.end).toFixed(2)}s가 통째로 빠집니다`);
+    last[c.src] = { name: c.at[0], end };
+  }
+}
+
 // recOnly — 생성 플레이트를 빼고 코드로 녹화한 컷만 이어붙인다 (검수용)
 export function assemble({ recOnly = false, ratio = '16x9' } = {}) {
   const [W, H] = RATIOS[ratio];
@@ -399,6 +526,7 @@ export function assemble({ recOnly = false, ratio = '16x9' } = {}) {
   mkdirSync(FINAL_DIR, { recursive: true });
 
   const cuts = recOnly ? EDIT.filter((c) => c.kind !== 'plate') : EDIT;
+  checkOverlaps(cuts);
   const clips = cuts.map((c, i) => buildClip(c, i, W, H));
   const target = resolve(FINAL_DIR,
     recOnly ? 'hwatro_recorded_only.mp4' : `hwatro_campaign_${ratio}.mp4`);
