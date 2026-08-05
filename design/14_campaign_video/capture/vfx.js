@@ -241,8 +241,8 @@
   .vfx-scorepop {
     position: absolute; left: 50%; top: var(--cap-pop-y, 50%);
     transform: translate(-50%,-50%) scale(.8);
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
-    padding: 26px 54px; border-radius: 20px;
+    display: flex; flex-direction: column; align-items: center; gap: 7px;
+    padding: 18px 48px; border-radius: 20px;
     background: linear-gradient(180deg, rgba(12,26,20,.92), rgba(6,16,12,.96));
     border: 3px solid rgba(255,214,130,.85);
     box-shadow: 0 0 60px rgba(255,190,80,.45), inset 0 0 30px rgba(255,190,80,.12);
@@ -250,10 +250,10 @@
     animation: vfxScorePop var(--d, 1800ms) cubic-bezier(.14,1.4,.3,1) forwards;
   }
   .vfx-scorepop .sp-month {
-    font-size: 42px; color: #dff0df; letter-spacing: -.02em;
+    font-size: 36px; color: #dff0df; letter-spacing: -.02em;
   }
   .vfx-scorepop .sp-num {
-    font-size: 112px; line-height: 1; color: #ffe9b0; white-space: nowrap;
+    font-size: 96px; line-height: 1; color: #ffe9b0; white-space: nowrap;
     text-shadow: 0 0 24px rgba(255,180,60,.95), 0 0 70px rgba(255,150,30,.7);
   }
   .vfx-scorepop .sp-bar {
@@ -398,7 +398,8 @@
      * 엠블럼과 글자를 따로 띄우면 "그림 하나, 글씨 하나"로 따로 논다.
      * 같은 좌표·같은 박자로 겹쳐야 하나의 도장처럼 읽힌다. */
     emblem(hand, d = 1700) {
-      const map = { 고도리: 'fx_godori', 병풍: 'fx_byeongpung', 오광: 'fx_ogwang' };
+      const map = { 고도리: 'fx_godori', 병풍: 'fx_byeongpung', 오광: 'fx_ogwang',
+                    홍단: 'fx_hongdan', 총통: 'fx_chongtong' };
       const f = map[hand];
       if (!f) return;
       /* 엠블럼은 가운데까지 꽉 찬 원형 메달이다(뚫려 있지 않다).
@@ -474,7 +475,17 @@
           e.style.opacity = '0';
         });
       }
-      if (dim) { dim.style.transition = `opacity ${d * 0.7}ms ease`; dim.style.opacity = '0'; }
+      /* 딤은 인라인 opacity로 못 끈다 — CSS 애니메이션이 도는 동안은 애니메이션이 이긴다.
+         (그래서 흡수 내내 화면이 어두운 채였고 ×배수가 묻혀 안 보였다) */
+      if (dim) {
+        dim.style.animation = 'none';
+        dim.style.opacity = '1';
+        void dim.offsetWidth;
+        requestAnimationFrame(() => {
+          dim.style.transition = `opacity ${Math.round(d * 0.6)}ms ease`;
+          dim.style.opacity = '0';
+        });
+      }
       // 빨려 들어간 자리에서 배수가 얻어맞는다
       setTimeout(() => {
         const h = document.createElement('div');
@@ -520,6 +531,39 @@
         if (lv % 4 === 0) VFX.sparks(null, { n: 12, dist: 340, d: 560 });
         await new Promise((res) => setTimeout(res, 170 - lv * 8));   // 170 → 90ms
       }
+    },
+
+    /* 조합이 하나 꽂힐 때마다 고가 한 단계 뛴다.
+     * 특수패바와 낸 패 사이 빈 띠(--cap-go-y)에 도장처럼 박힌다 —
+     * 카드도 점수도 안 가리면서 "쌓이고 있다"만 전한다. */
+    goJump(label, { big = false } = {}) {
+      const cs = getComputedStyle(document.documentElement);
+      const stage = parseFloat(cs.getPropertyValue('--cap-stage')) || innerWidth;
+      const y = parseFloat(cs.getPropertyValue('--cap-go-y')) || innerHeight * 0.22;
+      const x = innerWidth / 2;
+      const size = Math.round(stage * (big ? 0.20 : 0.115));
+      const el = document.createElement('div');
+      el.className = 'vfx-gostamp';
+      el.textContent = label;
+      el.style.cssText += `left:${x}px;top:${y}px;font-size:${size}px;color:#fff6d8;` +
+        `-webkit-text-stroke:${Math.max(3, size * 0.04)}px rgba(28,10,0,.85);` +
+        `paint-order:stroke fill;` +
+        `text-shadow:0 0 ${Math.round(size * 0.2)}px rgba(255,214,130,1),` +
+        `0 0 ${Math.round(size * 0.55)}px rgba(255,170,50,.95),` +
+        `0 0 ${Math.round(size * 1.1)}px rgba(255,140,20,${big ? 0.85 : 0.6});`;
+      el.style.setProperty('--r', big ? '0deg' : '-6deg');
+      el.style.setProperty('--d', (big ? 1500 : 900) + 'ms');
+      add(el, (big ? 1560 : 960));
+
+      const place = (e) => { e.style.left = x + 'px'; e.style.top = y + 'px'; };
+      VFX.ring(null, { size: big ? 1100 : 520, d: big ? 780 : 520 });
+      place(layer.lastChild);
+      if (big) {
+        VFX.ring(null, { size: 1700, d: 900 }); place(layer.lastChild);
+        VFX.rays(null, 1000); place(layer.lastChild);
+      }
+      VFX.sparks(null, { n: big ? 26 : 14, dist: big ? 560 : 320, d: big ? 820 : 620 });
+      for (const sp of [...layer.querySelectorAll('.vfx-spark')].slice(big ? -26 : -14)) place(sp);
     },
 
     /* 크게 한 마디 — 고/스톱 모달 대신 쓰는 외침. 「스톱!」 「고!」 */
@@ -711,91 +755,92 @@
       }, d * 0.9);
     },
 
-    /* 상점 구매 — 산 패가 퓽 날아가 '보유 특수패' 칸에 박히며 생긴다.
-     * 예전엔 화면 최상단 조커바로 날려보냈는데, 상점을 보고 있던 시선이
-     * 프레임 밖까지 끌려가서 무슨 일이 일어났는지 안 읽혔다.
-     * → 상점 모달 안, 진열 바로 위의 보유 칸으로 날린다.
-     * 보유 칸은 구매 후에야 채워지므로 구매 자체를 여기서 실행한다. */
+    /* 상점 구매 — '얻었다'가 읽혀야 한다.
+     *
+     * 진열대에서 슬롯으로 곧장 쏘는 건 빨라서 무엇을 샀는지 안 남는다.
+     * → 세 박자로 나눈다:
+     *     ① 진열대에서 뽑혀 나와 화면 한가운데로 크게 떠오르고 (무엇인지 읽힌다)
+     *     ② 잠깐 멈춰 금빛으로 달아오르고
+     *     ③ 보유 칸으로 빨려 들어가 박힌다
+     */
     async flyToJoker(i, doBuy, d = 560) {
       const src = document.querySelectorAll('#shop-offers .offer')[i];
       const a = src && src.getBoundingClientRect();
       const clone = src ? src.cloneNode(true) : null;
+      if (!clone || !a || a.width < 4) { if (doBuy) doBuy(); return; }
 
-      if (doBuy) doBuy();
-      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-
-      const slots = [...document.querySelectorAll('#shop-offers .owned-slot.filled')];
-      const tgt = slots[slots.length - 1]
-        || document.querySelector('#jokerbar .jokerslot.filled:last-child');
-      if (!clone || !tgt || !a || a.width < 4) return;
-      const b = tgt.getBoundingClientRect();
-
-      const wrap = document.createElement('div');
-      wrap.className = 'vfx-fly';
-      wrap.style.cssText +=
-        `left:${a.left + a.width / 2}px;top:${a.top + a.height / 2}px;` +
-        `width:${a.width}px;height:${a.height}px;` +
-        `filter:drop-shadow(0 0 26px rgba(255,205,110,.95));`;
-      clone.style.cssText += 'width:100%;height:100%;margin:0;';
-      /* 게임의 상품 스타일은 `.shop-offers .offer {...}`로 **부모에 스코프**돼 있다.
-         복제본을 이펙트 레이어로 옮기면 그 부모가 사라져 스타일이 통째로 날아가고,
-         화면에는 배경 없는 맨 글자만 둥둥 떠서 무엇이 날아가는지 안 보였다.
-         → 같은 클래스의 껍데기를 씌워 스코프를 되살린다. */
       const scope = document.createElement('div');
       scope.className = 'shop-offers';
       scope.style.cssText = 'display:block;width:100%;height:100%;';
+      clone.style.cssText += 'width:100%;height:100%;margin:0;';
       scope.appendChild(clone);
-      wrap.appendChild(scope);
-      wrap.style.setProperty('--dx', (b.left + b.width / 2 - a.left - a.width / 2) + 'px');
-      wrap.style.setProperty('--dy', (b.top + b.height / 2 - a.top - a.height / 2) + 'px');
-      /* 곡선으로 둥실 날면 '샀다'가 아니라 '떠다닌다'로 읽힌다.
-         → 포물선을 빼고 **직선으로 쏜다.** 뒤에 잔상을 깔아 속도를 보여준다. */
-      wrap.style.setProperty('--arc', '0px');
-      wrap.style.setProperty('--s0', '1');
-      wrap.style.setProperty('--s1', String(Math.max(0.16, b.height / a.height)));
-      wrap.style.setProperty('--rot', '0deg');
-      wrap.style.setProperty('--d', d + 'ms');
-      add(wrap, d + 40);
-      // 잔상 3장 — 살짝 늦게 출발해 뒤를 따라간다
-      for (let k = 1; k <= 3; k++) {
-        const gh = wrap.cloneNode(true);
-        gh.style.opacity = String(0.34 - k * 0.08);
-        gh.style.filter = 'brightness(1.5) blur(1px)';
-        gh.style.animationDelay = `${k * 42}ms`;
-        layer.insertBefore(gh, wrap);
-        setTimeout(() => gh.remove(), d + 120);
-      }
 
-      /* 도착 — '퓽!'하고 박히는 맛은 전부 여기서 낸다.
-         링 두 겹 + 방사 광선 + 파편 + 슬롯 발광 + 화면 가장자리 글로우.
-         (흔들림은 쓰지 않는다 — 카메라가 흔들리는 것처럼 읽힌다) */
-      await new Promise((r) => setTimeout(r, d));
+      const wrap = document.createElement('div');
+      wrap.style.cssText =
+        `position:absolute;left:${a.left + a.width / 2}px;top:${a.top + a.height / 2}px;` +
+        `width:${a.width}px;height:${a.height}px;` +
+        `transform:translate(-50%,-50%) scale(1);transform-origin:50% 50%;` +
+        `transition:transform 420ms cubic-bezier(.16,1.1,.3,1), filter 420ms ease;` +
+        `filter:drop-shadow(0 0 20px rgba(255,205,110,.8));will-change:transform;`;
+      wrap.appendChild(scope);
+      add(wrap, 3000);
+
+      // ① 뽑혀 나와 한가운데로 크게
+      const midX = innerWidth / 2, midY = innerHeight * 0.46;
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      wrap.style.transform =
+        `translate(-50%,-50%) translate(${midX - a.left - a.width / 2}px,` +
+        `${midY - a.top - a.height / 2}px) scale(1.85)`;
+      wrap.style.filter = 'drop-shadow(0 0 46px rgba(255,205,110,1)) brightness(1.12)';
+      VFX.rays(null, 900);
+      const ry = layer.lastChild;
+      if (ry) { ry.style.left = midX + 'px'; ry.style.top = midY + 'px'; }
+      await new Promise((r) => setTimeout(r, 440));
+
+      // ② 금빛으로 달아오르며 잠깐 멈춘다 — 무엇을 샀는지 읽히는 구간
+      VFX.ring(null, { size: 720, d: 620 });
+      const r1 = layer.lastChild;
+      if (r1) { r1.style.left = midX + 'px'; r1.style.top = midY + 'px'; }
+      VFX.sparks(null, { n: 20, dist: 420, d: 720 });
+      for (const sp of [...layer.querySelectorAll('.vfx-spark')].slice(-20)) {
+        sp.style.left = midX + 'px'; sp.style.top = midY + 'px';
+      }
+      await new Promise((r) => setTimeout(r, 520));
+
+      // ③ 보유 칸으로 빨려 들어가 박힌다
+      if (doBuy) doBuy();
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const slots = [...document.querySelectorAll('#shop-offers .owned-slot.filled')];
+      const tgt = slots[slots.length - 1]
+        || document.querySelector('#jokerbar .jokerslot.filled:last-child');
+      if (!tgt) return;
+      const b = tgt.getBoundingClientRect();
       const cx = b.left + b.width / 2, cy = b.top + b.height / 2;
-      const place = (el) => { el.style.left = cx + 'px'; el.style.top = cy + 'px'; };
+
+      wrap.style.transition =
+        'transform 340ms cubic-bezier(.6,0,.8,.2), opacity 340ms ease-in';
+      wrap.style.transform =
+        `translate(-50%,-50%) translate(${cx - a.left - a.width / 2}px,` +
+        `${cy - a.top - a.height / 2}px) scale(${Math.max(0.14, b.height / a.height)})`;
+      wrap.style.opacity = '0';
+      await new Promise((r) => setTimeout(r, 340));
 
       const h = document.createElement('div');
       h.className = 'vfx-hit';
       h.style.cssText += `left:${cx}px;top:${cy}px;`;
       add(h, 480);
-      VFX.ring(null, { size: 420, d: 540 });  place(layer.lastChild);
-      VFX.ring(null, { size: 780, d: 760 });  place(layer.lastChild);
-      VFX.rays(null, 820);                    place(layer.lastChild);
-      VFX.sparks(null, { n: 24, dist: 380, d: 780 });
-      for (const s of [...layer.querySelectorAll('.vfx-spark')].slice(-24)) place(s);
-      VFX.glow(0.55, 620);
-
+      VFX.ring(null, { size: 460, d: 560 });
+      const r2 = layer.lastChild;
+      if (r2) { r2.style.left = cx + 'px'; r2.style.top = cy + 'px'; }
+      VFX.sparks(null, { n: 16, dist: 300, d: 640 });
+      for (const sp of [...layer.querySelectorAll('.vfx-spark')].slice(-16)) {
+        sp.style.left = cx + 'px'; sp.style.top = cy + 'px';
+      }
       tgt.style.transition = 'transform .12s cubic-bezier(.2,1.9,.4,1), filter .12s ease';
-      tgt.style.transform = 'scale(1.4)';
+      tgt.style.transform = 'scale(1.42)';
       tgt.style.filter = 'brightness(2.1) drop-shadow(0 0 26px rgba(255,205,110,1))';
       setTimeout(() => { tgt.style.transform = ''; tgt.style.filter = ''; }, 320);
-
-      // 획득 표시 — 무엇이 늘었는지 한 글자로 읽힌다
-      const g = document.createElement('div');
-      g.className = 'vfx-ghost';
-      g.textContent = '＋1';
-      g.style.cssText += `left:${cx}px;top:${cy - 26}px;font-size:54px;`;
-      g.style.setProperty('--d', '820ms');
-      add(g, 900);
+      wrap.remove();
     },
 
 
@@ -807,10 +852,10 @@
       el.style.setProperty('--d', d + 'ms');
       el.innerHTML = `<img src="${img}" alt=""><span>${text}</span>`;
       add(el, d + 120);
-      VFX.glow(0.7, 900);
-      VFX.rays(null, 1400);
-      VFX.sparks(null, { n: 26, dist: 700, d: 1100 });
-      // 흔들림 없음 — 배너가 들이치는 것만으로 충분하다. 화면이 떨면 글씨가 안 읽힌다
+      /* 배너 하나면 충분하다.
+         광선(1500px 원뿔)과 파편 26개를 그 위에 겹쳤더니 초가·항아리·글씨가
+         전부 뒤엉켜 무엇 하나 안 읽혔다 → 가장자리 글로우만 아주 옅게. */
+      VFX.glow(0.4, 800);
     },
 
     /* 특수패 발동.

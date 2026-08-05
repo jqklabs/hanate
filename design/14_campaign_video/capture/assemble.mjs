@@ -68,7 +68,9 @@ const Z = VIEW_W / STAGE_W;     // ≈ 1.256 — 무대를 프레임에 꽉 채�
  * 다른 배율로 크롭하면 그만큼 어긋나므로 오버레이 컷은 이 값을 쓴다. */
 const CENTER_CAM = { zoom: Z, ease: 'linear' };
 const ZA = Z;                   // 넓게 — 손패를 읽는 배율
-const ZB = Z * 1.07;            // 바짝 — 카드가 놓인 뒤 끝까지 이 배율로 간다
+const ZB = Z * 1.03;            // 바짝 — 카드가 놓인 뒤 끝까지 이 배율로 간다
+/* 배율을 더 올리면 낸 패 다섯 장이 프레임 좌우에 닿는다. 카드를 크게 쓰는 대신
+   밀고 들어가는 폭은 줄인다 — 화면을 채우는 건 배율이 아니라 카드 크기다. */
 const ZC = 2.00;                // 상품 하나 — 이름·설명이 읽힐 만큼
 
 /* 컷 사이 배율은 **이어져야 한다.** 앞 컷이 끝난 배율에서 다음 컷이 시작하지 않으면
@@ -86,8 +88,8 @@ const EDIT = [
      여기서 컷을 나누면 "패를 내는 장면"이 아니라 "화면이 교차로 바뀐 것"으로 읽힌다.
      카메라는 그동안 손패에서 낸 패로 한 번만 옮겨가며 밀고 들어간다. */
   { src: 'A1', at: ['select', -0.30], to: ['emblem', -0.12],
-    look: ['cards', 'played'], noSmooth: true,
-    trans: 'fade', transDur: TR, cam: { zoom: [ZA, ZB], ease: 'inout' } },
+    look: ['sel', 'played'], noSmooth: true,
+    trans: 'fade', transDur: TR, cam: { zoom: [ZA, ZB], ease: 'dash' } },
   // 엠블럼 — 문양 가운데 족보 이름이 박힌 한 덩어리
   { src: 'A1', at: ['emblem', -0.12], use: 1.45, still: true, look: 'anchor',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
@@ -95,14 +97,14 @@ const EDIT = [
   // 엠블럼이 ×배수로 빨려 들어간다 — 족보가 배수를 만든다
   { src: 'A1', at: ['absorb', -0.20], use: 1.44, still: true, look: 'anchor',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A1', at: ['tally', -0.20], use: 1.10, still: true, look: 'anchor',
+  { src: 'A1', at: ['tally', -0.20], to: ['sum', -0.20], still: true, look: 'anchor',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A1', at: ['sum', -0.20], use: 0.72, still: true, look: 'anchor',
+  { src: 'A1', at: ['sum', -0.20], use: 0.72, still: true, look: 'pop',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A1', at: ['burst', -0.20], use: 2.25, still: true, look: 'anchor',
+  { src: 'A1', at: ['burst', -0.20], use: 2.25, still: true, look: 'pop',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
   // 「스톱!」 — 선택 UI 대신 한 마디로 크게
-  { src: 'A1', at: ['call', -0.15], use: 1.35, still: true, look: 'anchor',
+  { src: 'A1', at: ['call', -0.15], use: 1.60, still: true, look: 'anchor',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
 
   // ── ② 이유를 준다 : 상점 ──
@@ -111,7 +113,7 @@ const EDIT = [
   /* 주막 — **카메라를 아예 움직이지 않는다.** 앞 컷이 끝난 배율(ZB) 그대로 받아
      배너만 화면에 들이친다. 앞뒤 배율이 같아야 씬이 바뀐 게 아니라 이어진 것으로 읽힌다. */
   { src: 'A2', at: ['discover', -0.05], use: 1.55, still: true, look: 'center',
-    trans: 'fade', transDur: 0.34, cam: { zoom: ZB, ease: 'linear' } },
+    trans: 'fade', transDur: 0.18, cam: { zoom: ZB, ease: 'linear' } },
   { src: 'A2', at: ['shop', 0.20], use: 0.95, still: true, look: 'center',
     trans: 'fade', transDur: 0.18, cam: { zoom: ZA, ease: 'linear' } },
   /* 상점 컷은 **전부 고정 프레임**이다.
@@ -120,67 +122,66 @@ const EDIT = [
    * 카메라가 모달 뒤 카드로 튀어버린다. → 읽는 컷과 보는 컷을 나누고 둘 다 고정.
    *   aim : 상품 하나만 크게 (이름·설명이 읽힌다)
    *   fly : 모달 전체 고정 (진열 → 바로 위 보유 칸으로 날아가는 게 다 보인다) */
-  { src: 'A2', at: ['aim', -0.15], use: 0.95, still: true, look: 'buyitem',
+  { src: 'A2', at: ['aim', -0.15], to: ['fly', -0.10], still: true, look: 'buyitem',
     trans: 'fade', transDur: 0.22, cam: { zoom: [ZA * 1.35, ZC], ease: 'inout' } },
   { src: 'A2', at: ['fly', -0.10], use: 0.95, still: true, look: 'center',
     trans: 'fade', transDur: 0.26, cam: { zoom: [ZC, ZA], ease: 'inout' } },
-  { src: 'A2', at: ['aim2', -0.10], use: 0.80, still: true, look: 'buyitem',
+  { src: 'A2', at: ['aim2', -0.10], to: ['fly2', -0.10], still: true, look: 'buyitem',
     trans: 'fade', transDur: 0.22, cam: { zoom: [ZA * 1.35, ZC], ease: 'inout' } },
-  { src: 'A2', at: ['fly2', -0.10], use: 1.05, still: true, look: 'center',
+  { src: 'A2', at: ['fly2', -0.10], use: 2.05, still: true, look: 'center',
     trans: 'fade', transDur: 0.26, cam: { zoom: [ZC, ZA], ease: 'inout' } },
   { id: 'H2', kind: 'plate', use: 1.0, trans: 'fade', transDur: 0.14,
     cam: { z: [1.06, 1.00], ease: 'inout' } },
 
-  // ── ③ 엔진 : 5월 · 병풍 · 조커 3개 ──
-  /* 고른다 → 낸다 → 한 장씩 착지 → 슬램. **한 컷으로 이어 간다.**
-     여기서 컷을 나누면 "패를 내는 장면"이 아니라 "화면이 교차로 바뀐 것"으로 읽힌다.
-     카메라는 그동안 손패에서 낸 패로 한 번만 옮겨가며 밀고 들어간다. */
-  { src: 'A3', at: ['select', -0.30], to: ['emblem', -0.12],
-    look: ['cards', 'played'], noSmooth: true,
-    trans: 'fade', transDur: TR, cam: { zoom: [ZA, ZB], ease: 'inout' } },
-  { src: 'A3', at: ['emblem', -0.12], use: 1.40, still: true, look: 'anchor',
+  /* ── ③④ 몽타주 : 병풍 → 고도리 → 총통 → 오광 ──
+   *
+   * 앞의 세 조합은 점수를 세지 않는다. 조합을 알아보는 것만으로 충분하고,
+   * 매번 수식을 돌리면 같은 리듬이 네 번 반복돼 늘어진다.
+   * 카메라는 **첫 조합이 놓인 자리에 못 박고** 끝까지 움직이지 않는다 —
+   * 조합마다 재포커싱하면 몽타주가 아니라 컷 모음으로 읽힌다.
+   * 컷 길이는 전부 `to:`로 다음 마크까지 채워 빈틈도 겹침도 없게 한다.
+   */
+  // 병풍 — 유일한 카메라 이동(고른 패 → 낸 칸)
+  { src: 'A3', at: ['s1', -0.25], to: ['e1', -0.10],
+    look: ['sel', 'played'], noSmooth: true,
+    trans: 'fade', transDur: TR, cam: { zoom: [ZA, ZB], ease: 'dash' } },
+  { src: 'A3', at: ['e1', -0.10], to: ['g1', -0.10], still: true, look: 'anchor',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  // 엠블럼이 ×배수로 빨려 들어간다 — 족보가 배수를 만든다
-  { src: 'A3', at: ['absorb', -0.20], use: 1.44, still: true, look: 'anchor',
+  { src: 'A3', at: ['g1', -0.10], to: ['s2', -0.25], still: true, look: 'anchor',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A3', at: ['tally', -0.20], use: 0.95, still: true, look: 'anchor',
+  // 고도리
+  { src: 'A3', at: ['s2', -0.25], to: ['e2', -0.10], still: true, look: 'anchor',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A3', at: ['joker', -0.45], use: 1.05, still: true, look: 'anchor',
+  { src: 'A3', at: ['e2', -0.10], to: ['g2', -0.10], still: true, look: 'anchor',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A3', at: ['sum', -0.20], use: 0.72, still: true, look: 'anchor',
+  { src: 'A3', at: ['g2', -0.10], to: ['s3', -0.25], still: true, look: 'anchor',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A3', at: ['burst', -0.20], use: 2.30, still: true, look: 'anchor',
+  // 총통
+  { src: 'A3', at: ['s3', -0.25], to: ['e3', -0.10], still: true, look: 'anchor',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A3', at: ['call', -0.15], use: 1.30, still: true, look: 'anchor',
+  { src: 'A3', at: ['e3', -0.10], to: ['g3', -0.10], still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A3', at: ['g3', -0.10], to: ['select', -0.30], still: true, look: 'anchor',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
 
-  // ── ④ 터뜨린다 : 9월 · 오광 · 조커 5개 ──
-  /* 고른다 → 낸다 → 한 장씩 착지 → 슬램. **한 컷으로 이어 간다.**
-     여기서 컷을 나누면 "패를 내는 장면"이 아니라 "화면이 교차로 바뀐 것"으로 읽힌다.
-     카메라는 그동안 손패에서 낸 패로 한 번만 옮겨가며 밀고 들어간다. */
-  { src: 'A4', at: ['select', -0.30], to: ['emblem', -0.12],
-    look: ['cards', 'played'], noSmooth: true,
-    trans: 'fade', transDur: TR, cam: { zoom: [ZA, ZB], ease: 'inout' } },
-  // 오광 — 사다리의 꼭대기. 가장 길게 본다
-  { src: 'A4', at: ['emblem', -0.12], use: 1.55, still: true, look: 'anchor',
+  // ── 오광 — 여기만 풀코스로 터뜨린다 ──
+  { src: 'A3', at: ['select', -0.30], to: ['emblem', -0.12], still: true, look: 'anchor',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  // 엠블럼이 ×배수로 빨려 들어간다 — 족보가 배수를 만든다
-  { src: 'A4', at: ['absorb', -0.20], use: 1.44, still: true, look: 'anchor',
+  { src: 'A3', at: ['emblem', -0.12], to: ['absorb', -0.20], still: true, look: 'anchor',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A4', at: ['tally', -0.20], use: 0.95, still: true, look: 'anchor',
+  { src: 'A3', at: ['absorb', -0.20], to: ['tally', -0.20], still: true, look: 'anchor',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A4', at: ['joker', -0.50], use: 1.15, still: true, look: 'anchor',
+  { src: 'A3', at: ['tally', -0.20], to: ['joker', -0.50], still: true, look: 'anchor',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A4', at: ['sum', -0.20], use: 0.72, still: true, look: 'anchor',
+  { src: 'A3', at: ['joker', -0.50], to: ['sum', -0.20], still: true, look: 'anchor',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A4', at: ['burst', -0.20], use: 2.20, still: true, look: 'anchor',
+  { src: 'A3', at: ['sum', -0.20], to: ['burst', -0.20], still: true, look: 'anchor',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  // 여기서만 '고'를 외친다 — 앞의 두 판이 스톱이었기에 대비로 산다
-  { src: 'A4', at: ['call', -0.15], use: 1.30, still: true, look: 'anchor',
+  { src: 'A3', at: ['burst', -0.20], to: ['go', -0.35], still: true, look: 'anchor',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  // 1고 → 10고. 게임 자체 캐스케이드가 화면 전체를 쓰므로 넓게 받는다
-  { src: 'A4', at: ['go', 0.00], use: 2.60, still: true, look: 'anchor',
-    trans: 'fade', transDur: TR, cam: { zoom: [ZB, ZA], ease: 'glide' } },
+  // 11고 → 20고 체이스 — 쌓아 올린 것을 두 배로 뛰는 한 방
+  { src: 'A3', at: ['go', -0.35], use: 4.00, still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
 
   // ── ⑤ 마무리 ──
   /* 엔딩 — 부메랑(갔다가 원복) 금지.
@@ -188,12 +189,12 @@ const EDIT = [
   { id: 'H3', kind: 'plate', use: 1.3, trans: 'fade', transDur: 0.18,
     cam: { z: [1.45, 1.00], ease: 'brake' } },
   { id: 'C4', kind: 'plate', use: 1.6, trans: 'fadeblack', transDur: 0.22,
-    cam: { z: [1.70, 1.00], ease: 'brake' } },
+    cam: { z: [1.50, 1.00], ease: 'brake' } },
   /* 로고 — 화투를 바닥에 내리치듯. 크게 들어와 있다가 한 방향으로 떨어지며
      딱 멈추고, 멈추는 그 순간에만 짧게 쾅. 되돌아가는 무빙 없음. */
-  { id: 'C6', kind: 'plate', use: 2.9, trans: 'fadewhite', transDur: 0.12,
-    fx: { shake: 13, at: 0.62 },
-    cam: { z: [2.35, 1.00], pan: [[0, -0.10], [0, 0]], ease: 'brake' } },
+  { id: 'C6', kind: 'plate', use: 2.6, trans: 'fade', transDur: 0.16,
+    fx: { shake: 14, at: 0.34 },
+    cam: { z: [2.35, 1.00], pan: [[0, -0.09], [0, 0]], ease: 'dash' } },
 ];
 
 /* Higgsfield로 뽑아 끼울 시네마틱 슬롯.
@@ -261,6 +262,9 @@ const EASE = {
   snap:   (P) => `(1-(1-${P})*(1-${P})*(1-${P}))`,
   // 확 튀어나갔다가 브레이크 — 정말 멈춰야 하는 곳에만
   brake:  (P) => `(1-(1-${P})*(1-${P})*(1-${P})*(1-${P}))`,
+  /* 거의 즉시 도착해 딱 선다. 카드를 따라가는 카메라와 '쿵' 떨어지는 로고용.
+     brake(4제곱)로도 느리다는 지적이 있었다 — 6제곱은 32%에서 이미 90%에 닿는다. */
+  dash:   (P) => `(1-(1-${P})*(1-${P})*(1-${P})*(1-${P})*(1-${P})*(1-${P}))`,
 };
 
 /* 카메라.
@@ -506,7 +510,8 @@ function checkOverlaps(cuts) {
   for (const c of cuts) {
     if (c.kind === 'plate') continue;
     const t = markAt(c.src, c.at).t;
-    const end = t + c.use * (c.speed || 1);
+    const use = c.to ? Math.max(0.2, markAt(c.src, c.to).t - t) : c.use;
+    const end = t + use * (c.speed || 1);
     const prev = last[c.src];
     if (prev && t < prev.end - 0.02)
       console.warn(`  \u26a0 ${c.src}: '${prev.name}' 컷(${prev.end.toFixed(2)}s)과 ` +

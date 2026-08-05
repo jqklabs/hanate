@@ -28,7 +28,7 @@ window.captureSceneList = () =>
  *   → [burst] 합산이 끝나는 순간 폭발
  *
  * 예전엔 팝업을 tally와 동시에 4.2초 띄워놔서 "합산되는 순간"이 없었다. */
-async function scoreShow(api, { power = 1, jokerGains = null, hand = '', goTo = 0 } = {}) {
+async function scoreShow(api, { power = 1, jokerGains = null, hand = '', goBig = '' } = {}) {
   // 이번 판을 더하기 '전'의 점수 — api.play()가 playSelected 직전에 찍어둔 값
   const before = api.scoreBefore ?? 0;
   /* 카드가 한 장씩 착지할 때마다 팡. 다 놓인 뒤 한 번만 터뜨리면
@@ -68,16 +68,20 @@ async function scoreShow(api, { power = 1, jokerGains = null, hand = '', goTo = 
 
   /* 여기서 비로소 게임의 집계 애니메이션을 푼다.
      이 게이트가 없으면 게임이 제 타임라인으로 돌아 엠블럼 뒤에서 숫자가 다 올라간다. */
+  /* 게이트를 풀어도 수식이 바로 뜨지 않는다.
+     게임은 release 뒤에 배너 대기(340~480ms) → 배너 정리(160ms)를 거친 다음에야
+     수식을 0.28초에 걸쳐 페이드 인한다. 즉 **release + 약 0.8초**에야 보인다.
+     여기서 곧바로 마크를 찍었더니 컷 전체가 opacity 0인 빈 화면이었다. */
   api.releaseTally();
-  await api.wait(180);
-  api.mark('tally');                                    // 수식이 뜨는 지점
+  await api.wait(860);
+  api.mark('tally');                                    // 수식이 실제로 보이는 지점
   // 칩이 하나씩 더해지는 동안 숫자를 튀어오르게 한다
-  for (let i = 0; i < 5; i++) {
-    api.fx.pulse('#jt-chips', 460);
-    await api.wait(340);
+  for (let i = 0; i < 6; i++) {
+    api.fx.pulse('#jt-chips', 420);
+    await api.wait(300);
   }
   api.fx.pulse('#jt-mult', 520);
-  await api.wait(380);
+  await api.wait(420);
 
   // 특수패 발동 — "특수패를 맞추면 점수가 더 오른다"가 이 영상의 핵심 메시지
   if (jokerGains && jokerGains.length) {
@@ -100,17 +104,17 @@ async function scoreShow(api, { power = 1, jokerGains = null, hand = '', goTo = 
   /* 폭발은 **한 번만.** 예전엔 numberBurst(섬광·광선·링)와 boom(글로우·광선·링)이
      1.4초 간격으로 연달아 터져서 "점수판이 두 번 빛난다"로 읽혔다.
      합산이 끝나는 마지막 순간에 한 방만 크게 간다. */
-  api.mark('burst');
+  api.mark('burst', { score: api.score, target: api.target });
   api.fx.gaugeBlast();
   api.fx.pulse('.vfx-scorepop .sp-cur', 620);
   await api.wait(560);
   api.fx.numberBurst(undefined, power);                 // 유일한 큰 한 방
-  /* 「고는 무제한」 — 게이지가 차오른 바로 그 자리 위에
-     1고 → N고가 점점 빨라지며 박힌다. */
-  if (goTo) {
-    await api.wait(500);
-    api.mark('go');
-    await api.fx.goRun(goTo);
+  /* 마지막 한 방 — 앞에서 1고 → 5고 → 10고로 쌓아 올린 것을 여기서 두 배로 뛴다. */
+  if (goBig) {
+    await api.wait(620);
+    api.mark('go', { score: api.score, target: api.target });
+    // 11고부터 20고까지 파편이 튀며 밀려 올라간다 — 앞의 세 단계를 받아 두 배로
+    await api.goChase(goBig.from, goBig.to);
     await api.wait(900);
   } else {
     await api.wait(2100);    // 폭발 여운
@@ -134,43 +138,74 @@ async function goStop(api, pick = 'stop') {
   await api.wait(1250);
 }
 
+/* 몽타주용 한 조합 — 점수는 세지 않고 조합만 빠르게 꽂는다.
+ *   손패 세팅 → 고르기 → 내기 → (집계 통스킵) → 착지 팡팡팡 → 엠블럼 → 고 한 단계
+ * 카메라 앵커는 **첫 조합에서 한 번만** 잡는다. 조합이 바뀔 때마다 다시 잡으면
+ * 화면이 조합마다 재포커싱돼 몽타주가 아니라 컷 모음으로 읽힌다. */
+async function fastCombo(api, { n, hand, goFrom, goTo, cards, pick, first = false }) {
+  api.resetPlay(6);
+  api.setHand(cards);
+  api.mark('h' + n);
+  await api.wait(240);
+  api.select(pick);
+  api.mark('s' + n);
+  await api.wait(300);
+  await api.play();
+  await api.skipJuice();          // 수식·카운팅은 건너뛴다
+  await api.wait(460);            // 카드가 자리에 앉을 때까지
+  api.fx.cardPops(70);            // await 하지 않는다 — 겹쳐 터져야 빠르다
+  api.fx.slam(undefined, { amount: 10 });
+  if (first) api.anchor();        // 카메라 기준점은 여기서 한 번만
+  await api.wait(340);
+  api.mark('e' + n);
+  api.fx.emblem(hand, 1050);
+  api.fx.text(hand, undefined, 1050, 1.2);
+  await api.wait(760);
+  api.mark('g' + n);
+  await api.goChase(goFrom, goTo);   // 파편 튀는 인게임 체이스 — 숫자가 밀려 올라간다
+  await api.wait(320);               // 다음 조합으로 바로 — 빈 판을 오래 보이면 늘어진다
+}
+
 window.CAPTURE_SCENES = [
   {
     id: 'A1',
-    label: '사이클 1 — 1월, 목표 160',
+    label: '사이클 1 — 1월, 홍단',
     record: 26000,
     async run(api) {
-      api.clean();
+      api.clean({ keepJokers: true });
       api.setRound(1);              // 목표 160
       api.setMoney(4);
       api.setScore(0);
       api.setPlays(4);
+      /* 홍단(띠 3장)은 배수 4·칩 24라 맨몸으로는 160을 못 넘는다.
+         「단골」(홍단/청단/초단 +7배수) 하나만 쥐여 준다 —
+         첫 판부터 "특수패가 배수를 만든다"를 보여주는 편이 오히려 낫다. */
+      api.setJokers(['dangol']);
       await api.center();
-      // 낼 패(고도리 2·4·8월)를 손패 여기저기 흩어놓는다 — 왼쪽에 몰리면 인위적이다
+      // 낼 패(1·2·3월 홍단)를 손패 여기저기 흩어놓는다 — 왼쪽에 몰리면 인위적이다
       api.setHand([
-        { month: 1, type: 'tti', tag: 'hongdan' },
-        { month: 2, type: 'yeol', tag: 'godori' },   // ★
+        { month: 1, type: 'tti', tag: 'hongdan' },   // ★
         { month: 5, type: 'pi' },
-        { month: 8, type: 'yeol', tag: 'godori' },   // ★
-        { month: 3, type: 'tti', tag: 'hongdan' },
+        { month: 2, type: 'tti', tag: 'hongdan' },   // ★
+        { month: 8, type: 'yeol', tag: 'godori' },
         { month: 6, type: 'pi' },
-        { month: 4, type: 'yeol', tag: 'godori' },   // ★
+        { month: 3, type: 'tti', tag: 'hongdan' },   // ★
         { month: 9, type: 'pi' },
+        { month: 4, type: 'yeol', tag: 'godori' },
       ]);
       api.mark('hand');
       await api.wait(1100);
-      // 고도리(2·4·8월 열끗) — 배수 6. 1월은 낮이라 열끗 +2칩이 붙어 160을 넘긴다
       api.select([
-        { month: 2, type: 'yeol', tag: 'godori' },
-        { month: 4, type: 'yeol', tag: 'godori' },
-        { month: 8, type: 'yeol', tag: 'godori' },
+        { month: 1, type: 'tti', tag: 'hongdan' },
+        { month: 2, type: 'tti', tag: 'hongdan' },
+        { month: 3, type: 'tti', tag: 'hongdan' },
       ]);
       api.mark('select');
-      await api.wait(1000);
+      await api.wait(420);      // 고르자마자 낸다 — 뜸들이면 늘어진다
       api.mark('play');
       api.holdTally();          // 엠블럼이 끝날 때까지 숫자를 세지 않는다
       await api.play();
-      await scoreShow(api, { power: 1.0, hand: '고도리' });
+      await scoreShow(api, { power: 1.0, hand: '홍단' });
       await goStop(api, 'stop');       // 1사이클은 안전하게 스톱
     },
   },
@@ -200,100 +235,111 @@ window.CAPTURE_SCENES = [
       api.aim(1);
       api.mark('aim');
       api.fx.pulse('#shop-offers .offer.cap-aim .o-name', 560);
-      await api.wait(900);
+      await api.wait(720);
       api.mark('fly');
       await api.fx.flyToJoker(1, () => api.buy(1));       // 삼광판
       api.aim(null);
-      await api.wait(1000);
+      await api.wait(700);
       api.aim(0);
       api.mark('aim2');
       api.fx.pulse('#shop-offers .offer.cap-aim .o-name', 560);
-      await api.wait(800);
+      await api.wait(620);
       api.mark('fly2');
       await api.fx.flyToJoker(0, () => api.buy(0));       // 광모이
       api.aim(null);
-      await api.wait(1400);
+      await api.wait(1200);
     },
   },
 
   {
     id: 'A3',
-    label: '사이클 2 — 5월, 병풍(1~5월 연속)',
-    record: 26000,
-    async run(api) {
-      api.clean({ keepJokers: true });
-      api.setRound(5);              // 목표 600
-      api.setMoney(24);
-      api.setScore(0);
-      api.setPlays(4);
-      api.setJokers(['gwangpari', 'gwang_sujip', 'samgwang_nori']);
-      await api.center();
-      /* 병풍 = 연속된 5개월(스트레이트), 배수 3.
-         1~5월로 잡으면 core가 송학광·꾀꼬리·벚꽃광·두견·난초 —
-         광 2장 + 봄꽃 3장이라 화면이 가장 예쁘고 기본칩도 48로 최고다.
-         배수는 낮지만 조커 3개가 붙어 목표 600을 넘긴다. */
-      // 병풍 5장을 흩어놓는다
-      api.setHand([
-        { month: 3, type: 'kwang' },          // ★ 벚꽃 광
-        { month: 9, type: 'pi' },
-        { month: 1, type: 'kwang' },          // ★ 송학 광
-        { month: 5, type: 'yeol' },           // ★ 난초
-        { month: 7, type: 'tti', tag: 'chodan' },
-        { month: 2, type: 'yeol', tag: 'godori' },   // ★ 꾀꼬리
-        { month: 10, type: 'pi' },
-        { month: 4, type: 'yeol', tag: 'godori' },   // ★ 두견
-      ]);
-      api.mark('hand');
-      await api.wait(900);
-      api.select([                  // 병풍 — 1~5월 연속 5장
-        { month: 1, type: 'kwang' },
-        { month: 2, type: 'yeol', tag: 'godori' },
-        { month: 3, type: 'kwang' },
-        { month: 4, type: 'yeol', tag: 'godori' },
-        { month: 5, type: 'yeol' },
-      ]);
-      api.mark('select');
-      await api.wait(900);
-      api.mark('play');
-      api.holdTally();          // 엠블럼이 끝날 때까지 숫자를 세지 않는다
-      await api.play();
-      await scoreShow(api, { power: 1.5, jokerGains: [3, 24, 40], hand: '병풍' });
-      await goStop(api, 'stop');       // 2사이클도 스톱 — 3사이클의 '고'를 돋보이게
-    },
-  },
-
-  {
-    id: 'A4',
-    label: '사이클 3 — 9월, 오광 폭발 → 1고~10고',
-    record: 34000,
+    label: '몽타주 — 병풍 → 고도리 → 총통 → 오광',
+    record: 46000,
     async run(api) {
       api.clean({ keepJokers: true });
       api.setRound(9);              // 목표 2,200
       api.setMoney(46);
-      /* 선언 단계 = '아직 못 넘은 첫 문턱'이다(밀치기 고).
-         10고로 선언되려면 9고 문턱(2,200×6.4 = 14,080)은 넘고
-         10고 문턱(2,200×7 = 15,400)은 못 넘어야 한다.
-         이번 판 획득이 약 9,500점이므로 시작 5,000 → 최종 14,500. 딱 10고다.
-         (6,200으로 뒀더니 14,500이 아니라 15,700이 되어 버튼이 11고로 떴다) */
-      api.setScore(5000);           // 이미 쌓아둔 상태에서 마지막 한 방
-      api.setPlays(2);
+      /* 네 조합이 더하는 점수가 9,958점이다.
+         마지막에 「20고!」를 띄우려면 20고 문턱(2,200 × 13 = 28,600)은 넘고
+         21고 문턱(29,920)은 안 넘어야 한다 → 시작 19,000 → 최종 28,958. */
+      api.setScore(19000);
+      api.setPlays(6);
       api.setJokers(['gwangpari', 'gwang_sujip', 'samgwang_nori',
                      'bigwang_usan', 'ogwang_kkum']);
       await api.center();
-      // 광 5장을 흩어놓는다
+
+      /* 앞의 세 조합은 **점수를 세지 않는다.** 조합을 알아보는 것만으로 충분하고,
+         매번 수식을 돌리면 같은 리듬이 네 번 반복돼 늘어진다.
+         대신 조합이 꽂힐 때마다 특수패바와 낸 패 사이에서 고가 쭉쭉 오른다. */
+      await fastCombo(api, { n: 1, hand: '병풍', goFrom: 0, goTo: 1, first: true,
+        cards: [
+          { month: 5, type: 'yeol' },                     // ★
+          { month: 9, type: 'yeol' },                     // ★
+          { month: 1, type: 'pi' },
+          { month: 6, type: 'tti', tag: 'cheongdan' },    // ★
+          { month: 11, type: 'pi' },
+          { month: 7, type: 'yeol' },                     // ★
+          { month: 3, type: 'pi' },
+          { month: 8, type: 'pi' },                       // ★
+        ],
+        // 5~9월 연속 5장. 8월은 광·열끗을 오광/고도리에 넘기고 피를 쓴다(겹침 금지)
+        pick: [
+          { month: 5, type: 'yeol' },
+          { month: 6, type: 'tti', tag: 'cheongdan' },
+          { month: 7, type: 'yeol' },
+          { month: 8, type: 'pi' },
+          { month: 9, type: 'yeol' },
+        ] });
+
+      await fastCombo(api, { n: 2, hand: '고도리', goFrom: 1, goTo: 5,
+        cards: [
+          { month: 2, type: 'yeol', tag: 'godori' },      // ★
+          { month: 5, type: 'pi' },
+          { month: 4, type: 'yeol', tag: 'godori' },      // ★
+          { month: 10, type: 'pi' },
+          { month: 8, type: 'yeol', tag: 'godori' },      // ★
+          { month: 1, type: 'pi' },
+          { month: 6, type: 'pi' },
+          { month: 3, type: 'tti', tag: 'hongdan' },
+        ],
+        pick: [
+          { month: 2, type: 'yeol', tag: 'godori' },
+          { month: 4, type: 'yeol', tag: 'godori' },
+          { month: 8, type: 'yeol', tag: 'godori' },
+        ] });
+
+      await fastCombo(api, { n: 3, hand: '총통', goFrom: 5, goTo: 10,
+        cards: [
+          { month: 10, type: 'yeol' },                    // ★
+          { month: 2, type: 'pi' },
+          { month: 10, type: 'tti', tag: 'cheongdan' },   // ★
+          { month: 7, type: 'pi' },
+          { month: 10, type: 'pi' },                      // ★
+          { month: 5, type: 'tti', tag: 'chodan' },
+          { month: 10, type: 'pi' },                      // ★
+          { month: 9, type: 'pi' },
+        ],
+        pick: [
+          { month: 10, type: 'yeol' },
+          { month: 10, type: 'tti', tag: 'cheongdan' },
+          { month: 10, type: 'pi' },
+          { month: 10, type: 'pi' },
+        ] });
+
+      // ── 마지막 오광만 풀코스로 터뜨린다 ──
+      api.resetPlay(2);
       api.setHand([
-        { month: 8, type: 'kwang' },          // ★
+        { month: 8, type: 'kwang' },                      // ★
         { month: 2, type: 'yeol', tag: 'godori' },
-        { month: 1, type: 'kwang' },          // ★
-        { month: 12, type: 'kwang', tag: 'bikwang' },  // ★
+        { month: 1, type: 'kwang' },                      // ★
+        { month: 12, type: 'kwang', tag: 'bikwang' },     // ★
         { month: 7, type: 'pi' },
-        { month: 3, type: 'kwang' },          // ★
+        { month: 3, type: 'kwang' },                      // ★
         { month: 9, type: 'pi' },
-        { month: 11, type: 'kwang' },         // ★
+        { month: 11, type: 'kwang' },                     // ★
       ]);
       api.mark('hand');
-      await api.wait(1200);
-      // 오광 — 배수 12, 족보표 최상위. 사다리의 꼭대기다.
+      await api.wait(900);
       api.select([
         { month: 1, type: 'kwang' },
         { month: 3, type: 'kwang' },
@@ -302,22 +348,12 @@ window.CAPTURE_SCENES = [
         { month: 12, type: 'kwang', tag: 'bikwang' },
       ]);
       api.mark('select');
-      await api.wait(1200);
+      await api.wait(420);
       api.mark('play');
-      api.holdTally();          // 엠블럼이 끝날 때까지 숫자를 세지 않는다
+      api.holdTally();
       await api.play();
-      await scoreShow(api, { power: 2.3, jokerGains: [3, 40, 60, 25, 90], hand: '오광',
-                             goTo: 10 });
-
-      /* 「고는 무제한」 — 이 게임의 정체성이자 마지막 한 방.
-         앞의 두 판은 스톱을 골랐으니 여기서 고를 고르는 게 대비로 산다.
-         연출은 새로 만들지 않고 **게임 자체의 고 캐스케이드**를 그대로 돌린다 —
-         인게임 UI 그대로가 광고에서 훨씬 설득력 있다. */
-      /* 고는 따로 외치지 않는다.
-         「10고!」를 한 번 외치고 그 뒤에 캐스케이드가 또 10고까지 올라가면
-         같은 말을 두 번 하는 꼴이다 → 점수 게이지가 차오르는 위에
-         1고 2고 3고 …가 점점 빨라지며 박히는 것 하나로 끝낸다. */
-      await api.wait(1400);
+      await scoreShow(api, { power: 2.3, jokerGains: [3, 40, 60, 25, 90],
+                             hand: '오광', goBig: { from: 10, to: 20 } });
     },
   },
 ];

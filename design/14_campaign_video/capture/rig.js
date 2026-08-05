@@ -135,6 +135,41 @@
       transition: transform .25s cubic-bezier(.2,1.6,.3,1);
     }
 
+    /* 칩 × 배수 = 점수. 인게임 기본 크기로는 카드 사이에 낀 잔글씨로 보인다.
+       영상에서는 이게 핵심 정보라 큼직하게 키운다. */
+    body.cap-clean #playedarea.juice-stage { gap: 26px !important; }
+    /* 수식은 낸 패 '아래 가운데'에 붙은 하나의 결과 패널이어야 한다.
+       맨 숫자만 흩어져 있으면 카드 옆에 잘못 끼어든 잔글씨로 읽힌다. */
+    body.cap-clean #juice-tally .jt-row {
+      align-items: center !important; gap: 16px !important;
+      padding: 14px 36px !important; border-radius: 18px !important;
+      background: linear-gradient(180deg, rgba(10,22,16,.9), rgba(5,14,10,.95)) !important;
+      border: 3px solid rgba(255,214,130,.7) !important;
+      box-shadow: 0 0 44px rgba(255,190,80,.28),
+                  inset 0 0 22px rgba(255,190,80,.1) !important;
+    }
+    /* 인게임 칩 색(--chip-blue)은 판 위에서 가라앉는다 — 영상에선 또렷하게 */
+    body.cap-clean #juice-tally .jt-chips {
+      font-size: 60px !important; color: #bfe3ff !important;
+      text-shadow: 0 0 16px rgba(120,190,255,.65) !important;
+    }
+    body.cap-clean #juice-tally .jt-mult  { font-size: 60px !important; }
+    body.cap-clean #juice-tally .jt-times { font-size: 44px !important; }
+    body.cap-clean #juice-tally .jt-score {
+      font-size: 70px !important;
+      text-shadow: 0 0 18px rgba(255,205,110,.8) !important;
+    }
+    body.cap-clean #juice-tally .jt-eq,
+    body.cap-clean #juice-tally .jt-plus  { font-size: 40px !important; }
+    body.cap-clean #juice-tally .jt-flat  { font-size: 42px !important; }
+
+    /* 고 체이스는 뷰포트 정중앙에 뜬다. 카메라는 낸 패(앵커)를 보고 있으므로
+       그대로 두면 프레임 아래쪽에 걸린다 → 오버레이를 앵커 높이로 옮긴다.
+       (카메라를 움직여 맞추면 몽타주 내내 고정이라는 원칙이 깨진다) */
+    body.cap-clean #go-cascade .go-stage {
+      transform: translateY(calc(var(--cap-focus-y, 50vh) - 50vh));
+    }
+
     /* 조커바가 2줄로 깨지면 상단이 잘린다 — 한 줄 고정, 빈 슬롯 제거 */
     body.cap-clean #jokerbar {
       display: flex !important; flex-wrap: nowrap !important;
@@ -166,7 +201,7 @@
     body.cap-center #table {
       display: flex !important; flex-direction: column !important;
       align-items: center !important; justify-content: space-between !important;
-      height: 100% !important; padding: 18px 0 26px !important;
+      height: 100% !important; padding: 10px 0 22px !important;
     }
     /* 손패 8장·낸 패 5장은 **반드시 한 줄**이다(R7).
        wrap을 열어두면 폭이 몇 px만 모자라도 마지막 한 장이 아래로 접힌다. */
@@ -182,24 +217,32 @@
     }
     /* 영역 높이를 고정한다. 카드가 빠지거나 보충될 때마다 높이가 변하면
        판 전체가 위아래로 밀려 "카메라가 미세하게 움직인다"로 읽힌다. */
-    body.cap-center #handarea { height: 158px !important; min-height: 158px !important; }
+    body.cap-center #handarea { height: 150px !important; min-height: 150px !important; }
     body.cap-center #actions { height: 74px !important; min-height: 74px !important; }
     /* 카드를 크게. 프레임의 절반 가까이를 카드가 채워야 화투 게임으로 읽힌다.
        손패는 8장이 한 줄에 들어가야 하므로(R7) 무대 폭 816px ÷ 8 이 상한이다.
        낸 패는 3~5장뿐이라 훨씬 크게 잡을 수 있다. */
+    /* 폭 계산 기준은 '무대'가 아니라 '카메라가 실제로 잡는 폭'이다.
+       카메라 기본 배율 ZB(≈1.34)에서 프레임에 들어오는 건 무대의 약 804px뿐 —
+       무대 폭(860)에 맞춰 잡았더니 낸 패 다섯 장이 좌우로 잘렸다.
+       카드마다 테두리가 3px씩 더 붙으므로(5장이면 30px) 그것까지 계산에 넣는다.
+       box-sizing을 안 주면 테두리·패딩이 더해져 실제 폭이 커진다(실측 148 → 161). */
+    body.cap-center #handarea .card,
+    body.cap-center #playedarea .card,
+    body.cap-center .juice-card-wrap .card { box-sizing: border-box !important; }
     body.cap-center #handarea .card {
-      width: 92px !important; height: 139px !important; flex: 0 0 auto !important;
+      width: 84px !important; height: 127px !important; flex: 0 0 auto !important;
     }
     body.cap-center #handarea { gap: 5px !important; }
     body.cap-center #playedarea .card,
     body.cap-center .juice-card-wrap .card {
-      width: 148px !important; height: 223px !important; flex: 0 0 auto !important;
+      width: 132px !important; height: 199px !important; flex: 0 0 auto !important;
     }
     body.cap-center .juice-card-wrap { flex: 0 0 auto !important; }
     body.cap-center #juice-cards { gap: 9px !important; }
     /* 낸 패 영역도 높이 고정 — 카드가 착지할 때 판이 밀리지 않게 */
     body.cap-center #playedarea {
-      min-height: 262px !important; height: 262px !important;
+      min-height: 312px !important; height: 312px !important;
     }
     body.cap-center #actions { justify-content: center !important; }
 
@@ -308,7 +351,7 @@
    * 카메라가 내기 전 자리로 슬금슬금 되돌아간다 — 그러면 안 된다.
    * → 카드가 놓인 순간 한 번만 재서 얼려두고, 그 판이 끝날 때까지 이 값을 쓴다.
    * 오버레이(엠블럼·점수 팝업)도 같은 y에 뜨게 해서 카메라와 어긋나지 않게 한다. */
-  let ANCHOR = null;
+  let ANCHOR = null, POP = null;
 
   function snapRects() {
     const R = {};
@@ -326,6 +369,7 @@
                          w: (r - l) / innerWidth, h: (b - t) / innerHeight };
     };
     put('cards', ['#playedarea .card', '#handarea .card']);
+    put('sel', ['#handarea .card.sel']);      // 지금 고른 패 — 카메라 출발점
     put('played', ['#playedarea .card']);
     put('hand', ['#handarea .card']);
     put('score', ['#scorepanel']);
@@ -350,6 +394,16 @@
     // 게임 UI가 실제로 차지하는 전체 범위 — 뷰포트 크기를 이걸로 정한다
     put('gameui', ['#topbar', '#side', '#table']);
     if (ANCHOR) R.anchor = ANCHOR;
+    if (POP) R.pop = POP;                     // 점수 팝업 자리 — 팝업 컷은 여기가 중앙
+    /* 고 스탬프 자리 — 특수패바 아래끝과 낸 패 위끝 사이의 빈 띠.
+       조합이 꽂힐 때마다 여기서 고가 쭉쭉 오른다. */
+    const top = R.jokers ? R.jokers.cy + R.jokers.h / 2 : 0.08;
+    const box = R.played || R.cards;
+    if (box) {
+      const bot = box.cy - box.h / 2;
+      R.gobar = { cx: 0.5, cy: (top + bot) / 2, w: 0.4,
+                  h: Math.max(0.04, bot - top) };
+    }
     return R;
   }
 
@@ -435,6 +489,42 @@
     showMultOnly() { document.body.classList.add('cap-premult'); },
     hideMultOnly() { document.body.classList.remove('cap-premult'); },
 
+    /* 「1고 → 5고 → 10고 → 20고」 — 게임 자체 체이스 연출을 그대로 돌린다.
+     * 숫자가 파편으로 부서지며 다음 숫자가 밀고 들어오는 그 효과가
+     * 영상용으로 새로 만든 어떤 스탬프보다 낫다.
+     * (from, to) 사이 숫자를 전부 훑으므로 5→10이면 6·7·8·9·10이 쭉쭉 지나간다. */
+    async goChase(from, to) {
+      state.goLevel = to;
+      state.target = goThreshold(state.baseTarget, to);
+      await runGoShatterCascade(from, to, { fullscreen: true });
+    },
+
+    /* 집계를 통째로 건너뛴다.
+     * 몽타주 구간(병풍→고도리→총통)은 점수를 세지 않고 조합만 빠르게 꽂는다.
+     * 주의: playJuiceSequence는 시작할 때 JUICE.skip을 false로 되돌린다.
+     *       그래서 **시퀀스가 시작된 뒤에** 켜야 한다 → running을 기다린다. */
+    async skipJuice(timeout = 4000) {
+      const t0 = performance.now();
+      while (!JUICE.running && performance.now() - t0 < timeout) await wait(30);
+      JUICE.skip = true;
+      if (JUICE.onSkip) JUICE.onSkip();
+    },
+
+    /* 다음 조합을 낼 수 있는 상태로 되돌린다.
+       목표를 넘기면 게임이 screen을 'gostop'으로 바꿔 다음 playSelected가 막힌다. */
+    resetPlay(plays = 5) {
+      state.screen = 'play';
+      state.pendingGoStop = false;
+      state.juicing = false;
+      state.dealing = false;
+      state.playsLeft = plays;
+      state.discardsLeft = plays;
+      JUICE.running = false;
+      JUICE.skip = false;
+      JUICE.onSkip = null;
+      render();
+    },
+
     /* 집계를 붙잡아 둔다 — 엠블럼이 다 끝난 뒤에 풀어야 숫자가 안 가려진다 */
     holdTally() { let r; gate = { p: new Promise((res) => (r = res)), r }; },
     releaseTally() { if (gate) { gate.r(); gate = null; } },
@@ -499,13 +589,19 @@
         const below = ANCHOR.cy * innerHeight + (ANCHOR.h * innerHeight) / 2;
         const popY = hb && hb.top > below ? (below + hb.top) / 2 : below + 130;
         document.documentElement.style.setProperty('--cap-pop-y', popY + 'px');
+        // 팝업이 뜨는 컷은 이 좌표가 프레임 정중앙이어야 한다
+        POP = { cx: 0.5, cy: popY / innerHeight, w: 0.52, h: 0.17 };
+        const g = snapRects().gobar;
+        if (g) document.documentElement.style.setProperty(
+          '--cap-go-y', (g.cy * innerHeight) + 'px');
       }
       return ANCHOR;
     },
     clearAnchor() {
-      ANCHOR = null;
+      ANCHOR = null; POP = null;
       document.documentElement.style.removeProperty('--cap-focus-y');
       document.documentElement.style.removeProperty('--cap-pop-y');
+      document.documentElement.style.removeProperty('--cap-go-y');
     },
 
     /* 지금 사려는 상품에 표식을 단다 — 카메라(assemble)가 'buyitem' 좌표로
@@ -565,9 +661,11 @@
 
     // 사건 시각을 남긴다 — assemble이 이 지점을 기준으로 짧게 잘라낸다.
     // 컷을 녹화 단위가 아니라 사건 단위로 쪼갤 수 있어야 속도가 붙는다.
-    mark(name) {
-      (window.__captureMarks || (window.__captureMarks = []))
-        .push({ name, ms: performance.now() - (window.__captureT0 || 0), rects: snapRects() });
+    mark(name, info) {
+      (window.__captureMarks || (window.__captureMarks = [])).push({
+        name, ms: performance.now() - (window.__captureT0 || 0),
+        rects: snapRects(), ...(info ? { info } : {}),
+      });
     },
 
     // 게임 자체의 런 종료 화면 — 실패를 연출로 흉내내지 않고 진짜 화면을 띄운다
