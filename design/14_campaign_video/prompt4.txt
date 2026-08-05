@@ -1,0 +1,32 @@
+Use your image generation tool to create this image. Do NOT draw it with code (no PIL, canvas, SVG, or matplotlib).
+
+TWO REFERENCE IMAGES ARE ATTACHED. Follow them literally — this is a storyboard for an EXISTING game and every panel must look like the real product.
+
+Reference A (three-part in-game UI capture) defines the stage. Copy it faithfully:
+- The board is DEEP MUTED GREEN with a dark vignette at the edges. Not black, not ink.
+- UI panels are dark green rectangles with thin GOLD/AMBER borders and rounded corners.
+- All UI text is a handwritten Korean brush-script, warm cream and gold.
+- A score panel shows a number over a target with a thin progress bar.
+- The decision modal has a GREEN button above and a BIG SATURATED RED button below with bright yellow text.
+- The woman: long black braid over her shoulder, pink and white floral jeogori with a red tie, deep crimson skirt with gold floral pattern, bare feet, seated on dark wood, holding a small white ceramic bowl. Beside her: a pale ceramic jar, a wooden box, a bowl of rice, scattered cards, red petals. Keep her EXACTLY this design.
+
+Reference B (card strip) defines the cards: Korean ink wash on BRIGHT OFF-WHITE RICE PAPER, loose brush strokes, generous white space, muted pigments. Cards are LIGHT and PAPERY. No dark cards, no gold filigree borders, no glowing edges. Do not invent new designs.
+
+LAYOUT: a storyboard sheet, ONE single landscape image. Ten TALL VERTICAL 9:16 panels in a 5-column x 2-row grid. Each panel is a vertical portrait rectangle with a thin light border and a small number tag 01 to 10 in its top-left corner. Gutters are flat dark charcoal, undecorated.
+
+Every panel is a MOBILE GAME SCREEN in vertical 9:16 — the green board with its gold-bordered UI, composed for a phone. Cinematic but unmistakably this game.
+STRICTLY FORBIDDEN: lens flare, magic circles, energy shockwaves, neon rim light, glossy plastic skin, ink-black backgrounds, ornate fantasy card frames.
+
+Panels:
+01 - The woman fills the lower two-thirds of the vertical frame on the green board, seen close. She has just set her white ceramic bowl down on the wood. She looks STRAIGHT INTO CAMERA, calm and challenging. Gold UI panels sit small along the top edge.
+02 - Same framing. She has pushed a big saturated RED button with yellow Korean text forward across the board toward the viewer, her fingertips still resting on its edge. The red is the only strong color; the rest of the board has drained toward grey-green. She waits.
+03 - The red button is pressed and depressed. Three bright rice-paper cards slam down onto the green board. In the upper frame the score number is mid-climb in bright gold, the thin progress bar filling fast.
+04 - The number has stopped just short of the target. Deep saturated red floods the entire green board from the edges inward. The UI panels go dark. The woman is a dim silhouette at the frame edge. Total failure.
+05 - Clean reset. The board is calm green again. The month panel at upper left reads month one with a small sun icon; the score gauge sits at zero over a small target with the bar empty. A single bright rice-paper card of an ink crane under a red sun disc is being laid on the board.
+06 - Mid-run montage. The month panel and the target number are caught mid-change, ghosting between values; a small day icon and a small night icon overlap in transition. A row of cards has grown across the board. The woman in the background has straightened up, watching.
+07 - Later in the run, dense. Three of the five special-card slots along the top are now filled with small ornate tokens. The score panel shows a large four-digit target. Stacks of old Korean coins sit at the lower right. The woman leans forward, eyebrows raised.
+08 - The decision modal is up, filling the middle of the vertical frame: a green button above, and below it a huge saturated RED button with large yellow Korean text. The woman is visible behind the modal, tense, no longer smiling.
+09 - Three bright rice-paper cards — crane with red sun, cherry blossoms, full moon over a black hill — land together on the green board. The score number in the upper frame has blown past the target, the progress bar overfilled and spilling gold along its length. The whole board jolts.
+10 - The coldest panel. The green board is drowned in cold blue-grey; heavy rain streaks fall across the entire screen and the UI panels are dimmed by a storm debuff. One rice-paper card of a figure under an umbrella lies at the center. The upper third is nearly empty dark space reserved for a title.
+
+Professional pre-production storyboard sheet for a mobile game ad. Save the generated file to ./storyboard_v4.png

@@ -1,0 +1,23 @@
+Use your image generation tool to create this image. Do NOT draw it with code (no PIL, canvas, SVG, or matplotlib).
+
+TWO REFERENCE IMAGES ARE ATTACHED.
+
+Reference A (character sheet): the woman. Keep her exactly consistent: black hair in a loose updo with wispy strands, white flower hairpin with red beaded tassels, sheer cream patterned blouse with a small red ribbon tie, dark crimson floral pleated skirt, brown-amber eyes.
+
+Reference B (card strip): THE ACTUAL PLAYING CARDS. This is critical. Every card drawn must copy these exact designs — Korean sumi-e ink wash painting on BRIGHT OFF-WHITE RICE PAPER, loose visible brush strokes, lots of empty white space, muted natural pigments (soft pink blossoms, black ink, one red sun disc, a red banner with black calligraphy). The cards are LIGHT and PAPERY, not dark, not ornate, no gold filigree, no glowing borders, no jewel-encrusted frames. Do not invent new card designs.
+
+STYLE DIRECTIVE — avoid the generic glossy AI look. Use: restrained natural lighting, mostly practical light sources (a single lamp, moonlight through paper doors), matte film grain, muted desaturated palette, real physical materials — worn wood, hanji paper, cotton fabric. NO lens flares, NO swirling golden particle vortexes, NO glowing magical energy circles, NO neon rim light, NO floating sparkles. Restrained, grounded, cinematic photography feel, like a Korean period film still. Gold appears only as small metallic accents, never as glow.
+
+Create an 8-PANEL STORYBOARD SHEET arranged as a 4-column x 2-row grid on ONE single landscape 16:9 image. Each panel is a clean rectangle with a thin single-line border and a small number tag 01 to 08 in the corner. Gutters between panels are flat dark charcoal, no decoration.
+
+Panels:
+01 - Close up, low light: a hand lays one hwatu card face up on worn dark wood. The card is the bright white crane-and-red-sun card from reference B. Single warm lamp from the left.
+02 - The woman from reference A sits in a dim room, holding five of the bright rice-paper cards from reference B in a loose fan near her chin. She looks straight at camera, faint knowing smile. Moonlight from a paper window.
+03 - Top-down flat shot of eight of the reference B cards laid in a row on dark wood. Plain, documentary, even light. No effects.
+04 - Three of the reference B cards mid-fall above the wooden floor, caught in motion blur, one already landed. Dust in the air. Natural motion, no shockwave.
+05 - Tight shot of a small brass scale and a stack of old Korean coins on the wood beside two cards, implying a mounting wager. Shallow depth of field.
+06 - Over-the-shoulder from behind the woman: heavy rain outside an open door, a dark hunched silhouette of an opponent seated across the floor mat. Cold blue-grey light, tense stillness.
+07 - The woman leans back laughing, genuinely, a few cards slipping from her hand, coins scattered on the mat. Warm lamp light, natural and human, no rain of gold.
+08 - Empty final frame: dark wood surface, one card face down, wide empty space in the upper area reserved for a title. Simple and quiet.
+
+Professional pre-production storyboard sheet. Save the generated file to ./storyboard_v2.png

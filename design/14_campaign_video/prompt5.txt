@@ -1,0 +1,48 @@
+Use your image generation tool to create this image. Do NOT draw it with code (no PIL, canvas, SVG, or matplotlib).
+
+TWO REFERENCE IMAGES ARE ATTACHED. Follow both literally.
+
+Reference A (character) is the ONLY correct design for the woman. Copy it exactly in every panel she appears:
+- Black hair in a LOOSE UPDO with wispy loose strands falling around her face — NOT a braid
+- A white flower hairpin with dangling RED BEADED TASSELS on her right side
+- A sheer, translucent cream blouse with a fine floral pattern and a small RED RIBBON BOW tie at the chest
+- A dark crimson floral pleated skirt, high waisted
+- Barefoot, with a thin red cord anklet
+- Brown-amber eyes, pale skin, calm and unreadable
+This is a painterly anime illustration with soft watercolor shading. Do not change her hair, her hairpin, or her clothing.
+
+Reference B (cards) is the ONLY correct card design. Copy it exactly:
+- Each card is a TALL PORTRAIT rectangle, aspect ratio 2:3. NEVER stretch, squash, or widen them.
+- Bright off-white rice paper, Korean ink-wash painting, loose brush strokes, generous empty space.
+- The FOUR "gwang" cards each carry a DARK RED BAND across the BOTTOM 28% of the card, with a pale circular medallion holding the character 光 and a small cloud motif.
+- All other cards have NO band — plain painted rice paper to the edge.
+- Do not invent new cards. Do not add gold filigree frames or glowing edges.
+
+LAYOUT: a storyboard sheet, ONE single landscape image. Ten TALL VERTICAL 9:16 panels in a 5-column x 2-row grid. Each panel is a vertical portrait rectangle with a thin light border and a small number tag 01 to 10 in its top-left corner. Gutters are flat dark charcoal, undecorated.
+
+TONE — this is a CINEMATIC GAME TEASER, not a screenshot. Most panels are moody, sparse, dramatic. The world is a deep muted green void with heavy dark vignette and a single soft light source. The floor is dark wood. KEEP IT EMPTY: no ceramic jars, no bowls, no rice, no wooden boxes, no scattered clutter, no furniture — only the woman, the cards, and darkness. NO user-interface bars, panels, icons, or text anywhere except in the four panels explicitly marked [UI].
+STRICTLY FORBIDDEN: lens flare, magic circles, energy shockwaves, neon rim light, glossy plastic skin, squashed cards.
+
+Panels:
+
+01 [CINEMATIC] - The woman from reference A, seen from the chest up, filling the vertical frame in near-darkness. A single soft light rakes her face from the left. She holds one rice-paper card lightly at the edge of frame and looks STRAIGHT INTO CAMERA, calm and challenging. Deep green-black void behind her. Empty, no props.
+
+02 [UI] - Full-frame close on a single large saturated RED button with bright yellow Korean lettering, floating on the muted green board. It fills the middle of the vertical frame. Everything around it is drained to desaturated grey-green. Her fingertips rest on its near edge, pushing it toward camera. The red is the only strong color in the panel.
+
+03 [CINEMATIC] - Low angle across a dark wood floor. Three tall 2:3 rice-paper cards strike the floor together, caught at the instant of impact — a crane with a red sun, pink cherry blossoms over a roof, a full moon over a black hill. Each carries the dark red 光 band at its bottom. Dust lifts from the boards. No hands visible, no UI.
+
+04 [UI] - Full-frame on a thin score gauge and its number, rendered in warm gold Korean brush-script on the green board. The bar has stopped just short of its target. Deep saturated red is flooding inward from every edge, swallowing the gauge. Nothing else in frame.
+
+05 [CINEMATIC] - Wide and very empty. The woman kneels alone in the center of a vast dark green void, small in frame, gathering scattered rice-paper cards back into a single neat stack. One weak overhead light. Total stillness, heavy negative space above her.
+
+06 [UI] - Full-frame on a small month plaque and a target number in gold brush-script, caught mid-change and ghosting between values, a small sun icon cross-fading into a small moon icon beside them. Motion-blurred duplicates trail behind the numerals. Green board, nothing else.
+
+07 [CINEMATIC] - Overhead top-down shot looking straight down at the dark wood floor, now covered edge to edge with tall 2:3 rice-paper cards laid in rows. The woman sits at the bottom edge of frame, leaning forward into the light, studying them. Warm low side light, deep shadow.
+
+08 [UI] - Full-frame on the decision modal: a green button above, and below it a much larger saturated RED button with big yellow Korean lettering. Behind and out of focus, the woman's face is barely visible in the dark, watching camera without smiling. High contrast, tense.
+
+09 [CINEMATIC] - The three gwang cards land together in a tight cluster on the dark floor, their red 光 bands aligned, lit from below by a hard warm gold light that throws their shadows up and outward. The most triumphant panel. Real light only — no particles, no shockwave.
+
+10 [CINEMATIC] - The coldest panel. Heavy rain falls in sheets through a dark green-blue void. A single rice-paper card of a figure under an umbrella lies alone on the flooded wood floor, rain pocking its surface. The woman is a distant dim silhouette at the far edge. The upper half of the panel is nearly empty darkness reserved for a title.
+
+Professional cinematic pre-production storyboard sheet. Save the generated file to ./storyboard_v5.png

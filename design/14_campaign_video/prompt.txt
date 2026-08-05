@@ -1,0 +1,17 @@
+Use your image generation tool to create this image. Do NOT draw it with code (no PIL, canvas, SVG, or matplotlib).
+
+The attached image is a CHARACTER SHEET. Keep this exact character consistent in every panel where she appears: young Korean woman, black hair in a loose updo with wispy strands, white flower hairpin with red beaded tassels, sheer cream patterned blouse with a small red ribbon tie, dark crimson floral pleated skirt, brown-amber eyes, calm sultry expression.
+
+Create an 8-PANEL STORYBOARD SHEET for a game campaign video, arranged as a 4-column x 2-row grid on ONE single landscape 16:9 image. Each panel is a bordered rectangle with a thin gold frame and a small gold corner number tag 01 through 08. Between panels, dark ink-black background with subtle gold Korean cloud patterns. Overall art style: dark ink-black and deep green background, gold leaf accents, crimson red, Korean traditional hwatu card game aesthetic, cinematic anime illustration.
+
+Panel contents in order:
+01 - Extreme close up of a hand placing a single hwatu card face down on a dark wooden floor, dramatic side lighting, dust motes.
+02 - The character from the reference sheet sitting in half-darkness, fanning five hwatu cards in front of her lips, looking directly at viewer, sly smile.
+03 - Overhead top-down shot of 8 hwatu playing cards spread in a fan on dark wood, glowing gold particles rising from three of them.
+04 - Dynamic action: three bright cards slam together in mid-air with a golden shockwave, red flower petals blasting outward.
+05 - A giant glowing gold number floating in dark space with small hwatu cards orbiting it, feeling of a huge score explosion.
+06 - The character seen from behind over her shoulder, facing a towering dark shadowy opponent silhouette made of storm clouds and rain, tense confrontation.
+07 - The character laughing triumphantly, arms open, a cascade of gold coins and hwatu cards raining around her, warm golden light.
+08 - Final logo card: empty dark background with ornate gold Korean border frame, red plum blossoms in corners, blank space in the center reserved for a title.
+
+Make it look like a professional pre-production storyboard sheet. Save the generated file to ./storyboard_8panel.png

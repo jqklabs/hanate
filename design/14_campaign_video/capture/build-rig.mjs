@@ -1,0 +1,57 @@
+// 원본 index.html은 건드리지 않는다. 리그를 주입한 사본을 .build/에 만든다.
+import { readFileSync, writeFileSync, mkdirSync, rmSync, symlinkSync, existsSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const ROOT = resolve(HERE, '../../..');
+const BUILD = resolve(HERE, '.build');
+
+// 게임 부팅보다 먼저 돌아야 하는 것들 — 튜토리얼/코치/설문 억제
+const EARLY = `
+<script>
+(function(){
+  try {
+    ['hwatro_howto_seen','hwatro_jan_coach_v1','hwatro_shop_coach_v1',
+     'hwatro_gostop_coach_v1','hwatro_deck_coach_v1'].forEach(function(k){
+      localStorage.setItem(k,'1');
+    });
+  } catch(e){}
+  window.__CAPTURE__ = new URLSearchParams(location.search).get('capture') === '1';
+})();
+</script>`;
+
+const LATE = `
+<script src="./vfx.js"></script>
+<script src="./scenes.js"></script>
+<script src="./rig.js"></script>`;
+
+function build() {
+  const src = readFileSync(resolve(ROOT, 'index.html'), 'utf8');
+  if (!src.includes('<head>')) throw new Error('index.html에서 <head>를 찾지 못했습니다');
+  if (!src.includes('</body>')) throw new Error('index.html에서 </body>를 찾지 못했습니다');
+
+  const out = src
+    .replace('<head>', '<head>' + EARLY)
+    .replace('</body>', LATE + '\n</body>');
+
+  rmSync(BUILD, { recursive: true, force: true });
+  mkdirSync(BUILD, { recursive: true });
+  writeFileSync(resolve(BUILD, 'index.html'), out);
+
+  // 원본이 'Assets/...' 상대경로를 참조하므로 링크를 걸어준다
+  const link = resolve(BUILD, 'Assets');
+  if (!existsSync(link)) symlinkSync(resolve(ROOT, 'assets'), link, 'dir');
+
+  // 리그 스크립트도 .build에서 바로 읽히도록 링크
+  for (const f of ['rig.js', 'scenes.js', 'vfx.js', 'chunhyang.png']) {
+    const l = resolve(BUILD, f);
+    if (!existsSync(l)) symlinkSync(resolve(HERE, f), l, 'file');
+  }
+
+  console.log('빌드 완료 →', resolve(BUILD, 'index.html'));
+  return resolve(BUILD, 'index.html');
+}
+
+build();
+export { build, BUILD };

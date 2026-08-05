@@ -1,0 +1,25 @@
+Use your image generation tool to create this image. Do NOT draw it with code (no PIL, canvas, SVG, or matplotlib).
+
+TWO REFERENCE IMAGES ARE ATTACHED.
+
+Reference A (character sheet): the woman. Keep her exactly consistent wherever she appears: black hair in a loose updo with wispy strands, white flower hairpin with red beaded tassels, sheer cream patterned blouse with a small red ribbon tie, dark crimson floral pleated skirt, brown-amber eyes.
+
+Reference B (card strip): THE ACTUAL PLAYING CARDS — copy these exact designs. Korean sumi-e ink wash on BRIGHT OFF-WHITE RICE PAPER, loose visible brush strokes, generous empty white space, muted natural pigments. The cards are LIGHT and PAPERY. Absolutely no dark cards, no gold filigree borders, no glowing edges, no ornate frames. Do not invent new card designs.
+
+LAYOUT: a storyboard sheet, ONE single landscape image. Ten TALL VERTICAL 9:16 panels arranged in a 5-column x 2-row grid. Every panel is a vertical portrait rectangle with a thin single-line light border and a small number tag 01 to 10 in its top-left corner. The gutters between panels are flat dark charcoal with no decoration.
+
+STYLE — this is a Korean period film, not fantasy. Every panel: locked-off static camera at seated eye level, roughly 60cm above the floor, in a low Korean sarangbang room with worn dark wood planks, a woven straw floor mat, and paper-screen sliding doors. A single oil lamp at lower left is the anchor light in every night panel. Matte film grain, muted desaturated palette, lifted blacks that are never crushed, light atmospheric haze for depth, real materials — worn wood, hanji paper, cotton. STRICTLY FORBIDDEN: lens flare, glowing particles, sparkles, energy shockwaves, magic circles, neon rim light, hard light shafts, glossy plastic skin.
+
+Panels:
+01 - A bare hand rests still on dark wood beside a bright rice-paper cherry-blossom card. A cold red cast creeps in from the frame edges, the lamp dimming. Ink bleeds across the card. Defeat.
+02 - Identical framing. The same hand gathers the scattered cards back into a neat stack. Warm lamp light restored.
+03 - Cool bright morning daylight floods through the paper screens. A hand lays down the bright card of an ink crane beneath a red sun disc.
+04 - Daylight with blossom branch silhouettes beyond the screens. A hand sets down the pink cherry-blossom card decisively. A few petals drift outside.
+05 - Cool blue night lit only by the oil lamp. A growing row of cards accumulates on the floor mat. Rain shadows streak the paper screens.
+06 - Low amber autumn evening. Three small carved wooden tokens stand in a row along the left edge of the mat by the lamp. Stacks of old Korean coins at lower right. Cards cover the mat.
+07 - Across the mat sits the woman from reference A. She sets down a small ceramic cup and lifts her eyes directly to camera, unreadable. Only the oil lamp lights her face from below left. Total stillness.
+08 - A hand slams down three bright rice-paper cards together — crane with red sun, cherry blossoms, full moon over a black hill. The coins and the lamp flame jolt from the real physical impact. No shockwave, no glow.
+09 - Seen from behind and slightly above the seated player, past their shoulder toward an open doorway where heavy rain falls in sheets across a dark courtyard. Cold blue-grey light. One card of a figure under an umbrella lies on the mat. The coldest, darkest panel.
+10 - Extreme close on a single card held face down just above the mat, about to land, frozen before it touches. Mostly empty dark space in the upper area reserved for a title.
+
+Professional pre-production storyboard sheet. Save the generated file to ./storyboard_v3.png
