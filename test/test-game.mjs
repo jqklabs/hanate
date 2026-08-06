@@ -13,7 +13,7 @@ const src = html.slice(codeStart, codeEnd);
 const E = new Function(src + `
 return { mulberry32, shuffle, buildDeck, CHIP, effType, baseChip, HANDS, HAND_BY_ID, handDisplayName,
   ROUNDS, TARGETS, BOSS_ROUNDS, MILD_BOSSES, goMult, goBonus, goThreshold, goLevelReached, detectHand, detectHandInfo, cardChip,
-  combosOf, evaluateHand, JOKERS, JOKER_BY_ID, BOSSES, BOSS_BY_ID, computeScore,
+  combosOf, evaluateHand, JOKERS, JOKER_BY_ID, BOSSES, BOSS_BY_ID, computeScore, jokerMarginalGain,
   rollJokerRarity, RARITY_ORDER };`)();
 
 let fails = 0;
@@ -242,6 +242,13 @@ console.log('[5] 특수패·박 회귀');
   assert(rNori4.handId === 'sagwang' && rNori4.mult === 8 + 12,
     `삼광판 광4 = 8+12 (실제 hand=${rNori4.handId} mult=${rNori4.mult})`);
   assert(rNori4.score > rNori3.score, `삼광판 광4 점수 > 광3 (실제 ${rNori4.score} vs ${rNori3.score})`);
+  // leave-one-out 기여도
+  const rPiBase = E.computeScore(pi2, env());
+  const gainPi = E.jokerMarginalGain(pi2, env({ jokerIds: ['pi_merchant'] }), 'pi_merchant');
+  assert(gainPi === rPi.score - rPiBase.score && gainPi === 8,
+    `피장사 기여도 +8 (실제 ${gainPi})`);
+  assert(E.jokerMarginalGain(pi2, env({ jokerIds: ['pi_merchant'] }), 'gwangpari') === 0,
+    '미보유 특수패 기여도 0');
 }
 
 // ─── 6. evaluateHand (춘향 훈수 엔진) ─────────────────────
@@ -300,7 +307,7 @@ console.log('[7] 풀런 시뮬레이션');
 
   function simulate(seed, buyAI) {
     const rng = E.mulberry32(seed);
-    let money = 4, jokers = [], mitjangChips = 0;
+    let money = 5, jokers = [], mitjangChips = 0;
     const usedBosses = [];
     for (let round = 1; round <= E.ROUNDS; round++) {
       let boss = null;
@@ -340,7 +347,7 @@ console.log('[7] 풀런 시뮬레이션');
       }
       if (score < target) return { cleared: round - 1 };
       const interest = Math.min(Math.floor(money / 5), 5);
-      money += interest + (E.BOSS_ROUNDS.includes(round) ? 6 : 4) + playsLeft + (jokers.includes('pibak_boheom') ? 1 : 0);
+      money += interest + (E.BOSS_ROUNDS.includes(round) ? 6 : 3) + playsLeft + (jokers.includes('pibak_boheom') ? 1 : 0);
       if (round < E.ROUNDS && buyAI) money = shopBuy(money, jokers, rng);
     }
     return { cleared: E.ROUNDS };

@@ -78,7 +78,7 @@
   #bg-figure {
     position: fixed; inset: 0; z-index: 0;
     pointer-events: none;
-    background: url('Assets/BackgroundFigure.webp?v=33') no-repeat right 0% bottom 0% / auto 78%;
+    background: url('Assets/BackgroundFigure.webp?v=33') no-repeat right -32% bottom -16% / auto 78%;
     filter:
       drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.28))
       drop-shadow(0 0 7px rgba(255, 255, 255, 0.14))
@@ -135,7 +135,7 @@
   }
   #jokerbar { display: flex; gap: 8px; flex: 1; flex-wrap: wrap; }
   .jokerslot {
-    width: 140px; min-height: 50px; border-radius: 8px; padding: 9px;
+    width: 140px; min-height: 52px; border-radius: 8px; padding: 10px 8px;
     background: rgba(8, 16, 12, .35);
     border: 1px dashed rgba(226, 232, 240, .38);
     font-size: 12px; color: #94a3b8; display: flex; align-items: center; justify-content: center;
@@ -143,21 +143,94 @@
   }
   .jokerslot.filled {
     position: relative;
-    border: 1px solid rgba(196, 162, 90, .65);
-    background: linear-gradient(160deg, rgba(59, 47, 20, .92), rgba(36, 28, 11, .95));
-    color: #fde68a; display: block; cursor: help;
-    box-shadow: inset 0 0 0 1px rgba(196, 162, 90, .18);
+    border: 1.5px solid rgba(148, 163, 184, .4);
+    background: linear-gradient(160deg, rgba(22, 36, 28, .92), rgba(12, 22, 16, .95));
+    color: #e2e8f0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; cursor: help;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
   }
-  .jokerslot .jname { font-weight: 800; font-size: 14px; }
-  .jokerslot .jdesc { font-size: 11px; color: #d6c58a; margin-top: 2px; line-height: 1.35; }
+  .jokerslot .jname {
+    font-family: var(--font-overlay); font-weight: 400;
+    font-size: 17px; letter-spacing: .04em; line-height: 1.15;
+    color: #f1f5f9;
+  }
+  .jokerslot .jkind {
+    font-family: var(--font-ui); font-size: 10px; font-weight: 700;
+    padding: 1px 7px; border-radius: 3px;
+    background: rgba(255,255,255,.08); color: #94a3b8;
+    border: 1px solid rgba(255,255,255,.1);
+    letter-spacing: .02em; line-height: 1.3; white-space: nowrap;
+  }
+  .jokerslot.filled.aura-common {
+    border-color: rgba(200,210,220,.5);
+    box-shadow: 0 0 0 1px rgba(180,190,200,.18), 0 0 12px rgba(180,190,200,.28);
+  }
+  .jokerslot.filled.aura-rare {
+    border-color: rgba(110,200,140,.6);
+    box-shadow: 0 0 0 1px rgba(80,180,110,.28), 0 0 16px rgba(70,190,120,.45);
+  }
+  .jokerslot.filled.aura-epic {
+    border-color: rgba(230,120,150,.6);
+    box-shadow: 0 0 0 1px rgba(200,80,120,.3), 0 0 18px rgba(210,70,120,.5);
+  }
+  .jokerslot.filled.aura-legendary {
+    border-color: rgba(240,193,74,.8);
+    box-shadow: 0 0 0 1px rgba(240,193,74,.45), 0 0 22px rgba(232,160,60,.55);
+  }
+  .jokerslot.filled.aura-legendary .jname {
+    color: #ffe08a;
+    text-shadow: 0 0 10px rgba(255,200,80,.35);
+  }
+  /* 효과 발동 — 살짝 뽀용 */
+  .jokerslot.filled.trig {
+    z-index: 6;
+    animation: jokerTrigPop .42s cubic-bezier(.2,1.35,.4,1) !important;
+  }
+  .jokerslot.filled.aura-common.trig {
+    border-color: rgba(220,230,240,.8) !important;
+    box-shadow: 0 0 0 1px rgba(200,210,220,.45), 0 0 16px rgba(180,190,200,.45) !important;
+  }
+  .jokerslot.filled.aura-rare.trig {
+    border-color: rgba(120,230,160,.75) !important;
+    box-shadow: 0 0 0 1px rgba(90,210,130,.45), 0 0 18px rgba(70,200,120,.5) !important;
+  }
+  .jokerslot.filled.aura-epic.trig {
+    border-color: rgba(245,140,180,.75) !important;
+    box-shadow: 0 0 0 1px rgba(230,100,150,.45), 0 0 18px rgba(220,90,140,.5) !important;
+  }
+  .jokerslot.filled.aura-legendary.trig {
+    border-color: rgba(255,220,120,.85) !important;
+    box-shadow: 0 0 0 1px rgba(240,193,74,.5), 0 0 20px rgba(232,170,60,.55) !important;
+  }
+  @keyframes jokerTrigPop {
+    0%   { transform: scale(1);    filter: brightness(1); }
+    40%  { transform: scale(1.045); filter: brightness(1.18); }
+    100% { transform: scale(1);    filter: brightness(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .jokerslot.filled.trig {
+      animation: none !important;
+      filter: brightness(1.15);
+      transition: filter .2s ease;
+    }
+  }
   .jokerslot.filled .jtip {
     display: none; position: absolute; left: 50%; top: calc(100% + 8px);
     transform: translateX(-50%); z-index: 130; pointer-events: none;
-    width: max-content; max-width: 230px; padding: 8px 10px; border-radius: 8px;
-    background: #0f172a; border: 1px solid rgba(212,175,55,.55);
+    width: max-content; max-width: 240px; padding: 10px 12px; border-radius: 8px;
+    background: #1a160e; border: 1px solid rgba(212,175,55,.45);
     box-shadow: 0 10px 24px rgba(0,0,0,.5);
-    font-size: 11px; font-weight: 500; color: #e2e8f0; line-height: 1.4; text-align: left;
+    font-family: var(--font-ui);
+    font-size: 12.5px; font-weight: 500; color: #e8e0cc; line-height: 1.55;
+    letter-spacing: -0.01em; text-align: left;
   }
+  .jokerslot.filled .jtip-gain {
+    margin-top: 8px; padding-top: 7px;
+    border-top: 1px solid rgba(212,175,55,.28);
+    font-size: 12px; font-weight: 700; color: #fde68a; letter-spacing: -0.01em;
+  }
+  .jokerslot.filled .jtip-gain.empty { color: #94a3b8; font-weight: 600; }
   .jokerslot.filled .jtip::after {
     content: ''; position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%);
     border: 6px solid transparent; border-bottom-color: rgba(212,175,55,.55);
@@ -186,10 +259,20 @@
     display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;
   }
   .joker-pop-card .jp-desc {
-    font-size: 13.5px; color: #e2e8f0; line-height: 1.55; text-align: left;
-    padding: 10px 12px; border-radius: 10px; background: rgba(0,0,0,.28);
-    border: 1px solid rgba(255,255,255,.1);
+    font-family: var(--font-ui);
+    font-size: 14px; font-weight: 500; color: #e8e0cc; line-height: 1.6; text-align: left;
+    letter-spacing: -0.01em;
+    padding: 12px 14px; border-radius: 8px; background: rgba(0,0,0,.28);
+    border: 1px solid rgba(196,162,90,.2);
   }
+  .joker-pop-card .jp-gain {
+    margin-top: 10px;
+    font-family: var(--font-ui);
+    font-size: 13px; font-weight: 700; color: #fde68a; letter-spacing: -0.01em;
+    padding: 8px 12px; border-radius: 8px;
+    background: rgba(253,230,138,.08); border: 1px solid rgba(253,230,138,.22);
+  }
+  .joker-pop-card .jp-gain.empty { color: #94a3b8; font-weight: 600; }
   .joker-pop-card .jp-close {
     margin-top: 14px; width: 100%; padding: 11px;
     background: rgba(255,255,255,.12); color: #f8fafc;
@@ -1061,16 +1144,145 @@
     }
   }
 
-  .settle-table { width: 100%; font-size: 13.5px; border-collapse: collapse; margin-top: 8px; }
-  .settle-table td { padding: 5px 4px; border-bottom: 1px dashed rgba(255,255,255,.12); }
-  .settle-table td:last-child { text-align: right; font-weight: 800; color: #fbbf24; }
-  .settle-table tr.total td { border-bottom: none; font-size: 15px; font-weight: 900; color: #fff; }
+  /* ── 정산 장부 ────────────────────────────── */
+  #modal.settle-modal {
+    max-width: 420px;
+    text-align: center;
+    padding: 26px 22px 20px;
+    background:
+      radial-gradient(ellipse 90% 55% at 50% 0%, rgba(212,175,55,.16), transparent 55%),
+      linear-gradient(165deg, #2a2014 0%, #1a281c 45%, #121a14 100%);
+    border: 2px solid var(--frame);
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,.55),
+      0 22px 64px rgba(0,0,0,.62),
+      inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  #modal.settle-modal .settle-title {
+    margin: 0 0 6px !important;
+    font-family: var(--font-overlay);
+    font-size: clamp(42px, 9vw, 56px); font-weight: 400;
+    letter-spacing: .12em; line-height: 1.05;
+    color: var(--gold-soft);
+    text-shadow: 0 2px 0 #3a2810, 0 0 24px rgba(232,160,60,.28);
+  }
+  .settle-month {
+    font-family: var(--font-ui); font-size: 13px; font-weight: 700;
+    color: #c4b59a; margin: 0 0 16px; letter-spacing: .02em;
+  }
+  .settle-tally {
+    text-align: left;
+    padding: 14px 16px 12px;
+    border-radius: 6px;
+    background:
+      linear-gradient(180deg, rgba(246,232,196,.08), rgba(0,0,0,.2)),
+      repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(196,162,90,.07) 27px, rgba(196,162,90,.07) 28px);
+    border: 1px solid rgba(196,162,90,.38);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.25), inset 0 8px 24px rgba(0,0,0,.18);
+  }
+  .settle-table {
+    width: 100%; border-collapse: collapse;
+    font-family: var(--font-ui); font-size: 13.5px;
+  }
+  .settle-table td {
+    padding: 9px 2px;
+    border-bottom: 1px dashed rgba(196,162,90,.22);
+  }
+  .settle-table td:first-child { color: #d6c7a8; font-weight: 600; }
+  .settle-table td:last-child {
+    text-align: right; font-weight: 800; color: #f0c14a;
+    font-variant-numeric: tabular-nums;
+  }
+  .settle-table tr.total td {
+    border-bottom: none; border-top: 1.5px solid rgba(212,175,55,.45);
+    padding-top: 14px; margin-top: 2px;
+    font-size: 17px; font-weight: 900; color: #fff8e7;
+  }
+  .settle-table tr.total .settle-amt { color: #ffe08a; }
+  .settle-table tr.settle-row {
+    opacity: 0;
+    transform: translateY(12px) scale(.97);
+  }
+  .settle-table tr.settle-row.on {
+    opacity: 1;
+    transform: none;
+    transition: opacity .22s ease, transform .28s cubic-bezier(.2,1.35,.4,1);
+  }
+  .settle-table tr.settle-row.on .settle-amt {
+    display: inline-block;
+    animation: settleAmtPop .38s cubic-bezier(.15,1.6,.35,1);
+  }
+  .settle-table tr.settle-row.total.on .settle-amt {
+    animation-name: settleTotalPop;
+    animation-duration: .55s;
+  }
+  @keyframes settleAmtPop {
+    0% { transform: scale(1.5); filter: brightness(1.9); }
+    100% { transform: scale(1); filter: brightness(1); }
+  }
+  @keyframes settleTotalPop {
+    0% { transform: scale(1.85); filter: brightness(2.1); text-shadow: 0 0 22px rgba(253,230,138,.75); }
+    55% { transform: scale(.94); }
+    100% { transform: scale(1); filter: brightness(1); text-shadow: none; }
+  }
+  #modal-overlay.settle-out {
+    transition: opacity .45s ease;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .settle-skip-hint {
+    margin-top: 16px;
+    font-family: var(--font-ui); font-size: 11px; font-weight: 600;
+    color: rgba(212,175,55,.45); letter-spacing: .04em;
+  }
 
-  /* ── 상점 ────────────────────────────── */
+  /* ── 주막 (왼쪽 점수판 .panel 톤) ────────────────────────────── */
   #modal.shop-modal {
+    position: relative;
     max-width: 860px;
-    padding: 18px 20px 16px;
-    background: linear-gradient(165deg, #1a3326 0%, #122018 55%, #0e1a14 100%);
+    padding: 0;
+    overflow: hidden;
+    border-radius: 6px;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    box-shadow:
+      inset 0 0 0 3px rgba(8, 16, 12, .88),
+      inset 0 0 0 4px var(--frame-dim),
+      0 12px 40px rgba(0, 0, 0, .45);
+  }
+  #modal.shop-modal::before {
+    content: '';
+    position: absolute; inset: 5px;
+    border: 1px solid rgba(196, 162, 90, .14);
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  #modal.shop-modal::after {
+    content: '';
+    position: absolute; inset: 2px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: .9;
+    background:
+      linear-gradient(var(--frame), var(--frame)) 0 0 / 11px 1.5px no-repeat,
+      linear-gradient(var(--frame), var(--frame)) 0 0 / 1.5px 11px no-repeat,
+      linear-gradient(var(--frame), var(--frame)) 100% 0 / 11px 1.5px no-repeat,
+      linear-gradient(var(--frame), var(--frame)) 100% 0 / 1.5px 11px no-repeat,
+      linear-gradient(var(--frame), var(--frame)) 0 100% / 11px 1.5px no-repeat,
+      linear-gradient(var(--frame), var(--frame)) 0 100% / 1.5px 11px no-repeat,
+      linear-gradient(var(--frame), var(--frame)) 100% 100% / 11px 1.5px no-repeat,
+      linear-gradient(var(--frame), var(--frame)) 100% 100% / 1.5px 11px no-repeat;
+  }
+  .shop-inner { position: relative; z-index: 1; padding: 18px 20px 14px; }
+  .shop-sign {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+    margin: 0 0 14px;
+    padding: 0 0 12px;
+    background: none;
+    border-bottom: 1px solid rgba(196,162,90,.22);
+    box-shadow: none;
   }
   /* 남은 덱 피크 */
   #modal.deckpeek-modal {
@@ -1208,90 +1420,173 @@
     .dp-cards { flex-wrap: wrap; }
     .dp-cards .card { width: 48px; height: 73px; }
   }
-  .shop-head {
-    display: flex; align-items: flex-start; justify-content: space-between;
-    gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
+  .shop-sign .shop-titles { min-width: 0; }
+  .shop-sign h2 {
+    margin: 0;
+    font-family: var(--font-overlay); font-weight: 400;
+    font-size: 30px; letter-spacing: -0.04em; color: #f8fafc;
   }
-  .shop-head h2 { margin: 0; font-size: 20px; }
-  .shop-head .shop-sub {
-    margin-top: 4px; font-size: 12px; color: #94a3b8; font-weight: 600; line-height: 1.45;
+  .shop-sign .shop-sub {
+    margin-top: 3px;
+    font-family: var(--font-ui); font-size: 12px; font-weight: 600;
+    color: #94a3b8; line-height: 1.4;
   }
   .shop-wallet {
-    display: flex; flex-direction: column; align-items: flex-end;
-    padding: 8px 14px; border-radius: 12px;
-    background: rgba(0,0,0,.35); border: 1px solid rgba(251,191,36,.35);
+    display: flex; align-items: center; justify-content: center;
+    padding: 6px 12px; border-radius: 6px;
+    background: rgba(0,0,0,.38);
+    border: 1px solid rgba(196,162,90,.28);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
   }
-  .shop-wallet .lbl { font-size: 10px; font-weight: 700; color: #94a3b8; letter-spacing: .04em; }
-  .shop-wallet b { font-size: 22px; font-weight: 900; color: #fbbf24; line-height: 1.15; }
+  .shop-wallet b {
+    font-family: var(--font-overlay-num); font-weight: 400;
+    font-size: 20px; color: var(--gold-soft); line-height: 1.15; letter-spacing: .02em;
+  }
   .shop-sec { margin-bottom: 14px; }
   .shop-sec-h {
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    font-size: 12px; font-weight: 800; color: #cbd5e1; margin-bottom: 8px;
+    margin-bottom: 8px;
+    font-family: var(--font-ui); font-size: 12px; font-weight: 800;
+    color: #cbd5e1; letter-spacing: .02em;
   }
-  .shop-sec-h span { color: #94a3b8; font-weight: 700; }
+  .shop-sec-h span {
+    font-family: var(--font-ui); font-size: 11px; font-weight: 700;
+    color: #94a3b8; letter-spacing: 0;
+  }
   .shop-offers {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    align-items: stretch;
   }
   .offer {
     position: relative;
-    border-radius: 14px; padding: 14px 12px 12px;
-    background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(0,0,0,.28));
-    border: 1px solid rgba(255,255,255,.14);
-    display: flex; flex-direction: column; gap: 6px;
-    min-width: 0; min-height: 210px;
-    transition: border-color .15s, transform .15s;
+    border-radius: 6px; padding: 14px 12px 12px;
+    background: rgba(0,0,0,.38);
+    border: 1px solid rgba(196,162,90,.22);
+    box-shadow: none;
+    display: flex; flex-direction: column; gap: 0;
+    min-width: 0; min-height: 100%;
+    height: 100%;
+    transition: border-color .15s, background .15s, box-shadow .15s;
   }
-  .offer:not(.sold):hover { border-color: rgba(253,230,138,.45); transform: translateY(-1px); }
-  .offer.sold { opacity: .4; filter: grayscale(.35); }
+  .offer.aura-common {
+    border-color: rgba(148,163,184,.55);
+    box-shadow: 0 0 12px rgba(148,163,184,.22);
+  }
+  .offer.aura-rare {
+    border-color: rgba(74,222,128,.4);
+    box-shadow: 0 0 12px rgba(34,197,94,.22);
+  }
+  .offer.aura-epic {
+    border-color: rgba(244,114,182,.4);
+    box-shadow: 0 0 12px rgba(236,72,153,.22);
+  }
+  .offer.aura-legendary {
+    border-color: rgba(251,191,36,.5);
+    box-shadow: 0 0 14px rgba(245,158,11,.28);
+  }
+  .offer:not(.sold):hover {
+    background: rgba(0,0,0,.46);
+    transform: none;
+  }
+  .offer.aura-common:not(.sold):hover {
+    border-color: rgba(148,163,184,.6);
+    box-shadow: 0 0 14px rgba(148,163,184,.22);
+  }
+  .offer.aura-rare:not(.sold):hover {
+    border-color: rgba(74,222,128,.55);
+    box-shadow: 0 0 16px rgba(34,197,94,.3);
+  }
+  .offer.aura-epic:not(.sold):hover {
+    border-color: rgba(244,114,182,.55);
+    box-shadow: 0 0 16px rgba(236,72,153,.3);
+  }
+  .offer.aura-legendary:not(.sold):hover {
+    border-color: rgba(251,191,36,.65);
+    box-shadow: 0 0 18px rgba(245,158,11,.36);
+  }
+  .offer.sold { opacity: .45; filter: grayscale(.3); }
   .offer .o-icon {
     font-size: 28px; line-height: 1; text-align: center;
-    filter: drop-shadow(0 2px 0 rgba(0,0,0,.35));
+    filter: none; opacity: .95;
+    margin-bottom: 6px;
   }
   .offer .o-name {
-    font-family: var(--font-overlay); font-weight: 900; font-size: 18px;
-    color: #f8fafc; text-align: center;
+    font-family: var(--font-overlay); font-weight: 400; font-size: 20px;
+    color: #f8fafc; text-align: center; letter-spacing: -0.03em;
+    line-height: 1.2; margin-bottom: 8px;
   }
   .offer .o-meta {
-    display: flex; justify-content: center; gap: 6px; flex-wrap: nowrap;
+    display: flex; justify-content: center; gap: 5px; flex-wrap: wrap;
+    margin-bottom: 10px;
   }
-  .offer .o-rarity {
-    font-family: var(--font-ui); font-size: 10px; font-weight: 800;
-    padding: 2px 7px; border-radius: 5px;
+  .o-rarity {
+    font-family: var(--font-ui); font-size: 11px; font-weight: 800;
+    padding: 3px 8px; border-radius: 4px;
     white-space: nowrap; flex-shrink: 0;
+    display: inline-block;
   }
-  .offer .o-kind {
-    font-family: var(--font-ui); font-size: 10px; font-weight: 700;
-    padding: 2px 7px; border-radius: 5px;
-    background: rgba(255,255,255,.08); color: #94a3b8;
+  .o-kind {
+    font-family: var(--font-ui); font-size: 11px; font-weight: 700;
+    padding: 3px 8px; border-radius: 4px;
+    background: rgba(255,255,255,.08); color: #cbd5e1; border: none;
     white-space: nowrap; flex-shrink: 0;
+    display: inline-block;
   }
-  .r-common { background: #334155; color: #cbd5e1; }
-  .r-rare { background: #14532d; color: #86efac; }
-  .r-epic { background: #5b21b6; color: #ddd6fe; }
-  .r-legendary { background: #78350f; color: #fde68a; }
+  .r-common { background: rgba(51,65,85,.9); color: #e2e8f0; }
+  .r-rare { background: rgba(20,83,45,.85); color: #bbf7d0; }
+  .r-epic { background: rgba(74,32,48,.85); color: #fbcfe8; }
+  .r-legendary { background: rgba(120,53,15,.9); color: #fde68a; }
   .offer .o-desc {
-    font-family: var(--font-ui); font-size: 11.5px; font-weight: 600;
-    color: #cbd5e1; line-height: 1.45; flex: 1;
-    text-align: center; min-height: 2.9em;
-    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-ui); font-size: 13px; font-weight: 500;
+    color: #e8eef5; line-height: 1.6;
+    text-align: left;
+    flex: 1 1 auto;
+    min-height: 4.8em; /* 줄 수 달라도 버튼 높이 맞춤 */
+    letter-spacing: -0.01em;
+    padding: 10px 10px;
+    margin: 0 0 12px;
+    border-radius: 5px;
+    background: rgba(0,0,0,.28);
+    border: 1px solid rgba(196,162,90,.12);
   }
   .offer .o-buy {
-    background: linear-gradient(180deg, #eab308, #b45309);
-    color: #fff; padding: 9px; font-weight: 900; font-size: 13px;
-    border-radius: 9px; border: none; width: 100%; margin-top: auto;
+    font-family: var(--font-ui);
+    background: linear-gradient(180deg, rgba(196,162,90,.38), rgba(120,90,40,.55));
+    color: #fff8e7; padding: 10px; font-weight: 800; font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid rgba(232,205,122,.7);
+    width: 100%; margin-top: auto;
+    letter-spacing: 0.02em;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 2px 6px rgba(0,0,0,.25);
   }
-  .offer .o-buy:disabled { opacity: .45; cursor: not-allowed; }
+  .offer .o-buy:hover:not(:disabled) {
+    border-color: rgba(253,230,138,.9);
+    color: #fffbeb;
+    background: linear-gradient(180deg, rgba(212,175,55,.5), rgba(150,110,35,.65));
+    filter: brightness(1.05);
+  }
+  /* 글로벌 button:disabled opacity가 가격을 삼키지 않게 — 못 사도 금액은 읽히게 */
+  .offer .o-buy:disabled {
+    opacity: 1;
+    cursor: not-allowed;
+    color: #94a3b8;
+    background: rgba(0,0,0,.35);
+    border-color: rgba(148,163,184,.35);
+    box-shadow: none;
+    filter: none;
+  }
   .offer .o-sell {
     margin-top: auto; width: 100%;
-    background: rgba(255,255,255,.1); color: #fca5a5;
-    font-size: 13px; padding: 9px; font-weight: 800; border-radius: 9px;
+    background: rgba(0,0,0,.28); color: #fca5a5;
+    font-size: 12px; padding: 8px; font-weight: 800; border-radius: 6px;
     border: 1px solid rgba(252,165,165,.28);
   }
   .offer .o-sold-tag {
-    text-align: center; font-weight: 800; color: #94a3b8; font-size: 12px; padding: 8px 0 2px;
-    margin-top: auto;
+    text-align: center; font-weight: 800; color: #94a3b8; font-size: 13px; padding: 10px 0;
+    margin-top: auto; font-family: var(--font-ui);
+    border: 1px solid rgba(148,163,184,.25); border-radius: 6px;
+    background: rgba(0,0,0,.22);
   }
-  /* 보유 특수패: 항상 5칸 슬롯 — 첫 구매 시 모달 높이 점프 방지 */
   .shop-owned-slots {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -1299,27 +1594,34 @@
   }
   .owned-slot {
     position: relative;
-    min-height: 148px;
-    border-radius: 12px;
-    padding: 8px 6px;
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-    background: rgba(0,0,0,.18);
-    border: 1.5px dashed rgba(255,255,255,.12);
-    color: #475569;
+    min-height: 132px;
+    border-radius: 6px;
+    padding: 12px 10px 10px;
+    display: flex; flex-direction: column; align-items: stretch; gap: 0;
+    background: rgba(0,0,0,.28);
+    border: 1px dashed rgba(196,162,90,.22);
+    color: #64748b;
     transition: border-color .2s, background .2s, transform .25s cubic-bezier(.2,1.4,.4,1);
   }
+  @media (prefers-reduced-motion: reduce) {
+    .owned-slot.filled.aura-rare,
+    .owned-slot.filled.aura-epic,
+    .owned-slot.filled.aura-legendary { animation: none; }
+  }
   .owned-slot.empty {
-    justify-content: center;
-    font-size: 11px; font-weight: 700; letter-spacing: .02em;
+    justify-content: center; align-items: center; gap: 4px;
+    font-family: var(--font-ui); font-size: 11px; font-weight: 700; letter-spacing: .02em;
   }
   .owned-slot.empty .os-plus {
-    font-size: 18px; line-height: 1; opacity: .45; margin-bottom: 2px;
+    font-size: 18px; line-height: 1; opacity: .45;
   }
   .owned-slot.filled {
     border-style: solid;
-    border-color: rgba(255,255,255,.16);
-    background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(0,0,0,.28));
+    border-color: rgba(196,162,90,.28);
+    background: rgba(0,0,0,.38);
     color: #e2e8f0;
+    justify-content: flex-start;
+    overflow: visible;
   }
   .owned-slot.filled.pop {
     animation: ownedSlotPop .38s cubic-bezier(.2,1.5,.4,1);
@@ -1329,31 +1631,80 @@
     55% { transform: scale(1.06); }
     100% { transform: scale(1); }
   }
-  .owned-slot .os-icon { font-size: 20px; line-height: 1; }
+  /* 등급별 오라 — 은은한 테두리·글로우만 */
+  .owned-slot.filled.aura-common {
+    border-color: rgba(148,163,184,.45);
+    box-shadow: 0 0 10px rgba(148,163,184,.15);
+  }
+  .owned-slot.filled.aura-rare {
+    border-color: rgba(74,222,128,.4);
+    box-shadow: 0 0 12px rgba(34,197,94,.22);
+  }
+  .owned-slot.filled.aura-epic {
+    border-color: rgba(244,114,182,.4);
+    box-shadow: 0 0 12px rgba(236,72,153,.22);
+  }
+  .owned-slot.filled.aura-legendary {
+    border-color: rgba(251,191,36,.5);
+    box-shadow: 0 0 14px rgba(245,158,11,.28);
+  }
+  .owned-slot .os-head {
+    display: flex; flex-direction: column; align-items: center; gap: 7px;
+    padding-bottom: 0;
+    border-bottom: none;
+    flex: 1;
+  }
   .owned-slot .os-name {
-    font-size: 11px; font-weight: 900; color: #f8fafc; text-align: center;
-    line-height: 1.25; max-width: 100%;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-family: var(--font-overlay); font-weight: 400;
+    font-size: 18px; color: #f8fafc; text-align: center;
+    line-height: 1.25; max-width: 100%; letter-spacing: -0.02em;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+    overflow: hidden; margin: 0;
+  }
+  .owned-slot.filled.aura-legendary .os-name {
+    color: #fde68a;
+    text-shadow: none;
   }
   .owned-slot .os-meta {
-    font-size: 9px; font-weight: 700; color: #94a3b8; text-align: center;
+    font-family: var(--font-ui);
+    font-size: 10px; font-weight: 700; color: #94a3b8; text-align: center;
+    display: flex; justify-content: center; align-items: center;
+    gap: 4px; flex-wrap: wrap;
   }
-  .owned-slot .os-desc {
-    font-size: 10.5px; font-weight: 600; color: #cbd5e1; text-align: center;
-    line-height: 1.35; flex: 1; width: 100%;
-    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
-    overflow: hidden; cursor: pointer;
+  /* 좁은 칸에 본문 넣으면 가독성 붕괴 → 팁으로만 전체 설명 */
+  .owned-slot .os-desc { display: none; }
+  .owned-slot .os-foot {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(196,162,90,.16);
+    display: flex; flex-direction: column; gap: 7px;
+    width: 100%;
   }
+  .owned-slot .os-gain {
+    font-family: var(--font-ui);
+    font-size: 12px; font-weight: 700; color: #fde68a;
+    text-align: center; letter-spacing: -0.01em;
+    margin: 0; padding: 0;
+    border: none; width: 100%;
+  }
+  .owned-slot .os-gain.empty { color: #64748b; font-weight: 600; }
   .owned-slot .os-tip {
     display: none; position: absolute; left: 50%; bottom: calc(100% + 8px);
     transform: translateX(-50%); z-index: 6;
-    width: max(160px, 100%); max-width: 220px;
-    padding: 10px 12px; border-radius: 10px;
-    background: #0f172a; border: 1px solid rgba(253,230,138,.35);
-    box-shadow: 0 10px 28px rgba(0,0,0,.55);
-    font-size: 12px; font-weight: 600; color: #e2e8f0; line-height: 1.45;
-    text-align: left; pointer-events: none;
+    width: max(180px, 100%); max-width: 260px;
+    padding: 12px 14px; border-radius: 8px;
+    background: #0f172a; border: 1px solid rgba(212,175,55,.4);
+    box-shadow: 0 10px 28px rgba(0,0,0,.5);
+    font-family: var(--font-ui);
+    font-size: 13px; font-weight: 500; color: #e2e8f0; line-height: 1.6;
+    letter-spacing: -0.01em; text-align: left; pointer-events: none;
   }
+  .owned-slot .os-tip-gain {
+    margin-top: 10px; padding-top: 9px;
+    border-top: 1px solid rgba(212,175,55,.28);
+    font-size: 12px; font-weight: 700; color: #fde68a;
+  }
+  .owned-slot .os-tip-gain.empty { color: #94a3b8; font-weight: 600; }
   .owned-slot .os-tip::after {
     content: ''; position: absolute; left: 50%; top: 100%;
     transform: translateX(-50%);
@@ -1363,63 +1714,101 @@
   .owned-slot.filled:focus-within .os-tip,
   .owned-slot.tip-open .os-tip { display: block; }
   .owned-slot .os-sell {
-    margin-top: auto; width: 100%;
-    background: rgba(255,255,255,.08); color: #fca5a5;
-    font-size: 11px; padding: 5px 4px; font-weight: 800; border-radius: 7px;
-    border: 1px solid rgba(252,165,165,.25);
+    width: 100%;
+    background: rgba(0,0,0,.28); color: #fca5a5;
+    font-family: var(--font-ui);
+    font-size: 12px; padding: 7px 4px; font-weight: 800; border-radius: 6px;
+    border: 1px solid rgba(252,165,165,.28);
   }
   .shop-utils {
     display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
   }
   .shop-util {
-    border-radius: 12px; padding: 12px 14px; font-size: 12px; line-height: 1.5;
-    border: 1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.22);
+    border-radius: 6px; padding: 12px 14px;
+    font-family: var(--font-ui); font-size: 12px; font-weight: 600; line-height: 1.5;
+    border: 1px solid rgba(196,162,90,.22); background: rgba(0,0,0,.32);
+    color: #cbd5e1;
   }
-  .shop-util .su-title { font-weight: 900; font-size: 13px; color: #f8fafc; margin-bottom: 6px; }
+  .shop-util .su-title {
+    font-family: var(--font-ui); font-weight: 900;
+    font-size: 13px; color: #f8fafc; margin-bottom: 6px; letter-spacing: 0;
+  }
   .shop-util.su-mak {
-    border-color: rgba(212,175,55,.4);
-    background: linear-gradient(135deg, rgba(120,85,20,.28), rgba(0,0,0,.2));
-    color: #fde68a;
+    border-color: rgba(196,162,90,.35);
+    background: rgba(0,0,0,.38);
+    color: #e8cd7a;
   }
   .shop-util.su-boss {
-    border-color: rgba(252,165,165,.4);
-    background: linear-gradient(135deg, rgba(127,29,29,.32), rgba(0,0,0,.2));
+    border-color: rgba(252,165,165,.35);
+    background: rgba(127,29,29,.28);
     color: #fecaca;
   }
   .shop-util.su-boss.full { grid-column: 1 / -1; }
   .boss-candidate {
     display: block; width: 100%; text-align: left; margin-top: 6px;
-    padding: 8px 10px; border-radius: 9px; background: rgba(0,0,0,.35);
-    border: 1.5px solid rgba(255,255,255,.2); color: #fecaca; font-size: 12px; font-weight: 700;
+    padding: 8px 10px; border-radius: 6px; background: rgba(0,0,0,.35);
+    border: 1px solid rgba(252,165,165,.28); color: #fecaca;
+    font-family: var(--font-ui); font-size: 12px; font-weight: 700;
   }
-  .boss-candidate.selected { border-color: var(--gold); background: rgba(212,175,55,.18); color: #fde68a; }
+  .boss-candidate.selected { border-color: var(--frame); background: rgba(196,162,90,.16); color: #fde68a; }
   .shop-footer {
     display: flex; justify-content: space-between; align-items: center;
-    margin-top: 4px; gap: 12px; flex-wrap: wrap;
-    padding-top: 12px; border-top: 1px solid rgba(255,255,255,.1);
+    margin: 2px 0 0; gap: 12px; flex-wrap: wrap;
+    padding: 12px 0 0;
+    background: none;
+    border-top: 1px solid rgba(196,162,90,.22);
   }
   .shop-footer .sf-next {
-    font-size: 13px; color: #cbd5e1; line-height: 1.4; font-weight: 600;
+    font-family: var(--font-ui); font-size: 13px; color: #cbd5e1;
+    line-height: 1.4; font-weight: 600;
   }
-  .shop-footer .sf-next b { color: #fde68a; font-size: 14px; }
+  .shop-footer .sf-next b {
+    font-family: var(--font-overlay); font-weight: 400;
+    color: var(--gold-soft); font-size: 15px; letter-spacing: -0.02em;
+  }
   .shop-footer .sf-target {
-    font-size: 26px; font-weight: 900; color: #fde68a;
-    margin-top: 4px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+    font-family: var(--font-overlay-num); font-weight: 400;
+    font-size: 24px; color: #e2e8f0;
+    margin-top: 3px; letter-spacing: .02em; font-variant-numeric: tabular-nums;
     line-height: 1.15;
+    text-shadow: none;
   }
   #btn-nextround {
-    background: linear-gradient(180deg, #22c55e, #15803d); color: #fff;
-    padding: 12px 22px; font-size: 15px; font-weight: 900; border-radius: 11px; border: none;
+    background: linear-gradient(180deg, rgba(34,80,52,.95), rgba(18,48,32,.98));
+    color: #e8f5e9;
+    padding: 12px 20px; font-size: 15px; font-weight: 800; border-radius: 6px;
+    border: 1px solid rgba(196,162,90,.45);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 2px 8px rgba(0,0,0,.25);
+    font-family: var(--font-overlay); letter-spacing: .04em;
+  }
+  #btn-nextround:hover:not(:disabled) {
+    border-color: rgba(196,162,90,.65);
+    color: #fff;
   }
   #btn-nextround:disabled { opacity: .45; }
+  /* 리롤 — 주막에서 유일하게 금빛 CTA로 눈에 띄게 */
   .shop-reroll {
-    font-size: 11.5px; font-weight: 800; padding: 6px 10px; border-radius: 8px;
-    background: rgba(255,255,255,.08); color: #e2e8f0; border: 1px solid rgba(255,255,255,.16);
+    font-family: var(--font-ui);
+    font-size: 13px; font-weight: 800; padding: 8px 16px; border-radius: 6px;
+    background: linear-gradient(180deg, rgba(196,162,90,.42), rgba(138,110,58,.55));
+    color: #fff8e7;
+    border: 1px solid rgba(232,205,122,.65);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.18),
+      0 0 0 1px rgba(8,16,12,.35),
+      0 2px 8px rgba(0,0,0,.28);
+    letter-spacing: .02em; line-height: 1.2; white-space: nowrap;
   }
-  .shop-reroll:disabled { opacity: .4; }
+  .shop-reroll:hover:not(:disabled) {
+    border-color: rgba(253,230,138,.85);
+    color: #fffbeb;
+    background: linear-gradient(180deg, rgba(212,175,55,.55), rgba(160,120,40,.65));
+    filter: brightness(1.06);
+  }
+  .shop-reroll:disabled { opacity: .4; filter: grayscale(.2); }
   .boss-preview {
-    border-radius: 12px; padding: 12px 14px; font-size: 12px; line-height: 1.5;
-    border: 1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.22);
+    border-radius: 6px; padding: 12px 14px; font-size: 12px; line-height: 1.5;
+    border: 1px solid rgba(196,162,90,.22); background: rgba(0,0,0,.32);
   }
 
   .side-nav { display: flex; flex-direction: column; gap: 7px; margin-top: 2px; }
@@ -1609,7 +1998,20 @@
     font-size: 11px; color: #94a3b8; line-height: 1.4;
   }
 
-  #seedinfo { font-size: 10px; color: #64748b; text-align: left; padding: 0 4px; opacity: .75; }
+  #legal-note {
+    position: fixed;
+    left: 50%;
+    bottom: max(10px, calc(env(safe-area-inset-bottom) + 4px));
+    transform: translateX(-50%);
+    z-index: 20;
+    width: min(92vw, 420px);
+    font-family: var(--font-ui);
+    font-size: 10.5px; font-weight: 600; color: #94a3b8;
+    text-align: center; line-height: 1.35;
+    opacity: .85; letter-spacing: -0.02em;
+    pointer-events: none;
+  }
+  #seedinfo { font-size: 10px; color: #64748b; text-align: left; padding: 0 4px 2px; opacity: .75; }
   /* 이달의 패 ×2 — 따뜻한 바탕 + 좌하단 뱃지 (테두리 채널 안 씀) */
   .card.season:not(.kwang):not(.has-art) {
     background: linear-gradient(165deg, #fff7ed, #f5e6c8 55%, #ffedd5);
@@ -1717,10 +2119,22 @@
   #juice-cards .juice-card-wrap.pulse {
     animation: cardLandPulse .38s cubic-bezier(.2,1.3,.4,1);
   }
+  #juice-cards .juice-card-wrap.joker-hit {
+    animation: cardJokerHit .36s cubic-bezier(.2,1.3,.4,1);
+  }
   @keyframes cardLandPulse {
     0% { transform: scale(1); }
     40% { transform: scale(1.08); }
     100% { transform: scale(1); }
+  }
+  @keyframes cardJokerHit {
+    0% { transform: scale(1); filter: brightness(1); }
+    40% { transform: scale(1.07); filter: brightness(1.2); }
+    100% { transform: scale(1); filter: brightness(1); }
+  }
+  #juice-cards .chip-float.joker-fx {
+    color: #fde68a;
+    text-shadow: 0 2px 8px rgba(0,0,0,.65), 0 0 12px rgba(251,191,36,.5);
   }
   .play-fly-card {
     position: fixed; z-index: 75; pointer-events: none; margin: 0;
@@ -1762,12 +2176,27 @@
     transition: transform .25s cubic-bezier(.2,1.6,.4,1), opacity .15s;
   }
   #juice-tally .jt-mult {
-    font-size: 34px; color: var(--mult-red); display: none;
-    transform: scale(2.4) rotate(-8deg); filter: blur(2px);
+    font-size: 34px; color: var(--mult-red);
+    display: none; opacity: 0;
+    transform: scale(1);
+  }
+  #juice-tally .jt-mult.on {
+    display: inline; opacity: 1;
   }
   #juice-tally .jt-mult.slam {
-    display: inline; opacity: 1; transform: scale(1) rotate(0); filter: blur(0);
-    transition: transform .38s cubic-bezier(.15,1.5,.4,1), opacity .14s, filter .24s;
+    display: inline; opacity: 1;
+    animation: jtMultSlamIn .4s cubic-bezier(.15,1.5,.4,1);
+  }
+  #juice-tally .jt-mult.bump {
+    animation: jtMultBump .28s ease;
+  }
+  @keyframes jtMultSlamIn {
+    0% { transform: scale(2.2) rotate(-8deg); filter: blur(2px); opacity: 0; }
+    100% { transform: scale(1) rotate(0); filter: blur(0); opacity: 1; }
+  }
+  @keyframes jtMultBump {
+    0%, 100% { transform: scale(1); }
+    45% { transform: scale(1.16); }
   }
   #juice-tally .jt-plus { font-size: 26px; color: #94a3b8; }
   #juice-tally .jt-flat {
@@ -1970,6 +2399,24 @@
     background: radial-gradient(ellipse at 50% 45%, rgba(40,24,10,.55), rgba(0,0,0,.55) 68%);
   }
   #jumak-cascade.on { display: flex; }
+  #jumak-cascade.out {
+    animation: jumakFadeOut .38s ease forwards;
+  }
+  #jumak-cascade.out .jumak-stage {
+    animation: jumakStageFadeOut .38s ease forwards;
+  }
+  @keyframes jumakFadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  @keyframes jumakStageFadeOut {
+    from { opacity: 1; transform: scale(1); filter: brightness(1); }
+    to { opacity: 0; transform: scale(.96); filter: brightness(1.05); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #jumak-cascade.out,
+    #jumak-cascade.out .jumak-stage { animation-duration: .15s; }
+  }
   #jumak-cascade .jumak-stage {
     position: relative;
     width: min(92vw, 560px);
@@ -2002,10 +2449,9 @@
       0 8px 18px rgba(0,0,0,.55);
   }
   @keyframes jumakSlamIn {
-    0% { opacity: 0; transform: scale(2.2) rotate(6deg); filter: blur(8px) brightness(2); }
-    55% { opacity: 1; transform: scale(.92) rotate(-1.5deg); filter: blur(0) brightness(1.25); }
-    78% { transform: scale(1.06) rotate(.5deg); filter: brightness(1.08); }
-    100% { opacity: 1; transform: scale(1) rotate(0); filter: brightness(1); }
+    0% { opacity: 0; transform: scale(1.55); filter: blur(6px) brightness(1.6); }
+    60% { opacity: 1; transform: scale(.96); filter: blur(0) brightness(1.15); }
+    100% { opacity: 1; transform: scale(1); filter: brightness(1); }
   }
   @media (max-width: 720px) {
     #jumak-cascade .jumak-stage {
@@ -2018,9 +2464,9 @@
     }
     #jumak-cascade .jumak-stage.slam { animation-name: jumakSlamInMobile; }
     @keyframes jumakSlamInMobile {
-      0% { opacity: 0; transform: scale(1.45) rotate(3deg); filter: blur(4px) brightness(1.55); }
-      60% { opacity: 1; transform: scale(.95) rotate(-1deg); filter: blur(0) brightness(1.15); }
-      100% { opacity: 1; transform: scale(1) rotate(0); filter: brightness(1); }
+      0% { opacity: 0; transform: scale(1.35); filter: blur(4px) brightness(1.45); }
+      60% { opacity: 1; transform: scale(.97); filter: blur(0) brightness(1.12); }
+      100% { opacity: 1; transform: scale(1); filter: brightness(1); }
     }
   }
   /* 고 버튼 안 숫자 — 공통 + 프리뷰 연출들 (전체 ease-out) */
@@ -2508,10 +2954,14 @@
       content: '＋'; font-size: 14px; color: #64748b; font-weight: 700;
     }
     .jokerslot.filled {
-      width: auto; min-width: 58px; max-width: 96px; padding: 5px 8px;
+      width: auto; min-width: 64px; max-width: 110px; padding: 5px 8px 6px;
+      gap: 2px;
     }
     .jokerslot .jname {
-      font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .jokerslot .jkind {
+      font-size: 9px; padding: 0 5px;
     }
     .jokerslot .jdesc { display: none; }
     .jokerslot.filled .jtip {
@@ -2582,6 +3032,8 @@
     #playlog-panel,
     #seedinfo,
     .side-nav { display: none !important; }
+    #legal-note { font-size: 10px; opacity: .75; }
+
     #roundlabel { font-size: 17px; }
     #roundlabel .round-meta { display: none; }
     #seasonline {
@@ -2721,18 +3173,34 @@
     }
     .choicebtn.gs-simple .gs-tip::after { display: none; }
     .choicebtn .gs-tip b { color: #fef3c7; }
-    /* 상점 모바일: 세로 거대 카드 → 가로형 컴팩트 리스트 */
+    /* 주막 모바일: 세로 거대 카드 → 가로형 컴팩트 리스트 */
     #modal.shop-modal {
-      padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+      padding: 0;
       max-height: min(92vh, 100%);
+      border-radius: 10px 10px 0 0;
     }
-    .shop-head { margin-bottom: 10px; gap: 8px; }
-    .shop-head h2 { font-size: 18px; }
-    .shop-head .shop-sub { font-size: 11px; }
+    .shop-inner { padding: 14px 14px calc(14px + env(safe-area-inset-bottom, 0px)); }
+    .shop-sign {
+      margin: 0 0 12px;
+      padding: 0 0 10px;
+      gap: 8px;
+    }
+    .shop-sign h2 { font-size: 28px; }
+    .shop-sign .shop-sub { font-size: 11px; }
     .shop-wallet { padding: 6px 10px; }
     .shop-wallet b { font-size: 18px; }
     .shop-sec { margin-bottom: 10px; }
-    .shop-sec-h { font-size: 11px; margin-bottom: 6px; }
+    .shop-sec-h { font-size: 12px; margin-bottom: 6px; }
+    .shop-footer {
+      margin: 2px 0 0;
+      padding: 10px 0 0;
+    }
+    #modal.settle-modal {
+      max-width: 100%;
+      border-radius: 16px 16px 0 0;
+      padding: 22px 16px calc(18px + env(safe-area-inset-bottom, 0px));
+    }
+    #modal.settle-modal .settle-title { font-size: 48px; letter-spacing: .1em; }
 
     .shop-offers {
       grid-template-columns: 1fr;
@@ -2763,8 +3231,9 @@
     .shop-offers .offer .o-desc {
       grid-row: 3; grid-column: 2;
       text-align: left; min-height: 0;
-      font-size: 11px; line-height: 1.35;
-      display: block; align-items: stretch; justify-content: flex-start;
+      font-size: 12.5px; font-weight: 500; line-height: 1.55;
+      padding: 7px 8px; margin: 4px 0 0;
+      display: block;
     }
     .shop-offers .offer .o-buy,
     .shop-offers .offer .o-sold-tag {
@@ -2784,19 +3253,19 @@
       scroll-snap-type: x proximity;
     }
     .owned-slot {
-      flex: 0 0 92px;
-      width: 92px;
+      flex: 0 0 104px;
+      width: 104px;
       min-height: 0;
-      height: 108px;
-      padding: 8px 6px;
+      height: 128px;
+      padding: 10px 8px 8px;
       scroll-snap-align: start;
     }
-    .owned-slot .os-icon { font-size: 22px; }
-    .owned-slot .os-name { font-size: 11px; }
+    .owned-slot .os-head { gap: 5px; }
+    .owned-slot .os-name { font-size: 16px; letter-spacing: -0.02em; }
     .owned-slot .os-meta { font-size: 9px; }
-    .owned-slot .os-desc {
-      display: none; /* 좁은 화면: 탭/호버 팁으로 전체 설명 */
-    }
+    .owned-slot .os-foot { gap: 6px; padding-top: 8px; margin-top: 8px; }
+    .owned-slot .os-gain { font-size: 11px; }
+    .owned-slot .os-sell { font-size: 11px; padding: 6px 4px; }
     .owned-slot .os-tip {
       bottom: auto; top: calc(100% + 6px);
       left: 0; transform: none;
@@ -2807,7 +3276,6 @@
       border-top-color: transparent;
       border-bottom-color: #0f172a;
     }
-    .owned-slot .os-sell { font-size: 10px; padding: 5px 2px; }
     .owned-slot.filled { cursor: pointer; }
     .shop-utils { grid-template-columns: 1fr; }
     .shop-footer { flex-direction: column; align-items: stretch; gap: 8px; }
@@ -2870,8 +3338,8 @@
     content: '';
     position: absolute; inset: 0; z-index: 0;
     pointer-events: none;
-    background: url('Assets/BackgroundFigure.webp?v=33') no-repeat right 0% bottom 0% / auto 78%;
-    filter:
+    background: url('Assets/BackgroundFigure.webp?v=33') no-repeat right -32% bottom -16% / auto 78%;
+  filter:
       drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.28))
       drop-shadow(0 0 7px rgba(255, 255, 255, 0.14))
       drop-shadow(0 0 18px rgba(255, 255, 255, 0.06));
@@ -3022,6 +3490,8 @@
   </main>
 </div>
 
+<div id="legal-note">본 게임은 실제 재화나 현금을 이용한 사행성 게임이 아닙니다.</div>
+
 <button type="button" id="btn-hint" onclick="toggleHintEnabled()" title="패 추천 (구석 토글)">hint</button>
 
 <div id="chunhyang">
@@ -3062,6 +3532,7 @@
     <div class="jp-name" id="joker-pop-name"></div>
     <div class="jp-meta" id="joker-pop-meta"></div>
     <div class="jp-desc" id="joker-pop-desc"></div>
+    <div class="jp-gain" id="joker-pop-gain"></div>
     <button type="button" class="jp-close" onclick="closeJokerPop()">닫기</button>
   </div>
 </div>
@@ -3356,34 +3827,34 @@ function detectHand(cards) { return detectHandInfo(cards).handId; }
 const JOKERS = [
   // ── 커먼 ───────────────────────────────────────────────
   { id: 'gwangpari', name: '광팔이', icon: '💰', rarity: 'common', price: 3, kind: '경제',
-    desc: '광 낼 때마다 냥 +1 (한 판에 세 번까지)' },
+    desc: '광을 낼 때마다 냥을 1개 받습니다. 한 판에 세 번까지 적용됩니다.' },
   { id: 'pi_merchant', name: '피장사', icon: '🧺', rarity: 'common', price: 4, kind: '+점수',
-    desc: '낸 피마다 +4점, 쌍피마다 +8점 (배수 밖)',
+    desc: '낸 피마다 4점, 쌍피마다 8점을 배수 밖에서 더합니다.',
     addChips: (x) => x.cards.reduce((s, c) => s + (effType(c) === 'pi' ? 4 : effType(c) === 'ssangpi' ? 8 : 0), 0) },
   { id: 'meongtta', name: '멍따', icon: '🐂', rarity: 'common', price: 4, kind: '+점수',
-    desc: '낸 멍(열끗)마다 +6점 (배수 밖)',
+    desc: '낸 멍(열끗)마다 6점을 배수 밖에서 더합니다.',
     addChips: (x) => x.cards.filter((c) => effType(c) === 'yeol').length * 6 },
   { id: 'jjokjipge', name: '쪽집게', icon: '🎯', rarity: 'common', price: 4, kind: '+배수',
-    desc: '쪽(같은 달 두 장)이면 +2배수',
+    desc: '쪽(같은 달 두 장)을 내면 배수가 2 올라갑니다.',
     addMult: (x) => (x.handId === 'month2' ? 2 : 0) },
   { id: 'ssangpi_sarang', name: '쌍피보따리', icon: '🧧', rarity: 'common', price: 4, kind: '+점수',
-    desc: '낸 쌍피마다 +12점 (배수 밖)',
+    desc: '낸 쌍피마다 12점을 배수 밖에서 더합니다.',
     addChips: (x) => x.cards.filter((c) => effType(c) === 'ssangpi').length * 12 },
   { id: 'tti_jjang', name: '띠장수', icon: '🎀', rarity: 'common', price: 4, kind: '+점수',
-    desc: '낸 띠마다 +5점 (배수 밖)',
+    desc: '낸 띠마다 5점을 배수 밖에서 더합니다.',
     addChips: (x) => x.cards.filter((c) => effType(c) === 'tti').length * 5 },
   // ── 레어 ───────────────────────────────────────────────
   { id: 'ssakssuri', name: '싹쓸이', icon: '🧹', rarity: 'rare', price: 6, kind: '+점수',
-    desc: '다섯 장 딱 맞춰 내면 +35점 (배수 밖)',
+    desc: '다섯 장을 딱 맞춰 내면 35점을 배수 밖에서 더합니다.',
     addChips: (x) => (x.cards.length === 5 ? 35 : 0) },
   { id: 'godori_kkun', name: '고도리꾼', icon: '🐦', rarity: 'rare', price: 6, kind: '+배수',
-    desc: '고도리 새(2·4·8월 멍)마다 +3배수',
+    desc: '고도리 새(2·4·8월 멍)를 낼 때마다 배수가 3씩 올라갑니다.',
     addMult: (x) => x.cards.filter((c) => c.tags.includes('godori')).length * 3 },
   { id: 'dangol', name: '단골', icon: '🏮', rarity: 'rare', price: 7, kind: '+배수',
-    desc: '홍단·청단·초단 또는 띠셋이면 +7배수',
+    desc: '홍단·청단·초단이나 띠셋을 내면 배수가 7 올라갑니다.',
     addMult: (x) => (x.handId === 'dan' || x.handId === 'tti3' ? 7 : 0) },
   { id: 'heundeulgi', name: '흔들기', icon: '🌀', rarity: 'rare', price: 7, kind: '×배수',
-    desc: '같은 달 두 장 이상 내면 배수 ×1.5 (흔들기 금지 판에선 무효)',
+    desc: '같은 달을 두 장 이상 내면 배수가 1.5배가 됩니다. 흔들기 금지 판에서는 효과가 없습니다.',
     xMult: (x) => {
       if (x.boss === 'no_shake') return 1;
       const m = {};
@@ -3391,44 +3862,44 @@ const JOKERS = [
       return 1;
     } },
   { id: 'gwang_sujip', name: '광모이', icon: '🌟', rarity: 'rare', price: 6, kind: '+점수',
-    desc: '낸 광마다 +10점 (배수 밖, 비광 포함)',
+    desc: '낸 광마다 10점을 배수 밖에서 더합니다. 비광도 포함됩니다.',
     addChips: (x) => x.cards.filter((c) => c.type === 'kwang').length * 10 },
   { id: 'pi_ohjang', name: '피오장', icon: '🖐️', rarity: 'rare', price: 6, kind: '+배수',
-    desc: '피 다섯 장이면 +3배수',
+    desc: '피 다섯 장 족보를 내면 배수가 3 올라갑니다.',
     addMult: (x) => (x.handId === 'pi5' ? 3 : 0) },
   { id: 'chodan_aeho', name: '초단꾼', icon: '🌿', rarity: 'rare', price: 6, kind: '+배수',
-    desc: '낸 초단마다 +2배수',
+    desc: '낸 초단마다 배수가 2씩 올라갑니다.',
     addMult: (x) => x.cards.filter((c) => c.tags.includes('chodan')).length * 2 },
   // ── 에픽 ───────────────────────────────────────────────
   { id: 'bigwang_usan', name: '비광우산', icon: '☔', rarity: 'epic', price: 9, kind: '×배수',
-    desc: '족보 알맹이에 비(12월)가 들어가면 배수 ×2 (무조합 제외)',
+    desc: '족보를 이루는 카드에 비(12월)가 들어가면 배수가 2배가 됩니다. 무조합에는 적용되지 않습니다.',
     xMult: (x) => {
       if (x.handId === 'none') return 1;
       return x.core.some((c) => c.month === 12) ? 2 : 1;
     } },
   { id: 'poktan', name: '폭탄', icon: '💥', rarity: 'epic', price: 10, kind: '×배수',
-    desc: '폭탄(같은 달 3장)이나 총통이면 배수 ×3',
+    desc: '폭탄(같은 달 세 장)이나 총통을 내면 배수가 3배가 됩니다.',
     xMult: (x) => (x.handId === 'month3' || x.handId === 'chongtong' ? 3 : 1) },
   { id: 'mitjang', name: '밑장빼기', icon: '🎴', rarity: 'epic', price: 9, kind: '성장',
-    desc: '버릴 때마다 영구 +10점 쌓임 (배수 밖, 팔면 리셋)',
+    desc: '버릴 때마다 영구로 10점이 쌓입니다. 점수는 배수 밖에서 더해지며, 팔면 초기화됩니다.',
     addChips: (x) => x.mitjangChips },
   { id: 'pibak_boheom', name: '피박보험', icon: '🛡️', rarity: 'epic', price: 9, kind: '방어',
-    desc: '피박·광박·멍박 안 먹힘 + 판 끝낼 때 +1냥' },
+    desc: '피박·광박·멍박을 막아 주고, 판을 끝낼 때 냥을 1개 더 받습니다.' },
   { id: 'yeol_janchi', name: '멍잔치', icon: '🍶', rarity: 'epic', price: 10, kind: '×배수',
-    desc: '멍셋(열끗 셋)이면 배수 ×2',
+    desc: '멍셋(열끗 셋)을 내면 배수가 2배가 됩니다.',
     xMult: (x) => (x.handId === 'yeol3' ? 2 : 1) },
   { id: 'samgwang_nori', name: '삼광판', icon: '✨', rarity: 'epic', price: 10, kind: '+배수',
-    desc: '낸 광마다 +3배수 (비광 포함)',
+    desc: '낸 광마다 배수가 3씩 올라갑니다. 비광도 포함됩니다.',
     addMult: (x) => x.cards.filter((c) => c.type === 'kwang').length * 3 },
   // ── 레전더리 ───────────────────────────────────────────
   { id: 'sipidal', name: '열두사철', icon: '🗓️', rarity: 'legendary', price: 13, kind: '+배수',
-    desc: '낸 패에 섞인 달 수만큼 × +2배수',
+    desc: '낸 패에 섞인 달 수마다 배수가 2씩 올라갑니다.',
     addMult: (x) => new Set(x.cards.map((c) => c.month)).size * 2 },
   { id: 'ogwang_kkum', name: '오광소원', icon: '👑', rarity: 'legendary', price: 14, kind: '×배수',
-    desc: '광 세 장 이상 내면 배수 ×2.5 (비광 포함)',
+    desc: '광을 세 장 이상 내면 배수가 2.5배가 됩니다. 비광도 포함됩니다.',
     xMult: (x) => (x.cards.filter((c) => c.type === 'kwang').length >= 3 ? 2.5 : 1) },
   { id: 'paewang', name: '명인', icon: '🥋', rarity: 'legendary', price: 15, kind: '×배수',
-    desc: '족보만 나오면 배수 ×2 (무조합 제외)',
+    desc: '족보가 성립하면 배수가 2배가 됩니다. 무조합에는 적용되지 않습니다.',
     xMult: (x) => (x.handId !== 'none' ? 2 : 1) },
 ];
 const JOKER_BY_ID = Object.fromEntries(JOKERS.map((j) => [j.id, j]));
@@ -3502,6 +3973,17 @@ function computeScore(cards, env) {
   };
 }
 
+/** 해당 특수패가 이번 내기에 기여한 점수 (leave-one-out) */
+function jokerMarginalGain(cards, env, jokerId) {
+  if (!env.jokerIds.includes(jokerId)) return 0;
+  const withAll = computeScore(cards, env).score;
+  const without = computeScore(cards, {
+    ...env,
+    jokerIds: env.jokerIds.filter((id) => id !== jokerId),
+  }).score;
+  return withAll - without;
+}
+
 // ── 손패 최적 조합 탐색 (춘향 훈수 · 봇 시뮬레이션 공용) ────
 function* combosOf(arr, k, start = 0, cur = []) {
   if (cur.length === k) { yield [...cur]; return; }
@@ -3551,7 +4033,8 @@ const state = {
   hand: [],
   selected: [],       // uid 배열 (인덱스 금지)
   jokers: [],         // { id, paid }
-  money: 4,
+  jokerGains: {},     // id -> { score, money } 런 누적 이득
+  money: 5,
   boss: null,
   usedBosses: [],
   nextBoss: null,       // 다음 박 라운드 확정 디버프 (3·6판용)
@@ -3600,12 +4083,28 @@ const scoreEnv = () => ({
   seasonMonth: state.round, night: isNight(),
 });
 
-function addMoney(n) {
+function addMoney(n, { silent = false } = {}) {
   state.money += n;
   if (n > 0) {
     state.stats.totalEarned += n;
-    spawnCoinParticles(n);
+    if (!silent) spawnCoinParticles(n);
   }
+}
+
+function bumpJokerGain(id, { score = 0, money = 0 } = {}) {
+  if (!state.jokerGains[id]) state.jokerGains[id] = { score: 0, money: 0 };
+  if (score) state.jokerGains[id].score += score;
+  if (money) state.jokerGains[id].money += money;
+}
+
+/** 특수패 누적 이득 문구 (설명문과 별도). short면 슬롯용 축약 */
+function formatJokerGain(id, { short = false } = {}) {
+  const g = state.jokerGains[id];
+  if (!g || (!g.score && !g.money)) return short ? '이득 0' : '아직 이득 없음';
+  const parts = [];
+  if (g.score) parts.push(`+${fmt(g.score)}점`);
+  if (g.money) parts.push(`+${g.money}냥`);
+  return short ? parts.join(' · ') : `누적 이득 ${parts.join(' · ')}`;
 }
 
 // ── 판 진행 ────────────────────────────────────────────────
@@ -4092,10 +4591,20 @@ function playSelected() {
   const result = computeScore(cards, env);
   const scoreBefore = state.roundScore;
 
-  // 경제 트리거 (실정산에서만)
+  // 경제·이득 집계만 — 실제 지급/연출은 주스 아이템 정산 페이즈에서
+  const triggeredJokers = [];
+  const jokerScoreGains = [];
+  let pendingGwangpari = 0;
   if (hasJoker('gwangpari') && result.kwangPlayed > 0) {
-    const n = Math.min(result.kwangPlayed, 3 - state.kwangSoldThisRound);
-    if (n > 0) { addMoney(n); state.kwangSoldThisRound += n; }
+    pendingGwangpari = Math.min(result.kwangPlayed, 3 - state.kwangSoldThisRound);
+    if (pendingGwangpari > 0) triggeredJokers.push('gwangpari');
+  }
+  for (const id of env.jokerIds) {
+    const g = jokerMarginalGain(cards, env, id);
+    if (g) {
+      jokerScoreGains.push({ id, score: g });
+      if (!triggeredJokers.includes(id)) triggeredJokers.push(id);
+    }
   }
 
   state.roundScore += result.score;
@@ -4143,6 +4652,10 @@ function playSelected() {
     result,
     scoreBefore,
     env: { ...env, jokerIds: [...env.jokerIds] },
+    triggeredJokers,
+    jokerScoreGains,
+    pendingGwangpari,
+    _econApplied: false,
   };
 
   state.hand = state.hand.filter((c) => !state.selected.includes(c.uid));
@@ -4375,23 +4888,121 @@ function discardSelected() {
 }
 
 // ── 정산 ───────────────────────────────────────────────────
+let settleJuiceBusy = false;
+let settleJuiceSkip = false;
 function settle() {
   const interest = Math.min(Math.floor(state.money / 5), 5); // 정산 진입 시점 보유금 기준, 가장 먼저
-  const base = isBossRound(state.round) ? 6 : 4;
+  const base = isBossRound(state.round) ? 6 : 3;
   const playBonus = state.playsLeft;
   const goB = state.goLevel > 0 ? goBonus(state.goLevel, state.round) : 0;
   const insBonus = hasJoker('pibak_boheom') ? 1 : 0;
   const total = interest + base + playBonus + goB + insBonus;
   state.settleData = { interest, base, playBonus, goBonus: goB, insBonus, total, moneyBefore: state.money };
-  addMoney(total);
+  // 짤랑은 정산 로그(+1냥 이상)가 뜰 때만 — 여기서 미리 내지 않음
+  addMoney(total, { silent: true });
+  if (insBonus) bumpJokerGain('pibak_boheom', { money: insBonus });
   trackEvent('settle', { money_after: state.money });
   state.screen = 'settle';
+  settleJuiceSkip = false;
 }
 
-// ── 상점 ───────────────────────────────────────────────────
+/** 정산 통계 뚱땅뚱 → 팝업 닫힘 → 그다음 주막 등장 */
+async function playSettleJuice() {
+  if (settleJuiceBusy || state.screen !== 'settle') return;
+  settleJuiceBusy = true;
+  settleJuiceSkip = false;
+  const wait = (ms) => new Promise((res) => setTimeout(res, ms));
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const rows = () => [...document.querySelectorAll('#settle-table tr.settle-row')];
+  const ov = $('modal-overlay');
+  const m = $('modal');
+  // 스톱 클릭 버블이 스킵으로 먹히지 않게, 현재 클릭 끝난 뒤에만 리스너 등록
+  let skipArmed = false;
+  const skipHandler = () => { if (skipArmed) settleJuiceSkip = true; };
+  const armSkip = () => {
+    skipArmed = true;
+    if (ov) ov.addEventListener('click', skipHandler);
+  };
+
+  // 줄별 금액 — +0냥은 무음, +1냥 이상 로그가 뜰 때마다 짤랑
+  const settleAmts = (() => {
+    const d = state.settleData;
+    if (!d) return [];
+    const a = [d.interest, d.base, d.playBonus];
+    if (d.goBonus) a.push(d.goBonus);
+    if (d.insBonus) a.push(d.insBonus);
+    a.push(d.total);
+    return a;
+  })();
+  const thudAmt = (amt) => { if (amt > 0) sfxCoin(); };
+  const thudAllPositive = () => {
+    if (settleAmts.some((a) => a > 0)) sfxCoin();
+  };
+
+  try {
+    // 한 줄씩 보여 주기 전에 진입 클릭이 끝날 때까지 한 템포
+    await wait(40);
+    if (state.screen !== 'settle') return;
+    armSkip();
+
+    let list = rows();
+    if (list.length) {
+      if (reduce) {
+        list.forEach((r) => r.classList.add('on'));
+        thudAllPositive();
+        await wait(900);
+      } else {
+        for (let i = 0; i < list.length; i++) {
+          if (state.screen !== 'settle') return;
+          list = rows();
+          if (settleJuiceSkip) {
+            list.forEach((r) => r.classList.add('on'));
+            thudAllPositive();
+            break;
+          }
+          const row = list[i];
+          if (!row) break;
+          if (!row.classList.contains('on')) {
+            row.classList.add('on');
+            const final = i === list.length - 1;
+            thudAmt(settleAmts[i] || 0);
+            await wait(final ? 900 : 520);
+          }
+        }
+        if (state.screen !== 'settle') return;
+        await wait(settleJuiceSkip ? 450 : 1400);
+      }
+    }
+    if (state.screen !== 'settle') return;
+
+    // 정산 팝업을 완전히 내린 다음에야 주막 등장
+    if (ov) {
+      ov.classList.add('settle-out');
+      await wait(reduce ? 180 : 420);
+      ov.classList.remove('show', 'settle-out');
+    }
+    if (m) {
+      m.innerHTML = '';
+      m.classList.remove('settle-modal');
+      m.dataset.modalSig = '';
+    }
+    await wait(reduce ? 120 : 280);
+    if (state.screen !== 'settle') return;
+    await openShop();
+  } finally {
+    if (ov) {
+      ov.removeEventListener('click', skipHandler);
+      ov.classList.remove('settle-out');
+    }
+    settleJuiceBusy = false;
+    settleJuiceSkip = false;
+  }
+}
+
+// ── 주막(상점) ───────────────────────────────────────────────────
 let jumakAppearBusy = false;
 async function openShop() {
-  if (jumakAppearBusy || state.juicing) return;
+  if (jumakAppearBusy) return;
   state.rerollCost = 2;
   state.shopOffers = genOffers();
   const next = state.round + 1;
@@ -4411,6 +5022,9 @@ async function openShop() {
   jumakAppearBusy = true;
   try {
     await playJumakAppear();
+    // 주막 등장 → 상점 UI 사이 짧은 여운
+    await new Promise((res) => setTimeout(res,
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 80 : 280));
   } finally {
     jumakAppearBusy = false;
   }
@@ -4454,6 +5068,7 @@ function buyJoker(i) {
     money_after: state.money,
   });
   state.jokers.push({ id: offer.joker.id, paid: offer.joker.price });
+  if (!state.jokerGains[offer.joker.id]) state.jokerGains[offer.joker.id] = { score: 0, money: 0 };
   offer.sold = true;
   state.shopFlashOwned = state.jokers.length - 1;
   render();
@@ -4481,6 +5096,7 @@ function sellJoker(i) {
   if (!j) return;
   addMoney(Math.floor(j.paid / 2));
   if (j.id === 'mitjang') state.mitjangChips = 0;
+  delete state.jokerGains[j.id];
   state.jokers.splice(i, 1);
   render();
 }
@@ -4692,7 +5308,7 @@ function resetRun() {
   rng = mulberry32(runSeed);
   Object.assign(state, {
     round: 1, goLevel: 0, roundScore: 0, playsLeft: 4, discardsLeft: 4,
-    deck: [], hand: [], selected: [], jokers: [], money: 4, boss: null, usedBosses: [],
+    deck: [], hand: [], selected: [], jokers: [], jokerGains: {}, money: 5, boss: null, usedBosses: [],
     nextBoss: null, bossCandidates: null, shopOffers: [], rerollCost: 2,
     kwangSoldThisRound: 0, mitjangChips: 0, makgeolli: 0,
     chunhyangNext: false, drunk: false, hoverReact: null, tempReact: null, touchHintMode: 'play',
@@ -4903,6 +5519,8 @@ function abortTransientUI() {
     const stage = $('go-cascade-stage');
     if (stage) stage.innerHTML = '';
   }
+  settleJuiceSkip = true;
+  settleJuiceBusy = false;
   const jumak = $('jumak-cascade');
   if (jumak) {
     jumak.classList.remove('on');
@@ -5794,7 +6412,7 @@ function renderChunhyang() {
       : '다음 달 훈수는 3냥이에요. 시작 전에 예약해 주세요.';
   } else {
     face.textContent = '😴';
-    bubble.textContent = touchUI ? '' : '이번 달은 훈수 없어요… (상점에서 다음 달 예약)';
+    bubble.textContent = touchUI ? '' : '이번 달은 훈수 없어요… (주막에서 다음 달 예약)';
   }
   const btn = $('ch-btn');
   if (state.screen === 'prep' || state.screen === 'shop') {
@@ -5824,9 +6442,12 @@ function renderTopbar() {
     if (j) {
       const def = JOKER_BY_ID[j.id];
       const tap = isTouchUI() ? ` onclick="showJokerPop(${i})" role="button"` : '';
-      slots += `<div class="jokerslot filled" tabindex="0"${tap}>
-        <div class="jname">${def.icon} ${def.name}</div>
-        <div class="jtip">${esc(def.desc)}${def.id === 'mitjang' ? `<br>누적 +${state.mitjangChips}점` : ''}</div>
+      const gain = formatJokerGain(def.id);
+      const gainEmpty = gain === '아직 이득 없음' ? ' empty' : '';
+      slots += `<div class="jokerslot filled aura-${def.rarity}" data-jid="${esc(def.id)}" tabindex="0"${tap}>
+        <div class="jname">${esc(def.name)}</div>
+        ${def.kind ? `<div class="jkind">${esc(def.kind)}</div>` : ''}
+        <div class="jtip">${esc(def.desc)}${def.id === 'mitjang' ? `<br>지금 누적 ${state.mitjangChips}칩입니다.` : ''}<div class="jtip-gain${gainEmpty}">${esc(gain)}</div></div>
       </div>`;
     } else {
       slots += `<div class="jokerslot">특수패<br>빈 슬롯</div>`;
@@ -5847,7 +6468,11 @@ function showJokerPop(idx) {
   $('joker-pop-meta').innerHTML = `
     <span class="o-rarity r-${def.rarity}">${rarityKo[def.rarity]}</span>
     <span class="o-kind">${esc(def.kind || '')}</span>`;
-  $('joker-pop-desc').textContent = def.desc + (def.id === 'mitjang' ? ` (누적 +${state.mitjangChips}점)` : '');
+  $('joker-pop-desc').textContent = def.desc + (def.id === 'mitjang' ? ` 지금 누적 ${state.mitjangChips}칩입니다.` : '');
+  const gain = formatJokerGain(def.id);
+  const gainEl = $('joker-pop-gain');
+  gainEl.textContent = gain;
+  gainEl.classList.toggle('empty', gain === '아직 이득 없음');
   $('joker-pop-overlay').classList.add('show');
 }
 
@@ -6124,7 +6749,7 @@ function renderCoach() {
       next: null,
     },
     shop: {
-      sel: '#shop-offers', pad: 10, title: '🏪 상점',
+      sel: '#shop-offers', pad: 10, title: '🍶 주막',
       body: CHUNHYANG_ENABLED
         ? `특수패를 사고, 마음에 안 들면 <b>리롤</b>하세요. 준비되면 <b>다음 판으로</b>!<br><span class="coach-muted">춘향 훈수도 여기서 예약할 수 있어요.</span>`
         : `특수패를 사고, 마음에 안 들면 <b>리롤</b>하세요. 준비되면 <b>다음 판으로</b>!`,
@@ -6187,9 +6812,9 @@ function renderModal() {
   };
   const fn = screens[state.screen];
   if (!fn) {
-    m.classList.remove('gostop-modal', 'shop-modal', 'deckpeek-modal', 'howto-modal', 'end-modal');
+    m.classList.remove('gostop-modal', 'shop-modal', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal');
     m.dataset.modalSig = '';
-    ov.classList.remove('show', 'gostop-open');
+    ov.classList.remove('show', 'gostop-open', 'settle-out');
     return;
   }
 
@@ -6198,8 +6823,9 @@ function renderModal() {
   if (isGoStop) {
     const n = goLevelReached(state.baseTarget, state.roundScore, state.goLevel) + 1;
     const sig = `gostop:${state.goLevel}:${n}:${state.roundScore}:${state.playsLeft}:${cardsRemaining()}`;
-    m.classList.remove('shop-modal', 'deckpeek-modal', 'howto-modal', 'end-modal');
+    m.classList.remove('shop-modal', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal');
     m.classList.add('gostop-modal');
+    ov.classList.remove('settle-out');
     ov.classList.add('show', 'gostop-open');
     if (m.dataset.modalSig === sig) return;
     m.dataset.modalSig = sig;
@@ -6213,13 +6839,30 @@ function renderModal() {
     return;
   }
 
+  // 정산: 통계 뚱땅뚱 → 팝업 종료 → 주막 등장 (재render 시 연출 중복 방지)
+  if (state.screen === 'settle') {
+    const d = state.settleData;
+    const sig = d
+      ? `settle:${state.round}:${d.total}:${d.moneyBefore}`
+      : `settle:${state.round}`;
+    m.classList.remove('gostop-modal', 'shop-modal', 'deckpeek-modal', 'howto-modal', 'end-modal');
+    m.classList.add('settle-modal');
+    ov.classList.remove('gostop-open', 'settle-out');
+    ov.classList.add('show');
+    if (m.dataset.modalSig === sig) return;
+    m.dataset.modalSig = sig;
+    m.innerHTML = settleHTML();
+    playSettleJuice();
+    return;
+  }
+
   m.dataset.modalSig = state.screen;
-  m.classList.remove('gostop-modal', 'shop-modal', 'deckpeek-modal', 'howto-modal', 'end-modal');
+  m.classList.remove('gostop-modal', 'shop-modal', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal');
   if (state.screen === 'shop') m.classList.add('shop-modal');
   if (state.screen === 'deckpeek') m.classList.add('deckpeek-modal');
   if (state.screen === 'help' || state.screen === 'welcome') m.classList.add('howto-modal');
   if (state.screen === 'gameover' || state.screen === 'victory') m.classList.add('end-modal');
-  ov.classList.remove('gostop-open');
+  ov.classList.remove('gostop-open', 'settle-out');
   m.innerHTML = fn();
   ov.classList.add('show');
 }
@@ -6255,9 +6898,9 @@ function welcomeHTML() {
         </div>
       </div>
       <div class="help-card hc-helper">
-        <div class="hc-title"><span class="ico">🏪</span>상점</div>
+        <div class="hc-title"><span class="ico">🍶</span>주막</div>
         <div class="hc-body">
-          판을 클리어하면 상점에서 <b>특수패</b>(커먼~레전더리 22종)를 사고팝니다. 소지 최대 5개.
+          판을 클리어하면 주막에서 <b>특수패</b>(커먼~레전더리 22종)를 사고팝니다. 소지 최대 5개.
         </div>
       </div>
     </div>
@@ -6324,19 +6967,23 @@ function gostopHTML() {
 function settleHTML() {
   const d = state.settleData;
   const rows = [
-    [`이자 (보유 ${d.moneyBefore}냥 → 5냥당 1냥, 최대 5냥)`, d.interest],
-    [`기본 상금${isBossRound(state.round) ? ' (박 라운드)' : ''}`, d.base],
+    [`이자 (보유 ${d.moneyBefore}냥)`, d.interest],
+    [`기본 상금${isBossRound(state.round) ? ' · 박' : ''}`, d.base],
     [`남은 내기 ${d.playBonus}회`, d.playBonus],
   ];
   if (d.goBonus) rows.push([`고 보너스 (${state.goLevel}고)`, d.goBonus]);
   if (d.insBonus) rows.push(['피박보험', d.insBonus]);
+  const M = MONTHS[state.round - 1];
   return `
-    <h2>💰 ${state.round}월 (${MONTHS[state.round - 1].name}) 클리어!</h2>
-    <table class="settle-table">
-      ${rows.map(([k, v]) => `<tr><td>${k}</td><td>+${v}냥</td></tr>`).join('')}
-      <tr class="total"><td>합계</td><td>+${d.total}냥 → 보유 ${state.money}냥</td></tr>
-    </table>
-    <div class="modal-actions"><button class="choicebtn btn-stop" style="text-align:center" onclick="openShop()"><div class="t">🏪 상점으로</div></button></div>`;
+    <h2 class="settle-title">정산</h2>
+    <div class="settle-month">${state.round}월 · ${esc(M.name)} 클리어</div>
+    <div class="settle-tally">
+      <table class="settle-table" id="settle-table">
+        ${rows.map(([k, v]) => `<tr class="settle-row"><td>${k}</td><td><span class="settle-amt">+${v}냥</span></td></tr>`).join('')}
+        <tr class="total settle-row"><td>합계</td><td><span class="settle-amt">+${d.total}냥</span></td></tr>
+      </table>
+    </div>
+    <div class="settle-skip-hint">클릭하면 건너뛰기</div>`;
 }
 
 function shopHTML() {
@@ -6344,7 +6991,7 @@ function shopHTML() {
   const offers = state.shopOffers.map((o, i) => {
     const j = o.joker;
     const cant = state.money < j.price || state.jokers.length >= 5;
-    return `<div class="offer${o.sold ? ' sold' : ''}">
+    return `<div class="offer aura-${j.rarity}${o.sold ? ' sold' : ''}">
       <div class="o-icon">${j.icon}</div>
       <div class="o-name">${esc(j.name)}</div>
       <div class="o-meta">
@@ -6367,16 +7014,25 @@ function shopHTML() {
       </div>`;
     }
     const def = JOKER_BY_ID[j.id];
-    const extra = def.id === 'mitjang' ? ` · +${state.mitjangChips}` : '';
-    const desc = def.desc + (def.id === 'mitjang' ? ` (누적 +${state.mitjangChips}점)` : '');
+    const desc = def.desc + (def.id === 'mitjang' ? ` 지금 누적 ${state.mitjangChips}칩입니다.` : '');
+    const gain = formatJokerGain(def.id);
+    const gainShort = formatJokerGain(def.id, { short: true });
+    const gainEmpty = gain === '아직 이득 없음' ? ' empty' : '';
     const pop = state.shopFlashOwned === i ? ' pop' : '';
-    return `<div class="owned-slot filled${pop}" onclick="toggleOwnedTip(${i}, event)" title="탭하면 설명">
-      <div class="os-tip">${esc(desc)}</div>
-      <div class="os-icon">${def.icon}</div>
-      <div class="os-name">${esc(def.name)}</div>
-      <div class="os-meta"><span class="o-rarity r-${def.rarity}">${rarityKo[def.rarity]}</span>${esc(extra)}</div>
+    return `<div class="owned-slot filled aura-${def.rarity}${pop}" onclick="toggleOwnedTip(${i}, event)" title="탭하면 설명">
+      <div class="os-tip">${esc(desc)}<div class="os-tip-gain${gainEmpty}">${esc(gain)}</div></div>
+      <div class="os-head">
+        <div class="os-name">${esc(def.name)}</div>
+        <div class="os-meta">
+          <span class="o-rarity r-${def.rarity}">${rarityKo[def.rarity]}</span>
+          ${def.kind ? `<span class="o-kind">${esc(def.kind)}</span>` : ''}
+        </div>
+      </div>
       <div class="os-desc">${esc(desc)}</div>
-      <button type="button" class="os-sell" onclick="event.stopPropagation(); sellJoker(${i})">+${Math.floor(j.paid / 2)}냥</button>
+      <div class="os-foot">
+        <div class="os-gain${gainEmpty}">${esc(gainShort)}</div>
+        <button type="button" class="os-sell" onclick="event.stopPropagation(); sellJoker(${i})">+${Math.floor(j.paid / 2)}냥</button>
+      </div>
     </div>`;
   }).join('');
 
@@ -6413,36 +7069,38 @@ function shopHTML() {
   const needPick = isBossRound(next) && !state.nextBoss;
   const nm = MONTHS[next - 1];
   return `
-    <div class="shop-head">
-      <div>
-        <h2>🏪 상점</h2>
-        <div class="shop-sub">${state.round}월 클리어 · 특수패를 사고 다음 달로 넘어가세요</div>
+    <div class="shop-inner">
+      <div class="shop-sign">
+        <div class="shop-titles">
+          <h2>주막</h2>
+          <div class="shop-sub">${state.round}월 클리어 · 특수패를 사고 다음 달로</div>
+        </div>
+        <div class="shop-wallet"><b>${state.money}냥</b></div>
       </div>
-      <div class="shop-wallet"><span class="lbl">보유</span><b>${state.money}냥</b></div>
-    </div>
-    <section class="shop-sec" id="shop-owned">
-      <div class="shop-sec-h">내 특수패 <span>${state.jokers.length}/5</span></div>
-      <div class="shop-owned-slots">${ownedSlots}</div>
-    </section>
-    <section class="shop-sec" id="shop-offers">
-      <div class="shop-sec-h">
-        <span>오늘의 특수패</span>
-        <button type="button" class="shop-reroll" onclick="reroll()" ${state.money < state.rerollCost ? 'disabled' : ''}>🔄 리롤 ${state.rerollCost}냥</button>
-      </div>
-      <div class="shop-offers">${offers}</div>
-    </section>
-    ${(makBlock || bossBlock) ? `<section class="shop-sec" id="shop-extras">
-      <div class="shop-sec-h">다음 달 준비</div>
-      <div class="shop-utils" style="${bossBlock ? '' : 'grid-template-columns:1fr'}">
-        ${makBlock}
-        ${bossBlock}
-      </div>
-    </section>` : ''}
-    <footer class="shop-footer" id="shop-footer">
-      <div class="sf-next">다음 <b>${nm.flower} ${next}월 · ${nm.name}</b>
-        <div class="sf-target">목표 ${fmt(TARGETS[next - 1])}점</div></div>
-      <button id="btn-nextround" onclick="nextRound()" ${needPick ? 'disabled title="디버프를 먼저 선택하세요"' : ''}>다음 판으로 →</button>
-    </footer>`;
+      <section class="shop-sec" id="shop-owned">
+        <div class="shop-sec-h">내 특수패 <span>${state.jokers.length}/5</span></div>
+        <div class="shop-owned-slots">${ownedSlots}</div>
+      </section>
+      <section class="shop-sec" id="shop-offers">
+        <div class="shop-sec-h">
+          오늘의 패
+          <button type="button" class="shop-reroll" onclick="reroll()" ${state.money < state.rerollCost ? 'disabled' : ''}>리롤 · ${state.rerollCost}냥</button>
+        </div>
+        <div class="shop-offers">${offers}</div>
+      </section>
+      ${(makBlock || bossBlock) ? `<section class="shop-sec" id="shop-extras">
+        <div class="shop-sec-h">다음 달 준비</div>
+        <div class="shop-utils" style="${bossBlock ? '' : 'grid-template-columns:1fr'}">
+          ${makBlock}
+          ${bossBlock}
+        </div>
+      </section>` : ''}
+      <footer class="shop-footer" id="shop-footer">
+        <div class="sf-next">다음 <b>${nm.flower} ${next}월 · ${nm.name}</b>
+          <div class="sf-target">목표 ${fmt(TARGETS[next - 1])}점</div></div>
+        <button id="btn-nextround" onclick="nextRound()" ${needPick ? 'disabled title="디버프를 먼저 선택하세요"' : ''}>다음 판으로</button>
+      </footer>
+    </div>`;
 }
 
 function gameoverHTML() {
@@ -6598,7 +7256,7 @@ function helpHTML() {
         </div>
       </div>
       <div class="help-card hc-helper">
-        <div class="hc-title"><span class="ico">🏪</span>특수패 · 상점</div>
+        <div class="hc-title"><span class="ico">🍶</span>특수패 · 주막</div>
         <div class="hc-body">
           특수패 <b>22종</b> · 소지 최대 <b>5</b>. 티어는
           <b>커먼 / 레어 / 에픽 / 레전더리</b> (출현 약 55·28·13·4%).
@@ -6612,7 +7270,7 @@ function helpHTML() {
       ${CHUNHYANG_ENABLED ? `<div class="help-card hc-helper">
         <div class="hc-title"><span class="ico">🍶</span>춘향 훈수</div>
         <div class="hc-body">
-          준비/상점에서 <b>3냥</b>에 다음 달 훈수를 예약하면 그 달 내내 패를 봐줍니다.
+          준비/주막에서 <b>3냥</b>에 다음 달 훈수를 예약하면 그 달 내내 패를 봐줍니다.
           패를 고른 뒤 내기·버리기에 마우스를 올리면 다음 패를 예측해 표정이 바뀝니다.
         </div>
       </div>` : ''}
@@ -6657,6 +7315,128 @@ function juiceTier(handId) {
   return 'D';
 }
 
+/** 특수패 슬롯 효과 발동 연출 — 살짝 뽀용 */
+function pulseJokerSlots(ids) {
+  if (!ids?.length) return;
+  const want = new Set(ids);
+  document.querySelectorAll('#jokerbar .jokerslot.filled[data-jid]').forEach((el) => {
+    if (!want.has(el.dataset.jid)) return;
+    el.classList.remove('trig');
+    void el.offsetWidth;
+    el.classList.add('trig');
+    const clear = () => el.classList.remove('trig');
+    el.addEventListener('animationend', clear, { once: true });
+    setTimeout(clear, 480);
+  });
+}
+
+/** 특수패가 건드리는 카드들 (연출용) */
+function jokerAffectedCards(id, ctx) {
+  const cards = ctx.cards || [];
+  const core = ctx.core || [];
+  switch (id) {
+    case 'gwangpari':
+    case 'gwang_sujip':
+    case 'samgwang_nori':
+      return cards.filter((c) => c.type === 'kwang');
+    case 'pi_merchant':
+      return cards.filter((c) => { const t = effType(c); return t === 'pi' || t === 'ssangpi'; });
+    case 'meongtta':
+      return cards.filter((c) => effType(c) === 'yeol');
+    case 'jjokjipge':
+      return ctx.handId === 'month2' ? core : [];
+    case 'ssangpi_sarang':
+      return cards.filter((c) => effType(c) === 'ssangpi');
+    case 'tti_jjang':
+      return cards.filter((c) => effType(c) === 'tti');
+    case 'ssakssuri':
+      return cards.length === 5 ? cards : [];
+    case 'godori_kkun':
+      return cards.filter((c) => c.tags.includes('godori'));
+    case 'dangol':
+      return (ctx.handId === 'dan' || ctx.handId === 'tti3') ? core : [];
+    case 'heundeulgi': {
+      if (ctx.boss === 'no_shake') return [];
+      const cnt = {};
+      for (const c of cards) cnt[c.month] = (cnt[c.month] || 0) + 1;
+      return cards.filter((c) => cnt[c.month] >= 2);
+    }
+    case 'pi_ohjang':
+      return ctx.handId === 'pi5' ? cards.filter((c) => piCount(c) > 0) : [];
+    case 'chodan_aeho':
+      return cards.filter((c) => c.tags.includes('chodan'));
+    case 'bigwang_usan':
+      return ctx.handId === 'none' ? [] : core.filter((c) => c.month === 12);
+    case 'poktan':
+      return (ctx.handId === 'month3' || ctx.handId === 'chongtong') ? core : [];
+    case 'yeol_janchi':
+      return ctx.handId === 'yeol3' ? cards.filter((c) => effType(c) === 'yeol') : [];
+    case 'sipidal':
+      return cards;
+    case 'ogwang_kkum': {
+      const kw = cards.filter((c) => c.type === 'kwang');
+      return kw.length >= 3 ? kw : [];
+    }
+    case 'paewang':
+      return ctx.handId !== 'none' ? core : [];
+    default:
+      return [];
+  }
+}
+
+/** 아이템 정산 시 관련 카드 살짝 펄스 (+점수면 칩 플로트) */
+async function pulseJuiceCardsForJoker(wraps, cardSteps, affected, { chipLabel = null } = {}) {
+  if (!affected?.length || !wraps?.length) return;
+  const uids = new Set(affected.map((c) => c.uid));
+  for (let i = 0; i < cardSteps.length; i++) {
+    if (JUICE.skip) break;
+    if (!uids.has(cardSteps[i].card.uid)) continue;
+    const w = wraps[i];
+    if (!w) continue;
+    w.classList.remove('pulse', 'joker-hit');
+    void w.offsetWidth;
+    w.classList.add('joker-hit');
+    if (chipLabel) {
+      let fx = w.querySelector('.chip-float.joker-fx');
+      if (!fx) {
+        fx = document.createElement('div');
+        fx.className = 'chip-float joker-fx';
+        w.appendChild(fx);
+      }
+      fx.textContent = chipLabel;
+      fx.classList.remove('go');
+      void fx.offsetWidth;
+      fx.classList.add('go');
+    }
+    sfxChip();
+    await juiceWait(130);
+    w.classList.remove('joker-hit');
+  }
+}
+
+/** 연기된 특수패 경제·이득 반영 (미지급분만, 스킵/리듀스/finally 공용) */
+function applyJokerEconomy(snap) {
+  if (!snap || snap._econApplied) return;
+  snap._econApplied = true;
+  const n = snap.pendingGwangpari || 0;
+  if (n > 0 && !snap._moneyPaid) {
+    addMoney(n);
+    state.kwangSoldThisRound += n;
+    bumpJokerGain('gwangpari', { money: n });
+    snap._moneyPaid = true;
+  }
+  const bumped = snap._scoreBumped || new Set();
+  for (const ef of snap.jokerScoreGains || []) {
+    if (ef.score && !bumped.has(ef.id)) {
+      bumpJokerGain(ef.id, { score: ef.score });
+      bumped.add(ef.id);
+    }
+  }
+  snap._scoreBumped = bumped;
+  const mb = $('moneybox');
+  if (mb) mb.textContent = `💰 ${state.money}냥`;
+}
+
 function juiceBreakdown(snap) {
   const { cards, result, env } = snap;
   let { handId, core } = detectHandInfo(cards);
@@ -6670,10 +7450,37 @@ function juiceBreakdown(snap) {
     chip: cardChip(c, env),
     isCore: coreSet.has(c),
   }));
-  const coreSum = steps.filter((s) => s.isCore).reduce((a, s) => a + s.chip, 0);
   const cardFlat = steps.filter((s) => !s.isCore).reduce((a, s) => a + s.chip, 0);
   const jokerChips = Math.max(0, result.flat - cardFlat);
-  return { handBase: 0, steps, jokerChips, flatSum: result.flat, mult: result.mult, score: result.score, handId: result.handId, core: result.core || core };
+  const baseMult = HAND_BY_ID[result.handId]?.mult ?? 1;
+  const ctx = {
+    cards, handId: result.handId, core: result.core || core,
+    boss: env.boss, mitjangChips: env.mitjangChips,
+  };
+  // 특수패 슬롯 왼쪽→오른쪽 · 발동분만 — 칩 → +배수 → ×배수 → 냥
+  const orderOf = (c) => cards.findIndex((x) => x.uid === c.uid);
+  const jokerSteps = [];
+  for (const id of env.jokerIds) {
+    const j = JOKER_BY_ID[id];
+    if (!j) continue;
+    const chipGain = j.addChips ? j.addChips(ctx) : 0;
+    const addM = j.addMult ? j.addMult(ctx) : 0;
+    const xm = j.xMult ? j.xMult(ctx) : 1;
+    const money = id === 'gwangpari' ? (snap.pendingGwangpari || 0) : 0;
+    if (chipGain || addM || xm !== 1 || money) {
+      const affected = jokerAffectedCards(id, ctx)
+        .slice()
+        .sort((a, b) => orderOf(a) - orderOf(b));
+      jokerSteps.push({
+        id, chipGain, addMult: addM, xMult: xm, money, affected,
+      });
+    }
+  }
+  return {
+    handBase: 0, steps, jokerChips, jokerSteps, baseMult, ctx,
+    flatSum: result.flat, cardFlat, mult: result.mult, score: result.score,
+    handId: result.handId, core: result.core || core,
+  };
 }
 
 // ── SFX 샘플 재생 (Assets/SFX/*.mp3) ──────────────────────
@@ -6809,8 +7616,18 @@ function sfxGoStep(step, final, mode = 'btn') {
   }
 }
 function sfxJumakAppear() {
-  // 고 확정 징과 비슷한 여운 — Assets/SFX/jumak_appear.mp3 교체로 변경
-  playSfx(SFX.jumak, { volume: 0.32, rate: 1, maxMs: 1035, fadeMs: 1840, fadeEase: 'exp' });
+  // 두루룽 — 거문고·장구 연타, 피치 올려가며 (징/둥 아님)
+  const hits = [
+    { src: SFX.pluck,  volume: 0.82, rate: 0.78, whenMs: 0 },
+    { src: SFX.janggu, volume: 0.68, rate: 0.88, whenMs: 45 },
+    { src: SFX.pluck,  volume: 0.9,  rate: 0.92, whenMs: 95 },
+    { src: SFX.pluck,  volume: 0.96, rate: 1.06, whenMs: 175 },
+    { src: SFX.janggu, volume: 0.72, rate: 1.12, whenMs: 210 },
+    { src: SFX.pluck,  volume: 1.0,  rate: 1.22, whenMs: 265 },
+    { src: SFX.buk,    volume: 0.88, rate: 1.08, whenMs: 340 },
+    { src: SFX.pluck,  volume: 0.95, rate: 1.35, whenMs: 380 },
+  ];
+  for (const h of hits) playSfx(h.src, h);
 }
 
 function handBannerAnchor() {
@@ -6963,6 +7780,7 @@ async function playJumakAppear() {
 
   state.juicing = true;
   document.body.classList.add('juicing');
+  overlay.classList.remove('out');
   overlay.classList.add('on');
   overlay.setAttribute('aria-hidden', 'false');
   stage.classList.remove('slam');
@@ -6971,14 +7789,17 @@ async function playJumakAppear() {
     if (reduce) {
       sfxJumakAppear();
       await wait(420);
-      return;
+    } else {
+      stage.classList.add('slam');
+      sfxJumakAppear();
+      await wait(isMobile ? 1280 : 1530);
     }
-    stage.classList.add('slam');
-    sfxJumakAppear();
-    if (!isMobile) screenShake(false);
-    await wait(isMobile ? 780 : 920);
+    // 사라질 때 fade-out (slam forwards와 안 겹치게 먼저 해제)
+    stage.classList.remove('slam');
+    overlay.classList.add('out');
+    await wait(reduce ? 150 : 380);
   } finally {
-    overlay.classList.remove('on');
+    overlay.classList.remove('on', 'out');
     overlay.setAttribute('aria-hidden', 'true');
     stage.classList.remove('slam');
     state.juicing = false;
@@ -7755,6 +8576,7 @@ async function playJuiceSequence(snap, fromRects = null) {
 
   try {
     if (reduce) {
+      applyJokerEconomy(snap);
       pa.classList.remove('juice-stage');
       return;
     }
@@ -7769,7 +8591,7 @@ async function playJuiceSequence(snap, fromRects = null) {
         <div class="jt-row">
           <span class="jt-chips" id="jt-chips">0</span>
           <span class="jt-times" id="jt-times">×</span>
-          <span class="jt-mult" id="jt-mult">${fmtMult(bd.mult)}</span>
+          <span class="jt-mult" id="jt-mult">${fmtMult(bd.baseMult)}</span>
           <span class="jt-eq" id="jt-eq">=</span>
           <span class="jt-score" id="jt-score">0</span>
         </div>
@@ -7867,21 +8689,44 @@ async function playJuiceSequence(snap, fromRects = null) {
       w.classList.remove('pulse');
     }
 
-    if (bd.jokerChips > 0 && !JUICE.skip) {
-      ensureFlatUI();
-      const from = flat;
-      flat += bd.jokerChips;
-      await animateNumber(flatEl, from, flat, juiceMs(180));
-      flatEl.style.transform = 'scale(1.18)';
-      sfxChip();
-      await juiceWait(95);
-      flatEl.style.transform = '';
-    }
+    const multEl = $('jt-mult');
+    let mult = bd.baseMult;
+    const bumpMult = async (next, { heavy = false } = {}) => {
+      mult = next;
+      multEl.textContent = fmtMult(mult);
+      multEl.classList.add('on');
+      multEl.classList.remove('bump', 'slam');
+      void multEl.offsetWidth;
+      if (heavy) {
+        multEl.classList.add('slam');
+        sfxMult();
+        await juiceWait(340);
+        multEl.classList.remove('slam');
+      } else {
+        multEl.classList.add('bump');
+        sfxMult();
+        await juiceWait(260);
+        multEl.classList.remove('bump');
+      }
+    };
+    const jokerCardLabel = (id, card) => {
+      if (id === 'pi_merchant') return effType(card) === 'ssangpi' ? '+8' : '+4';
+      if (id === 'meongtta') return '+6';
+      if (id === 'ssangpi_sarang') return '+12';
+      if (id === 'tti_jjang') return '+5';
+      if (id === 'gwang_sujip') return '+10';
+      if (id === 'gwangpari') return '+1냥';
+      if (id === 'samgwang_nori') return '+3';
+      if (id === 'godori_kkun') return '+3';
+      if (id === 'chodan_aeho') return '+2';
+      return null;
+    };
 
+    // 스킵: 카드 합산 마무리 → 아이템 일괄 반영
     if (JUICE.skip) {
       wraps.forEach((w) => w.classList.add('landed'));
       chips = bd.handBase + bd.steps.filter((s) => s.isCore).reduce((a, s) => a + s.chip, 0);
-      flat = bd.flatSum;
+      flat = bd.cardFlat;
       chipsEl.textContent = fmt(chips);
       if (flat > 0) {
         ensureFlatUI();
@@ -7890,13 +8735,88 @@ async function playJuiceSequence(snap, fromRects = null) {
       if (tally) tally.style.opacity = '1';
     }
 
-    // 3) 배수 슬램
+    // 2.5) 아이템 정산 — ×·기본배수 먼저 켠 뒤, 아이템마다 카드/슬롯만 반응
+    snap._scoreBumped = snap._scoreBumped || new Set();
+    const needsItemPhase = bd.jokerSteps.length > 0;
+    if (needsItemPhase && !JUICE.skip) {
+      $('jt-times').classList.add('on');
+      multEl.classList.add('on');
+      multEl.textContent = fmtMult(mult);
+      await juiceWait(180);
+
+      for (const step of bd.jokerSteps) {
+        if (JUICE.skip) break;
+        pulseJokerSlots([step.id]);
+
+        // 관련 카드도 낸 패 줄 왼쪽→오른쪽
+        if (step.affected?.length) {
+          const hit = new Set(step.affected.map((c) => c.uid));
+          for (const cs of bd.steps) {
+            if (JUICE.skip) break;
+            if (!hit.has(cs.card.uid)) continue;
+            await pulseJuiceCardsForJoker(wraps, bd.steps, [cs.card], {
+              chipLabel: jokerCardLabel(step.id, cs.card),
+            });
+          }
+        }
+
+        if (step.chipGain) {
+          ensureFlatUI();
+          const from = flat;
+          flat += step.chipGain;
+          await animateNumber(flatEl, from, flat, juiceMs(200));
+          flatEl.style.transform = 'scale(1.12)';
+          await juiceWait(80);
+          flatEl.style.transform = '';
+        }
+        if (step.addMult) await bumpMult(mult + step.addMult);
+        if (step.xMult !== 1) await bumpMult(mult * step.xMult);
+
+        if (step.money > 0 && !snap._moneyPaid) {
+          addMoney(step.money);
+          state.kwangSoldThisRound += step.money;
+          bumpJokerGain(step.id, { money: step.money });
+          snap._moneyPaid = true;
+          const mb = $('moneybox');
+          if (mb) mb.textContent = `💰 ${state.money}냥`;
+          sfxCoin();
+          await juiceWait(200);
+        }
+        const sg = (snap.jokerScoreGains || []).find((e) => e.id === step.id);
+        if (sg?.score && !snap._scoreBumped.has(step.id)) {
+          bumpJokerGain(step.id, { score: sg.score });
+          snap._scoreBumped.add(step.id);
+        }
+        await juiceWait(80);
+      }
+      if (!JUICE.skip) applyJokerEconomy(snap);
+    }
+
+    if (JUICE.skip) {
+      applyJokerEconomy(snap);
+      flat = bd.flatSum;
+      mult = bd.mult;
+      if (flat > 0) {
+        ensureFlatUI();
+        flatEl.textContent = fmt(flat);
+      }
+      if (snap.triggeredJokers?.length) pulseJokerSlots(snap.triggeredJokers);
+    }
+
+    // 3) 최종 배수 확정 (아이템 없었으면 여기서 첫 등장 슬램)
     $('jt-times').classList.add('on');
-    await juiceWait(100);
-    const multEl = $('jt-mult');
-    multEl.classList.add('slam');
-    sfxMult();
-    await juiceWait(360);
+    multEl.textContent = fmtMult(bd.mult);
+    if (needsItemPhase && !JUICE.skip) {
+      multEl.classList.add('on');
+      await bumpMult(bd.mult, { heavy: true });
+    } else {
+      multEl.classList.remove('on', 'bump');
+      void multEl.offsetWidth;
+      multEl.classList.add('slam', 'on');
+      sfxMult();
+      await juiceWait(360);
+      multEl.classList.remove('slam');
+    }
 
     // 4) 최종 점수 롤업 → 사이드 착지
     eqEl.classList.add('on');
@@ -7957,6 +8877,7 @@ async function playJuiceSequence(snap, fromRects = null) {
       await juiceWait(220);
     }
   } finally {
+    applyJokerEconomy(snap);
     disarm();
     banner.className = '';
     banner.textContent = '';
