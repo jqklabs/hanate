@@ -1958,6 +1958,71 @@
       100% { opacity: 0; transform: translate(-50%, -115%) scale(.55) rotate(-8deg); filter: brightness(1.8) blur(1px); }
     }
   }
+
+  /* ── 주막 등장 팝업 (n고 풀스크린과 동일 슬램) ── */
+  #jumak-cascade {
+    position: fixed; inset: 0; z-index: 125; display: none;
+    align-items: center; justify-content: center;
+    pointer-events: none;
+    overflow: hidden;
+    padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0)
+      env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+    background: radial-gradient(ellipse at 50% 45%, rgba(40,24,10,.55), rgba(0,0,0,.55) 68%);
+  }
+  #jumak-cascade.on { display: flex; }
+  #jumak-cascade .jumak-stage {
+    position: relative;
+    width: min(92vw, 560px);
+    aspect-ratio: 3 / 2;
+    max-height: min(70vh, 400px);
+    transform-origin: 50% 50%;
+    will-change: transform, opacity, filter;
+  }
+  #jumak-cascade .jumak-stage.slam {
+    animation: jumakSlamIn .48s cubic-bezier(.15,1.55,.35,1) forwards;
+  }
+  #jumak-cascade .jumak-frame {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    filter: drop-shadow(0 10px 28px rgba(0,0,0,.55));
+  }
+  #jumak-cascade .jumak-label {
+    position: absolute; left: 50%; top: 48%;
+    transform: translate(-50%, -50%);
+    font-family: var(--font-overlay); font-weight: 400;
+    font-size: clamp(34px, 8vw, 56px);
+    line-height: 1.15; letter-spacing: .02em;
+    color: #fff7ed; white-space: nowrap; text-align: center;
+    text-shadow:
+      0 0 18px rgba(251,191,36,.75),
+      0 0 36px rgba(180,83,9,.45),
+      0 4px 0 #7c2d12,
+      0 8px 18px rgba(0,0,0,.55);
+  }
+  @keyframes jumakSlamIn {
+    0% { opacity: 0; transform: scale(2.2) rotate(6deg); filter: blur(8px) brightness(2); }
+    55% { opacity: 1; transform: scale(.92) rotate(-1.5deg); filter: blur(0) brightness(1.25); }
+    78% { transform: scale(1.06) rotate(.5deg); filter: brightness(1.08); }
+    100% { opacity: 1; transform: scale(1) rotate(0); filter: brightness(1); }
+  }
+  @media (max-width: 720px) {
+    #jumak-cascade .jumak-stage {
+      width: min(94vw, 420px);
+      max-height: min(52vh, 280px);
+    }
+    #jumak-cascade .jumak-label {
+      font-size: clamp(26px, 8vw, 40px);
+      top: 49%;
+    }
+    #jumak-cascade .jumak-stage.slam { animation-name: jumakSlamInMobile; }
+    @keyframes jumakSlamInMobile {
+      0% { opacity: 0; transform: scale(1.45) rotate(3deg); filter: blur(4px) brightness(1.55); }
+      60% { opacity: 1; transform: scale(.95) rotate(-1deg); filter: blur(0) brightness(1.15); }
+      100% { opacity: 1; transform: scale(1) rotate(0); filter: brightness(1); }
+    }
+  }
   /* 고 버튼 안 숫자 — 공통 + 프리뷰 연출들 (전체 ease-out) */
   .choicebtn.btn-go.gs-simple { overflow: visible; position: relative; }
   .choicebtn.btn-go.go-btn-busy { cursor: wait; }
@@ -2517,7 +2582,6 @@
     #playlog-panel,
     #seedinfo,
     .side-nav { display: none !important; }
-
     #roundlabel { font-size: 17px; }
     #roundlabel .round-meta { display: none; }
     #seasonline {
@@ -3007,6 +3071,12 @@
   <div id="juice-skip-hint">클릭하면 연출 스킵</div>
 </div>
 <div id="go-cascade" aria-hidden="true"><div class="go-stage" id="go-cascade-stage"></div></div>
+<div id="jumak-cascade" aria-hidden="true">
+  <div class="jumak-stage" id="jumak-cascade-stage">
+    <img class="jumak-frame" src="Assets/jumak.png" alt="" draggable="false">
+    <div class="jumak-label">주막 등장</div>
+  </div>
+</div>
 <div id="coach-root" aria-hidden="true"></div>
 
 <div id="card-tune" aria-hidden="true">
@@ -4319,7 +4389,9 @@ function settle() {
 }
 
 // ── 상점 ───────────────────────────────────────────────────
-function openShop() {
+let jumakAppearBusy = false;
+async function openShop() {
+  if (jumakAppearBusy || state.juicing) return;
   state.rerollCost = 2;
   state.shopOffers = genOffers();
   const next = state.round + 1;
@@ -4335,6 +4407,12 @@ function openShop() {
     } else {
       state.nextBoss = pool[0];
     }
+  }
+  jumakAppearBusy = true;
+  try {
+    await playJumakAppear();
+  } finally {
+    jumakAppearBusy = false;
   }
   state.screen = 'shop';
   maybeStartShopCoach();
@@ -4825,6 +4903,13 @@ function abortTransientUI() {
     const stage = $('go-cascade-stage');
     if (stage) stage.innerHTML = '';
   }
+  const jumak = $('jumak-cascade');
+  if (jumak) {
+    jumak.classList.remove('on');
+    jumak.setAttribute('aria-hidden', 'true');
+    const stage = $('jumak-cascade-stage');
+    if (stage) stage.classList.remove('slam');
+  }
   const coach = $('coach-root');
   if (coach) {
     coach.classList.remove('on');
@@ -5138,7 +5223,7 @@ async function mapPool(items, limit, worker) {
 async function preloadCardImages(onProgress) {
   const arts = [...new Set(buildDeck().map((c) => c.art).filter(Boolean))];
   const overlays = [...new Set(Object.values(CARD_OVERLAY))];
-  const urls = ['Assets/Background.webp', 'Assets/BackgroundFigure.webp'].concat(arts, overlays);
+  const urls = ['Assets/Background.webp', 'Assets/BackgroundFigure.webp', 'Assets/jumak.png'].concat(arts, overlays);
   const total = urls.length || 1;
   let done = 0;
   onProgress(0, total);
@@ -6603,6 +6688,8 @@ const SFX = {
   goStep: 'Assets/SFX/go_step.mp3',
   goFinal: 'Assets/SFX/go_final.mp3',
   overflow: 'Assets/SFX/overflow.mp3',
+  // 주막 등장 — 파일만 교체하면 됨 (현재 go_final 복제 플레이스홀더)
+  jumak: 'Assets/SFX/jumak_appear.mp3',
 };
 let _sfxUnlocked = false;
 let _audioCtx = null;
@@ -6678,10 +6765,10 @@ function sfxMult() {
   playSfx(SFX.buk, { volume: 0.63, whenMs: 50 });
 }
 function sfxScore() {
-  // 거문고 한 음을 피치 올려가며 3연타 (+20%)
-  playSfx(SFX.pluck, { volume: 0.6, rate: 0.92 });
-  playSfx(SFX.pluck, { volume: 0.624, rate: 1.05, whenMs: 90 });
-  playSfx(SFX.pluck, { volume: 0.66, rate: 1.18, whenMs: 180 });
+  // 거문고 한 음을 피치 올려가며 3연타 (점수 롤업 두루룽)
+  playSfx(SFX.pluck, { volume: 0.88, rate: 0.92 });
+  playSfx(SFX.pluck, { volume: 0.92, rate: 1.05, whenMs: 90 });
+  playSfx(SFX.pluck, { volume: 0.98, rate: 1.18, whenMs: 180 });
 }
 function sfxScoreLand() {
   playSfx(SFX.buk, { volume: 0.7, rate: 1.05 });
@@ -6720,6 +6807,10 @@ function sfxGoStep(step, final, mode = 'btn') {
   if (final && mode === 'btn') {
     playSfx(SFX.janggu, { volume: 0.38, rate: 1, whenMs: 30, maxMs: 300, fadeMs: 100 });
   }
+}
+function sfxJumakAppear() {
+  // 고 확정 징과 비슷한 여운 — Assets/SFX/jumak_appear.mp3 교체로 변경
+  playSfx(SFX.jumak, { volume: 0.32, rate: 1, maxMs: 1035, fadeMs: 1840, fadeEase: 'exp' });
 }
 
 function handBannerAnchor() {
@@ -6856,6 +6947,40 @@ async function playGoCascade(fromLevel, toLevel) {
   try {
     await runGoShatterCascade(fromLevel, toLevel, { fullscreen: true });
   } finally {
+    state.juicing = false;
+    document.body.classList.remove('juicing');
+  }
+}
+
+// 상점 진입 직전 — 주막 프레임 + "주막 등장" 슬램 (n고 풀스크린과 동일 톤)
+async function playJumakAppear() {
+  const overlay = $('jumak-cascade');
+  const stage = $('jumak-cascade-stage');
+  if (!overlay || !stage) return;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const wait = (ms) => new Promise((res) => setTimeout(res, ms));
+  const isMobile = window.matchMedia('(max-width: 720px)').matches;
+
+  state.juicing = true;
+  document.body.classList.add('juicing');
+  overlay.classList.add('on');
+  overlay.setAttribute('aria-hidden', 'false');
+  stage.classList.remove('slam');
+  void stage.offsetWidth; // 재진입 시 애니메이션 재시작
+  try {
+    if (reduce) {
+      sfxJumakAppear();
+      await wait(420);
+      return;
+    }
+    stage.classList.add('slam');
+    sfxJumakAppear();
+    if (!isMobile) screenShake(false);
+    await wait(isMobile ? 780 : 920);
+  } finally {
+    overlay.classList.remove('on');
+    overlay.setAttribute('aria-hidden', 'true');
+    stage.classList.remove('slam');
     state.juicing = false;
     document.body.classList.remove('juicing');
   }
