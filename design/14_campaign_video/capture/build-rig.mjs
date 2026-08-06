@@ -47,12 +47,18 @@ function build() {
   if (!existsSync(hi)) symlinkSync(resolve(HERE, 'cards_hi'), hi, 'dir');
 
   // 리그 스크립트도 .build에서 바로 읽히도록 링크
-  /* 엠블럼을 새로 만들면 **여기에도 반드시 추가**한다.
+  /* 엠블럼·에셋을 새로 만들면 **여기에도 반드시 추가**한다.
      빠뜨리면 사본에서 404가 나고 화면에 엑박(<img> 깨짐 아이콘)이 뜬다 —
-     홍단·총통이 실제로 그렇게 통째로 안 나왔다. */
+     홍단·총통이 실제로 그렇게 통째로 안 나왔다.
+
+     그리고 **여기에 추가한 뒤에는 `node build-rig.mjs`를 다시 돌려야 한다.**
+     record.mjs는 .build가 있으면 그냥 쓴다(재빌드 안 함). rig.js/vfx.js/scenes.js는
+     심링크라 수정이 바로 먹지만, 이 목록에 새로 넣은 파일은 재빌드 전까지 404다 —
+     cardback.png가 실제로 그렇게 민무늬 빨간 판으로 나왔다. */
   for (const f of ['rig.js', 'scenes.js', 'vfx.js', 'chunhyang.png', 'jumak.png',
                    'fx_godori.png', 'fx_byeongpung.png', 'fx_ogwang.png',
-                   'fx_hongdan.png', 'fx_chongtong.png']) {
+                   'fx_hongdan.png', 'fx_chongtong.png',
+                   'cardback.png', 'cardback_wide.png']) {
     const l = resolve(BUILD, f);
     if (!existsSync(l)) symlinkSync(resolve(HERE, f), l, 'file');
   }

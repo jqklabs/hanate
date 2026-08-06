@@ -38,6 +38,27 @@
     window.requestAnimationFrame = (fn) => _raf(() => fn(performance.now()));
   }
 
+  /* ── 프레임 기하 — 카메라와 오버레이의 **유일한 기준선** ─────────────
+   *
+   * 예전엔 컷마다 보는 곳이 달랐다:
+   *   look:'center'  = 뷰포트 상수 0.500   (DOM에 그런 rect는 없다)
+   *   look:'anchor'  = 낸 패를 얼린 값     (A1 0.386 / A3 0.471 — 씬마다 다름)
+   *   look:'cards'   = 손패+낸패 합집합    (판 중에 13.8% 움직임)
+   * 그래서 한 판 안에서 프레임이 두 번 수직으로 튀었다.
+   *
+   * 측정 rect는 어느 것도 안정적이지 않다(씬 전체 cy 변동폭: gameui 17~23%,
+   * cards 14%, gobar 14%, stage 6~10%). → **측정하지 않고 무대 기하에서 만든다.**
+   * 이 값은 씬·판·카드 수와 무관하게 항상 같다.
+   *
+   * FRAME_CY = 0.50 은 무대(860×1075)가 뷰포트(1080×1350) 정중앙에 있기 때문이다.
+   * 기본 배율 ZB(1.293)에서 크롭 창이 0.113~0.887 → 낸 패(0.35~0.51)·수식·
+   * 손패(0.59~0.70)가 다 들어오고 ffmpeg 클램프에도 안 걸린다. */
+  const VIEW_W = 1080, VIEW_H = 1350;      // record.mjs의 VIEW와 같아야 한다
+  const STAGE_W = 860, STAGE_H = 1075;     // 아래 CSS의 --cap-stage(-h)와 같아야 한다
+  const FRAME_CY = 0.50;                   // 프레임 중심 — 카메라도 오버레이도 여기
+  const POP_DY = 0.115;                    // 점수 팝업은 프레임 중심 아래로 이만큼
+  const GO_DY = 0.20;                      // 고 스탬프는 프레임 중심 위로 이만큼
+
   // ── 캡처 전용 CSS ──────────────────────────────────────────
   const css = document.createElement('style');
   css.textContent = `
@@ -53,8 +74,9 @@
          860×1075 '무대'에만 그린다. 남는 둘레는 게임 배경이 채운다.
          카메라는 기본으로 이 무대를 꽉 잡고(배율 1080/860 ≈ 1.256),
          더 확대하거나 팬해도 바깥에 진짜 화면이 있어 잘리지 않는다.
-       record.mjs의 VIEW, assemble.mjs의 STAGE와 반드시 같은 값을 쓸 것. */
-    :root { --cap-stage: 860px; --cap-stage-h: 1075px; }
+       record.mjs의 VIEW, assemble.mjs의 STAGE와 반드시 같은 값을 쓸 것.
+       (위 STAGE_W/STAGE_H 상수와 같은 값 — 한쪽만 고치면 프레임이 어긋난다) */
+    :root { --cap-stage: ${STAGE_W}px; --cap-stage-h: ${STAGE_H}px; }
     body.cap-clean {
       box-sizing: border-box !important; min-height: 100vh !important;
       padding-top: calc((100vh - var(--cap-stage-h)) / 2) !important;
@@ -193,6 +215,49 @@
       transform: translateY(calc(var(--cap-focus-y, 50vh) - 50vh));
     }
 
+    /* 승리 화면 — 광고에서는 「새 런 시작」 버튼이 필요 없다. 눌러 볼 수도 없는
+       버튼이 화면의 3분의 1을 먹으면 시선만 뺏긴다. 문구와 최종 점수만 남긴다.
+       배경도 더 눌러 뒤에 남은 손패·버튼이 안 읽히게 한다. */
+    body.cap-victory #modal-overlay { background: rgba(0,0,0,.86) !important; }
+    body.cap-victory #modal .modal-actions { display: none !important; }
+    body.cap-victory #modal h2 { font-size: 34px !important; line-height: 1.35; }
+    body.cap-victory #modal .sub { font-size: 24px !important; line-height: 1.7; }
+
+    /* 조준된 상품 — 카메라가 줌인하는 대신 **노드 자체가 커지고 빛난다** (17차).
+       정적 UI 위 카메라 무빙은 멀미를 부른다 → 글로벌 카메라는 고정,
+       강조는 스케일 + 금빛 글로우가 한다. 이름·설명도 이 확대로 읽힌다. */
+    body.cap-clean #shop-offers .offer {
+      transition: transform .34s cubic-bezier(.2,1.2,.3,1), box-shadow .34s ease,
+                  filter .34s ease;
+    }
+    /* **확대하지 않는다.** scale로 키우면 어느 방향으로 자라든 이웃 상품이나
+       위쪽 보유 칸을 먹는다 — 1.32배(위 기준)도 1.18배(아래 기준)도 겹쳤다.
+       강조는 기하가 아니라 **대비**로 만든다: 나머지를 죽이고 이것만 살린다.
+       레이아웃이 1px도 안 움직이므로 겹침이 원천적으로 불가능하다. */
+    body.cap-clean #shop-offers .offer.cap-aim {
+      position: relative; z-index: 40;
+      box-shadow: 0 0 0 3px rgba(255,214,130,.95), 0 0 52px rgba(255,190,80,.6);
+      filter: brightness(1.14) saturate(1.1);
+    }
+    /* 클리어 카드가 뜰 때 판은 한 단계 물러난다 — 카드가 유일한 주인공이 되게 */
+    body.cap-clearcard #topbar,
+    body.cap-clearcard #main { filter: brightness(.40) saturate(.7) !important;
+                               transition: filter .3s ease; }
+
+    /* 구매한 패를 화면 가운데 크게 띄우는 동안에는 **모달 전체를 눌러 둔다.**
+       1.85배로 키운 복제본이 위쪽 '보유 특수패' 칸을 덮어서, 먼저 산 패와
+       지금 사는 패가 포개져 보였다. 복제본은 vfx 레이어(모달 밖)에 있으므로
+       모달만 어둡게 하면 확대된 패 하나만 남는다. */
+    body.cap-buy #modal { filter: brightness(.30) saturate(.6) !important;
+                          transition: filter .28s ease; }
+
+    /* 조준 중일 때 나머지 상품·보유 칸은 한 단계 물러난다 */
+    body.cap-clean #shop-offers:has(.offer.cap-aim) .offer:not(.cap-aim),
+    body.cap-clean #shop-offers:has(.offer.cap-aim) .owned-slot {
+      filter: brightness(.52) saturate(.7);
+      transition: filter .3s ease;
+    }
+
     /* 조합 결과(족보 · 칩×배 · +점수). 몽타주에서 유일한 설명이라 크게 */
     body.cap-clean #playresult { margin-top: 10px !important; }
     body.cap-clean #playresult .r-hand    { font-size: 40px !important; }
@@ -312,6 +377,11 @@
    * 시퀀스 안에서 멈출 자리는 하나뿐이다: 카드가 다 날아와 착지하고
    * 족보 배너를 띄우는 지점 — 그 직후의 첫 juiceWait에서 붙잡는다.
    * sfxBanner()가 딱 그 지점에서 한 번 불리므로 그것을 신호로 쓴다. */
+  /* 마지막 판(12월)은 목표를 넘기는 순간 게임이 스스로 승리 화면을 띄운다
+     (checkAfterPlay → victory). 그런데 그 시점은 점수 연출 한복판이라
+     모달이 이펙트를 덮어버린다. → 여기서 막아 두고 씬이 원하는 박자에 연다. */
+  window.victory = function () { /* 씬이 api.showVictory()로 연다 */ };
+
   let gate = null, gateArmed = false;
   const _sfxBanner = window.sfxBanner;
   window.sfxBanner = function (...a) {
@@ -392,7 +462,7 @@
    * 카메라가 내기 전 자리로 슬금슬금 되돌아간다 — 그러면 안 된다.
    * → 카드가 놓인 순간 한 번만 재서 얼려두고, 그 판이 끝날 때까지 이 값을 쓴다.
    * 오버레이(엠블럼·점수 팝업)도 같은 y에 뜨게 해서 카메라와 어긋나지 않게 한다. */
-  let ANCHOR = null, POP = null;
+  let ANCHOR = null;   // 카드를 따라가야 하는 이펙트 전용 (카메라는 frame을 본다)
 
   function snapRects() {
     const R = {};
@@ -434,17 +504,13 @@
     put('stage', ['#playedarea .card', '#handarea .card', '#cap-char']);
     // 게임 UI가 실제로 차지하는 전체 범위 — 뷰포트 크기를 이걸로 정한다
     put('gameui', ['#topbar', '#side', '#table']);
+    /* 카메라가 보는 **유일한 기준선.** 측정하지 않으므로 씬·판·카드 수와 무관하게
+       항상 같은 값이다. 편집(assemble.mjs)의 게임 컷은 전부 이걸 본다. */
+    R.frame = { cx: 0.5, cy: FRAME_CY,
+                w: STAGE_W / innerWidth, h: STAGE_H / innerHeight };
+    /* anchor는 카메라용이 아니다 — 카드를 실제로 따라가야 하는 이펙트
+       (ogwangLift의 x 정렬 등)만 쓴다. 카메라가 이걸 보면 씬마다 프레임이 달라진다. */
     if (ANCHOR) R.anchor = ANCHOR;
-    if (POP) R.pop = POP;                     // 점수 팝업 자리 — 팝업 컷은 여기가 중앙
-    /* 고 스탬프 자리 — 특수패바 아래끝과 낸 패 위끝 사이의 빈 띠.
-       조합이 꽂힐 때마다 여기서 고가 쭉쭉 오른다. */
-    const top = R.jokers ? R.jokers.cy + R.jokers.h / 2 : 0.08;
-    const box = R.played || R.cards;
-    if (box) {
-      const bot = box.cy - box.h / 2;
-      R.gobar = { cx: 0.5, cy: (top + bot) / 2, w: 0.4,
-                  h: Math.max(0.04, bot - top) };
-    }
     return R;
   }
 
@@ -467,6 +533,7 @@
     clean(opts = {}) {
       document.body.classList.add('cap-clean');
       api.clearAnchor();
+      api.setFrameVars();       // 오버레이 기준선 확정 — 이후 씬 내내 안 바뀐다
       api.useHiResCards();
       if (!document.getElementById('cap-char')) {
         const a = document.createElement('div');
@@ -637,35 +704,28 @@
     },
     buy(i) { buyJoker(i); },
 
-    /* 카드가 다 놓인 지금 자리를 앵커로 얼린다.
-       이후 모든 컷이 여기를 보고, 오버레이도 여기에 뜬다. */
+    /* 오버레이 기준선을 프레임 기하에서 확정한다. **clean()에서 한 번만** 부르고
+       이후 씬 내내 바뀌지 않는다 — 카메라가 보는 frame과 정확히 같은 선이다.
+       예전엔 anchor()가 이 값들을 낸 패 위치에서 계산해서, 씬마다(그리고 카드
+       장수마다) 오버레이가 다른 높이에 떴고 카메라와도 어긋났다. */
+    setFrameVars() {
+      const S = document.documentElement.style;
+      S.setProperty('--cap-focus-y', (FRAME_CY * innerHeight) + 'px');
+      // 점수 팝업은 프레임 중심 아래 — 낸 패를 가리지 않는 자리
+      S.setProperty('--cap-pop-y', ((FRAME_CY + POP_DY) * innerHeight) + 'px');
+      // 고 스탬프는 프레임 중심 위 — 특수패바와 낸 패 사이의 빈 띠
+      S.setProperty('--cap-go-y', ((FRAME_CY - GO_DY) * innerHeight) + 'px');
+    },
+
+    /* 카드가 다 놓인 지금 자리를 얼린다.
+       **카메라용이 아니다** — 카드를 실제로 따라가야 하는 이펙트만 쓴다
+       (ogwangLift의 x 정렬 등). 카메라는 frame 하나만 본다. */
     anchor() {
       const r = snapRects();
       ANCHOR = r.played || r.cards || null;
-      if (ANCHOR) {
-        const cy = ANCHOR.cy * innerHeight;
-        document.documentElement.style.setProperty('--cap-focus-y', cy + 'px');
-        /* 점수 팝업은 낸 패 '아래' 빈 자리에 띄운다.
-           카드 위에 겹치면 정작 무슨 패로 냈는지가 안 보인다. */
-        const hand = document.querySelector('#handarea');
-        const hb = hand && hand.getBoundingClientRect();
-        const below = ANCHOR.cy * innerHeight + (ANCHOR.h * innerHeight) / 2;
-        const popY = hb && hb.top > below ? (below + hb.top) / 2 : below + 130;
-        document.documentElement.style.setProperty('--cap-pop-y', popY + 'px');
-        // 팝업이 뜨는 컷은 이 좌표가 프레임 정중앙이어야 한다
-        POP = { cx: 0.5, cy: popY / innerHeight, w: 0.52, h: 0.17 };
-        const g = snapRects().gobar;
-        if (g) document.documentElement.style.setProperty(
-          '--cap-go-y', (g.cy * innerHeight) + 'px');
-      }
       return ANCHOR;
     },
-    clearAnchor() {
-      ANCHOR = null; POP = null;
-      document.documentElement.style.removeProperty('--cap-focus-y');
-      document.documentElement.style.removeProperty('--cap-pop-y');
-      document.documentElement.style.removeProperty('--cap-go-y');
-    },
+    clearAnchor() { ANCHOR = null; },
 
     /* 지금 사려는 상품에 표식을 단다 — 카메라(assemble)가 'buyitem' 좌표로
        그 상품 하나만 크게 잡아 이름·설명이 읽히게 한다. null이면 해제. */
@@ -689,6 +749,14 @@
     /* 게임 자체 고/스톱 화면을 '원하는 박자에' 띄운다.
        게임은 점수가 목표를 넘으면 checkAfterPlay에서 알아서 screen='gostop'으로 가는데,
        그대로 두면 이펙트 한복판에 모달이 끼어든다 → CSS로 막아두고 여기서 연다. */
+    /* 승리 화면 — 게임 자체 모달을 그대로 쓴다.
+       「12월까지 깼다」를 게임 화면이 직접 말해줘야 뒤의 CTA가 꽂힌다. */
+    showVictory() {
+      state.screen = 'victory';
+      state.surveyDismissed = true;      // 설문 모달이 승리 화면을 덮지 않게
+      document.body.classList.add('cap-victory');
+      render();
+    },
     showGoStop() {
       state.screen = 'gostop';
       state.pendingGoStop = true;

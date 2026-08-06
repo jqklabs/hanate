@@ -302,11 +302,16 @@
   body.cap-deal #shop-offers .offer.cap-lit {
     filter: brightness(2.5) saturate(1.52);      /* 부모의 .40을 되돌린다 */
   }
-  /* 화면 밖에서 돌려져 들어오는 뒷면 — 게임의 facedown 카드와 같은 무늬 */
+  /* 화면 밖에서 돌려져 들어오는 뒷면.
+     CSS 빗금이 아니라 **실제 화투 뒷면 에셋**을 쓴다 — 이 뒷면이 H3(방자가 집어드는
+     패 4장)에도 똑같이 나오므로 두 씬의 통일감이 여기서 결정된다.
+     금테가 이미지 안에 이미 있으므로 inset 테두리는 주지 않는다. */
   .vfx-dealback {
     position: absolute; border-radius: 14px;
-    background: repeating-linear-gradient(135deg, #7f1d1d 0 8px, #991b1b 8px 16px);
-    box-shadow: 0 10px 30px rgba(0,0,0,.6), inset 0 0 0 3px rgba(0,0,0,.42);
+    /* 상품 박스는 234×210(가로형)이다. 세로형 원본을 100% 100%로 늘리면
+       무늬가 눌려 보인다 → **박스 비율에 맞춰 그린 가로형 뒷면**을 쓰고 cover로 덮는다. */
+    background: url('./cardback_wide.png') center/cover no-repeat, #7f1d1d;
+    box-shadow: 0 10px 30px rgba(0,0,0,.6);
     transform-origin: 50% 50%; will-change: transform;
   }
   /* 소매 그림자 — 딜한 사람의 팔이 그 위를 한 번 쓸고 지나간다.
@@ -322,6 +327,15 @@
     0%   { transform: translateX(0); }
     100% { transform: translateX(var(--to, -100%)); }
   }
+  /* 구매한 패를 가운데 크게 띄우는 동안 화면 전체를 덮는 막.
+     모달을 filter로 누르기만 했더니, 그 사이 다음 상품이 조준(cap-aim)되면서
+     금테가 확대본 위로 겹쳐 보였다. **막으로 완전히 가리면** 겹칠 것 자체가 없다.
+     (막은 vfx 레이어 안, 확대본보다 아래에 깔린다) */
+  .vfx-buyscrim {
+    position: absolute; inset: 0; background: rgba(6, 12, 9, .92);
+    opacity: 0; transition: opacity var(--d, 240ms) ease;
+  }
+
   /* 뒷거래로 꽂힌 패에 찍히는 붉은 인장 — 일반 구매(금빛)와 구분되는 표식 */
   .vfx-seal {
     position: absolute; transform: translate(-50%,-50%) scale(.4);
@@ -335,6 +349,99 @@
     22%  { opacity: 1; transform: translate(-50%,-50%) scale(1.06) rotate(0deg); }
     58%  { opacity: 1; transform: translate(-50%,-50%) scale(1.00) rotate(0deg); }
     100% { opacity: 0; transform: translate(-50%,-50%) scale(1.00) rotate(0deg); }
+  }
+
+  /* ── 오광 — 히트스톱 · Z축 부상 · 물리 파티클 ─────────
+     5장을 모으는 희소성에 걸맞은 보상이 필요하다. 평면 확대는 타격감이 0이다.
+     시간이 멎고 → 카드가 판을 떠나 떠오르고 → 중앙에서 합쳐지며 → 쏟아진다. */
+
+  /* 히트스톱 — 카드 말고 전부 눌러 시간이 멎은 것처럼 보이게 한다.
+     흰 플래시가 아니라 '어두워짐'으로 만든다(R8).
+     **너무 내리면 안 된다** — 상단바는 원래도 어두워서 .34를 주면 새까만 띠가 되고
+     "렌더링 오류"로 읽힌다. 톤이 한 단계 가라앉는 정도까지만. */
+  body.cap-hitstop #topbar,
+  body.cap-hitstop #handarea,
+  body.cap-hitstop #actions {
+    filter: brightness(.66) saturate(.72) !important;
+    transition: filter .10s linear;
+  }
+
+  /* 떠오른 카드 복제본. 원본은 잠시 숨고 이 녀석이 Z축을 연기한다 */
+  .vfx-liftcard {
+    position: absolute; transform-origin: 50% 50%;
+    will-change: transform, filter; pointer-events: none;
+    border-radius: 10px; overflow: hidden;
+  }
+  /* 바닥 그림자 — 카드가 뜰수록 커지고 흐려진다. 이게 있어야 '높이'가 읽힌다 */
+  .vfx-liftshadow {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(ellipse at center,
+                rgba(0,0,0,.62) 0%, rgba(0,0,0,.34) 45%, rgba(0,0,0,0) 72%);
+    will-change: transform, opacity; pointer-events: none;
+  }
+  /* 금화 — 2D 원반이 아니라 두께가 있어 보이도록 아래쪽에 어두운 테를 둔다 */
+  .vfx-coin {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(circle at 34% 30%,
+                #fff6cf 0%, #ffd76b 34%, #e8a52a 66%, #a86a12 100%);
+    box-shadow: 0 0 14px rgba(255,196,80,.9), 0 0 34px rgba(255,164,40,.55),
+                inset 0 -3px 0 rgba(120,66,8,.7);
+    will-change: transform; pointer-events: none;
+  }
+  /* 매화 꽃잎 — 한쪽만 뾰족한 물방울 형태 */
+  .vfx-petal {
+    position: absolute;
+    background: linear-gradient(150deg, #ffe7f0 0%, #ffb6cf 48%, #f27ba4 100%);
+    border-radius: 60% 0 60% 60%;
+    box-shadow: 0 0 8px rgba(255,150,190,.6);
+    will-change: transform; pointer-events: none;
+  }
+
+  /* ── 클리어 카드 ────────────────────────────────
+     게임의 승리 모달은 정보 나열이라 광고 엔딩으로 읽을 게 너무 많다.
+     완주한 달과 최종 점수만 크게 — 1초 안에 읽히는 게 전부다. */
+  .vfx-clear {
+    position: absolute; left: 50%; top: var(--cap-focus-y, 50%);
+    transform: translate(-50%,-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    font-family: 'SSRock','BaigeTianxing','Malgun Gothic',sans-serif;
+    animation: vfxClear var(--d, 2600ms) cubic-bezier(.14,1.3,.3,1) forwards;
+  }
+  .vfx-clear .cl-ring {
+    position: absolute; left: 50%; top: 50%;
+    width: calc(var(--cap-stage, 100vw) * .78);
+    height: calc(var(--cap-stage, 100vw) * .78);
+    transform: translate(-50%,-50%); border-radius: 50%;
+    border: 3px solid rgba(255,214,130,.55);
+    box-shadow: 0 0 90px rgba(255,190,80,.35), inset 0 0 120px rgba(255,180,60,.16);
+    animation: vfxClearRing var(--d, 2600ms) cubic-bezier(.14,1.3,.3,1) forwards;
+  }
+  .vfx-clear .cl-title {
+    font-size: 128px; line-height: 1; color: #fff3d0;
+    -webkit-text-stroke: 7px rgba(28,10,0,.85); paint-order: stroke fill;
+    text-shadow: 0 0 26px rgba(255,214,130,1), 0 0 76px rgba(255,170,50,.95),
+                 0 0 140px rgba(255,140,20,.7);
+  }
+  .vfx-clear .cl-sub {
+    font-size: 34px; color: #e6d6b4; letter-spacing: .04em;
+  }
+  .vfx-clear .cl-score {
+    font-size: 82px; line-height: 1; color: #ffe9b0;
+    -webkit-text-stroke: 5px rgba(28,10,0,.8); paint-order: stroke fill;
+    text-shadow: 0 0 22px rgba(255,180,60,.95);
+  }
+  @keyframes vfxClear {
+    0%   { opacity: 0; transform: translate(-50%,-50%) scale(.82); }
+    12%  { opacity: 1; transform: translate(-50%,-50%) scale(1.04); }
+    22%  { transform: translate(-50%,-50%) scale(1.00); }
+    88%  { opacity: 1; transform: translate(-50%,-50%) scale(1.00); }
+    100% { opacity: 0; transform: translate(-50%,-50%) scale(1.02); }
+  }
+  @keyframes vfxClearRing {
+    0%   { opacity: 0; transform: translate(-50%,-50%) scale(.55) rotate(-8deg); }
+    18%  { opacity: 1; transform: translate(-50%,-50%) scale(1.00) rotate(0deg); }
+    88%  { opacity: 1; transform: translate(-50%,-50%) scale(1.00) rotate(0deg); }
+    100% { opacity: 0; transform: translate(-50%,-50%) scale(1.06) rotate(0deg); }
   }
 
   /* 화면 흔들림 — 게임 루트에 건다 (오버레이는 같이 흔들리지 않게) */
@@ -368,6 +475,15 @@
   /* 오버레이가 뜰 y. 리그가 카드를 낸 자리를 앵커로 얼려두면 그 값을 쓴다.
      카메라도 같은 앵커를 보므로 엠블럼·팝업이 프레임 정중앙에 정확히 온다.
      앵커가 없으면(손패 단계·상점) 화면 중앙. */
+  /* 점수 팝업이 뜰 y. 리그가 프레임 기하에서 확정한 값(--cap-pop-y) 하나만 쓴다.
+     예전엔 vfx가 #playedarea 컨테이너 바닥을 따로 재고, 리그는 카드 bbox 바닥을 재서
+     **같은 팝업의 y가 두 벌**이었다 — 카메라가 겨냥한 곳과 실제 렌더 위치가 어긋났다. */
+  const popY = () => {
+    const v = getComputedStyle(document.documentElement)
+      .getPropertyValue('--cap-pop-y').trim();
+    return parseFloat(v) || innerHeight * 0.615;
+  };
+
   const focusY = () => {
     const v = getComputedStyle(document.documentElement)
       .getPropertyValue('--cap-focus-y').trim();
@@ -409,7 +525,7 @@
       const el = document.createElement('div');
       el.className = 'vfx-glow';
       el.style.background =
-        `radial-gradient(ellipse 78% 66% at 50% 46%, transparent 42%, ` +
+        `radial-gradient(ellipse 78% 66% at 50% ${(focusY() / innerHeight * 100).toFixed(1)}%, transparent 42%, ` +
         `rgba(255,205,120,${strength * 0.85}) 100%)`;
       el.style.setProperty('--d', d + 'ms');
       add(el, d + 80);
@@ -480,7 +596,8 @@
       add(el, d + 120);
     },
 
-    text(str, sel = CARDS, d = 1500, power = 1) {
+    /* sel 인자는 없다 — 위치는 항상 프레임 기준선이다 (예전엔 인자를 받고 안 썼다) */
+    text(str, d = 1500, power = 1) {
       /* 엠블럼 한가운데 빈 명판 안에 앉힌다 — 엠블럼과 같은 좌표.
          크기는 뷰포트가 아니라 '무대' 기준이어야 여백까지 계산하지 않는다.
          글자 수가 늘면(고도리 3자) 명판을 넘치므로 자수로 나눠 잡는다. */
@@ -653,7 +770,12 @@
       VFX.ring(null, { size: 900, d: 700 });
       const r = layer.lastChild;
       if (r) { r.style.left = innerWidth / 2 + 'px'; r.style.top = focusY() + 'px'; }
+      /* 스파크도 글자·링과 같은 자리에서 터져야 한다.
+         sparks(null)은 at()이 못 잡아 뷰포트 중앙으로 떨어졌다. */
       VFX.sparks(null, { n: 20, dist: 460, d: 760 });
+      for (const sp of [...layer.querySelectorAll('.vfx-spark')].slice(-20)) {
+        sp.style.left = innerWidth / 2 + 'px'; sp.style.top = focusY() + 'px';
+      }
       VFX.glow(0.45, 520);
     },
 
@@ -777,13 +899,9 @@
          리그가 앵커를 얼릴 때(첫 조합, 3장) 계산해 둔 --cap-pop-y를 그대로 쓰면
          오광처럼 낸 패가 더 크고 수식 패널까지 붙은 판에서는 그 y가 카드 한복판이 된다.
          낸 패 바닥과 손패 천장 사이의 실제 빈 띠를 찾아 그 가운데에 놓는다. */
-      const pa = document.querySelector('#playedarea');
-      const ha = document.querySelector('#handarea');
-      if (pa && ha) {
-        const pb = pa.getBoundingClientRect(), hb = ha.getBoundingClientRect();
-        const gap = hb.top - pb.bottom;
-        if (gap > 40) el.style.top = (pb.bottom + gap / 2) + 'px';
-      }
+      /* 자리는 리그가 정한 프레임 기준선 하나로만 정한다.
+         자체 측정을 하면 카메라가 겨냥한 좌표와 어긋난다. */
+      el.style.top = popY() + 'px';
       el.innerHTML =
         (month ? `<div class="sp-month">${month}</div>` : '') +
         `<div class="sp-num"><span class="sp-cur">${fmt(from)}</span>` +
@@ -793,22 +911,24 @@
       /* 같은 자리에 게임의 결과 문구(#playresult)가 이미 떠 있다.
          팝업이 그 위를 덮으면 가려진 문구의 꼬리만 옆으로 삐져나와 지저분하다.
          점수는 팝업이 말하므로 문구는 걷어낸다. */
-      const pr = document.getElementById('playresult');
-      if (pr) {
-        pr.style.transition = 'opacity .2s ease';
-        pr.style.opacity = '0';
+      /* 팝업이 뜨는 순간, 같은 자리를 쓰던 것들을 걷어낸다.
+         결과 문구(#playresult)는 팝업이 대신 말하고,
+         수식(#juice-tally)은 이미 제 역할을 끝냈다 — 둘을 같이 두면
+         프레임 한복판에서 숫자 두 벌이 겹쳐 읽힌다. */
+      for (const id of ['playresult', 'juice-tally']) {
+        const e = document.getElementById(id);
+        if (!e) continue;
+        e.style.transition = 'opacity .24s ease';
+        e.style.opacity = '0';
       }
-      /* 빈 띠보다 크거나 프레임보다 넓으면 줄여서 넣는다.
-         오광은 자릿수가 커서(28,958 / 15,400) 가로로 프레임을 넘겼다. */
+      /* 프레임보다 넓으면 줄여서 넣는다.
+         오광은 자릿수가 커서(72,770 / 71,500) 가로로 프레임을 넘겼다.
+         세로는 이제 프레임 기준선에 고정이라 빈 띠를 잴 필요가 없다. */
       {
         const stage = parseFloat(getComputedStyle(document.documentElement)
           .getPropertyValue('--cap-stage')) || innerWidth;
         const q = { width: el.offsetWidth, height: el.offsetHeight };
         let k = 1;
-        if (pa && ha) {
-          const gap = ha.getBoundingClientRect().top - pa.getBoundingClientRect().bottom;
-          if (gap > 40 && q.height > gap - 12) k = Math.min(k, (gap - 12) / q.height);
-        }
         const maxW = stage * 0.86;
         if (q.width > maxW) k = Math.min(k, maxW / q.width);
         if (k < 0.999) el.style.setProperty('--sp-scale', Math.max(0.6, k).toFixed(3));
@@ -872,6 +992,143 @@
      *     ② 잠깐 멈춰 금빛으로 달아오르고
      *     ③ 보유 칸으로 빨려 들어가 박힌다
      */
+    /* 오광 전용 — 히트스톱 → Z축 부상 → 중앙 병합 → 물리 파티클 폭발.
+     *
+     * 광 5장을 다 모으는 희소성에 걸맞은 보상이 필요하다. 지금까지는 엠블럼이
+     * 평면에서 커질 뿐이라 타격감이 없었다.
+     *   ① 0.2초 정지 — 아무것도 안 움직인다. 정지 자체가 긴장을 만든다
+     *   ② 카드가 판을 떠나 떠오른다 — 바닥 그림자가 같이 커져야 '높이'가 읽힌다
+     *   ③ 중앙으로 빨려 들어가 합쳐지며 화면을 친다
+     *   ④ 금화와 매화 꽃잎이 물리(속도 + 중력)로 화면 밖까지 쏟아진다
+     *
+     * 파티클은 keyframe이 아니라 **rAF 물리 루프**다. 느리게 찍어 빨리 감는
+     * 방식(SLOW=2.5)이라 rAF 프레임이 전부 실제로 렌더된다 — 지어낸 프레임 0장(R5).
+     * 흰 섬광은 쓰지 않는다(R8). 밝기는 금빛 파티클 자체가 만든다. */
+    async ogwangLift({ hold = 200, rise = 620, merge = 380, burst = 1100 } = {}) {
+      const cards = [...document.querySelectorAll('#playedarea .card')]
+        .filter((c) => c.getBoundingClientRect().width > 4);
+      if (!cards.length) return;
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+      const rects = cards.map((c) => c.getBoundingClientRect());
+      const cx = rects.reduce((s, q) => s + q.left + q.width / 2, 0) / rects.length;
+      const cy = focusY();
+
+      // ① 히트스톱 — 카드 말고 전부 눌린다
+      document.body.classList.add('cap-hitstop');
+      await sleep(hold);
+
+      // ② Z축 부상 — 원본은 숨기고 복제본이 떠오른다
+      const lifts = [], shadows = [];
+      cards.forEach((c, i) => {
+        const q = rects[i];
+        const sh = document.createElement('div');
+        sh.className = 'vfx-liftshadow';
+        sh.style.cssText +=
+          `left:${q.left + q.width / 2}px;top:${q.top + q.height * 0.94}px;` +
+          `width:${q.width * 1.1}px;height:${q.height * 0.30}px;` +
+          `transform:translate(-50%,-50%) scale(.6);opacity:0;` +
+          `transition:transform ${rise}ms cubic-bezier(.2,.8,.3,1),` +
+          `opacity ${rise}ms ease;`;
+        add(sh, hold + rise + merge + burst);
+        shadows.push(sh);
+
+        const el = document.createElement('div');
+        el.className = 'vfx-liftcard';
+        el.appendChild(c.cloneNode(true));
+        el.firstChild.style.cssText += 'width:100%;height:100%;margin:0;';
+        el.style.cssText +=
+          `left:${q.left}px;top:${q.top}px;width:${q.width}px;height:${q.height}px;` +
+          `transform:translate3d(0,0,0) scale(1);` +
+          `filter:drop-shadow(0 0 0 rgba(255,205,110,0));` +
+          `transition:transform ${rise}ms cubic-bezier(.16,1.05,.3,1),` +
+          `filter ${rise}ms ease;`;
+        add(el, hold + rise + merge + burst);
+        lifts.push(el);
+      });
+      for (const c of cards) c.style.opacity = '0';
+
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      lifts.forEach((el, i) => {
+        // 가운데 장이 가장 높이, 바깥으로 갈수록 낮게 — 부채꼴로 떠오른다
+        const mid = (lifts.length - 1) / 2;
+        const k = 1 - Math.abs(i - mid) / (mid + 1);
+        setTimeout(() => {
+          el.style.transform =
+            `translate3d(0,${-(84 + 58 * k)}px,0) scale(${(1.34 + 0.20 * k).toFixed(3)})`;
+          el.style.filter = 'drop-shadow(0 30px 34px rgba(0,0,0,.72)) ' +
+                            'drop-shadow(0 0 30px rgba(255,205,110,.7))';
+          shadows[i].style.transform = 'translate(-50%,-50%) scale(1)';
+          shadows[i].style.opacity = '1';
+        }, i * 45);
+      });
+      await sleep(rise + lifts.length * 45);
+
+      // ③ 중앙으로 빨려 들어가 합쳐진다
+      lifts.forEach((el, i) => {
+        const q = rects[i];
+        el.style.transition =
+          `transform ${merge}ms cubic-bezier(.7,0,.85,.35), opacity ${merge}ms ease-in`;
+        el.style.transform =
+          `translate3d(${cx - q.left - q.width / 2}px,` +
+          `${cy - q.top - q.height / 2}px,0) scale(.42) rotate(${(i - 2) * 9}deg)`;
+        shadows[i].style.opacity = '0';
+      });
+      await sleep(merge);
+      for (const el of lifts) el.remove();
+      for (const sh of shadows) sh.remove();
+      document.body.classList.remove('cap-hitstop');
+      for (const c of cards) c.style.opacity = '';
+      VFX.slam(undefined, { amount: 26 });
+      VFX.ring(null, { size: 900, d: 620 });
+      const rg = layer.lastChild;
+      if (rg) { rg.style.left = cx + 'px'; rg.style.top = cy + 'px'; }
+
+      // ④ 물리 파티클 — 금화와 매화 꽃잎이 화면 밖까지 쏟아진다
+      const parts = [];
+      const mk = (cls, w, h) => {
+        const el = document.createElement('div');
+        el.className = cls;
+        el.style.cssText += `left:${cx}px;top:${cy}px;width:${w}px;height:${h}px;`;
+        add(el, burst + 200);
+        return el;
+      };
+      const rnd = (a, b) => a + Math.random() * (b - a);
+      for (let i = 0; i < 64; i++) {
+        const s = rnd(26, 54);
+        const a = rnd(-Math.PI, 0) + rnd(-0.55, 0.55);   // 위쪽 반원으로 튄다
+        const v = rnd(15, 36);
+        parts.push({ el: mk('vfx-coin', s, s), x: 0, y: 0,
+                     vx: Math.cos(a) * v, vy: Math.sin(a) * v,
+                     r: rnd(0, 360), vr: rnd(-16, 16), g: 0.62, sq: true });
+      }
+      for (let i = 0; i < 96; i++) {
+        const w = rnd(20, 40);
+        const a = rnd(-Math.PI, 0) + rnd(-0.85, 0.85);
+        const v = rnd(11, 27);
+        parts.push({ el: mk('vfx-petal', w, w * 1.25), x: 0, y: 0,
+                     vx: Math.cos(a) * v, vy: Math.sin(a) * v,
+                     r: rnd(0, 360), vr: rnd(-9, 9), g: 0.22, drift: rnd(-.9, .9) });
+      }
+      const t0 = performance.now();
+      await new Promise((done) => {
+        const step = () => {
+          const t = performance.now() - t0;
+          for (const p of parts) {
+            p.vy += p.g;
+            if (p.drift) p.vx += Math.sin((t + p.r) / 220) * p.drift * 0.06;
+            p.x += p.vx; p.y += p.vy; p.r += p.vr;
+            // 금화는 회전하며 두께가 보이도록 가로로 눌린다
+            const sx = p.sq ? Math.abs(Math.cos(p.r * Math.PI / 180)) * 0.75 + 0.25 : 1;
+            p.el.style.transform =
+              `translate(-50%,-50%) translate(${p.x.toFixed(1)}px,${p.y.toFixed(1)}px)` +
+              ` rotate(${p.r.toFixed(1)}deg) scaleX(${sx.toFixed(3)})`;
+          }
+          if (t < burst) requestAnimationFrame(step); else done();
+        };
+        requestAnimationFrame(step);
+      });
+    },
+
     /* 「춘향의 뒷거래」 — 특수패가 진열되는 방식 자체를 바꾼다.
      *
      * 보통 상품은 그냥 거기 있다. 그런데 이 두 장은 **화면 밖에서 돌려져 들어온다.**
@@ -960,9 +1217,17 @@
          "고스트 낀 UI 확대"로 보인다 — 뽑혀 나온 것처럼 보이려면 자리도 비어야 한다. */
       src.style.transition = 'opacity .18s ease';
       src.style.opacity = '0';
+      /* 확대본이 뜨는 동안 화면을 완전히 덮는다. 막을 확대본보다 **먼저** 붙여
+         아래에 깔리게 한다 — 이러면 그 사이 무엇이 조준되든 겹칠 수가 없다. */
+      const scrim = document.createElement('div');
+      scrim.className = 'vfx-buyscrim';
+      /* **확대본보다 아래에** 깔아야 한다. layer에 그냥 append하면 wrap보다
+         나중에 붙어 확대본을 덮어버린다 — 실제로 카드가 안 보였다. */
+      layer.insertBefore(scrim, wrap);
+      requestAnimationFrame(() => { scrim.style.opacity = '1'; });
 
       // ① 뽑혀 나와 한가운데로 크게
-      const midX = innerWidth / 2, midY = innerHeight * 0.46;
+      const midX = innerWidth / 2, midY = focusY();   // 프레임 정중앙에서 읽힌다
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       wrap.style.transform =
         `translate(-50%,-50%) translate(${midX - a.left - a.width / 2}px,` +
@@ -983,14 +1248,23 @@
       }
       await new Promise((r) => setTimeout(r, hold));
 
-      // ③ 보유 칸으로 빨려 들어가 박힌다
+      // ③ 막을 걷고 보유 칸으로 빨려 들어가 박힌다 (박히는 자리가 보여야 한다)
+      scrim.style.setProperty('--d', '260ms');
+      scrim.style.opacity = '0';
+      setTimeout(() => scrim.remove(), 300);
       if (doBuy) doBuy();
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       const slots = [...document.querySelectorAll('#shop-offers .owned-slot.filled')];
       // (원본 상품은 아래에서 이미 숨겨 두었다 — 겹치면 글자가 이중 인쇄로 보인다)
       const tgt = slots[slots.length - 1]
         || document.querySelector('#jokerbar .jokerslot.filled:last-child');
-      if (!tgt) return;
+      /* 예전엔 여기서 그냥 return했다. 그러면 확대본이 화면 가운데 그대로 남아
+         (add의 3초 수명까지) 다음 상품과 겹쳤다 — 반드시 치우고 나간다. */
+      if (!tgt) {
+        wrap.remove(); scrim.remove();
+        document.body.classList.remove('cap-buy');
+        return;
+      }
       const b = tgt.getBoundingClientRect();
       const cx = b.left + b.width / 2, cy = b.top + b.height / 2;
 
@@ -1018,6 +1292,7 @@
       tgt.style.filter = seal
         ? 'brightness(1.7) drop-shadow(0 0 26px rgba(214,66,52,1))'
         : 'brightness(2.1) drop-shadow(0 0 26px rgba(255,205,110,1))';
+      document.body.classList.remove('cap-buy');
       setTimeout(() => { tgt.style.transform = ''; tgt.style.filter = ''; }, 320);
       /* 뒷거래 표식 — 누가 꽂아준 패인지 남긴다 */
       if (seal) {
@@ -1031,6 +1306,32 @@
       wrap.remove();
     },
 
+
+    /* 클리어 카드 — 판을 끝냈다는 걸 한 화면으로.
+       게임 승리 모달(최종 점수·최고 한 방·총 획득 3줄 + 버튼)을 대신한다. */
+    clearCard({ title = '완주', score = 0, d = 2600 } = {}) {
+      const el = document.createElement('div');
+      el.className = 'vfx-clear';
+      el.style.setProperty('--d', d + 'ms');
+      el.innerHTML =
+        `<div class="cl-ring"></div>` +
+        `<div class="cl-sub">한 해를 끝냈다</div>` +
+        `<div class="cl-title">${title}</div>` +
+        `<div class="cl-score">${Math.round(score).toLocaleString('en-US')}점</div>`;
+      add(el, d + 120);
+      // 판 자체는 한 단계 물러난다 — 카드가 유일한 주인공이 되게
+      document.body.classList.add('cap-clearcard');
+      setTimeout(() => document.body.classList.remove('cap-clearcard'), d);
+      VFX.rays(null, 1400);
+      const ry = layer.lastChild;
+      if (ry) { ry.style.left = innerWidth / 2 + 'px'; ry.style.top = focusY() + 'px'; }
+      VFX.sparks(null, { n: 30, dist: 620, d: 1200 });
+      for (const sp of [...layer.querySelectorAll('.vfx-spark')].slice(-30)) {
+        sp.style.left = innerWidth / 2 + 'px'; sp.style.top = focusY() + 'px';
+      }
+      VFX.glow(0.42, 900);
+      return el;
+    },
 
     /* 「주막 발견!」 배너 — 상점 나오기 전에 크게 한 방 */
     // SSRock은 583자 서브셋이라 '견'이 없다 → 「주막 등장!」으로
@@ -1065,7 +1366,9 @@
         setTimeout(() => { e.style.transform = ''; e.style.filter = ''; }, 260);
 
         // 점수판은 작고 멀어서 빔이 안 보인다 → 수식의 점수 숫자에 꽂는다
-        VFX.shoot(e, ['.vfx-scorepop', '#jt-score'], 300);
+        /* 두 selector를 같이 주면 at()이 **합집합의 중점**을 잡아 둘 중 어디에도
+           안 맞는다. 팝업이 떠 있으면 팝업, 아니면 수식 — 하나만 겨냥한다. */
+        VFX.shoot(e, document.querySelector('.vfx-scorepop') ? '.vfx-scorepop' : '#jt-score', 300);
         VFX.ring([sel], { size: 420, d: 620 });
         const ring = layer.lastChild;
         if (ring) { ring.style.left = cx + 'px'; ring.style.top = cy + 'px'; }
@@ -1104,7 +1407,13 @@
                           `width:${Math.max(q.width * 2.4, 900)}px;`;
       el.style.setProperty('--d', '700ms');
       add(el, 800);
-      VFX.sparks(sel, { n: 22, dist: 420, d: 780 });
+      /* 빔이 폴백(#gauge)으로 갔을 때 sparks(sel)은 아무것도 못 잡아
+         뷰포트 중앙에 22개를 쏟았다 → 빔과 같은 좌표를 직접 준다. */
+      VFX.sparks(null, { n: 22, dist: 420, d: 780 });
+      for (const sp of [...layer.querySelectorAll('.vfx-spark')].slice(-22)) {
+        sp.style.left = (q.left + q.width / 2) + 'px';
+        sp.style.top = (q.top + q.height / 2) + 'px';
+      }
     },
 
     /** 패가 내리꽂히는 순간 한 방 */
@@ -1126,7 +1435,7 @@
       VFX.sparks(sel, { n: Math.round(28 * p), dist: 640 * p, d: 1000 + 200 * p });
       // 흔들림 없음 (slam에서 이미 한 번 쳤다)
       // 족보 이름 — 게임 자체 배너는 리그에서 숨겼고 이쪽 금박 글씨를 쓴다
-      if (str) VFX.text(str, sel, 1400 + 300 * p, p);
+      if (str) VFX.text(str, 1400 + 300 * p, p);
     },
   };
 

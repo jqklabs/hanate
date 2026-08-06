@@ -28,7 +28,8 @@ window.captureSceneList = () =>
  *   → [burst] 합산이 끝나는 순간 폭발
  *
  * 예전엔 팝업을 tally와 동시에 4.2초 띄워놔서 "합산되는 순간"이 없었다. */
-async function scoreShow(api, { power = 1, jokerGains = null, hand = '', goBig = '' } = {}) {
+async function scoreShow(api, { power = 1, jokerGains = null, hand = '',
+                                goBig = '', lift = false } = {}) {
   // 이번 판을 더하기 '전'의 점수 — api.play()가 playSelected 직전에 찍어둔 값
   const before = api.scoreBefore ?? 0;
   /* 카드가 한 장씩 착지할 때마다 팡. 다 놓인 뒤 한 번만 터뜨리면
@@ -42,6 +43,16 @@ async function scoreShow(api, { power = 1, jokerGains = null, hand = '', goBig =
   api.anchor();
   api.mark('slam');
   await api.wait(520);
+  /* 오광만 — 엠블럼 앞에 「시간이 멎고 카드가 판을 떠난다」를 끼운다.
+     5장을 다 모으는 희소성에 걸맞은 보상이 엠블럼 확대뿐이면 타격감이 없다. */
+  if (lift) {
+    api.mark('lift');
+    await api.fx.ogwangLift();
+    api.mark('liftend');
+    /* 여기서 쉬지 않는다(18차). 카드가 떨어지고 → 한 박자 비고 → 엠블럼이면
+       두 사건이 따로 논다. 파편이 아직 날리는 위로 엠블럼이 바로 올라와야
+       "이게 오광이다"가 한 덩어리로 꽂힌다. */
+  }
   /* 엠블럼 — 문양 링 가운데 명판에 족보 이름이 박힌 한 덩어리.
      **엠블럼이 완전히 사라진 뒤에** 수식 카운팅을 시작한다.
      예전엔 엠블럼 뒤에서 숫자가 올라가 카운팅이 아예 안 느껴졌다. */
@@ -49,7 +60,7 @@ async function scoreShow(api, { power = 1, jokerGains = null, hand = '', goBig =
   if (hand) {
     api.mark('emblem');
     api.fx.emblem(hand, embD + 900);      // 흡수될 때까지 살아 있게 넉넉히
-    api.fx.text(hand, undefined, embD + 900, power);   // 같은 좌표·같은 박자
+    api.fx.text(hand, embD + 900, power);   // 같은 좌표·같은 박자
     await api.wait(embD);
     /* 족보 = 배수다. 엠블럼을 그냥 사라지게 두면 예쁜 그림 한 장으로 끝난다.
        ×배수 자리로 빨려 들어가며 거기를 때려야 인과가 붙는다.
@@ -133,31 +144,34 @@ async function scoreShow(api, { power = 1, jokerGains = null, hand = '', goBig =
  * 지워져 방금 낸 패가 화면에서 사라진다. 실패는 숫자와 색으로만 말한다. */
 async function failShow(api) {
   const before = api.scoreBefore ?? 0;
+  /* **빠르게 지나간다.** 지는 건 이 영상의 목적지가 아니라 출발점이다 —
+     여기서 늘어지면 「주막 등장!」까지 가기 전에 이탈한다.
+     (릴리스 뒤 860ms는 게임이 수식을 띄우는 데 실제로 걸리는 시간이라 못 줄인다) */
   api.mark('land');
-  await api.wait(300);
+  await api.wait(220);
   api.fx.slam(undefined, { amount: 5 });     // 내리꽂는 게 아니라 툭 놓인다
   api.anchor();
   api.mark('slam');
-  await api.wait(760);
+  await api.wait(420);
 
   /* 수식은 그대로 보여준다 — ×1이 떠야 "족보가 없다"가 읽힌다.
      성공 컷에서는 여기서 엠블럼이 배수 자리로 빨려 들어갔다. */
   api.releaseTally();
   await api.wait(860);
   api.mark('tally');
-  await api.wait(1500);                      // pulse 없이 그냥 흘러간다
+  await api.wait(760);                       // pulse 없이 그냥 흘러간다
 
   const gain = Math.max(0, api.score - before);
   api.mark('sum');
   /* 팝업이 살아 있는 동안 「목표 미달」을 띄우면 글자가 팝업 머리에 걸친다.
      팝업 수명(d)이 끝나는 지점에서 문구가 들어오도록 붙인다. */
   api.fx.scorePop({ from: before, gain, target: api.target,
-                    month: api.monthLabel(), d: 2500, cold: true,
-                    countDelay: 420, countDur: 700 });
-  await api.wait(2450);
+                    month: api.monthLabel(), d: 1600, cold: true,
+                    countDelay: 260, countDur: 520 });
+  await api.wait(1560);
   api.mark('fail');
-  api.fx.callout('목표 미달', 1600, { cold: true });
-  await api.wait(2000);
+  api.fx.callout('목표 미달', 1100, { cold: true });
+  await api.wait(1300);
 }
 
 /* 목표를 넘기면 게임은 스스로 고/스톱 화면을 띄운다(checkAfterPlay).
@@ -200,7 +214,7 @@ async function fastCombo(api, { n, hand, goFrom, goTo, cards, pick, first = fals
   /* 수명은 다음 마크(g)까지 남는 시간(760ms)보다 짧아야 한다.
      길면 엠블럼이 살아 있는 채로 컷이 끝나 다음 컷 첫 프레임에 또 보인다. */
   api.fx.emblem(hand, 700);
-  api.fx.text(hand, undefined, 700, 1.2);
+  api.fx.text(hand, 700, 1.2);
   await api.wait(760);
   api.mark('g' + n);
   await api.goChase(goFrom, goTo);   // 파편 튀는 인게임 체이스 — 숫자가 밀려 올라간다
@@ -288,7 +302,8 @@ window.CAPTURE_SCENES = [
          산 패는 프레임 밖 조커바가 아니라 상점 안 '보유 칸'으로 날아가 생긴다. */
       api.aim(1);
       api.mark('aim');
-      api.fx.pulse('#shop-offers .offer.cap-aim .o-name', 560);
+      /* 이름을 pulse로 키우면 **자기 패널 안의 설명 위로 자라 겹친다.**
+         조준 표시는 cap-aim의 금테+주변 딤이 이미 하고 있다. */
       await api.wait(550);
       api.mark('fly');
       await api.fx.flyToJoker(1, () => api.buy(1), 560, 520, { seal: true });   // 삼광판
@@ -296,7 +311,8 @@ window.CAPTURE_SCENES = [
       await api.wait(520);
       api.aim(0);
       api.mark('aim2');
-      api.fx.pulse('#shop-offers .offer.cap-aim .o-name', 560);
+      /* 이름을 pulse로 키우면 **자기 패널 안의 설명 위로 자라 겹친다.**
+         조준 표시는 cap-aim의 금테+주변 딤이 이미 하고 있다. */
       await api.wait(480);
       api.mark('fly2');
       // 두 번째 구매는 '산다'가 이미 전달됐다 — 중앙에 머무는 시간을 절반으로
@@ -308,18 +324,19 @@ window.CAPTURE_SCENES = [
 
   {
     id: 'A3',
-    label: '몽타주 — 고도리 → 총통 → 오광',
-    record: 42000,
+    label: '몽타주 — 고도리 → 총통 → 오광 → 12월 클리어',
+    record: 52000,       // 오광 리프트 + 승리 화면이 늘어난 만큼 여유
     async run(api) {
       api.clean({ keepJokers: true });
-      api.setRound(9);              // 목표 2,200
+      /* **마지막 판(12월).** 「당신은 몇월까지 깰 수 있으세요?」가 꽂히려면
+         방자가 12월까지 깨는 걸 보여줘야 한다 — 9월에서 끝내면 되묻는 말이 약해진다. */
+      api.setRound(12);             // 목표 5,500
       api.setMoney(46);
-      /* 세 조합이 더하는 점수 = 고도리 180 + 총통 140 + 오광 9,500 = **9,820**
-         (엔진으로 실측. 병풍을 뺀 손실은 138점뿐이라 시작값을 안 건드려도 된다)
-         마지막에 「20고!」를 띄우려면 20고 문턱(2,200 × 13 = 28,600)은 넘고
-         21고 문턱(29,920)은 안 넘어야 한다
-         → 시작값 허용 범위 18,780 ~ 20,099 → 19,000 유지 → 최종 28,820. */
-      api.setScore(19000);
+      /* 점수는 **0에서 시작한다.** 12월은 마지막 판이라 목표를 넘기는 순간
+         게임이 승리 화면을 띄우려 든다 → 몽타주 구간에서는 목표 아래에 머물러야 한다.
+         (엔진 실측: 고도리 144 + 총통 168 = 312 ≪ 5고 목표 22,000. 안전하다)
+         점수는 오광 직전에 한 번에 밀어 올린다(아래 setScore). */
+      api.setScore(0);
       api.setPlays(6);
       api.setJokers(['gwangpari', 'gwang_sujip', 'samgwang_nori',
                      'bigwang_usan', 'ogwang_kkum']);
@@ -368,6 +385,10 @@ window.CAPTURE_SCENES = [
 
       // ── 마지막 오광만 풀코스로 터뜨린다 ──
       api.resetPlay(2);
+      /* 여기서 판돈을 올린다. 오광 실측 9,770점을 더했을 때
+         20고 문턱(5,500 × 13 = 71,500)은 넘고 21고 문턱(74,800)은 안 넘어야 한다
+         → 허용 범위 61,730 ~ 65,029 → 63,000 → 최종 **72,770**. */
+      api.setScore(63000);
       api.setHand([
         { month: 8, type: 'kwang' },                      // ★
         { month: 2, type: 'yeol', tag: 'godori' },
@@ -393,7 +414,14 @@ window.CAPTURE_SCENES = [
       api.holdTally();
       await api.play();
       await scoreShow(api, { power: 2.3, jokerGains: [3, 40, 60, 25, 90],
-                             hand: '오광', goBig: { from: 10, to: 20 } });
+                             hand: '오광', goBig: { from: 10, to: 20 }, lift: true });
+      /* 12월을 깼다. 게임의 승리 모달은 정보 나열(최종 점수·최고 한 방·총 획득)이라
+         광고 엔딩으로는 읽을 게 너무 많다 → **전용 클리어 카드**로 대신한다.
+         숫자 하나(완주한 달)와 최종 점수만 크게. */
+      await api.wait(360);
+      api.mark('clear');
+      api.fx.clearCard({ title: '12월 완주', score: api.score, d: 2600 });
+      await api.wait(2700);
     },
   },
 ];

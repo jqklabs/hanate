@@ -1,7 +1,7 @@
 # 구글 캠페인 — 에셋 패키지 (전략 · 규격 · 정책)
 
-> 산출물: **이미지 10종 · 광고제목 5개 · 설명 5개 · 영상 2편**
-> 세부 문서 — [copy.md](copy.md) · [images.md](images.md) · [video.md](video.md)
+> 산출물: **이미지 10종 + v2 5종 · 광고제목 5개 · 설명 5개 · 영상 2편**
+> 세부 문서 — [copy.md](copy.md) · [images.md](images.md) · [images-v2.md](images-v2.md) · [video.md](video.md)
 > 랜딩: `https://hwatro.jqklabs.com` (Vercel, 설치·로그인 없음)
 
 ---
@@ -153,6 +153,7 @@ Firebase GA4가 이미 연동돼 있다(`firebase-telemetry.mjs`). 새로 만들
 | 4 | 영상 B 방향 확정 | ✅ 안 5 「1월 vs 12월」 — 재녹화 0 ([video.md §2](video.md)) |
 | 5 | **랜딩페이지에 "현금 베팅·상금 없음" 고지 1줄** | ⬜ **광고 집행 전 필수** (§4-1) |
 | 6 | ~~신규 합성 이미지 3종~~ | ✅ 10종 전부 춘향 아트로 교체 완료 |
+| 6-b | **이미지 v2 5종** (인게임 × 춘향 하이브리드) | ✅ [assets/ads-v2/](assets/ads-v2/) · `./build-images-v2.sh` · [images-v2.md](images-v2.md) — 10종의 대조군으로 함께 게재 |
 | 7 | 영상 B 렌더 (타임코드만 교체) | ⬜ [video.md §2 안 5](video.md) |
 | 8 | 영상 9:16 버전 (Shorts 지면) | ⬜ [video.md §1 A-1](video.md) |
 | 9 | GA4 ↔ Ads 연결 + 전환 표시 | ⬜ §5 |

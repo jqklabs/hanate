@@ -6,6 +6,7 @@ import { mkdirSync, existsSync, rmSync, cpSync, writeFileSync, readdirSync,
          readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { checkCamera } from './check-camera.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../../..');
@@ -63,15 +64,17 @@ const FONT = resolve(HERE, 'fonts/SSRock.ttf');
  * 무대 둘레의 여백은 카메라가 확대·팬할 때 잘리지 않게 하는 예비 공간이다. */
 const VIEW_W = 1080, STAGE_W = 860;
 const Z = VIEW_W / STAGE_W;     // ≈ 1.256 — 무대를 프레임에 꽉 채우는 기본 배율
-/* 오버레이(엠블럼·족보 글자·점수 팝업)는 뷰포트 중앙 = 무대 중앙에 뜬다.
- * 무대를 그대로 잡으면(배율 Z, look 'center') 프레임 중앙과 정확히 일치한다.
- * 다른 배율로 크롭하면 그만큼 어긋나므로 오버레이 컷은 이 값을 쓴다. */
-const CENTER_CAM = { zoom: Z, ease: 'linear' };
+/* 줌 사다리 — **영상 전체에서 배율 변화는 딱 두 번**, 그리고 되돌아오지 않는다(R4).
+ *   ZA (1막 손패를 읽는 넓은 배율)
+ *    → ZB (카드가 놓이는 순간 한 번 밀고 들어감. 주막·몽타주까지 이 배율 유지)
+ *     → ZB2 (오광 리프트에서 한 번 더. 20고·승리 화면까지 유지)
+ * 예전엔 상점만 ZS(1.407)로 튀었다가 몽타주에서 ZA(1.256)로 떨어져
+ * 컷 경계에서 12%가 툭 튀었고, 승리 화면은 ZB2 → Z로 **되돌아왔다**. */
 const ZA = Z;                   // 넓게 — 손패를 읽는 배율
-const ZB = Z * 1.03;            // 바짝 — 카드가 놓인 뒤 끝까지 이 배율로 간다
+const ZB = Z * 1.03;            // 바짝 — 카드가 놓인 뒤 이 배율로 계속 간다
 /* 배율을 더 올리면 낸 패 다섯 장이 프레임 좌우에 닿는다. 카드를 크게 쓰는 대신
    밀고 들어가는 폭은 줄인다 — 화면을 채우는 건 배율이 아니라 카드 크기다. */
-const ZC = 2.00;                // 상품 하나 — 이름·설명이 읽힐 만큼
+const ZB2 = ZB * 1.05;          // 오광~승리 — 엠블럼에서 밀고 들어간 뒤 유지(단방향)
 
 /* 컷 사이 배율은 **이어져야 한다.** 앞 컷이 끝난 배율에서 다음 컷이 시작하지 않으면
  * 매 컷마다 화면이 툭 튄다. 아래는 ZA → (land에서 밀고) → ZB로 한 번만 올라가고
@@ -90,26 +93,31 @@ const EDIT = [
    * 「이번엔 안 됐다」가 자막 없이 읽힌다.
    * 성공 사이클에서 쓰던 emblem / absorb / burst / call 컷은 전부 없다 —
    * 뺀 것이 곧 연출이다. 남는 건 ×1짜리 수식과 바닥에 붙은 게이지뿐. */
-  { src: 'A1', at: ['hand', +0.10], to: ['select', -0.30], still: true, look: 'cards',
+  { src: 'A1', at: ['hand', +0.10], to: ['select', -0.30], still: true, look: 'frame',
     cold: true, trans: 'fade', transDur: 0.14, cam: { zoom: ZA, ease: 'linear' } },
   /* 고른다 → 낸다 → 착지. **한 컷으로 이어 간다.**
-     여기서 컷을 나누면 "패를 내는 장면"이 아니라 "화면이 교차로 바뀐 것"으로 읽힌다. */
+     여기서 컷을 나누면 "패를 내는 장면"이 아니라 "화면이 교차로 바뀐 것"으로 읽힌다.
+
+     **세로 이동은 주지 않는다(18차).** 예전엔 손패(아래) → 낸 패(위)로 카메라가
+     따라 올라갔는데, 둘 다 이미 프레임 안에 있어서 시선만 위아래로 끌려다녔다.
+     프레임은 무대 중앙에 고정하고 **줌만** 밀어 넣는다. */
   { src: 'A1', at: ['select', -0.30], to: ['slam', -0.15],
-    look: ['sel', 'played'], noSmooth: true, cold: true,
+    still: true, look: 'frame', cold: true,
     trans: 'fade', transDur: TR, cam: { zoom: [ZA, ZB], ease: 'dash' } },
   /* 놓였는데 **아무 일도 일어나지 않는다.** 성공 컷이라면 여기서 엠블럼이 터졌다.
      그 빈자리가 이 씬의 전부다 — 짧게 끊지 말 것. */
-  { src: 'A1', at: ['slam', -0.15], to: ['tally', -0.20], still: true, look: 'anchor',
+  { src: 'A1', at: ['slam', -0.15], to: ['tally', -0.20], still: true, look: 'frame',
     cold: true, trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
   // ×1 — 족보가 없다는 걸 수식이 스스로 말한다
-  { src: 'A1', at: ['tally', -0.20], to: ['sum', -0.20], still: true, look: 'anchor',
+  { src: 'A1', at: ['tally', -0.20], to: ['sum', -0.20], still: true, look: 'frame',
     cold: true, trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
   // 20 / 160 — 게이지가 바닥에서 거의 안 움직인다
-  { src: 'A1', at: ['sum', -0.20], to: ['fail', -0.25], still: true, look: 'pop',
+
+  { src: 'A1', at: ['sum', -0.20], to: ['fail', -0.25], still: true, look: 'frame',
     cold: true, trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
   // 「목표 미달」 — 링·스파크·플래시 없이 글자만
   // 문구 수명(1.6s)보다 길게 잡으면 글자 없는 빈 화면이 꼬리로 남는다
-  { src: 'A1', at: ['fail', -0.25], use: 1.75, still: true, look: 'anchor',
+  { src: 'A1', at: ['fail', -0.25], use: 1.75, still: true, look: 'frame',
     cold: true, trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
 
   // ── ② 이유를 준다 : 상점 ──
@@ -117,7 +125,7 @@ const EDIT = [
      한 방향·강한 감속. 미세하게 흘러내리는 무빙은 금지. */
   /* 주막 — **카메라를 아예 움직이지 않는다.** 앞 컷이 끝난 배율(ZB) 그대로 받아
      배너만 화면에 들이친다. 앞뒤 배율이 같아야 씬이 바뀐 게 아니라 이어진 것으로 읽힌다. */
-  { src: 'A2', at: ['discover', -0.05], use: 1.55, still: true, look: 'center',
+  { src: 'A2', at: ['discover', -0.05], use: 1.55, still: true, look: 'frame',
     trans: 'fade', transDur: 0.18, cam: { zoom: ZB, ease: 'linear' } },
 
   /* H2 — 「손은 눈보다 빠르다」. 원작은 2비트고, **그 사이가 하드컷**이다:
@@ -128,33 +136,31 @@ const EDIT = [
      둘 사이는 transDur를 최소로 줘서 하드컷으로 붙인다.
      이 컷이 **상점 구매 앞**에 온다 — 춘향이 돌린 두 장이 바로 다음 컷에서 진열대에
      도착해야 인과가 붙는다. */
-  { id: 'H2a', kind: 'plate', use: 1.6, trans: 'fade', transDur: 0.16,
-    cam: { z: [1.00, 1.05], ease: 'inout' } },
+  /* ①은 **스틸이 아니라 영상**이다(18차). 원작은 카메라만 고정돼 있고 인물은 말한다.
+     정지 화면을 끼우면 "왜 여기서 멈추지"가 된다. 카메라 무빙도 주지 않는다 —
+     원작이 고정 픽스이기 때문. */
+  { id: 'H2a', kind: 'plate', use: 2.2, trans: 'fade', transDur: 0.16,
+    cam: { z: [1.00, 1.00], ease: 'linear' } },
   { id: 'H2b', kind: 'plate', use: 2.0, trans: 'fade', transDur: 0.033,
     cam: { z: [1.02, 1.00], ease: 'linear' } },
 
-  { src: 'A2', at: ['shop', 0.20], to: ['deal1', -0.15], still: true, look: 'center',
-    trans: 'fade', transDur: 0.18, cam: { zoom: ZA, ease: 'linear' } },
-  /* 「춘향의 뒷거래」 — 두 장이 화면 밖에서 돌려져 들어와 진열대에 꽂힌다.
-     H2(춘향이 덱 밑에서 빼 튕겨 보내는 손 클로즈업) 바로 다음에 오는 컷이므로
-     **카메라를 진열대에 붙여 두고 고정한다.** 여기서 움직이면 두 컷이 안 이어진다.
-     들어오는 방향(우 → 좌)이 H2의 손 방향과 같아야 한다. */
-  { src: 'A2', at: ['deal1', -0.15], to: ['aim', -0.15], still: true, look: 'shop',
-    trans: 'fade', transDur: 0.18, cam: { zoom: ZA * 1.18, ease: 'linear' } },
-  /* 상점 컷은 **전부 고정 프레임**이다.
-   * 확대한 채로 패닝하면 어두운 모달이 화면 안에서 미끄러져 "카메라가 흔들린다"로 읽힌다.
-   * 게다가 구매 직후 render()가 상품에 붙인 표식을 지워 주시점이 사라지면
-   * 카메라가 모달 뒤 카드로 튀어버린다. → 읽는 컷과 보는 컷을 나누고 둘 다 고정.
-   *   aim : 상품 하나만 크게 (이름·설명이 읽힌다)
-   *   fly : 모달 전체 고정 (진열 → 바로 위 보유 칸으로 날아가는 게 다 보인다) */
-  { src: 'A2', at: ['aim', -0.15], to: ['fly', -0.10], still: true, look: 'buyitem',
-    trans: 'fade', transDur: 0.22, cam: { zoom: [ZA * 1.35, ZC], ease: 'inout' } },
-  { src: 'A2', at: ['fly', -0.10], use: 0.95, still: true, look: 'center',
-    trans: 'fade', transDur: 0.26, cam: { zoom: [ZC, ZA], ease: 'inout' } },
-  { src: 'A2', at: ['aim2', -0.10], to: ['fly2', -0.10], still: true, look: 'buyitem',
-    trans: 'fade', transDur: 0.22, cam: { zoom: [ZA * 1.35, ZC], ease: 'inout' } },
-  { src: 'A2', at: ['fly2', -0.10], use: 2.05, still: true, look: 'center',
-    trans: 'fade', transDur: 0.26, cam: { zoom: [ZC, ZA], ease: 'inout' } },
+  /* 상점 구간은 **글로벌 카메라를 완전히 고정한다** (17차).
+   * 정적인 2D UI 위를 카메라가 훑으면 안구 운동을 강제해 멀미가 난다.
+   * 강조는 카메라가 아니라 **UI 노드 자체**가 한다 — 조준된 상품이 커지고(scale)
+   * 금빛 글로우가 붙는다(rig.js의 .cap-aim). 컷 전체가 한 배율, 이동 0. */
+  { src: 'A2', at: ['shop', 0.20], to: ['deal1', -0.15], still: true, look: 'frame',
+    trans: 'fade', transDur: 0.18, cam: { zoom: ZB, ease: 'linear' } },
+  // 뒷거래 — 두 장이 오른쪽 밖에서 돌려져 들어온다 (H2의 손 방향과 같은 우 → 좌)
+  { src: 'A2', at: ['deal1', -0.15], to: ['aim', -0.15], still: true, look: 'frame',
+    trans: 'fade', transDur: 0.18, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A2', at: ['aim', -0.15], to: ['fly', -0.10], still: true, look: 'frame',
+    trans: 'fade', transDur: 0.18, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A2', at: ['fly', -0.10], use: 0.95, still: true, look: 'frame',
+    trans: 'fade', transDur: 0.18, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A2', at: ['aim2', -0.10], to: ['fly2', -0.10], still: true, look: 'frame',
+    trans: 'fade', transDur: 0.18, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A2', at: ['fly2', -0.10], use: 2.05, still: true, look: 'frame',
+    trans: 'fade', transDur: 0.18, cam: { zoom: ZB, ease: 'linear' } },
 
   /* ── ③ 몽타주 : 고도리 → 총통 ──
    *
@@ -165,20 +171,24 @@ const EDIT = [
    * 컷 길이는 전부 `to:`로 다음 마크까지 채워 빈틈도 겹침도 없게 한다.
    * (병풍은 뺐다 — 5장을 깔아야 해서 혼자 리듬이 길고 연속월은 눈에 안 들어온다)
    */
-  // 고도리 — 유일한 카메라 이동(고른 패 → 낸 칸)
+  // 고도리 — 카메라는 무대 중앙 고정, 줌만 밀어 넣는다(세로 팬 없음 · 18차)
   { src: 'A3', at: ['s1', -0.25], to: ['e1', -0.10],
-    look: ['sel', 'played'], noSmooth: true,
-    trans: 'fade', transDur: TR, cam: { zoom: [ZA, ZB], ease: 'dash' } },
-  { src: 'A3', at: ['e1', -0.10], to: ['g1', -0.10], still: true, look: 'anchor',
+    still: true, look: 'frame',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A3', at: ['e1', -0.10], to: ['g1', -0.10], still: true, look: 'frame',
     trans: 'fade', transDur: FTR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A3', at: ['g1', -0.10], to: ['s2', -0.25], still: true, look: 'anchor',
+  /* 고가 튈 때 카메라도 같이 반응한다 — 텍스트 점멸만 있으면 타격감이 없다(17차).
+     줌 왕복은 금지(R4)라 프레임을 '치는' 셰이크로 준다. */
+  { src: 'A3', at: ['g1', -0.10], to: ['s2', -0.25], still: true, look: 'frame',
+    fx: { shake: 5, at: 0.06 },
     trans: 'fade', transDur: FTR, cam: { zoom: ZB, ease: 'linear' } },
   // 총통
-  { src: 'A3', at: ['s2', -0.25], to: ['e2', -0.10], still: true, look: 'anchor',
+  { src: 'A3', at: ['s2', -0.25], to: ['e2', -0.10], still: true, look: 'frame',
     trans: 'fade', transDur: FTR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A3', at: ['e2', -0.10], to: ['g2', -0.10], still: true, look: 'anchor',
+  { src: 'A3', at: ['e2', -0.10], to: ['g2', -0.10], still: true, look: 'frame',
     trans: 'fade', transDur: FTR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A3', at: ['g2', -0.10], to: ['select', -0.30], still: true, look: 'anchor',
+  { src: 'A3', at: ['g2', -0.10], to: ['select', -0.30], still: true, look: 'frame',
+    fx: { shake: 6, at: 0.06 },
     trans: 'fade', transDur: FTR, cam: { zoom: ZB, ease: 'linear' } },
 
   /* H3 — 「이제 그만 빼시겠어요?」 → 「묻고 더블로 가!」
@@ -189,47 +199,74 @@ const EDIT = [
        ③ 패 4장이 우측에서 상 중앙으로 돌려져 들어오고 손이 쓸어 쥔다
      ②③은 한 클립에 이어져 있다(정지 → 딜) — 원작도 그 정적이 곧 답이라 자르지 않는다.
      2.2초로 줄이면 ①이 잘려 "묻고 더블로 가"만 남는다 → 질문이 없으면 답도 없다. */
-  { id: 'H3a', kind: 'plate', use: 1.9, trans: 'fade', transDur: 0.18,
-    cam: { z: [1.00, 1.06], ease: 'inout' } },
-  { id: 'H3b', kind: 'plate', use: 2.9, trans: 'fade', transDur: 0.033,
-    cam: { z: [1.02, 1.00], ease: 'linear' } },
+  /* ① 질문 — 원작 [01:20-01:25] 타이트 바스트 + **아주 느린 달리인**.
+     클립 자체가 밀고 들어오므로 카메라는 얹지 않는다(이중 줌 금지). */
+  { id: 'H3a', kind: 'plate', use: 2.2, trans: 'fade', transDur: 0.18,
+    cam: { z: [1.00, 1.00], ease: 'linear' } },
+  /* ② 일갈 — 원작 [01:25-01:26] 1.5초. 컷 전환 없이 **이 얼굴에 붙어 있는다.**
+     방자는 역광 실루엣이라 이목구비가 안 읽힌다(R13 완화안). 카메라 고정. */
+  { id: 'H3b', kind: 'plate', use: 1.5, trans: 'fade', transDur: 0.033,
+    cam: { z: [1.00, 1.00], ease: 'linear' } },
+  /* ③ 인서트 — 원작 [01:31-01:33] 판돈이 우측에서 중앙으로. 우리는 패 4장(뒷면).
+     원작은 일갈 직후 정적을 길게 뒀다 — 이 컷 앞머리의 '멈춘 손'이 그 정적이다. */
+  { id: 'H3c', kind: 'plate', use: 2.6, trans: 'fade', transDur: 0.033,
+    cam: { z: [1.00, 1.00], ease: 'linear' } },
 
   // ── 오광 — 여기만 풀코스로 터뜨린다 ──
-  { src: 'A3', at: ['select', -0.30], to: ['emblem', -0.12], still: true, look: 'anchor',
+  { src: 'A3', at: ['select', -0.30], to: ['lift', -0.15], still: true, look: 'frame',
     trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A3', at: ['emblem', -0.12], to: ['absorb', -0.20], still: true, look: 'anchor',
-    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A3', at: ['absorb', -0.20], to: ['tally', -0.20], still: true, look: 'anchor',
-    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A3', at: ['tally', -0.20], to: ['joker', -0.50], still: true, look: 'anchor',
+  /* 오광의 한 방 — 히트스톱 → Z축 부상 → 병합 → 금화·꽃잎 폭발.
+     **프레임을 고정한 채** 카드가 프레임 안에서 떠올라야 Z축이 읽힌다.
+     카메라는 여기서 한 번만 밀고 들어가고(단방향, R4) 20고까지 그 배율을 유지한다.
+     화면 흔들림은 페이지 안에서 이미 터지므로(ogwangLift의 slam) 중복으로 걸지 않는다. */
+  { src: 'A3', at: ['lift', -0.15], to: ['emblem', -0.12], still: true, look: 'frame',
+    hot: true, trans: 'fade', transDur: TR, cam: { zoom: [ZB, ZB2], ease: 'inout' } },
+  { src: 'A3', at: ['emblem', -0.12], to: ['absorb', -0.20], still: true, look: 'frame',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB2, ease: 'linear' } },
+  { src: 'A3', at: ['absorb', -0.20], to: ['tally', -0.20], still: true, look: 'frame',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB2, ease: 'linear' } },
+  { src: 'A3', at: ['tally', -0.20], to: ['joker', -0.50], still: true, look: 'frame',
     speed: 1.35,
-    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A3', at: ['joker', -0.50], to: ['sum', -0.20], still: true, look: 'anchor',
-    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A3', at: ['sum', -0.20], to: ['burst', -0.20], still: true, look: 'anchor',
-    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
-  { src: 'A3', at: ['burst', -0.20], to: ['go', -0.35], still: true, look: 'anchor',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB2, ease: 'linear' } },
+  { src: 'A3', at: ['joker', -0.50], to: ['sum', -0.20], still: true, look: 'frame',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB2, ease: 'linear' } },
+  { src: 'A3', at: ['sum', -0.20], to: ['burst', -0.20], still: true, look: 'frame',
+    trans: 'fade', transDur: TR, cam: { zoom: ZB2, ease: 'linear' } },
+  { src: 'A3', at: ['burst', -0.20], to: ['go', -0.35], still: true, look: 'frame',
     trans: 'fade', transDur: TR, fx: { shake: 9, at: 0.22 }, hot: true,
-    cam: { zoom: ZB, ease: 'linear' } },
+    cam: { zoom: ZB2, ease: 'linear' } },
   // 11고 → 20고 체이스 — 쌓아 올린 것을 두 배로 뛰는 한 방
-  { src: 'A3', at: ['go', -0.35], use: 3.30, still: true, look: 'anchor',
-    trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
+  { src: 'A3', at: ['go', -0.35], use: 3.30, still: true, look: 'frame',
+    trans: 'fade', transDur: TR, fx: { shake: 6, at: 0.10 },
+    cam: { zoom: ZB2, ease: 'linear' } },
+
+  /* 12월을 깼다 — 게임 자체 승리 화면. 「당신은 몇월까지 깰 수 있으세요?」가
+     꽂히려면 방자가 **끝까지 갔다는 사실**이 화면에 있어야 한다. */
+  { src: 'A3', at: ['clear', -0.10], use: 2.40, still: true, look: 'frame',
+    trans: 'fade', transDur: 0.24, cam: { zoom: ZB2, ease: 'linear' } },
 
   // ── ④ 마무리 ──
   /* C4 — 인터뷰 회귀. H1과 같은 방·같은 조명·같은 구도로 돌아온다.
      회상이 끝나고 현재로 왔다는 신호라 앞 컷과 fadeblack으로 끊는다.
      여기서만 춘향이 카메라를 정면으로 본다 — 시청자에게 되묻는 컷이다. */
-  { id: 'C4', kind: 'plate', use: 3.0, trans: 'fadeblack', transDur: 0.26,
-    line: '몇월까지 깰수있으세요?',
+  /* 20고 직후 fadeblack은 클라이맥스 흐름을 뚝 끊어 "오류 난 화면"으로 읽혔다(17차)
+     → 크로스페이드. 회상→현재 전환은 컷 안의 조명 변화가 이미 말해준다. */
+  /* 자막 없음 — 춘향의 표정과 시선만으로 되묻는다.
+     같은 질문이 바로 다음 로고 컷에 카피로 이미 박혀 있어, 여기까지 얹으면
+     한 호흡 안에서 같은 말이 두 번 읽힌다. */
+  { id: 'C4', kind: 'plate', use: 3.0, trans: 'fade', transDur: 0.34,
     cam: { z: [1.50, 1.00], ease: 'brake' } },
   /* 로고 — 화투를 바닥에 내리치듯. 크게 들어와 있다가 한 방향으로 떨어지며
      딱 멈추고, 멈추는 그 순간에만 짧게 쾅. 되돌아가는 무빙 없음. */
   /* 로고 — **Z축 낙하.** pan을 쓰면 화면 안에서 미끄러지는 Y축 이동으로 읽힌다.
      순수 스케일 변화만 남겨야 "카메라를 향해 떠 있다가 멀어지며 박히는" 착시가 난다.
      착지(0.30s)에 맞춰 흔들림 + 짧은 밝기 플래시. */
-  { id: 'C6', kind: 'plate', use: 2.6, trans: 'fade', transDur: 0.16,
-    fx: { shake: 16, at: 0.30, flash: 0.10 },
-    cam: { z: [3.20, 1.00], ease: 'dash' } },
+  /* 로고 Z축 낙하 — 카메라 배율로 구현돼 있다(영상에 구워진 게 아니다).
+     2.6초는 '떨어진다'가 아니라 '내려앉는다'로 읽혔다 → 1.5초로 당기고
+     착지(0.22)에 맞춰 흔들림·플래시. 배율 폭도 키워 낙차를 크게. */
+  { id: 'C6', kind: 'plate', use: 1.5, trans: 'fade', transDur: 0.14,
+    fx: { shake: 18, at: 0.22, flash: 0.10 },
+    cam: { z: [4.20, 1.00], ease: 'dash' } },
 ];
 
 /* Higgsfield로 뽑아 끼울 시네마틱 슬롯.
@@ -241,8 +278,9 @@ const HIGGS = {
   H1: { label: '훅 — 「방자를 아냐고요? 내가 아는 타짜 중 최고였어요」', tone: '#1a2f24' },
   H2a: { label: '주막 앞 ① — 손을 감춘 채 「손은 눈보다 빠르다」',      tone: '#2a1f14' },
   H2b: { label: '주막 앞 ② — 덱 밑에서 특수패 두 장을 빼 돌린다',      tone: '#2a1f14' },
-  H3a: { label: '오광 직전 ① — 춘향 「이제 그만 빼시겠어요?」',        tone: '#2a1418' },
-  H3b: { label: '오광 직전 ② — 「묻고 더블로 가!」 패 4장이 돌려진다', tone: '#2a1418' },
+  H3a: { label: '오광 직전 ① — 춘향 「이제 그만 빼시겠어요?」 (달리인)', tone: '#2a1418' },
+  H3b: { label: '오광 직전 ② — 방자 실루엣 「묻고 더블로 가!」',        tone: '#141a2a' },
+  H3c: { label: '오광 직전 ③ — 패 4장(뒷면)이 돌려지고 손이 쥔다',      tone: '#141a2a' },
   C4: { label: '인터뷰 회귀 — 춘향이 카메라를 보며 되묻는다',        tone: '#1a2f24' },
   C6: { label: 'CTA — 금박 로고 + 카피 (기존 OG 아트)',             tone: '#12100c' },
 };
@@ -415,11 +453,12 @@ const GRADE = `,eq=contrast=1.06:saturation=1.08:gamma=1.04,vignette=PI/7`;
    모든 컷에 걸면 평평해지므로 '그 순간'에만 쓴다. */
 const GRADE_HOT = `,eq=contrast=1.12:saturation=1.28:gamma=1.10,` +
                   `colorbalance=rm=.05:gm=.02:bm=-.05,vignette=PI/8`;
-/* 실패 컷 전용 — GRADE_HOT의 정확한 반대.
-   채도를 빼고 감마를 내리고 푸른 쪽으로 민다. 비네트도 더 조인다.
-   같은 게임 화면이라도 여기만 색이 죽어 있어야 「이번엔 안 됐다」가 말 없이 읽힌다. */
-const GRADE_COLD = `,eq=contrast=1.02:saturation=0.52:gamma=0.90,` +
-                   `colorbalance=rm=-.06:gm=-.02:bm=.08,vignette=PI/5`;
+/* 실패 컷 전용 — 17차에서 대폭 약화.
+   채도 0.52 + 청색 시프트는 "필터 낀 화면"으로 읽혔다(사용자 지적).
+   실패감은 색이 아니라 **어둠**으로 만든다: 밝기만 내리고 채도는 살짝,
+   색은 거의 건드리지 않는다. */
+const GRADE_COLD = `,eq=contrast=1.04:saturation=0.88:gamma=0.92:brightness=-0.05,` +
+                   `vignette=PI/5.5`;
 
 function markAt(srcId, [name, off]) {
   const m = readManifest()[srcId];
@@ -444,21 +483,32 @@ function rectsAt(srcId, tRelMs) {
   return best.rects || {};
 }
 
-const CENTER = { cx: 0.5, cy: 0.5 };
+const CENTER = { cx: 0.5, cy: 0.5, w: 0.8, h: 0.8 };
 /* 카메라 중심 결정.
- * focus = 낸 패 + 수식(한 덩어리). 이게 없으면(아직 안 낸 단계) 손패를 본다.
- * 어느 쪽이든 '지금 사건이 일어나는 곳'이 프레임 정중앙에 온다. */
-/* 'center'는 "화면 정중앙을 봐라"라는 뜻이다.
- * 예전엔 null로 떨궈서 결국 focus로 흘러갔고, 오버레이(엠블럼·팝업) 컷에서
- * 프레임 중앙과 뷰포트 중앙이 어긋났다. 명시적으로 CENTER를 돌려준다. */
-const one = (rects, want) =>
-  (want === 'center' ? CENTER
-    : (rects[want] || rects.focus || rects.cards || rects.played || rects.hand || CENTER));
+ *
+ * 게임 컷은 전부 'frame'을 본다 — 리그가 무대 기하에서 만드는 **결정론적** rect라
+ * 씬·판·카드 수와 무관하게 항상 같은 자리다. 측정 rect(cards/focus/gameui…)는
+ * 카드가 놓이고 수식이 뜰 때마다 14~23% 움직여서 컷마다 프레임이 튀었다.
+ *
+ * **폴백은 조용하면 안 된다.** 예전엔 이름을 못 찾으면 focus → cards → … 로
+ * 소리 없이 떨어져서, 엉뚱한 곳을 봐도 아무도 몰랐다. */
+let missWarned = new Set();
+const one = (rects, want) => {
+  if (rects[want]) return rects[want];
+  const alt = rects.frame || rects.focus || rects.cards || rects.played || rects.hand;
+  const key = want + (alt ? '' : ':none');
+  if (!missWarned.has(key)) {
+    missWarned.add(key);
+    console.warn(`  \u26a0 카메라: '${want}' 좌표가 없습니다 → ` +
+                 `${alt ? "'frame' 등으로 대체" : '화면 중앙으로 대체'}. ` +
+                 `녹화를 다시 했는지, 씬이 그 시점에 그 요소를 띄우는지 확인하세요`);
+  }
+  return alt || CENTER;
+};
 
-/* 컷이 무엇을 보게 할지.
- * look: 'hand'            → 손패 8장을 화면 중앙에
- * look: ['hand','played'] → 손패에서 낸 패로 카메라가 이동 (내는 순간용)
- */
+/* 컷이 무엇을 보게 할지. 게임 컷은 전부 look:'frame'.
+ * 배열(['a','b'])을 주면 a에서 b로 카메라가 이동하지만, 지금 편집에는 쓰지 않는다 —
+ * 판이 진행되는 동안 프레임이 움직이면 시선이 끌려다닌다(R21). */
 function focalOf(cut, startRects, endRects) {
   const want = cut.look || 'hand';
   const [k0, k1] = Array.isArray(want) ? want : [want, want];
@@ -492,8 +542,10 @@ function buildClip(cut, idx, W, H) {
     const relEnd = relStart + cut.use * (cut.speed || 1) * 1000;
     cut.focal = focalOf(cut, rectsAt(id, relStart), rectsAt(id, relEnd));
   } else {
-    // 플레이트도 pan을 쓸 수 있어야 한다 (로고가 위에서 떨어지는 연출)
-    cut.focal = focalOf({ ...cut, look: 'center' }, {}, {});
+    /* 플레이트는 프레임 전체를 채우는 소재다 — 측정할 rect가 없는 게 정상이므로
+       프레임 중심을 직접 준다(빈 객체를 넘기면 폴백 경고가 뜬다). */
+    const F = { frame: { cx: 0.5, cy: 0.5, w: 1, h: 1 } };
+    cut.focal = focalOf({ ...cut, look: 'frame' }, F, F);
   }
   /* 소스는 SLOW배 느리게 찍혀 있다. 마크·좌표는 이미 빨리감기 기준으로 환산돼 있으므로
    * 소스를 탐색·절취할 때만 SLOW를 다시 곱해준다. */
@@ -623,6 +675,7 @@ export function assemble({ recOnly = false, ratio = '16x9' } = {}) {
 
   const cuts = recOnly ? EDIT.filter((c) => c.kind !== 'plate') : EDIT;
   checkOverlaps(cuts);
+  checkCamera(cuts, { markAt, rectsAt, one });
   const clips = cuts.map((c, i) => buildClip(c, i, W, H));
   const target = resolve(FINAL_DIR,
     recOnly ? 'hwatro_recorded_only.mp4' : `hwatro_campaign_${ratio}.mp4`);
