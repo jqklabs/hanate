@@ -24,6 +24,8 @@
      crossorigin="anonymous"></script>
 <script>window.FIREBASE_CONFIG = window.FIREBASE_CONFIG ?? null;</script>
 <script src="firebase-config.js"></script>
+<link rel="stylesheet" href="vendor/spine-player/spine-player.css">
+<script src="vendor/spine-player/spine-player.js"></script>
 <style>
   @font-face {
     font-family: 'BaigeTianxing';
@@ -77,18 +79,37 @@
     -webkit-user-select: text;
     user-select: text;
   }
-  /* 춘향 컷아웃 전용 레이어 — alpha 따라가는 은은한 흰 아우라 */
+  /* 춘향 Spine 레이어 — 우측 하단 (기존 BackgroundFigure 자리) */
   #bg-figure {
     position: fixed; inset: 0; z-index: 0;
     pointer-events: none;
-    background: url('Assets/BackgroundFigure.webp?v=33') no-repeat right -32% bottom -16% / auto 78%;
+    background: none;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity .45s ease, visibility .45s ease;
+  }
+  #bg-spine {
+    position: absolute;
+    right: -6%;
+    bottom: -10%;
+    width: min(56vw, 680px);
+    height: min(88vh, 980px);
+    pointer-events: none;
     filter:
       drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.28))
       drop-shadow(0 0 7px rgba(255, 255, 255, 0.14))
       drop-shadow(0 0 18px rgba(255, 255, 255, 0.06));
-    opacity: 1;
-    visibility: visible;
-    transition: opacity .45s ease, visibility .45s ease;
+  }
+  #bg-spine.spine-player,
+  #bg-spine .spine-player {
+    width: 100% !important;
+    height: 100% !important;
+    background: transparent !important;
+  }
+  #bg-spine .spine-player-controls,
+  #bg-spine .spine-player-button,
+  #bg-spine .spine-player-canvas-container + * {
+    display: none !important;
   }
   #bg-figure.away {
     opacity: 0;
@@ -3756,7 +3777,7 @@
 </head>
 <body>
 
-<div id="bg-figure" aria-hidden="true"></div>
+<div id="bg-figure" aria-hidden="true"><div id="bg-spine"></div></div>
 
 <div id="boot-load" role="status" aria-live="polite" aria-busy="true">
   <div class="bl-brand">화투로</div>
@@ -9490,6 +9511,41 @@ function updateBgFigureForHand() {
   el.classList.toggle('away', overlap);
 }
 
+/** 배경 춘향 Spine — 첫 애니(idle_breath)만 루프 */
+let bgSpinePlayer = null;
+function initBgSpine() {
+  const host = $('bg-spine');
+  if (!host || host.dataset.ready) return;
+  if (!window.spine || typeof spine.SpinePlayer !== 'function') {
+    console.warn('[spine] SpinePlayer 로드 실패');
+    return;
+  }
+  host.dataset.ready = '1';
+  const FIRST_ANIM = 'idle_breath';
+  bgSpinePlayer = new spine.SpinePlayer('bg-spine', {
+    skeleton: 'Assets/Spine/chunhyang/skeleton.json',
+    atlas: 'Assets/Spine/chunhyang/skeleton.atlas',
+    animation: FIRST_ANIM,
+    animations: [FIRST_ANIM],
+    showControls: false,
+    interactive: false,
+    alpha: true,
+    backgroundColor: '#00000000',
+    premultipliedAlpha: true,
+    success(player) {
+      // setAnimation만 하면 currentViewport가 먼저 잡혀 SpinePlayer 내부 auto-play가 스킵됨
+      try {
+        player.setAnimation(FIRST_ANIM, true);
+        player.play();
+      } catch (_) {}
+    },
+    error(player, reason) {
+      console.warn('[spine]', reason);
+    },
+  });
+}
+
+initBgSpine();
 boot(); // 에셋 프리로드 → 첫 방문이면 룰 안내 → prep
 </script>
 </body>
