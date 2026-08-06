@@ -1,28 +1,46 @@
 #!/bin/bash
-# v3.4 「열두 달 화첩」 — 생성물을 광고 규격으로 크롭·리사이즈만 한다.
+# v3.6 「열두 달 화첩」 — 아트 플레이트 12장에 타이포와 고지를 조판해 광고 규격으로 굽는다.
 #
-#  생성: gen3/run6.sh — 제목·문구·구도까지 전부 모델이 그린다. 후처리 합성 없음.
-#  규격: 1:1 1200x1200 · 1.91:1 1200x628 · 4:5 960x1200 · JPG ≤5MB
+#  아트 생성 : gen3/run7.sh (1~2월) · gen3/run8.sh · run8b.sh (3~12월) — 글자 없는 플레이트
+#  제목·CTA  : gen3/run_type.sh 로 생성한 금박 붓글씨 이미지 (12장 공용)
+#  부제      : 인게임 폰트 SSRockRegular — 광고에서 본 글씨 = 게임에서 볼 글씨
+#  조판      : lockup.py + 사행성 고지(Pretendard 정자체)
+#  규격      : 1:1 1200x1200 · 1.91:1 1200x628 · 4:5 960x1200 · JPG ≤5MB
 #
-#  ※ 이전 버전의 후처리(카드 렌더 make_card.py, 로고 오버레이, ffmpeg 문구 조판)는 전부 걷어냈다.
-#    GPT Image가 한글을 정확히 렌더하므로 조판을 분리할 이유가 없어졌다.
+#  ※ SSRock 은 게임에 나오는 글자만 담은 서브셋이다(한글 557자 / 완성형 11,172자 중).
+#    아래 부제 4줄은 원안이 서브셋에 없는 글자를 물어서 교체한 것이다:
+#      2월  곧·략  →  '당신이 고른 패가 승부를 만든다'
+#      7월  익·숙  →  '아는 화투, 처음 보는 규칙'
+#     11월  뿐     →  '한 판에 기회는 네 번'
+#     12월  A·I    →  '인공지능도 12월을 못 넘었다'
+#    문구를 고치면 lockup.py 가 누락 글자를 stderr 로 경고한다. 무시하지 말 것.
 set -e
 cd "$(dirname "$0")"
 OUT=assets/ads-v3
+G=gen3
+PY=/tmp/fontenv/bin/python
 mkdir -p "$OUT"
 
-# 01 · 1월 송학 · 1:1 — 원본 1254² 정사각이라 리사이즈만
-ffmpeg -y -loglevel error -i gen3/y01/01_january.png \
-  -vf "scale=1200:1200:flags=lanczos" -frames:v 1 -update 1 -q:v 3 "$OUT/v3_01_january.jpg"
+lay () { $PY lockup.py "$@"; }
 
-# 02 · 2월 매조 · 1.91:1 — 원본 1536x1024(3:2)에서 세로 804px만 취한다.
-# y=0 기준: 달·인물 머리·좌측 문구 블록이 모두 남고 하단 치마만 버려진다.
-ffmpeg -y -loglevel error -i gen3/y02/02_february.png \
-  -vf "crop=1536:804:0:0,scale=1200:628:flags=lanczos" -frames:v 1 -update 1 -q:v 3 "$OUT/v3_02_february.jpg"
+#      아트                   출력                        규격w 규격h crop  로고 lx  ly  부제                             크기
+lay $G/z01/01_january.png   $OUT/v3_01_january.jpg   1200 1200 1254 520  75  655 '1월부터 12월까지, 열두 판'        50
+lay $G/z02/02_february.png  $OUT/v3_02_february.jpg  1200  628  804 560 100  115 '당신이 고른 패가 승부를 만든다'    46
+lay $G/m03/art.png          $OUT/v3_03_march.jpg      960 1200 1280 500  70  635 '3월에서 대부분 멈춘다'            50
+lay $G/m04/art.png          $OUT/v3_04_april.jpg     1200  628  804 560 100  115 '패를 모을수록 점점 세진다'         46
+lay $G/m05/art.png          $OUT/v3_05_may.jpg       1200 1200 1254 520  75  655 '여기서 멈출까, 더 갈까'           50
+lay $G/m06/art.png          $OUT/v3_06_june.jpg       960 1200 1280 500  70  635 '6월, 아직 절반이다'              50
+lay $G/m07/art.png          $OUT/v3_07_july.jpg      1200  628  804 560 100  115 '아는 화투, 처음 보는 규칙'         46
+lay $G/m08/art.png          $OUT/v3_08_august.jpg    1200 1200 1254 520  75  655 '실패하면 다시 1월부터'            50
+lay $G/m09/art45.png        $OUT/v3_09_september.jpg  960 1200 1254 490  60  615 '9월부터는 판이 당신을 노린다'      46
+lay $G/m10/art.png          $OUT/v3_10_october.jpg   1200  628  804 560 100  115 '운이 아니라 선택이 이긴다'         46
+lay $G/m11/art.png          $OUT/v3_11_november.jpg  1200 1200 1254 520  75  655 '한 판에 기회는 네 번'             50
+lay $G/m12/art.png          $OUT/v3_12_december.jpg   960 1200 1280 500  70  635 '인공지능도 12월을 못 넘었다'       46
 
+echo
 echo "=== assets/ads-v3 ==="
 for f in "$OUT"/*.jpg; do
-  printf '%s  ' "$f"
-  sips -g pixelWidth -g pixelHeight "$f" | awk '/pixelWidth/{w=$2}/pixelHeight/{h=$2}END{printf "%sx%s  ", w, h}'
+  printf '%-36s ' "$f"
+  sips -g pixelWidth -g pixelHeight "$f" | awk '/pixelWidth/{w=$2}/pixelHeight/{h=$2}END{printf "%10s  ", w"x"h}'
   du -h "$f" | awk '{print $1}'
 done

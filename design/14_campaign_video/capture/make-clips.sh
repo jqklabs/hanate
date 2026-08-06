@@ -63,14 +63,16 @@ $STYLE"
 
 # ══ H3 ② 원작 [01:25-01:26] — 클로즈업, 앉은 채 미동 없이 일갈 (1.5초) ══
 # 원작의 키 컷. 몸은 움직이지 않고 입만 열려 한 마디가 터진다.
-want H3shout && gen H3shout H3-shout - "He is seated, upright and absolutely still,
-chin tucked. His mouth opens sharply and he shouts one hard word across the table,
-then his jaw sets again. His body, shoulders and head do NOT move at all - only the
-mouth. The camera is locked off, completely static.
-His face stays a pure unreadable dark silhouette the entire time - backlit, no
-features, no eyes, no visible skin, only the outline of his jaw, hair and open mouth,
-with a thin cool rim light along the edge. The cool backlight flickers very slightly.
-Single continuous shot. $STYLE"
+want H3shout && gen H3shout H3-shout - "He holds the iconic pose: head bowed down
+toward the table, right hand raised high beside his head with index and middle
+finger extended upward. He shouts one hard word downward - his mouth opens sharply,
+the raised hand PUNCHES upward a few centimeters on the shout for emphasis, then
+holds. His head stays bowed; the body does not otherwise move. The camera is locked
+off, completely static.
+He stays a pure unreadable dark silhouette the entire time - backlit, no facial
+features, no eyes, no skin detail, only the outline of his bowed head, hair, open
+mouth and the raised two-finger hand, with a thin cool rim light along the edges.
+The cool backlight flickers very slightly. Single continuous shot. $STYLE"
 
 # ══ H3 ③ 원작 [01:31-01:33] — 인서트, 우측에서 중앙으로 밀려드는 판돈 ══
 want H3c && gen H3c H3-b H3-c "Perfectly top-down view of a dark green felt hwatu
