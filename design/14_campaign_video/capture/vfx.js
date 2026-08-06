@@ -268,12 +268,73 @@
     box-shadow: 0 0 22px rgba(255,205,110,.9);
     transition: width var(--fd, 900ms) cubic-bezier(.2,.9,.3,1);
   }
+  /* 실패용 — 성공 팝업의 정확한 반대. 금빛을 전부 걷어내고 탁한 적갈색으로.
+     같은 레이아웃을 쓰되 색만 죽여야 "같은 판인데 이번엔 안 됐다"로 읽힌다. */
+  .vfx-scorepop.cold {
+    border-color: rgba(176,84,68,.72);
+    box-shadow: 0 0 34px rgba(120,32,24,.34), inset 0 0 26px rgba(70,18,14,.28);
+  }
+  .vfx-scorepop.cold .sp-month { color: #cfc3bd; }
+  .vfx-scorepop.cold .sp-num {
+    color: #e6ccc4; text-shadow: 0 0 16px rgba(150,52,40,.6);
+  }
+  .vfx-scorepop.cold .sp-fill {
+    background: linear-gradient(90deg, #7e3128, #b3604c);
+    box-shadow: 0 0 12px rgba(170,66,50,.55);
+  }
+
   @keyframes vfxScorePop {
-    0%   { transform: translate(-50%,-50%) scale(.78); opacity: 0; }
-    11%  { transform: translate(-50%,-50%) scale(1.05); opacity: 1; }
-    20%  { transform: translate(-50%,-50%) scale(1.00); }
-    92%  { transform: translate(-50%,-50%) scale(1.00); opacity: 1; }
-    100% { transform: translate(-50%,-50%) scale(1.00); opacity: 0; }
+    0%   { transform: translate(-50%,-50%) scale(calc(var(--sp-scale,1) * .78)); opacity: 0; }
+    11%  { transform: translate(-50%,-50%) scale(calc(var(--sp-scale,1) * 1.05)); opacity: 1; }
+    20%  { transform: translate(-50%,-50%) scale(var(--sp-scale,1)); }
+    92%  { transform: translate(-50%,-50%) scale(var(--sp-scale,1)); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(var(--sp-scale,1)); opacity: 0; }
+  }
+
+  /* ── 「춘향의 뒷거래」 ─────────────────────────────
+     원작 손 클로즈업의 「배경 완전 암전 + 대상에만 탑라이트」를 UI로 옮긴다.
+     상점 전체를 눌러 두고 지금 딜되는 칸만 원래 밝기로 남긴다.
+     흰 플래시는 쓰지 않는다 — 밝기를 내리는 쪽으로만 대비를 만든다. */
+  body.cap-deal #shop-offers, body.cap-deal #topbar, body.cap-deal .shop-head {
+    transition: filter .42s ease;
+    filter: brightness(.40) saturate(.66);
+  }
+  body.cap-deal #shop-offers .offer.cap-lit {
+    filter: brightness(2.5) saturate(1.52);      /* 부모의 .40을 되돌린다 */
+  }
+  /* 화면 밖에서 돌려져 들어오는 뒷면 — 게임의 facedown 카드와 같은 무늬 */
+  .vfx-dealback {
+    position: absolute; border-radius: 14px;
+    background: repeating-linear-gradient(135deg, #7f1d1d 0 8px, #991b1b 8px 16px);
+    box-shadow: 0 10px 30px rgba(0,0,0,.6), inset 0 0 0 3px rgba(0,0,0,.42);
+    transform-origin: 50% 50%; will-change: transform;
+  }
+  /* 소매 그림자 — 딜한 사람의 팔이 그 위를 한 번 쓸고 지나간다.
+     실루엣만 보여야 한다. 형체가 또렷하면 정체 모를 물체가 지나가는 걸로 읽힌다. */
+  .vfx-sleeve {
+    position: absolute; pointer-events: none;
+    background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.62) 38%,
+                                rgba(0,0,0,.66) 62%, rgba(0,0,0,0) 100%);
+    filter: blur(9px);
+    animation: vfxSleeve var(--d, 220ms) cubic-bezier(.3,.7,.4,1) forwards;
+  }
+  @keyframes vfxSleeve {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(var(--to, -100%)); }
+  }
+  /* 뒷거래로 꽂힌 패에 찍히는 붉은 인장 — 일반 구매(금빛)와 구분되는 표식 */
+  .vfx-seal {
+    position: absolute; transform: translate(-50%,-50%) scale(.4);
+    width: var(--s, 120px); height: var(--s, 120px); border-radius: 50%;
+    border: 6px solid rgba(196,44,36,.95);
+    box-shadow: 0 0 24px rgba(196,44,36,.75), inset 0 0 18px rgba(196,44,36,.5);
+    animation: vfxSeal var(--d, 620ms) cubic-bezier(.14,1.5,.3,1) forwards;
+  }
+  @keyframes vfxSeal {
+    0%   { opacity: 0; transform: translate(-50%,-50%) scale(.4) rotate(-14deg); }
+    22%  { opacity: 1; transform: translate(-50%,-50%) scale(1.06) rotate(0deg); }
+    58%  { opacity: 1; transform: translate(-50%,-50%) scale(1.00) rotate(0deg); }
+    100% { opacity: 0; transform: translate(-50%,-50%) scale(1.00) rotate(0deg); }
   }
 
   /* 화면 흔들림 — 게임 루트에 건다 (오버레이는 같이 흔들리지 않게) */
@@ -567,7 +628,9 @@
     },
 
     /* 크게 한 마디 — 고/스톱 모달 대신 쓰는 외침. 「스톱!」 「고!」 */
-    callout(str, d = 1200) {
+    /* cold: true — 실패 문구. 금빛 글로우·링·스파크·플래시를 전부 뺀다.
+       성공 컷과 같은 장치를 색만 바꿔 쓰면 "실패도 화려하네"가 된다. */
+    callout(str, d = 1200, { cold = false } = {}) {
       const el = document.createElement('div');
       el.className = 'vfx-text';
       el.textContent = str;
@@ -575,14 +638,18 @@
         .getPropertyValue('--cap-stage')) || innerWidth;
       const size = Math.min(stage * 0.34, stage * 0.86 / Math.max(1, str.length));
       el.style.cssText += `left:${innerWidth / 2}px;top:${focusY()}px;` +
-        `font-size:${Math.round(size)}px;color:#fff6d8;` +
+        `font-size:${Math.round(size * (cold ? 0.82 : 1))}px;` +
+        `color:${cold ? '#e3c6bd' : '#fff6d8'};` +
         `-webkit-text-stroke:${Math.max(4, size * 0.04)}px rgba(28,10,0,.85);` +
         `paint-order:stroke fill;` +
-        `text-shadow:0 0 ${Math.round(size * 0.16)}px rgba(255,214,130,1),` +
-        `0 0 ${Math.round(size * 0.46)}px rgba(255,170,50,.95),` +
-        `0 0 ${Math.round(size * 0.95)}px rgba(255,140,20,.7);`;
+        (cold
+          ? `text-shadow:0 0 ${Math.round(size * 0.18)}px rgba(150,48,36,.8);`
+          : `text-shadow:0 0 ${Math.round(size * 0.16)}px rgba(255,214,130,1),` +
+            `0 0 ${Math.round(size * 0.46)}px rgba(255,170,50,.95),` +
+            `0 0 ${Math.round(size * 0.95)}px rgba(255,140,20,.7);`);
       el.style.setProperty('--d', d + 'ms');
       add(el, d + 100);
+      if (cold) return;
       VFX.ring(null, { size: 900, d: 700 });
       const r = layer.lastChild;
       if (r) { r.style.left = innerWidth / 2 + 'px'; r.style.top = focusY() + 'px'; }
@@ -661,8 +728,14 @@
       VFX.flash('rgba(255,246,220,.55)', 700);
       VFX.rays(sel, 1000 + 260 * p);
       VFX.ring(sel, { size: 1200 * p, d: 820 + 160 * p });
-      if (p > 1.2) VFX.ring(sel, { size: 1900 * p, d: 1000 + 200 * p });
-      VFX.sparks(sel, { n: Math.round(26 * p), dist: 620 * p, d: 950 + 180 * p });
+      if (p > 1.2) {
+        VFX.ring(sel, { size: 1900 * p, d: 1000 + 200 * p });
+        // 잭팟 — 목표를 몇 배로 부수는 순간이다. 링을 한 겹 더, 파편도 늘린다
+        setTimeout(() => VFX.ring(sel, { size: 2600 * p, d: 1100 + 200 * p }), 140);
+        VFX.glow(0.5, 900);
+      }
+      VFX.sparks(sel, { n: Math.round(40 * p), dist: 760 * p, d: 1000 + 180 * p });
+      setTimeout(() => VFX.sparks(sel, { n: Math.round(24 * p), dist: 520 * p, d: 900 }), 180);
       // 흔들림은 slam() 한 곳에만 — 여러 군데서 겹치면 상시 진동으로 읽힌다
     },
 
@@ -695,17 +768,51 @@
      * "합산되는 순간"이라는 인과가 사라진다.
      * → 이제 씬이 from/gain을 넘겨주고 팝업이 스스로 카운트업한다. */
     scorePop({ from = 0, gain = 0, target = 0, month = '', d = 2600,
-               countDelay = 260, countDur = 900 } = {}) {
+               countDelay = 260, countDur = 900, cold = false } = {}) {
       const fmt = (n) => Math.round(n).toLocaleString('en-US');
       const el = document.createElement('div');
-      el.className = 'vfx-scorepop';
+      el.className = 'vfx-scorepop' + (cold ? ' cold' : '');
       el.style.setProperty('--d', d + 'ms');
+      /* 자리는 **뜨는 지금** 잰다.
+         리그가 앵커를 얼릴 때(첫 조합, 3장) 계산해 둔 --cap-pop-y를 그대로 쓰면
+         오광처럼 낸 패가 더 크고 수식 패널까지 붙은 판에서는 그 y가 카드 한복판이 된다.
+         낸 패 바닥과 손패 천장 사이의 실제 빈 띠를 찾아 그 가운데에 놓는다. */
+      const pa = document.querySelector('#playedarea');
+      const ha = document.querySelector('#handarea');
+      if (pa && ha) {
+        const pb = pa.getBoundingClientRect(), hb = ha.getBoundingClientRect();
+        const gap = hb.top - pb.bottom;
+        if (gap > 40) el.style.top = (pb.bottom + gap / 2) + 'px';
+      }
       el.innerHTML =
         (month ? `<div class="sp-month">${month}</div>` : '') +
         `<div class="sp-num"><span class="sp-cur">${fmt(from)}</span>` +
         ` / ${fmt(target)}</div>` +
         `<div class="sp-bar"><div class="sp-fill"></div></div>`;
       add(el, d + 120);
+      /* 같은 자리에 게임의 결과 문구(#playresult)가 이미 떠 있다.
+         팝업이 그 위를 덮으면 가려진 문구의 꼬리만 옆으로 삐져나와 지저분하다.
+         점수는 팝업이 말하므로 문구는 걷어낸다. */
+      const pr = document.getElementById('playresult');
+      if (pr) {
+        pr.style.transition = 'opacity .2s ease';
+        pr.style.opacity = '0';
+      }
+      /* 빈 띠보다 크거나 프레임보다 넓으면 줄여서 넣는다.
+         오광은 자릿수가 커서(28,958 / 15,400) 가로로 프레임을 넘겼다. */
+      {
+        const stage = parseFloat(getComputedStyle(document.documentElement)
+          .getPropertyValue('--cap-stage')) || innerWidth;
+        const q = { width: el.offsetWidth, height: el.offsetHeight };
+        let k = 1;
+        if (pa && ha) {
+          const gap = ha.getBoundingClientRect().top - pa.getBoundingClientRect().bottom;
+          if (gap > 40 && q.height > gap - 12) k = Math.min(k, (gap - 12) / q.height);
+        }
+        const maxW = stage * 0.86;
+        if (q.width > maxW) k = Math.min(k, maxW / q.width);
+        if (k < 0.999) el.style.setProperty('--sp-scale', Math.max(0.6, k).toFixed(3));
+      }
 
       const num = el.querySelector('.sp-cur');
       const fill = el.querySelector('.sp-fill');
@@ -731,7 +838,9 @@
 
     /* 수식의 결과값이 팝업으로 날아가 꽂힌다 — "이 숫자가 저기에 더해진다"를 눈으로.
        from이 화면에 없으면(수식이 이미 사라졌으면) 팝업 위쪽에서 떨어뜨린다. */
-    flyGain(text, fromSel = '#jt-score', toSel = '.vfx-scorepop .sp-num', d = 520) {
+    /* 착지점은 팝업의 **월 표기 줄**이다. 큰 숫자 위에 꽂으면 카운트업 중인
+       숫자와 겹쳐 「160 +264 160」처럼 읽힌다. */
+    flyGain(text, fromSel = '#jt-score', toSel = '.vfx-scorepop .sp-month', d = 520) {
       const a = at(fromSel), b = at(toSel);
       const el = document.createElement('div');
       el.className = 'vfx-fly';
@@ -763,7 +872,70 @@
      *     ② 잠깐 멈춰 금빛으로 달아오르고
      *     ③ 보유 칸으로 빨려 들어가 박힌다
      */
-    async flyToJoker(i, doBuy, d = 560) {
+    /* 「춘향의 뒷거래」 — 특수패가 진열되는 방식 자체를 바꾼다.
+     *
+     * 보통 상품은 그냥 거기 있다. 그런데 이 두 장은 **화면 밖에서 돌려져 들어온다.**
+     * H2에서 춘향이 덱 밑에서 빼 튕겨 보낸 그 두 장이 여기 도착하는 것이다 —
+     * 방향(우 → 좌)과 박자를 H2의 손 클로즈업과 맞춰야 두 컷이 한 줄로 읽힌다.
+     *
+     * 순서: 암전 → 뒷면이 밖에서 미끄러져 들어와 칸에 꽂힘 → 소매 그림자가 훑음
+     *       → 촥 뒤집히며 특수패가 됨
+     * 세 번째 상품에는 이걸 걸지 않는다 — 대비가 있어야 두 장이 특별해진다. */
+    async dealIn(i, { slide = 420, flip = 150 } = {}) {
+      const src = document.querySelectorAll('#shop-offers .offer')[i];
+      const a = src && src.getBoundingClientRect();
+      if (!src || !a || a.width < 4) return;
+
+      document.body.classList.add('cap-deal');
+      src.classList.add('cap-lit');
+      src.style.opacity = '0';                  // 도착할 때까지 자리는 비어 있다
+
+      const back = document.createElement('div');
+      back.className = 'vfx-dealback';
+      back.style.cssText +=
+        `left:${a.left}px;top:${a.top}px;width:${a.width}px;height:${a.height}px;` +
+        `transform:translateX(${innerWidth - a.left + 60}px) rotate(9deg);` +
+        `transition:transform ${slide}ms cubic-bezier(.18,.9,.25,1);`;
+      add(back, slide + flip + 400);
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      back.style.transform = 'translateX(0) rotate(0deg)';
+      await new Promise((r) => setTimeout(r, slide));
+
+      // 소매가 오른쪽에서 들어와 카드 위를 쓸고 나간다
+      const sl = document.createElement('div');
+      sl.className = 'vfx-sleeve';
+      sl.style.cssText +=
+        `left:${a.left + a.width}px;top:${a.top - a.height * 0.3}px;` +
+        `width:${a.width * 1.5}px;height:${a.height * 1.6}px;`;
+      sl.style.setProperty('--to', `${-(a.width * 2.5)}px`);
+      sl.style.setProperty('--d', '260ms');
+      add(sl, 300);
+      await new Promise((r) => setTimeout(r, 210));
+
+      // 촥 뒤집힌다 — 뒷면이 접히는 순간 진짜 상품이 같은 두께에서 펼쳐진다
+      back.style.transition = `transform ${flip}ms cubic-bezier(.5,0,.9,.3)`;
+      back.style.transform = 'scaleX(0.02)';
+      await new Promise((r) => setTimeout(r, flip));
+      back.remove();
+      src.style.transition = 'none';
+      src.style.transform = 'scaleX(0.02)';
+      src.style.opacity = '1';
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      src.style.transition = `transform ${flip}ms cubic-bezier(.1,.9,.3,1.25)`;
+      src.style.transform = 'scaleX(1)';
+      await new Promise((r) => setTimeout(r, flip + 60));
+      src.style.transition = ''; src.style.transform = '';
+    },
+
+    /* 딜이 끝나면 조명을 되돌린다 (transition .42s는 CSS가 쥔다) */
+    dealDone() {
+      document.body.classList.remove('cap-deal');
+      for (const e of document.querySelectorAll('#shop-offers .offer.cap-lit'))
+        e.classList.remove('cap-lit');
+    },
+
+    /* seal: true — 뒷거래로 들어온 패. 보유 칸에 박힐 때 금빛이 아니라 붉은 인장 */
+    async flyToJoker(i, doBuy, d = 560, hold = 520, { seal = false } = {}) {
       const src = document.querySelectorAll('#shop-offers .offer')[i];
       const a = src && src.getBoundingClientRect();
       const clone = src ? src.cloneNode(true) : null;
@@ -784,6 +956,10 @@
         `filter:drop-shadow(0 0 20px rgba(255,205,110,.8));will-change:transform;`;
       wrap.appendChild(scope);
       add(wrap, 3000);
+      /* 원본 상품을 숨긴다. 복제본이 그 위를 지나가면 같은 글자가 두 겹으로 찍혀
+         "고스트 낀 UI 확대"로 보인다 — 뽑혀 나온 것처럼 보이려면 자리도 비어야 한다. */
+      src.style.transition = 'opacity .18s ease';
+      src.style.opacity = '0';
 
       // ① 뽑혀 나와 한가운데로 크게
       const midX = innerWidth / 2, midY = innerHeight * 0.46;
@@ -805,12 +981,13 @@
       for (const sp of [...layer.querySelectorAll('.vfx-spark')].slice(-20)) {
         sp.style.left = midX + 'px'; sp.style.top = midY + 'px';
       }
-      await new Promise((r) => setTimeout(r, 520));
+      await new Promise((r) => setTimeout(r, hold));
 
       // ③ 보유 칸으로 빨려 들어가 박힌다
       if (doBuy) doBuy();
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       const slots = [...document.querySelectorAll('#shop-offers .owned-slot.filled')];
+      // (원본 상품은 아래에서 이미 숨겨 두었다 — 겹치면 글자가 이중 인쇄로 보인다)
       const tgt = slots[slots.length - 1]
         || document.querySelector('#jokerbar .jokerslot.filled:last-child');
       if (!tgt) return;
@@ -838,8 +1015,19 @@
       }
       tgt.style.transition = 'transform .12s cubic-bezier(.2,1.9,.4,1), filter .12s ease';
       tgt.style.transform = 'scale(1.42)';
-      tgt.style.filter = 'brightness(2.1) drop-shadow(0 0 26px rgba(255,205,110,1))';
+      tgt.style.filter = seal
+        ? 'brightness(1.7) drop-shadow(0 0 26px rgba(214,66,52,1))'
+        : 'brightness(2.1) drop-shadow(0 0 26px rgba(255,205,110,1))';
       setTimeout(() => { tgt.style.transform = ''; tgt.style.filter = ''; }, 320);
+      /* 뒷거래 표식 — 누가 꽂아준 패인지 남긴다 */
+      if (seal) {
+        const sealEl = document.createElement('div');
+        sealEl.className = 'vfx-seal';
+        sealEl.style.cssText += `left:${cx}px;top:${cy}px;`;
+        sealEl.style.setProperty('--s', Math.round(b.height * 1.35) + 'px');
+        sealEl.style.setProperty('--d', '760ms');
+        add(sealEl, 820);
+      }
       wrap.remove();
     },
 

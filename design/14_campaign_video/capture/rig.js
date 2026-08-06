@@ -76,7 +76,9 @@
     body.cap-clean #top-tutor,
     body.cap-clean #top-labels,
     body.cap-clean #playlog-panel,
-    body.cap-clean #deckbox { display: none !important; }
+    body.cap-clean #deckbox,
+    body.cap-clean #playedarea .hint,
+    body.cap-clean #jan-aura-hint { display: none !important; }
     body.cap-clean.cap-nojoker #jokerbar { display: none !important; }
     /* 우측 하단 춘향 — 영상용 누끼로 교체.
        치마가 화면 밖으로 흘러나가도 되므로 크게 잡고 오른쪽으로 밀어붙인다. */
@@ -128,8 +130,9 @@
     body.cap-premult #jt-times,
     body.cap-premult #jt-mult {
       display: inline-block;
-      transform: scale(2.5);
-      transform-origin: center;
+      transform: scale(1.6);
+      /* center로 두면 위아래로 같이 자라 카드 아래단을 문다 — 아래로만 자라게 */
+      transform-origin: top center;
       filter: drop-shadow(0 0 18px rgba(255,205,110,.95))
               drop-shadow(0 0 46px rgba(255,170,50,.75));
       transition: transform .25s cubic-bezier(.2,1.6,.3,1);
@@ -137,16 +140,19 @@
 
     /* 칩 × 배수 = 점수. 인게임 기본 크기로는 카드 사이에 낀 잔글씨로 보인다.
        영상에서는 이게 핵심 정보라 큼직하게 키운다. */
-    body.cap-clean #playedarea.juice-stage { gap: 26px !important; }
+    body.cap-clean #playedarea.juice-stage { gap: 34px !important; }
     /* 수식은 낸 패 '아래 가운데'에 붙은 하나의 결과 패널이어야 한다.
        맨 숫자만 흩어져 있으면 카드 옆에 잘못 끼어든 잔글씨로 읽힌다. */
+    /* 판(배경 박스)은 없앤다. 카드 아래단을 물고 이물감이 있었다.
+       대신 글자 자체에 검은 외곽선 + 발광을 줘서 판 위에서 그냥 읽히게 한다. */
     body.cap-clean #juice-tally .jt-row {
-      align-items: center !important; gap: 16px !important;
-      padding: 14px 36px !important; border-radius: 18px !important;
-      background: linear-gradient(180deg, rgba(10,22,16,.9), rgba(5,14,10,.95)) !important;
-      border: 3px solid rgba(255,214,130,.7) !important;
-      box-shadow: 0 0 44px rgba(255,190,80,.28),
-                  inset 0 0 22px rgba(255,190,80,.1) !important;
+      align-items: center !important; gap: 18px !important;
+      background: none !important; border: none !important;
+      box-shadow: none !important; padding: 0 !important;
+    }
+    body.cap-clean #juice-tally .jt-row > * {
+      -webkit-text-stroke: 4px rgba(10,20,14,.85);
+      paint-order: stroke fill;
     }
     /* 인게임 칩 색(--chip-blue)은 판 위에서 가라앉는다 — 영상에선 또렷하게 */
     body.cap-clean #juice-tally .jt-chips {
@@ -163,12 +169,36 @@
     body.cap-clean #juice-tally .jt-plus  { font-size: 40px !important; }
     body.cap-clean #juice-tally .jt-flat  { font-size: 42px !important; }
 
+    /* 인게임 체이스는 이전 숫자가 0.32초에 걸쳐 밀려나는 동안 다음 숫자가 들이친다.
+       원작 화면에선 괜찮지만 4:5로 좁혀 놓으면 두 숫자가 포개져 뭉갠다 → 빨리 비운다. */
+    body.cap-clean #go-cascade .go-num.push-out {
+      animation-duration: .15s !important;
+    }
+
+    /* 체이스 동안은 조커바·손패가 밝아 시선이 갈린다 → 숫자만 남긴다 */
+    body.cap-gochase #topbar,
+    body.cap-gochase #handarea,
+    body.cap-gochase #actions {
+      filter: brightness(.58) saturate(.8) !important;
+      transition: filter .18s ease;
+    }
+    body.cap-gochase #playedarea { filter: brightness(.86) !important; }
+    /* 체이스 중에는 결과 문구가 고 숫자와 싸운다 */
+    body.cap-gochase #playresult { opacity: 0 !important; }
+
     /* 고 체이스는 뷰포트 정중앙에 뜬다. 카메라는 낸 패(앵커)를 보고 있으므로
        그대로 두면 프레임 아래쪽에 걸린다 → 오버레이를 앵커 높이로 옮긴다.
        (카메라를 움직여 맞추면 몽타주 내내 고정이라는 원칙이 깨진다) */
     body.cap-clean #go-cascade .go-stage {
       transform: translateY(calc(var(--cap-focus-y, 50vh) - 50vh));
     }
+
+    /* 조합 결과(족보 · 칩×배 · +점수). 몽타주에서 유일한 설명이라 크게 */
+    body.cap-clean #playresult { margin-top: 10px !important; }
+    body.cap-clean #playresult .r-hand    { font-size: 40px !important; }
+    body.cap-clean #playresult .r-formula { font-size: 26px !important; }
+    body.cap-clean #playresult .r-score   { font-size: 46px !important;
+      text-shadow: 0 0 18px rgba(255,205,110,.8) !important; }
 
     /* 조커바가 2줄로 깨지면 상단이 잘린다 — 한 줄 고정, 빈 슬롯 제거 */
     body.cap-clean #jokerbar {
@@ -203,14 +233,25 @@
       align-items: center !important; justify-content: space-between !important;
       height: 100% !important; padding: 10px 0 22px !important;
     }
-    /* 손패 8장·낸 패 5장은 **반드시 한 줄**이다(R7).
-       wrap을 열어두면 폭이 몇 px만 모자라도 마지막 한 장이 아래로 접힌다. */
-    body.cap-center #playedarea,
+    /* 손패 8장은 **반드시 한 줄**이다(R7) — nowrap.
+       낸 패 영역은 다르다: 자식이 [카드 N장 + #playresult(width:100%)]인데
+       nowrap이면 결과 문구가 카드 **오른쪽 옆으로** 붙어버린다(실제로 그랬다).
+       wrap을 열어두면 width:100%인 결과 문구가 자연히 다음 줄로 내려간다. */
     body.cap-center #handarea {
       display: flex !important; flex-wrap: nowrap !important;
       justify-content: center !important; align-items: center !important;
       width: 100% !important;
     }
+    body.cap-center #playedarea {
+      display: flex !important; flex-wrap: wrap !important;
+      justify-content: center !important; align-items: center !important;
+      align-content: center !important; row-gap: 14px !important;
+      width: 100% !important;
+    }
+    /* 집계 중에는 세로 배치(카드 위 / 수식 아래)다.
+       **세로 방향에서 wrap을 열면 옆으로 새 '열'이 생긴다** — 수식이 카드 오른쪽에
+       나란히 붙어버렸던 원인이 이것이다. 세로일 때는 반드시 nowrap. */
+    body.cap-center #playedarea.juice-stage { flex-wrap: nowrap !important; }
     body.cap-center #juice-cards {
       display: flex !important; flex-wrap: nowrap !important;
       justify-content: center !important; align-items: flex-start !important;
@@ -496,7 +537,29 @@
     async goChase(from, to) {
       state.goLevel = to;
       state.target = goThreshold(state.baseTarget, to);
-      await runGoShatterCascade(from, to, { fullscreen: true });
+      /* 체이스가 **빈 판 위에서** 놀면 조작과 분리돼 숫자만 허공에 뜬 꼴이 된다.
+         낸 패가 사라져 있으면(정산 뒤) 결과 화면을 다시 그려 카드를 깔아준다. */
+      const pa = document.getElementById('playedarea');
+      if (!pa || !pa.querySelector('.card')) {
+        state.juicing = false;
+        state.screen = 'play';
+        render();
+      }
+      /* 점수 팝업은 제 할 일(합산)을 끝냈다. 그대로 두면 고 숫자와 겹쳐
+         금박 오버레이 두 개가 같은 자리에서 싸운다 → 체이스 시작에 걷어낸다. */
+      for (const pop of document.querySelectorAll('.vfx-scorepop')) {
+        pop.style.animation = 'none';
+        pop.style.transition = 'opacity .22s ease, transform .22s ease';
+        pop.style.opacity = '0';
+        pop.style.transform = 'translate(-50%,-50%) scale(.94)';
+      }
+      // 배경 UI를 눌러 숫자에만 시선이 가게
+      document.body.classList.add('cap-gochase');
+      try {
+        await runGoShatterCascade(from, to, { fullscreen: true });
+      } finally {
+        document.body.classList.remove('cap-gochase');
+      }
     },
 
     /* 집계를 통째로 건너뛴다.

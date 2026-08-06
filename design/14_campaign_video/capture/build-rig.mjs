@@ -47,8 +47,12 @@ function build() {
   if (!existsSync(hi)) symlinkSync(resolve(HERE, 'cards_hi'), hi, 'dir');
 
   // 리그 스크립트도 .build에서 바로 읽히도록 링크
+  /* 엠블럼을 새로 만들면 **여기에도 반드시 추가**한다.
+     빠뜨리면 사본에서 404가 나고 화면에 엑박(<img> 깨짐 아이콘)이 뜬다 —
+     홍단·총통이 실제로 그렇게 통째로 안 나왔다. */
   for (const f of ['rig.js', 'scenes.js', 'vfx.js', 'chunhyang.png', 'jumak.png',
-                   'fx_godori.png', 'fx_byeongpung.png', 'fx_ogwang.png']) {
+                   'fx_godori.png', 'fx_byeongpung.png', 'fx_ogwang.png',
+                   'fx_hongdan.png', 'fx_chongtong.png']) {
     const l = resolve(BUILD, f);
     if (!existsSync(l)) symlinkSync(resolve(HERE, f), l, 'file');
   }

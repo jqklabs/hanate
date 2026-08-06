@@ -121,6 +121,45 @@ async function scoreShow(api, { power = 1, jokerGains = null, hand = '', goBig =
   }
 }
 
+/* 실패 — 「방자를 아냐고요?」 다음에 오는 첫 판. 여기서 방자는 진다.
+ *
+ * scoreShow의 정확한 반대로 만든다. 성공 컷에서 관객을 흥분시키는 장치를
+ * **하나씩 빼는 것**이 연출이다:
+ *   cardPops(팡팡) 없음 · 엠블럼 없음(족보가 아예 안 뜬다) · 흡수 없음
+ *   · 조커 없음 · gaugeBlast 없음 · numberBurst 없음 · 고 없음
+ * 남는 건 힘없는 슬램 하나, ×1짜리 수식, 그리고 목표 근처도 못 간 게이지다.
+ *
+ * 게임의 gameOver()는 부르지 않는다 — screen이 'gameover'로 바뀌면 판이 통째로
+ * 지워져 방금 낸 패가 화면에서 사라진다. 실패는 숫자와 색으로만 말한다. */
+async function failShow(api) {
+  const before = api.scoreBefore ?? 0;
+  api.mark('land');
+  await api.wait(300);
+  api.fx.slam(undefined, { amount: 5 });     // 내리꽂는 게 아니라 툭 놓인다
+  api.anchor();
+  api.mark('slam');
+  await api.wait(760);
+
+  /* 수식은 그대로 보여준다 — ×1이 떠야 "족보가 없다"가 읽힌다.
+     성공 컷에서는 여기서 엠블럼이 배수 자리로 빨려 들어갔다. */
+  api.releaseTally();
+  await api.wait(860);
+  api.mark('tally');
+  await api.wait(1500);                      // pulse 없이 그냥 흘러간다
+
+  const gain = Math.max(0, api.score - before);
+  api.mark('sum');
+  /* 팝업이 살아 있는 동안 「목표 미달」을 띄우면 글자가 팝업 머리에 걸친다.
+     팝업 수명(d)이 끝나는 지점에서 문구가 들어오도록 붙인다. */
+  api.fx.scorePop({ from: before, gain, target: api.target,
+                    month: api.monthLabel(), d: 2500, cold: true,
+                    countDelay: 420, countDur: 700 });
+  await api.wait(2450);
+  api.mark('fail');
+  api.fx.callout('목표 미달', 1600, { cold: true });
+  await api.wait(2000);
+}
+
 /* 목표를 넘기면 게임은 스스로 고/스톱 화면을 띄운다(checkAfterPlay).
  * 이펙트 한복판에 끼어들지 않게 CSS로 막아뒀다가 여기서 원하는 박자에 연다.
  * 실제 클릭(chooseStop/chooseGo)은 정산·드로우까지 끌고 가므로
@@ -146,7 +185,7 @@ async function fastCombo(api, { n, hand, goFrom, goTo, cards, pick, first = fals
   api.resetPlay(6);
   api.setHand(cards);
   api.mark('h' + n);
-  await api.wait(240);
+  await api.wait(160);
   api.select(pick);
   api.mark('s' + n);
   await api.wait(300);
@@ -158,62 +197,66 @@ async function fastCombo(api, { n, hand, goFrom, goTo, cards, pick, first = fals
   if (first) api.anchor();        // 카메라 기준점은 여기서 한 번만
   await api.wait(340);
   api.mark('e' + n);
-  api.fx.emblem(hand, 1050);
-  api.fx.text(hand, undefined, 1050, 1.2);
+  /* 수명은 다음 마크(g)까지 남는 시간(760ms)보다 짧아야 한다.
+     길면 엠블럼이 살아 있는 채로 컷이 끝나 다음 컷 첫 프레임에 또 보인다. */
+  api.fx.emblem(hand, 700);
+  api.fx.text(hand, undefined, 700, 1.2);
   await api.wait(760);
   api.mark('g' + n);
   await api.goChase(goFrom, goTo);   // 파편 튀는 인게임 체이스 — 숫자가 밀려 올라간다
-  await api.wait(320);               // 다음 조합으로 바로 — 빈 판을 오래 보이면 늘어진다
+  await api.wait(200);               // 다음 조합으로 바로 — 빈 판을 오래 보이면 늘어진다
 }
 
 window.CAPTURE_SCENES = [
   {
     id: 'A1',
-    label: '사이클 1 — 1월, 홍단',
-    record: 26000,
+    label: '사이클 1 — 1월, 무조합 실패',
+    record: 24000,
     async run(api) {
       api.clean({ keepJokers: true });
       api.setRound(1);              // 목표 160
       api.setMoney(4);
       api.setScore(0);
-      api.setPlays(4);
-      /* 홍단(띠 3장)은 배수 4·칩 24라 맨몸으로는 160을 못 넘는다.
-         「단골」(홍단/청단/초단 +7배수) 하나만 쥐여 준다 —
-         첫 판부터 "특수패가 배수를 만든다"를 보여주는 편이 오히려 낫다. */
-      api.setJokers(['dangol']);
+      api.setPlays(3);
+      /* 특수패 0 — 아직 아무것도 없는 상태다. 이 실패가 곧 주막에 가는 이유고,
+         춘향이 특수패 두 장을 빼주는 이유다. 여기서 이기면 뒤가 전부 무너진다. */
+      api.setJokers([]);
       await api.center();
-      // 낼 패(1·2·3월 홍단)를 손패 여기저기 흩어놓는다 — 왼쪽에 몰리면 인위적이다
+      /* 낼 패는 서로 아무 관계가 없는 3장 — detectHand가 'none'(배수 1)을 낸다.
+           1월 피 · 5월 열끗 · 9월 청단
+         광 0장, 같은 달 없음, 새(2·4·8월 열끗) 없음, 띠가 한 장뿐이라 단도 안 선다.
+         손패 자체에도 애초에 답이 없다 — 홍단·고도리 재료를 섞어두면
+         "왜 저걸 안 내지?"가 되어 실패가 방자의 무능으로 읽힌다. */
       api.setHand([
-        { month: 1, type: 'tti', tag: 'hongdan' },   // ★
-        { month: 5, type: 'pi' },
-        { month: 2, type: 'tti', tag: 'hongdan' },   // ★
-        { month: 8, type: 'yeol', tag: 'godori' },
+        { month: 1, type: 'pi' },                    // ★
         { month: 6, type: 'pi' },
-        { month: 3, type: 'tti', tag: 'hongdan' },   // ★
-        { month: 9, type: 'pi' },
-        { month: 4, type: 'yeol', tag: 'godori' },
+        { month: 5, type: 'yeol' },                  // ★
+        { month: 11, type: 'pi' },
+        { month: 7, type: 'pi' },
+        { month: 9, type: 'tti', tag: 'cheongdan' }, // ★
+        { month: 4, type: 'pi' },
+        { month: 2, type: 'pi' },      // 12월엔 피가 없다(쌍피뿐) — 2월 피로
       ]);
       api.mark('hand');
-      await api.wait(1100);
+      await api.wait(900);
       api.select([
-        { month: 1, type: 'tti', tag: 'hongdan' },
-        { month: 2, type: 'tti', tag: 'hongdan' },
-        { month: 3, type: 'tti', tag: 'hongdan' },
+        { month: 1, type: 'pi' },
+        { month: 5, type: 'yeol' },
+        { month: 9, type: 'tti', tag: 'cheongdan' },
       ]);
       api.mark('select');
-      await api.wait(420);      // 고르자마자 낸다 — 뜸들이면 늘어진다
+      await api.wait(520);
       api.mark('play');
-      api.holdTally();          // 엠블럼이 끝날 때까지 숫자를 세지 않는다
+      api.holdTally();
       await api.play();
-      await scoreShow(api, { power: 1.0, hand: '홍단' });
-      await goStop(api, 'stop');       // 1사이클은 안전하게 스톱
+      await failShow(api);
     },
   },
 
   {
     id: 'A2',
-    label: '상점 — 특수패 구매',
-    record: 14000,
+    label: '상점 — 춘향의 뒷거래 → 특수패 구매',
+    record: 17500,
     async run(api) {
       api.clean({ keepJokers: true });
       api.setRound(4);
@@ -227,7 +270,18 @@ window.CAPTURE_SCENES = [
       await api.wait(2300);
       api.setShop(['gwang_sujip', 'samgwang_nori', 'pi_merchant']);
       api.mark('shop');
-      await api.wait(1300);
+      await api.wait(700);
+      /* 「춘향의 뒷거래」 — 살 두 장은 그냥 진열돼 있지 않다. 화면 밖에서 돌려져 들어온다.
+         H2에서 춘향이 덱 밑에서 빼 튕겨 보낸 그 두 장이 여기 도착하는 것이다.
+         세 번째(pi_merchant)에는 걸지 않는다 — 대비가 있어야 두 장이 특별해진다. */
+      api.mark('deal1');
+      await api.fx.dealIn(1);
+      await api.wait(180);
+      api.mark('deal2');
+      await api.fx.dealIn(0);
+      await api.wait(420);
+      api.fx.dealDone();
+      await api.wait(520);      // 조명이 돌아오는 시간(.42s)
       /* 구매에 인과를 준다: 카메라가 상품을 조준(aim) → 사면 그 패가
          퓽 날아가 상단 조커바에 박힌다(fly). 예전엔 그냥 반짝이기만 했다. */
       /* 무엇을 사는지 읽혀야 한다 → 카메라가 그 상품 하나에 바짝 붙는다(aim).
@@ -235,63 +289,49 @@ window.CAPTURE_SCENES = [
       api.aim(1);
       api.mark('aim');
       api.fx.pulse('#shop-offers .offer.cap-aim .o-name', 560);
-      await api.wait(720);
+      await api.wait(550);
       api.mark('fly');
-      await api.fx.flyToJoker(1, () => api.buy(1));       // 삼광판
+      await api.fx.flyToJoker(1, () => api.buy(1), 560, 520, { seal: true });   // 삼광판
       api.aim(null);
-      await api.wait(700);
+      await api.wait(520);
       api.aim(0);
       api.mark('aim2');
       api.fx.pulse('#shop-offers .offer.cap-aim .o-name', 560);
-      await api.wait(620);
+      await api.wait(480);
       api.mark('fly2');
-      await api.fx.flyToJoker(0, () => api.buy(0));       // 광모이
+      // 두 번째 구매는 '산다'가 이미 전달됐다 — 중앙에 머무는 시간을 절반으로
+      await api.fx.flyToJoker(0, () => api.buy(0), 560, 260, { seal: true });   // 광모이
       api.aim(null);
-      await api.wait(1200);
+      await api.wait(900);
     },
   },
 
   {
     id: 'A3',
-    label: '몽타주 — 병풍 → 고도리 → 총통 → 오광',
-    record: 46000,
+    label: '몽타주 — 고도리 → 총통 → 오광',
+    record: 42000,
     async run(api) {
       api.clean({ keepJokers: true });
       api.setRound(9);              // 목표 2,200
       api.setMoney(46);
-      /* 네 조합이 더하는 점수가 9,958점이다.
+      /* 세 조합이 더하는 점수 = 고도리 180 + 총통 140 + 오광 9,500 = **9,820**
+         (엔진으로 실측. 병풍을 뺀 손실은 138점뿐이라 시작값을 안 건드려도 된다)
          마지막에 「20고!」를 띄우려면 20고 문턱(2,200 × 13 = 28,600)은 넘고
-         21고 문턱(29,920)은 안 넘어야 한다 → 시작 19,000 → 최종 28,958. */
+         21고 문턱(29,920)은 안 넘어야 한다
+         → 시작값 허용 범위 18,780 ~ 20,099 → 19,000 유지 → 최종 28,820. */
       api.setScore(19000);
       api.setPlays(6);
       api.setJokers(['gwangpari', 'gwang_sujip', 'samgwang_nori',
                      'bigwang_usan', 'ogwang_kkum']);
       await api.center();
 
-      /* 앞의 세 조합은 **점수를 세지 않는다.** 조합을 알아보는 것만으로 충분하고,
-         매번 수식을 돌리면 같은 리듬이 네 번 반복돼 늘어진다.
-         대신 조합이 꽂힐 때마다 특수패바와 낸 패 사이에서 고가 쭉쭉 오른다. */
-      await fastCombo(api, { n: 1, hand: '병풍', goFrom: 0, goTo: 1, first: true,
-        cards: [
-          { month: 5, type: 'yeol' },                     // ★
-          { month: 9, type: 'yeol' },                     // ★
-          { month: 1, type: 'pi' },
-          { month: 6, type: 'tti', tag: 'cheongdan' },    // ★
-          { month: 11, type: 'pi' },
-          { month: 7, type: 'yeol' },                     // ★
-          { month: 3, type: 'pi' },
-          { month: 8, type: 'pi' },                       // ★
-        ],
-        // 5~9월 연속 5장. 8월은 광·열끗을 오광/고도리에 넘기고 피를 쓴다(겹침 금지)
-        pick: [
-          { month: 5, type: 'yeol' },
-          { month: 6, type: 'tti', tag: 'cheongdan' },
-          { month: 7, type: 'yeol' },
-          { month: 8, type: 'pi' },
-          { month: 9, type: 'yeol' },
-        ] });
+      /* 앞의 두 조합은 **점수를 세지 않는다.** 조합을 알아보는 것만으로 충분하고,
+         매번 수식을 돌리면 같은 리듬이 세 번 반복돼 늘어진다.
+         대신 조합이 꽂힐 때마다 특수패바와 낸 패 사이에서 고가 쭉쭉 오른다.
 
-      await fastCombo(api, { n: 2, hand: '고도리', goFrom: 1, goTo: 5,
+         병풍은 뺐다 — 5장을 깔아야 해서 혼자만 리듬이 길고, 「고도리 → 총통 → 오광」이
+         광·새·같은달로 한 줄에 꿰이는 데 비해 연속월은 눈에 안 들어온다. */
+      await fastCombo(api, { n: 1, hand: '고도리', goFrom: 0, goTo: 5, first: true,
         cards: [
           { month: 2, type: 'yeol', tag: 'godori' },      // ★
           { month: 5, type: 'pi' },
@@ -308,7 +348,7 @@ window.CAPTURE_SCENES = [
           { month: 8, type: 'yeol', tag: 'godori' },
         ] });
 
-      await fastCombo(api, { n: 3, hand: '총통', goFrom: 5, goTo: 10,
+      await fastCombo(api, { n: 2, hand: '총통', goFrom: 5, goTo: 10,
         cards: [
           { month: 10, type: 'yeol' },                    // ★
           { month: 2, type: 'pi' },
@@ -339,7 +379,7 @@ window.CAPTURE_SCENES = [
         { month: 11, type: 'kwang' },                     // ★
       ]);
       api.mark('hand');
-      await api.wait(900);
+      await api.wait(500);
       api.select([
         { month: 1, type: 'kwang' },
         { month: 3, type: 'kwang' },
