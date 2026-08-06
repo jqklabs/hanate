@@ -86,9 +86,20 @@
       drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.28))
       drop-shadow(0 0 7px rgba(255, 255, 255, 0.14))
       drop-shadow(0 0 18px rgba(255, 255, 255, 0.06));
+    opacity: 1;
+    visibility: visible;
+    transition: opacity .45s ease, visibility .45s ease;
   }
-  @media (max-width: 720px) {
-    #bg-figure { display: none; }
+  #bg-figure.away {
+    opacity: 0;
+    visibility: hidden;
+  }
+  /* 1400px 미만 — fade-out으로 숨김 (display:none 이면 트랜지션 불가) */
+  @media (max-width: 1399px) {
+    #bg-figure {
+      opacity: 0;
+      visibility: hidden;
+    }
   }
   /* 화면 외곽 청동 프레임 + 모서리 장식 (화면 가장자리 밀착) */
   body::before {
@@ -1032,6 +1043,37 @@
     font-size: 26px; letter-spacing: 0.05em;
   }
 
+  /* 준비/웰컴: 빈 플레이 판만 숨김 — #main 전체에 visibility:hidden 하면
+     자손 fixed(#actions)가 Safari에서 이후에도 안 그려지는 경우가 있음 */
+  body[data-screen="prep"] #roundpanel,
+  body[data-screen="prep"] #scorepanel,
+  body[data-screen="prep"] #previewbox,
+  body[data-screen="prep"] #playedarea,
+  body[data-screen="prep"] #handarea,
+  body[data-screen="welcome"] #roundpanel,
+  body[data-screen="welcome"] #scorepanel,
+  body[data-screen="welcome"] #previewbox,
+  body[data-screen="welcome"] #playedarea,
+  body[data-screen="welcome"] #handarea,
+  body[data-screen="prep"] #actions,
+  body[data-screen="welcome"] #actions,
+  body[data-screen="prep"] #legal-note,
+  body[data-screen="welcome"] #legal-note,
+  body[data-screen="prep"] #chunhyang,
+  body[data-screen="welcome"] #chunhyang,
+  body[data-screen="prep"] #btn-hint,
+  body[data-screen="welcome"] #btn-hint {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+  body[data-screen="play"] #actions {
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+  #modal-overlay.prep-open {
+    background: rgba(4, 12, 8, .82);
+  }
+
   #survey-overlay {
     position: fixed; inset: 0;
     background:
@@ -1244,14 +1286,15 @@
     position: relative;
     max-width: 860px;
     padding: 0;
-    overflow: hidden;
+    overflow: hidden; /* 스크롤은 .shop-body 에서 */
     border-radius: 6px;
-    background: var(--panel);
+    /* 점수판(--panel .78)보다 덜 비치게 */
+    background: rgba(8, 18, 12, .96);
     border: 1px solid var(--panel-line);
     box-shadow:
-      inset 0 0 0 3px rgba(8, 16, 12, .88),
+      inset 0 0 0 3px rgba(8, 16, 12, .92),
       inset 0 0 0 4px var(--frame-dim),
-      0 12px 40px rgba(0, 0, 0, .45);
+      0 12px 40px rgba(0, 0, 0, .55);
   }
   #modal.shop-modal::before {
     content: '';
@@ -1277,7 +1320,14 @@
       linear-gradient(var(--frame), var(--frame)) 100% 100% / 11px 1.5px no-repeat,
       linear-gradient(var(--frame), var(--frame)) 100% 100% / 1.5px 11px no-repeat;
   }
-  .shop-inner { position: relative; z-index: 1; padding: 18px 20px 14px; }
+  .shop-inner {
+    position: relative; z-index: 1;
+    padding: 18px 20px 14px;
+    display: flex;
+    flex-direction: column;
+    max-height: min(92vh, 920px);
+    box-sizing: border-box;
+  }
   .shop-sign {
     display: flex; align-items: center; justify-content: space-between;
     gap: 12px; flex-wrap: wrap;
@@ -1463,7 +1513,7 @@
   .offer {
     position: relative;
     border-radius: 6px; padding: 14px 12px 12px;
-    background: rgba(0,0,0,.38);
+    background: rgba(0,0,0,.55);
     border: 1px solid rgba(196,162,90,.22);
     box-shadow: none;
     display: flex; flex-direction: column; gap: 0;
@@ -1488,7 +1538,7 @@
     box-shadow: 0 0 14px rgba(245,158,11,.28);
   }
   .offer:not(.sold):hover {
-    background: rgba(0,0,0,.46);
+    background: rgba(0,0,0,.62);
     transform: none;
   }
   .offer.aura-common:not(.sold):hover {
@@ -1601,7 +1651,7 @@
     border-radius: 6px;
     padding: 12px 10px 10px;
     display: flex; flex-direction: column; align-items: stretch; gap: 0;
-    background: rgba(0,0,0,.28);
+    background: rgba(0,0,0,.42);
     border: 1px dashed rgba(196,162,90,.22);
     color: #64748b;
     transition: border-color .2s, background .2s, transform .25s cubic-bezier(.2,1.4,.4,1);
@@ -1621,7 +1671,7 @@
   .owned-slot.filled {
     border-style: solid;
     border-color: rgba(196,162,90,.28);
-    background: rgba(0,0,0,.38);
+    background: rgba(0,0,0,.55);
     color: #e2e8f0;
     justify-content: flex-start;
     overflow: visible;
@@ -1756,10 +1806,23 @@
   .boss-candidate.selected { border-color: var(--frame); background: rgba(196,162,90,.16); color: #fde68a; }
   .shop-footer {
     display: flex; justify-content: space-between; align-items: center;
-    margin: 2px 0 0; gap: 12px; flex-wrap: wrap;
+    margin: 0; gap: 12px; flex-wrap: wrap;
     padding: 12px 0 0;
-    background: none;
+    flex-shrink: 0;
     border-top: 1px solid rgba(196,162,90,.22);
+    background: rgba(8, 18, 12, .96);
+    /* sticky 대신 레이아웃으로 고정 — 뒤로 카드/꺾쇠가 비치지 않게 */
+    position: relative;
+    z-index: 4;
+    box-shadow: none;
+  }
+  .shop-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
   .shop-footer .sf-next {
     font-family: var(--font-ui); font-size: 13px; color: #cbd5e1;
@@ -2001,6 +2064,7 @@
     font-size: 11px; color: #94a3b8; line-height: 1.4;
   }
 
+  /* PC: 화면 하단 원래 자리 / 모바일: 액션 버튼 위에 띄움 */
   #legal-note {
     position: fixed;
     left: 50%;
@@ -2078,7 +2142,7 @@
   #ch-hint-tabs button.on {
     background: linear-gradient(180deg, #d97706, #b45309); color: #fff;
   }
-  @media (min-width: 861px) {
+  @media (min-width: 1400px) {
     #main { padding-right: 200px; }
   }
   @media (max-width: 860px) {
@@ -2161,37 +2225,60 @@
     25% { opacity: 1; transform: translate(-50%,-110%) scale(1.25); }
     100% { opacity: 0; transform: translate(-50%,-160%) scale(1); }
   }
-  #juice-tally {
+  #juice-tally,
+  #jsp-tally {
     display: flex; justify-content: center; width: 100%;
     font-weight: 900;
   }
-  #juice-tally .jt-row {
+  #juice-tally .jt-row,
+  #jsp-tally .jt-row {
     display: inline-flex; align-items: baseline; gap: 7px;
     white-space: nowrap; max-width: 100%;
   }
-  #juice-tally .jt-chips { font-size: 34px; color: var(--chip-blue); }
-  #juice-tally .jt-times {
+  #juice-tally .jt-chips,
+  #jsp-tally .jt-chips { font-size: 34px; color: var(--chip-blue); }
+  #juice-tally .jt-times,
+  #jsp-tally .jt-times {
     font-size: 26px; color: #94a3b8; display: none;
     transform: scale(.5);
   }
-  #juice-tally .jt-times.on {
+  #juice-tally .jt-times.on,
+  #jsp-tally .jt-times.on {
     display: inline; opacity: 1; transform: scale(1);
     transition: transform .25s cubic-bezier(.2,1.6,.4,1), opacity .15s;
   }
-  #juice-tally .jt-mult {
+  #juice-tally .jt-mult,
+  #jsp-tally .jt-mult {
     font-size: 34px; color: var(--mult-red);
     display: none; opacity: 0;
     transform: scale(1);
   }
-  #juice-tally .jt-mult.on {
+  #juice-tally .jt-mult.on,
+  #jsp-tally .jt-mult.on {
     display: inline; opacity: 1;
   }
-  #juice-tally .jt-mult.slam {
+  #juice-tally .jt-mult.slam,
+  #jsp-tally .jt-mult.slam {
     display: inline; opacity: 1;
     animation: jtMultSlamIn .4s cubic-bezier(.15,1.5,.4,1);
   }
-  #juice-tally .jt-mult.bump {
+  #juice-tally .jt-mult.bump,
+  #jsp-tally .jt-mult.bump {
     animation: jtMultBump .28s ease;
+  }
+  /* 15배수 초과 — 붉은 오라 */
+  #juice-tally .jt-mult.hot,
+  #jsp-tally .jt-mult.hot {
+    color: #fecaca;
+    text-shadow:
+      0 0 10px rgba(251,113,133,.95),
+      0 0 24px rgba(239,68,68,.7),
+      0 0 42px rgba(248,113,113,.45),
+      0 0 64px rgba(220,38,38,.28);
+  }
+  #juice-tally .jt-mult.hot.on:not(.slam):not(.bump),
+  #jsp-tally .jt-mult.hot.on:not(.slam):not(.bump) {
+    animation: jtMultHotPulse 1.05s ease-in-out infinite;
   }
   @keyframes jtMultSlamIn {
     0% { transform: scale(2.2) rotate(-8deg); filter: blur(2px); opacity: 0; }
@@ -2201,19 +2288,47 @@
     0%, 100% { transform: scale(1); }
     45% { transform: scale(1.16); }
   }
+  @keyframes jtMultHotPulse {
+    0%, 100% {
+      filter: drop-shadow(0 0 6px rgba(239,68,68,.55)) brightness(1);
+    }
+    50% {
+      filter: drop-shadow(0 0 16px rgba(251,113,133,.9)) brightness(1.18);
+    }
+  }
   #juice-tally .jt-plus { font-size: 26px; color: #94a3b8; }
   #juice-tally .jt-flat {
     font-size: 30px; color: #94a3b8;
     transition: transform .12s ease;
   }
-  #juice-tally .jt-eq { font-size: 26px; color: #94a3b8; display: none; }
-  #juice-tally .jt-eq.on { display: inline; opacity: 1; }
-  #juice-tally .jt-score {
-    font-size: 42px; color: #fff; display: none;
+  #juice-tally .jt-eq,
+  #jsp-tally .jt-eq { font-size: 26px; color: #94a3b8; display: none; }
+  #juice-tally .jt-eq.on,
+  #jsp-tally .jt-eq.on { display: inline; opacity: 1; }
+  #juice-tally .jt-score,
+  #jsp-tally .jt-score {
+    font-size: var(--jt-score-size, 42px); color: #fff; display: none;
     text-shadow: 0 0 18px rgba(255,255,255,.25);
+    transition: font-size .2s ease;
   }
-  #juice-tally .jt-score.on { display: inline; opacity: 1; }
-  #juice-tally .jt-score.punch { animation: scorePunch .52s ease; }
+  #juice-tally .jt-score.on,
+  #jsp-tally .jt-score.on { display: inline; opacity: 1; }
+  #juice-tally .jt-score.punch,
+  #jsp-tally .jt-score.punch { animation: scorePunch .52s ease; }
+  #juice-tally .jt-score.heat-2,
+  #jsp-tally .jt-score.heat-2 {
+    text-shadow:
+      0 0 22px rgba(254,240,138,.55),
+      0 0 36px rgba(251,191,36,.35),
+      0 0 18px rgba(255,255,255,.3);
+  }
+  #juice-tally .jt-score.heat-3,
+  #jsp-tally .jt-score.heat-3 {
+    text-shadow:
+      0 0 26px rgba(254,240,138,.75),
+      0 0 48px rgba(251,191,36,.5),
+      0 0 18px rgba(255,255,255,.35);
+  }
   @keyframes scorePunch {
     0% { transform: scale(1); }
     40% { transform: scale(1.28); }
@@ -2385,9 +2500,10 @@
       60% { opacity: 1; transform: translate(-50%, -50%) scale(.94) rotate(-1deg); filter: blur(0) brightness(1.2); }
       100% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0); filter: brightness(1); }
     }
+    /* 위로 날리면 바텀시트·버튼이 치솟아 보임 → 제자리에서 살짝 밀며 페이드 */
     @keyframes goPushOutMobile {
       0% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: brightness(1.3); }
-      100% { opacity: 0; transform: translate(-50%, -115%) scale(.55) rotate(-8deg); filter: brightness(1.8) blur(1px); }
+      100% { opacity: 0; transform: translate(-72%, -50%) scale(.62); filter: brightness(1.6); }
     }
   }
 
@@ -2452,8 +2568,8 @@
       0 8px 18px rgba(0,0,0,.55);
   }
   @keyframes jumakSlamIn {
-    0% { opacity: 0; transform: scale(1.55); filter: blur(6px) brightness(1.6); }
-    60% { opacity: 1; transform: scale(.96); filter: blur(0) brightness(1.15); }
+    0% { opacity: 0; transform: scale(1.55); filter: brightness(1.6); }
+    60% { opacity: 1; transform: scale(.96); filter: brightness(1.15); }
     100% { opacity: 1; transform: scale(1); filter: brightness(1); }
   }
   @media (max-width: 720px) {
@@ -2467,8 +2583,8 @@
     }
     #jumak-cascade .jumak-stage.slam { animation-name: jumakSlamInMobile; }
     @keyframes jumakSlamInMobile {
-      0% { opacity: 0; transform: scale(1.35); filter: blur(4px) brightness(1.45); }
-      60% { opacity: 1; transform: scale(.97); filter: blur(0) brightness(1.12); }
+      0% { opacity: 0; transform: scale(1.35); filter: brightness(1.45); }
+      60% { opacity: 1; transform: scale(.97); filter: brightness(1.12); }
       100% { opacity: 1; transform: scale(1); filter: brightness(1); }
     }
   }
@@ -2791,36 +2907,78 @@
   }
 
   /* ── 고 연출 프리뷰 (?goPreview=1) ── */
-  #go-anim-preview {
+  #go-anim-preview,
+  #juice-score-preview {
     display: none; position: fixed; inset: 0; z-index: 130;
     background: radial-gradient(ellipse at 50% 10%, #1f4630, #0a1610 65%);
     padding: 22px 14px 40px; overflow-y: auto;
     align-items: flex-start; justify-content: center;
   }
-  #go-anim-preview.on { display: flex; }
-  #go-anim-preview .gap-inner { width: min(1100px, 100%); margin: 0 auto; }
-  #go-anim-preview h1 {
+  #go-anim-preview.on,
+  #juice-score-preview.on { display: flex; }
+  #go-anim-preview .gap-inner,
+  #juice-score-preview .gap-inner { width: min(1100px, 100%); margin: 0 auto; }
+  #go-anim-preview h1,
+  #juice-score-preview h1 {
     margin: 0 0 6px; color: #fde68a; font-size: 22px; font-weight: 900;
   }
-  #go-anim-preview .gap-sub {
+  #go-anim-preview .gap-sub,
+  #juice-score-preview .gap-sub {
     color: #94a3b8; font-size: 13px; margin-bottom: 14px; line-height: 1.5;
   }
-  #go-anim-preview .gap-sub code {
+  #go-anim-preview .gap-sub code,
+  #juice-score-preview .gap-sub code {
     background: rgba(0,0,0,.35); padding: 1px 6px; border-radius: 4px; color: #cbd5e1;
   }
-  #go-anim-preview .gap-section-title {
+  #go-anim-preview .gap-section-title,
+  #juice-score-preview .gap-section-title {
     margin: 18px 0 10px; color: #fde68a; font-size: 15px; font-weight: 900;
   }
-  #go-anim-preview .gap-section-title:first-of-type { margin-top: 4px; }
-  #go-anim-preview .gap-toolbar {
+  #go-anim-preview .gap-section-title:first-of-type,
+  #juice-score-preview .gap-section-title:first-of-type { margin-top: 4px; }
+  #go-anim-preview .gap-toolbar,
+  #juice-score-preview .gap-toolbar {
     display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
   }
-  #go-anim-preview .gap-toolbar button {
+  #go-anim-preview .gap-toolbar button,
+  #juice-score-preview .gap-toolbar button {
     background: rgba(255,255,255,.1); color: #f1f5f9;
     border: 1px solid rgba(255,255,255,.18); border-radius: 8px;
     padding: 8px 12px; font-size: 12px; font-weight: 800; cursor: pointer;
   }
-  #go-anim-preview .gap-toolbar button:hover { background: rgba(255,255,255,.18); }
+  #go-anim-preview .gap-toolbar button:hover,
+  #juice-score-preview .gap-toolbar button:hover { background: rgba(255,255,255,.18); }
+  #juice-score-preview .jsp-stage {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    min-height: 120px; padding: 28px 16px;
+    background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 14px; margin-bottom: 14px;
+  }
+  #juice-score-preview .jsp-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+  }
+  #juice-score-preview .jsp-card {
+    background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 12px; padding: 12px 10px; text-align: center;
+  }
+  #juice-score-preview .jsp-card h3 {
+    margin: 0 0 4px; color: #fef3c7; font-size: 13px; font-weight: 900;
+  }
+  #juice-score-preview .jsp-card .jsp-meta {
+    font-size: 11px; color: #94a3b8; margin-bottom: 10px; min-height: 2.4em; line-height: 1.35;
+  }
+  #juice-score-preview .jsp-card button {
+    width: 100%;
+    background: rgba(255,255,255,.08); color: #e2e8f0;
+    border: 1px solid rgba(255,255,255,.15); border-radius: 8px;
+    padding: 8px; font-size: 12px; font-weight: 700; cursor: pointer;
+  }
+  #juice-score-preview .jsp-card button:hover { background: rgba(255,255,255,.14); }
+  #juice-score-preview .gap-close {
+    margin-top: 18px; display: inline-block;
+    color: #86efac; font-size: 13px; font-weight: 700;
+  }
   #go-anim-preview .gap-live-grid {
     display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
     margin-bottom: 8px;
@@ -2894,8 +3052,11 @@
     0% { opacity: 1; transform: translate(0,0) scale(1) rotate(0); }
     100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(.4) rotate(120deg); }
   }
+  /* PC: 하단 면책 문구 바로 위 (모바일은 media에서 액션바 기준으로 재지정) */
   #juice-skip-hint {
-    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+    position: fixed;
+    bottom: max(36px, calc(env(safe-area-inset-bottom) + 28px));
+    left: 50%; transform: translateX(-50%);
     z-index: 61; font-size: 11px; color: rgba(255,255,255,.45); opacity: 0;
     transition: opacity .3s; pointer-events: none;
   }
@@ -2933,38 +3094,48 @@
 
     body::before { inset: 0; }
     body::after { inset: 4px; }
+    /* 모바일 탑바: 특수패 5칸 + 냥·아이콘 진짜 한 줄 */
     #topbar {
-      gap: 8px; padding: 8px 10px;
-      align-items: center; position: sticky; top: 0; z-index: 42;
-      flex-wrap: nowrap;
-      background: rgba(10, 28, 18, .94); backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 5px;
+      padding: max(5px, env(safe-area-inset-top, 0px)) 8px 5px;
+      position: sticky; top: 0; z-index: 42;
+      background: rgba(10, 28, 18, .96);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(196,162,90,.16);
     }
     #logo { display: none; }
-    /* 로고 자리 → 특수패를 왼쪽부터 채움, 우측은 냥·버튼 묶음 */
     #jokerbar {
-      flex: 1 1 auto; min-width: 0;
-      gap: 5px; flex-wrap: nowrap; overflow-x: auto;
-      -webkit-overflow-scrolling: touch; scrollbar-width: none;
-      justify-content: flex-start;
+      flex: 1 1 auto;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 3px;
+      min-width: 0;
+      min-height: 0;
+      overflow: visible;
+      padding: 0;
     }
-    #jokerbar::-webkit-scrollbar { display: none; }
     .jokerslot {
-      width: 38px; min-width: 38px; min-height: 34px;
-      padding: 4px 2px; font-size: 0; flex-shrink: 0;
-      border-radius: 8px;
+      width: auto; min-width: 0; min-height: 36px;
+      padding: 3px 2px; font-size: 0;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
     }
     .jokerslot:not(.filled)::before {
       content: '＋'; font-size: 14px; color: #64748b; font-weight: 700;
     }
     .jokerslot.filled {
-      width: auto; min-width: 64px; max-width: 110px; padding: 5px 8px 6px;
-      gap: 2px;
+      width: auto; min-width: 0; max-width: none; padding: 3px 2px 4px;
+      gap: 0;
     }
     .jokerslot .jname {
-      font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 100%;
     }
     .jokerslot .jkind {
-      font-size: 9px; padding: 0 5px;
+      font-size: 7px; padding: 0 2px;
     }
     .jokerslot .jdesc { display: none; }
     .jokerslot.filled .jtip {
@@ -2972,45 +3143,54 @@
       top: calc(100% + 6px);
     }
     #topbar-right {
-      display: flex; align-items: center; gap: 6px;
-      flex: 0 0 auto; margin-left: auto;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 3px;
+      flex: 0 0 auto;
+      margin-left: 0;
     }
     #moneybox {
-      font-size: 16px; margin: 0; flex-shrink: 0;
-      padding: 5px 8px; border-radius: 8px;
-      background: rgba(0,0,0,.28); border: 1px solid rgba(251,191,36,.28);
+      font-size: 11px; margin: 0;
+      padding: 5px 6px; border-radius: 6px;
+      background: rgba(0,0,0,.35); border: 1px solid rgba(251,191,36,.3);
+      text-align: center; white-space: nowrap;
+      line-height: 1;
     }
     #top-help, #top-tutor, #top-labels {
       display: inline-flex; align-items: center; justify-content: center;
-      padding: 0; width: 34px; height: 34px; font-size: 15px;
+      padding: 0; width: 28px; height: 28px; font-size: 12px;
+      border-radius: 6px;
     }
 
     #main {
       display: grid;
       grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto auto minmax(0, 1fr) auto;
       grid-template-areas:
         "round score"
         "preview preview"
         "played played"
-        "hand hand";
-      gap: 6px;
-      padding: 6px 8px;
-      padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+        "hand hand"
+        "act act";
+      gap: 4px;
+      padding: 4px 8px;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
       align-items: start;
       box-sizing: border-box;
+      /* 보이는 뷰포트(dvh) 기준 — svh면 주소창 아래로 액션바가 밀려 안 보임 */
+      min-height: calc(100dvh - 48px);
     }
     #side, #table { display: contents; }
     #roundpanel {
       grid-area: round; min-width: 0;
       display: flex; flex-direction: column; justify-content: center;
-      padding: 8px 10px;
       border-radius: 4px 0 0 4px;
       border-right: none;
       background: var(--panel);
     }
     #scorepanel {
       grid-area: score; min-width: 0;
-      padding: 8px 10px;
       border-radius: 0 4px 4px 0;
       border-left: 1px solid rgba(196, 162, 90, .22);
       background: var(--panel);
@@ -3029,28 +3209,36 @@
     #roundpanel::before { border-right: none; right: 0; }
     #scorepanel::before { border-left: none; left: 0; }
     #previewbox {
-      grid-area: preview; padding: 8px 10px; min-height: 0;
+      grid-area: preview; padding: 7px 9px; min-height: 0;
       display: block !important;
     }
+    /* 선택 전에도 예상점수 틀은 항상 펼침 — 값만 갱신 */
+    #previewbox .pv-hand { font-size: 15px; margin-bottom: 5px; }
+    #previewbox .pv-boxes { gap: 4px; }
+    #previewbox .pv-box { padding: 5px 6px; min-width: 0; }
+    #previewbox .pv-box .lbl { font-size: 9px; }
+    #previewbox .pv-box .val { font-size: 16px; }
+    #previewbox .pv-total { margin-top: 5px; padding: 5px 8px; }
+    #previewbox .pv-total .tl { font-size: 11px; }
+    #previewbox .pv-total .tv { font-size: 20px; }
     #playlog-panel,
     #seedinfo,
     .side-nav { display: none !important; }
-    #legal-note { font-size: 10px; opacity: .75; }
-
-    #roundlabel { font-size: 17px; }
+    #roundlabel { font-size: 14px; }
     #roundlabel .round-meta { display: none; }
     #seasonline {
-      font-size: 9.5px; margin-top: 2px; line-height: 1.35;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      font-size: 9px; margin-top: 1px; line-height: 1.25;
+      display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;
       overflow: hidden;
     }
-    #bossbanner { padding: 6px 8px; font-size: 10.5px; margin-top: 6px !important; }
-    .statline { font-size: 11px; margin: 1px 0; }
+    #bossbanner { padding: 4px 6px; font-size: 10px; margin-top: 4px !important; }
+    .statline { font-size: 10px; margin: 0; }
     .statline b { font-size: 13px; }
-    #target-val, #score-val { font-size: 15px !important; }
-    #need-val { font-size: 13px !important; }
-    #gauge { height: 7px; margin: 3px 0 8px; }
+    #target-val, #score-val { font-size: 14px !important; }
+    #need-val { font-size: 12px !important; }
+    #gauge { height: 5px; margin: 2px 0 4px; }
     .golevel { font-size: 10px; margin-top: 2px; }
+    #roundpanel, #scorepanel { padding: 6px 7px; }
 
     #playedarea {
       grid-area: played; min-height: 0; padding: 6px 8px; gap: 4px;
@@ -3068,10 +3256,25 @@
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 8px 7px;
       justify-items: center;
-      align-content: start;
-      padding: 10px 6px 8px;
+      align-content: end;
+      align-self: stretch;
+      /* 손패를 액션 버튼 위에서 조금 띄움 */
+      padding: 6px 6px 36px;
       min-height: 0;
       overflow: visible;
+    }
+    /* PC는 줄바꿈 유지 — 모바일만 한 줄 */
+    #jan-aura-hint {
+      grid-column: 1 / -1;
+      white-space: nowrap;
+      font-size: 10px;
+      letter-spacing: -0.04em;
+      margin: 2px 0 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      padding: 0 2px;
+      text-align: center;
     }
 
     .card {
@@ -3108,23 +3311,54 @@
     .card.sel { transform: translateY(-12px) scale(1.02); }
 
     #actions {
-      position: fixed; left: 0; right: 0; bottom: 0; z-index: 46;
-      /* display:contents로 main 자식이 되므로 기존 칸에 주차 (화면 위치는 fixed) */
-      grid-area: round;
-      display: grid;
+      /* 푸터 박스 없이 버튼만 — 손패 바로 아래, 바닥에서 살짝 띄움 */
+      grid-area: act;
+      position: sticky;
+      bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+      z-index: 105;
+      display: grid !important;
       grid-template-columns: 1fr 1fr auto;
       gap: 7px; align-items: stretch;
       margin: 0;
-      padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
-      background: rgba(12, 36, 24, .98);
-      border-top: 1px solid rgba(255,255,255,.14);
-      box-shadow: 0 -8px 24px rgba(0,0,0,.35);
       width: auto;
+      padding: 0 2px calc(6px + env(safe-area-inset-bottom, 0px));
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      box-sizing: border-box;
+    }
+    #legal-note {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+      z-index: 106;
+      font-size: 9.5px;
+      color: #64748b;
+      opacity: .72;
+      text-shadow: 0 1px 2px rgba(0,0,0,.55);
+      width: max-content;
+      max-width: calc(100vw - 24px);
+      pointer-events: none;
+      text-align: center;
     }
     .bigbtn {
       width: 100%; min-width: 0; min-height: 52px;
       padding: 9px 8px 8px; font-size: 22px;
       box-shadow: 0 2px 0 rgba(0,0,0,.35);
+    }
+    /* 비활성도 색이 읽혀야 함 — 글로벌 .38 / filter는 모바일에서 증발 */
+    #actions .bigbtn:disabled {
+      opacity: .88 !important;
+      filter: none !important;
+    }
+    #btn-play {
+      background: linear-gradient(180deg, #ef4444, #b91c1c) !important;
+      color: #fff !important;
+    }
+    #btn-discard {
+      background: linear-gradient(180deg, #3b82f6, #1d4ed8) !important;
+      color: #fff !important;
     }
     .bigbtn .act-pips { gap: 4px; min-height: 7px; }
     .bigbtn .act-pips i { width: 7px; height: 7px; }
@@ -3133,10 +3367,10 @@
       display: inline-flex; align-items: center; justify-content: center;
       align-self: center; padding: 8px 10px; font-size: 11px; border-radius: 10px;
     }
-    /* 춘향: 우측 하단 캐릭터 + 말풍선 (액션바 위) */
+    /* 춘향: 우측 하단 캐릭터 + 말풍선 (액션 버튼 위) */
     #chunhyang {
       right: 6px; left: auto; width: 118px;
-      bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+      bottom: calc(100px + env(safe-area-inset-bottom, 0px));
       transform: none; z-index: 41; pointer-events: auto;
       gap: 4px;
     }
@@ -3159,11 +3393,57 @@
       max-height: min(88vh, 100%); width: 100%; max-width: 100%;
       margin: 0;
     }
-    #modal.gostop-modal { max-width: 100%; padding: 20px 14px calc(18px + env(safe-area-inset-bottom, 0px)); }
+    /* 준비 화면: 바텀시트 유령 UI 말고, 가운데 카드 + 시작 버튼 확실히 */
+    #modal-overlay.prep-open {
+      align-items: center;
+      justify-content: center;
+      padding: 20px 16px;
+      background: rgba(4, 12, 8, .88);
+    }
+    #modal.prep-modal {
+      width: min(380px, 92vw);
+      max-width: min(380px, 92vw);
+      border-radius: 16px;
+      padding: 22px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+      margin: 0 auto;
+      box-shadow: 0 22px 64px rgba(0,0,0,.55);
+    }
+    #modal.prep-modal h2 {
+      font-size: 22px;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    #modal.prep-modal .prep-stats {
+      text-align: center;
+      font-size: 15px;
+    }
+    #modal.prep-modal .prep-target { font-size: 28px; }
+    #modal.prep-modal .modal-actions { margin-top: 16px; }
+    #modal.prep-modal .choicebtn.prep-start {
+      width: 100%; min-width: 0; min-height: 56px;
+      padding: 16px 14px;
+    }
+    #modal.prep-modal .choicebtn.prep-start .t { font-size: 24px; }
+    /* 고 숫자 오버플로가 바텀시트를 위로 밀어 올리는 이슈 방지 */
+    #modal-overlay.gostop-open { overflow: hidden; }
+    #modal.gostop-modal {
+      max-width: 100%;
+      padding: 20px 14px calc(18px + env(safe-area-inset-bottom, 0px));
+      overflow: hidden;
+    }
+    #modal.gostop-modal .modal-actions { overflow: hidden; }
     .choicebtn { min-width: 0; flex: 1 1 140px; }
     .choicebtn.gs-simple {
       min-width: 0; padding: 18px 10px; min-height: 78px;
       flex-direction: column; gap: 8px;
+    }
+    .choicebtn.btn-go.gs-simple { overflow: hidden; }
+    .choicebtn.btn-go.go-btn-juice {
+      animation-name: goBtnJuicePulseMobile;
+    }
+    @keyframes goBtnJuicePulseMobile {
+      0% { filter: brightness(1.28); }
+      100% { filter: brightness(1); }
     }
     .choicebtn.gs-simple .t { font-size: 30px; }
     .choicebtn.gs-simple .gs-tip {
@@ -3179,10 +3459,25 @@
     /* 주막 모바일: 세로 거대 카드 → 가로형 컴팩트 리스트 */
     #modal.shop-modal {
       padding: 0;
-      max-height: min(92vh, 100%);
+      max-height: min(92dvh, 100%);
       border-radius: 10px 10px 0 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
-    .shop-inner { padding: 14px 14px calc(14px + env(safe-area-inset-bottom, 0px)); }
+    .shop-inner {
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: none;
+      padding: 14px 14px 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .shop-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      padding-bottom: 8px;
+    }
     .shop-sign {
       margin: 0 0 12px;
       padding: 0 0 10px;
@@ -3195,8 +3490,10 @@
     .shop-sec { margin-bottom: 10px; }
     .shop-sec-h { font-size: 12px; margin-bottom: 6px; }
     .shop-footer {
-      margin: 2px 0 0;
-      padding: 10px 0 0;
+      margin: 0 -14px;
+      padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px));
+      width: auto;
+      border-radius: 0;
     }
     #modal.settle-modal {
       max-width: 100%;
@@ -3281,39 +3578,60 @@
     }
     .owned-slot.filled { cursor: pointer; }
     .shop-utils { grid-template-columns: 1fr; }
-    .shop-footer { flex-direction: column; align-items: stretch; gap: 8px; }
+    .shop-footer {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
     .shop-footer .sf-target { font-size: 22px; }
-    #btn-nextround { width: 100%; min-height: 48px; }
+    #btn-nextround { width: 100%; min-height: 52px; font-size: 17px; }
     .hb-row { padding: 8px 10px; gap: 8px; }
     .hb-name { font-size: 15px; }
     .hb-cond { font-size: 11px; }
     .hb-mult { font-size: 14px; }
 
-    #previewbox .pv-hand { font-size: 18px; margin-bottom: 5px; }
-    #previewbox .pv-box { padding: 5px 4px; }
-    #previewbox .pv-box .val { font-size: 14px; }
-    #previewbox .pv-total { padding: 6px 8px; }
-    #previewbox .pv-total .tv { font-size: 17px; }
+    /* 선택 중 프리뷰 압축 — 위쪽 여유를 손패에 양보 */
+    #previewbox .pv-hand { font-size: 15px; margin-bottom: 4px; }
+    #previewbox .pv-box { padding: 4px 5px; }
+    #previewbox .pv-box .val { font-size: 15px; }
+    #previewbox .pv-total { padding: 5px 8px; }
+    #previewbox .pv-total .tv { font-size: 18px; }
 
     #juice-tally .jt-chips,
     #juice-tally .jt-mult { font-size: 20px; }
-    #juice-tally .jt-score { font-size: 24px; }
+    #juice-tally .jt-score { font-size: var(--jt-score-size, 24px); }
     #juice-cards { gap: 6px; min-height: 100px; align-items: flex-end; }
-    #juice-skip-hint { font-size: 12px; bottom: calc(120px + env(safe-area-inset-bottom, 0px)); }
+    /* 면책 문구(버튼 위)와 안 겹치게 한 줄 분량 더 올림 */
+    #juice-skip-hint { font-size: 12px; bottom: calc(142px + env(safe-area-inset-bottom, 0px)); }
     #hand-banner {
       top: 26vh; font-size: clamp(28px, 8vw, 44px); max-width: 92vw;
       white-space: normal; text-align: center; line-height: 1.15;
     }
-    .choicebtn.btn-go .go-btn-stage { height: 2.05em; }
+    .choicebtn.btn-go .go-btn-stage {
+      height: 2.05em;
+      overflow: hidden; /* 숫자 슬램/슬라이드가 버튼 밖으로 튀어 시트가 들썩이는 것 방지 */
+    }
     .choicebtn.btn-go .go-btn-stage .go-num,
     .choicebtn.btn-go .go-roulette { font-size: 1.95em; }
+    /* 위에서 떨어지는 연출은 모바일에서 버튼이 치솟아 보이므로 약하게 */
+    .choicebtn.btn-go .go-num.stack-in { animation-name: goBtnStackInMobile; }
+    .choicebtn.btn-go .go-num.slam-drop { animation-name: goBtnSlamDropMobile; }
+    @keyframes goBtnStackInMobile {
+      0% { opacity: 0; transform: translate(-50%, -58%) scale(.96); }
+      100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+    @keyframes goBtnSlamDropMobile {
+      0% { opacity: 0; transform: translate(-50%, -70%) scale(1.2); }
+      100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
   }
 
   @media (max-width: 720px) and (max-height: 700px) {
     #seasonline { display: none; }
-    #handarea { padding-top: 10px; gap: 4px; }
+    #handarea { padding-top: 6px; gap: 4px; }
     .card.sel { transform: translateY(-8px) scale(1.02); }
     #chunhyang { transform: scale(.9); transform-origin: bottom right; }
+    #roundpanel, #scorepanel { padding: 5px 6px; }
   }
 
   @media (max-width: 720px) and (hover: none) {
@@ -3342,13 +3660,19 @@
     position: absolute; inset: 0; z-index: 0;
     pointer-events: none;
     background: url('Assets/BackgroundFigure.webp?v=33') no-repeat right -32% bottom -16% / auto 78%;
-  filter:
+    filter:
       drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.28))
       drop-shadow(0 0 7px rgba(255, 255, 255, 0.14))
       drop-shadow(0 0 18px rgba(255, 255, 255, 0.06));
+    opacity: 1;
+    visibility: visible;
+    transition: opacity .45s ease, visibility .45s ease;
   }
-  @media (max-width: 720px) {
-    #boot-load::before { display: none; }
+  @media (max-width: 1399px) {
+    #boot-load::before {
+      opacity: 0;
+      visibility: hidden;
+    }
   }
   #boot-load > * { position: relative; z-index: 1; }
   #boot-load.done {
@@ -3597,6 +3921,39 @@
       <button type="button" onclick="previewGoAnimAll()">▶ 스타일 전부 재생</button>
     </div>
     <div class="gap-grid" id="gap-grid"></div>
+    <a class="gap-close" href="./index.html">← 게임으로 돌아가기</a>
+  </div>
+</div>
+
+<div id="juice-score-preview" aria-hidden="true">
+  <div class="gap-inner">
+    <h1>점수·배수 주스 프리뷰</h1>
+    <div class="gap-sub">
+      <code>?juicePreview=1</code> · 총점은 점수↑에 따라 폰트·거문고 피치↑ /
+      배수 <b style="color:#fecaca">15 초과</b>면 붉은 오라
+    </div>
+    <div class="jsp-stage" id="jsp-stage">
+      <div id="jsp-tally" style="opacity:1">
+        <div class="jt-row">
+          <span class="jt-chips" id="jsp-chips">120</span>
+          <span class="jt-times on">×</span>
+          <span class="jt-mult on" id="jsp-mult">8</span>
+          <span class="jt-eq on">=</span>
+          <span class="jt-score on" id="jsp-score">0</span>
+        </div>
+      </div>
+      <div class="gap-sub" id="jsp-caption" style="margin:0">재생을 눌러보세요</div>
+    </div>
+    <div class="gap-section-title">총점 롤업 (폰트 + SFX 피치)</div>
+    <div class="gap-toolbar">
+      <button type="button" onclick="previewJuiceScoreAll()">▶ 점수 전부 재생</button>
+    </div>
+    <div class="jsp-grid" id="jsp-score-grid"></div>
+    <div class="gap-section-title">배수 오라 (15× 초과)</div>
+    <div class="gap-toolbar">
+      <button type="button" onclick="previewJuiceMultAll()">▶ 배수 계단 재생</button>
+    </div>
+    <div class="jsp-grid" id="jsp-mult-grid"></div>
     <a class="gap-close" href="./index.html">← 게임으로 돌아가기</a>
   </div>
 </div>
@@ -5988,9 +6345,15 @@ async function boot() {
   setCardLabelsHidden(cardLabelsHidden());
   resetRun();
   initCardTune();
-  if (new URLSearchParams(location.search).get('goPreview') === '1') {
+  const previewQ = new URLSearchParams(location.search);
+  if (previewQ.get('goPreview') === '1') {
     hideBootLoad();
     openGoAnimPreview();
+    return;
+  }
+  if (previewQ.get('juicePreview') === '1') {
+    hideBootLoad();
+    openJuiceScorePreview();
     return;
   }
   const t0 = performance.now();
@@ -6353,6 +6716,7 @@ function cardHTML(card, opts = {}) {
 }
 
 function render() {
+  document.body.dataset.screen = state.screen || '';
   renderTopbar();
   renderSide();
   renderTable();
@@ -6530,7 +6894,7 @@ function renderSide() {
     gl.textContent = `🔥 ${state.goLevel}고! (목표 ×${goMult(state.goLevel)} · 성공 시 +${goBonus(state.goLevel, state.round)}냥)`;
   } else gl.style.display = 'none';
 
-  // 프리뷰 — 항상 같은 틀 유지 (모바일에서 깜빡임 방지)
+  // 프리뷰 — 틀은 처음부터 펼쳐 두고 값만 갱신 (접었다 펴지 않음)
   const pv = $('previewbox');
   const sel = selectedCards();
   let handName = '—';
@@ -6549,16 +6913,25 @@ function renderSide() {
     score = fmt(r.score);
     flatOff = !r.flat;
   }
-  pv.innerHTML = `
-    <div class="pv-hand">${handName}</div>
-    <div class="pv-boxes">
-      <div class="pv-box chips"><span class="lbl">기본합</span><span class="val">${chips}</span></div>
-      <div class="pv-op">×</div>
-      <div class="pv-box mult"><span class="lbl">배수</span><span class="val">${mult}</span></div>
-      <div class="pv-op">+</div>
-      <div class="pv-box flat${flatOff ? ' off' : ''}"><span class="lbl">+점수</span><span class="val">${flat}</span></div>
-    </div>
-    <div class="pv-total"><span class="tl">예상 점수</span><span class="tv">${score}</span></div>`;
+  pv.classList.remove('pv-idle');
+  if (!pv.querySelector('.pv-hand')) {
+    pv.innerHTML = `
+      <div class="pv-hand"></div>
+      <div class="pv-boxes">
+        <div class="pv-box chips"><span class="lbl">기본합</span><span class="val"></span></div>
+        <div class="pv-op">×</div>
+        <div class="pv-box mult"><span class="lbl">배수</span><span class="val"></span></div>
+        <div class="pv-op">+</div>
+        <div class="pv-box flat"><span class="lbl">+점수</span><span class="val"></span></div>
+      </div>
+      <div class="pv-total"><span class="tl">예상 점수</span><span class="tv"></span></div>`;
+  }
+  pv.querySelector('.pv-hand').textContent = handName;
+  pv.querySelector('.pv-box.chips .val').textContent = chips;
+  pv.querySelector('.pv-box.mult .val').textContent = mult;
+  pv.querySelector('.pv-box.flat .val').textContent = flat;
+  pv.querySelector('.pv-box.flat').classList.toggle('off', flatOff);
+  pv.querySelector('.pv-total .tv').textContent = score;
 
   $('deck-val').textContent = `${state.deck.length}`;
   const deckBlocked = state.boss === 'angae' && state.screen === 'play';
@@ -6613,6 +6986,7 @@ function renderTable() {
   const auraUids = hint ? new Set(hint.uids) : null;
   const auraKind = hint && hint.kind === 'junk' ? 'junk' : 'play';
   $('handarea').innerHTML = state.hand.map((c) => cardHTML(c, { selectable: true, auraUids, auraKind })).join('');
+  requestAnimationFrame(updateBgFigureForHand);
 
   // 1월 추천 안내
   let auraHint = $('jan-aura-hint');
@@ -6815,9 +7189,9 @@ function renderModal() {
   };
   const fn = screens[state.screen];
   if (!fn) {
-    m.classList.remove('gostop-modal', 'shop-modal', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal');
+    m.classList.remove('gostop-modal', 'shop-modal', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal', 'prep-modal');
     m.dataset.modalSig = '';
-    ov.classList.remove('show', 'gostop-open', 'settle-out');
+    ov.classList.remove('show', 'gostop-open', 'settle-out', 'prep-open');
     return;
   }
 
@@ -6826,9 +7200,9 @@ function renderModal() {
   if (isGoStop) {
     const n = goLevelReached(state.baseTarget, state.roundScore, state.goLevel) + 1;
     const sig = `gostop:${state.goLevel}:${n}:${state.roundScore}:${state.playsLeft}:${cardsRemaining()}`;
-    m.classList.remove('shop-modal', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal');
+    m.classList.remove('shop-modal', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal', 'prep-modal');
     m.classList.add('gostop-modal');
-    ov.classList.remove('settle-out');
+    ov.classList.remove('settle-out', 'prep-open');
     ov.classList.add('show', 'gostop-open');
     if (m.dataset.modalSig === sig) return;
     m.dataset.modalSig = sig;
@@ -6848,9 +7222,9 @@ function renderModal() {
     const sig = d
       ? `settle:${state.round}:${d.total}:${d.moneyBefore}`
       : `settle:${state.round}`;
-    m.classList.remove('gostop-modal', 'shop-modal', 'deckpeek-modal', 'howto-modal', 'end-modal');
+    m.classList.remove('gostop-modal', 'shop-modal', 'deckpeek-modal', 'howto-modal', 'end-modal', 'prep-modal');
     m.classList.add('settle-modal');
-    ov.classList.remove('gostop-open', 'settle-out');
+    ov.classList.remove('gostop-open', 'settle-out', 'prep-open');
     ov.classList.add('show');
     if (m.dataset.modalSig === sig) return;
     m.dataset.modalSig = sig;
@@ -6860,12 +7234,14 @@ function renderModal() {
   }
 
   m.dataset.modalSig = state.screen;
-  m.classList.remove('gostop-modal', 'shop-modal', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal');
+  m.classList.remove('gostop-modal', 'shop-modal', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal', 'prep-modal');
   if (state.screen === 'shop') m.classList.add('shop-modal');
+  if (state.screen === 'prep') m.classList.add('prep-modal');
   if (state.screen === 'deckpeek') m.classList.add('deckpeek-modal');
   if (state.screen === 'help' || state.screen === 'welcome') m.classList.add('howto-modal');
   if (state.screen === 'gameover' || state.screen === 'victory') m.classList.add('end-modal');
-  ov.classList.remove('gostop-open', 'settle-out');
+  ov.classList.remove('gostop-open', 'settle-out', 'prep-open');
+  if (state.screen === 'prep') ov.classList.add('prep-open');
   m.innerHTML = fn();
   ov.classList.add('show');
 }
@@ -7073,31 +7449,33 @@ function shopHTML() {
   const nm = MONTHS[next - 1];
   return `
     <div class="shop-inner">
-      <div class="shop-sign">
-        <div class="shop-titles">
-          <h2>주막</h2>
-          <div class="shop-sub">${state.round}월 클리어 · 특수패를 사고 다음 달로</div>
+      <div class="shop-body">
+        <div class="shop-sign">
+          <div class="shop-titles">
+            <h2>주막</h2>
+            <div class="shop-sub">${state.round}월 클리어 · 특수패를 사고 다음 달로</div>
+          </div>
+          <div class="shop-wallet"><b>${state.money}냥</b></div>
         </div>
-        <div class="shop-wallet"><b>${state.money}냥</b></div>
+        <section class="shop-sec" id="shop-owned">
+          <div class="shop-sec-h">내 특수패 <span>${state.jokers.length}/5</span></div>
+          <div class="shop-owned-slots">${ownedSlots}</div>
+        </section>
+        <section class="shop-sec" id="shop-offers">
+          <div class="shop-sec-h">
+            오늘의 패
+            <button type="button" class="shop-reroll" onclick="reroll()" ${state.money < state.rerollCost ? 'disabled' : ''}>리롤 · ${state.rerollCost}냥</button>
+          </div>
+          <div class="shop-offers">${offers}</div>
+        </section>
+        ${(makBlock || bossBlock) ? `<section class="shop-sec" id="shop-extras">
+          <div class="shop-sec-h">다음 달 준비</div>
+          <div class="shop-utils" style="${bossBlock ? '' : 'grid-template-columns:1fr'}">
+            ${makBlock}
+            ${bossBlock}
+          </div>
+        </section>` : ''}
       </div>
-      <section class="shop-sec" id="shop-owned">
-        <div class="shop-sec-h">내 특수패 <span>${state.jokers.length}/5</span></div>
-        <div class="shop-owned-slots">${ownedSlots}</div>
-      </section>
-      <section class="shop-sec" id="shop-offers">
-        <div class="shop-sec-h">
-          오늘의 패
-          <button type="button" class="shop-reroll" onclick="reroll()" ${state.money < state.rerollCost ? 'disabled' : ''}>리롤 · ${state.rerollCost}냥</button>
-        </div>
-        <div class="shop-offers">${offers}</div>
-      </section>
-      ${(makBlock || bossBlock) ? `<section class="shop-sec" id="shop-extras">
-        <div class="shop-sec-h">다음 달 준비</div>
-        <div class="shop-utils" style="${bossBlock ? '' : 'grid-template-columns:1fr'}">
-          ${makBlock}
-          ${bossBlock}
-        </div>
-      </section>` : ''}
       <footer class="shop-footer" id="shop-footer">
         <div class="sf-next">다음 <b>${nm.flower} ${next}월 · ${nm.name}</b>
           <div class="sf-target">목표 ${fmt(TARGETS[next - 1])}점</div></div>
@@ -7574,14 +7952,47 @@ function sfxMult() {
   playSfx(SFX.janggu, { volume: 0.6 });
   playSfx(SFX.buk, { volume: 0.63, whenMs: 50 });
 }
-function sfxScore() {
-  // 거문고 한 음을 피치 올려가며 3연타 (점수 롤업 두루룽)
-  playSfx(SFX.pluck, { volume: 0.88, rate: 0.92 });
-  playSfx(SFX.pluck, { volume: 0.92, rate: 1.05, whenMs: 90 });
-  playSfx(SFX.pluck, { volume: 0.98, rate: 1.18, whenMs: 180 });
+/** 점수 열기 0~1 (낮음→고득점). 폰트·피치 공통 */
+function juiceScoreHeat(score) {
+  const s = Math.max(0, Number(score) || 0);
+  return Math.min(1, Math.pow(s / 2500, 0.65));
 }
-function sfxScoreLand() {
-  playSfx(SFX.buk, { volume: 0.7, rate: 1.05 });
+function applyJuiceScoreStyle(scoreEl, score) {
+  if (!scoreEl) return;
+  const mobile = window.matchMedia('(max-width: 720px)').matches;
+  const h = juiceScoreHeat(score);
+  const px = Math.round((mobile ? 24 : 42) + h * (mobile ? 22 : 34));
+  scoreEl.style.setProperty('--jt-score-size', px + 'px');
+  scoreEl.classList.remove('heat-1', 'heat-2', 'heat-3');
+  if (h > 0.75) scoreEl.classList.add('heat-3');
+  else if (h > 0.45) scoreEl.classList.add('heat-2');
+  else if (h > 0.2) scoreEl.classList.add('heat-1');
+}
+/** 점수 두루룽 — 거문고 3연타 타이밍 (롤업 애니와 공유) */
+const SCORE_DURURUNG = {
+  hits: [0, 90, 180], // ms
+  settle: 200,        // 마지막 뜯기 후 숫자 착지까지
+  // 각 타격 시점의 점수 진행률 (마지막은 settle 끝 = 1)
+  values: [0, 0.4, 0.82, 1],
+};
+function sfxScoreRollMs() {
+  const { hits, settle } = SCORE_DURURUNG;
+  return juiceMs(hits[hits.length - 1] + settle);
+}
+function sfxScore(score = 0) {
+  // 거문고 3연타 — 점수 높을수록 피치↑. 반환값 = 롤업 길이(ms)
+  const h = juiceScoreHeat(score);
+  const r0 = 0.9 + h * 0.48;
+  const vols = [0.88 + h * 0.1, 0.92 + h * 0.08, 0.98 + h * 0.06];
+  const rates = [r0, r0 * 1.14, r0 * 1.28];
+  SCORE_DURURUNG.hits.forEach((when, i) => {
+    playSfx(SFX.pluck, { volume: vols[i], rate: rates[i], whenMs: juiceMs(when) });
+  });
+  return sfxScoreRollMs();
+}
+function sfxScoreLand(score = 0) {
+  const h = juiceScoreHeat(score);
+  playSfx(SFX.buk, { volume: 0.7, rate: 1.05 + h * 0.28 });
 }
 function sfxBanner(tier) {
   const rate = { S: 1.2, A: 1.1, B: 1.0, C: 0.92, D: 0.85 }[tier] ?? 1;
@@ -7619,18 +8030,15 @@ function sfxGoStep(step, final, mode = 'btn') {
   }
 }
 function sfxJumakAppear() {
-  // 두루룽 — 거문고·장구 연타, 피치 올려가며 (징/둥 아님)
+  // 거문고 뜯기만 — 피치 올려가며 두루룽 (장구/북 없음)
   const hits = [
-    { src: SFX.pluck,  volume: 0.82, rate: 0.78, whenMs: 0 },
-    { src: SFX.janggu, volume: 0.68, rate: 0.88, whenMs: 45 },
-    { src: SFX.pluck,  volume: 0.9,  rate: 0.92, whenMs: 95 },
-    { src: SFX.pluck,  volume: 0.96, rate: 1.06, whenMs: 175 },
-    { src: SFX.janggu, volume: 0.72, rate: 1.12, whenMs: 210 },
-    { src: SFX.pluck,  volume: 1.0,  rate: 1.22, whenMs: 265 },
-    { src: SFX.buk,    volume: 0.88, rate: 1.08, whenMs: 340 },
-    { src: SFX.pluck,  volume: 0.95, rate: 1.35, whenMs: 380 },
+    { volume: 0.95, rate: 0.78, whenMs: 0 },
+    { volume: 1.05, rate: 0.92, whenMs: 90 },
+    { volume: 1.12, rate: 1.06, whenMs: 170 },
+    { volume: 1.18, rate: 1.22, whenMs: 255 },
+    { volume: 1.15, rate: 1.35, whenMs: 345 },
   ];
-  for (const h of hits) playSfx(h.src, h);
+  for (const h of hits) playSfx(SFX.pluck, h);
 }
 
 function handBannerAnchor() {
@@ -8328,6 +8736,97 @@ async function previewGoAnimAll() {
   }
 }
 
+const JSP_SCORES = [80, 200, 450, 900, 1800, 3200];
+const JSP_MULTS = [5, 10, 15, 16, 24, 40];
+let jspBusy = false;
+
+function openJuiceScorePreview() {
+  const root = $('juice-score-preview');
+  const scoreGrid = $('jsp-score-grid');
+  const multGrid = $('jsp-mult-grid');
+  if (!root || !scoreGrid || !multGrid) return;
+
+  scoreGrid.innerHTML = JSP_SCORES.map((n) => {
+    const h = juiceScoreHeat(n);
+    return `
+      <div class="jsp-card">
+        <h3>+${fmt(n)}점</h3>
+        <div class="jsp-meta">heat ${(h * 100).toFixed(0)}%<br>피치×${(0.9 + h * 0.48).toFixed(2)}</div>
+        <button type="button" onclick="previewJuiceScore(${n})">재생</button>
+      </div>`;
+  }).join('');
+
+  multGrid.innerHTML = JSP_MULTS.map((m) => `
+    <div class="jsp-card">
+      <h3>×${fmtMult(m)}</h3>
+      <div class="jsp-meta">${m > 15 ? '오라 ON' : '오라 없음'}</div>
+      <button type="button" onclick="previewJuiceMult(${m})">보기</button>
+    </div>`).join('');
+
+  root.classList.add('on');
+  root.setAttribute('aria-hidden', 'false');
+  previewJuiceMult(8);
+  $('jsp-score').textContent = '0';
+  $('jsp-caption').textContent = '재생을 눌러보세요 (첫 클릭 시 사운드 잠금 해제)';
+}
+
+async function previewJuiceScore(score) {
+  if (jspBusy) return;
+  jspBusy = true;
+  unlockSfx();
+  const scoreEl = $('jsp-score');
+  const multEl = $('jsp-mult');
+  const cap = $('jsp-caption');
+  try {
+    const chips = Math.max(10, Math.round(score / Math.max(8, +String(multEl.textContent).replace(/[^\d.]/g, '') || 8)));
+    $('jsp-chips').textContent = fmt(chips);
+    applyJuiceScoreStyle(scoreEl, score);
+    scoreEl.classList.remove('punch');
+    scoreEl.textContent = '0';
+    cap.textContent = `총점 롤업 · +${fmt(score)}`;
+    const rollMs = sfxScore(score);
+    await animateNumber(scoreEl, 0, score, rollMs, fmt, { ease: 'dururung' });
+    scoreEl.textContent = '+' + fmt(score);
+    scoreEl.classList.add('punch');
+    sfxScoreLand(score);
+    await new Promise((r) => setTimeout(r, 420));
+  } finally {
+    jspBusy = false;
+  }
+}
+
+async function previewJuiceScoreAll() {
+  for (const n of JSP_SCORES) {
+    await previewJuiceScore(n);
+    await new Promise((r) => setTimeout(r, 220));
+  }
+}
+
+async function previewJuiceMult(mult) {
+  unlockSfx();
+  const multEl = $('jsp-mult');
+  const cap = $('jsp-caption');
+  if (!multEl) return;
+  multEl.textContent = fmtMult(mult);
+  multEl.classList.remove('slam', 'bump', 'hot');
+  if (mult > 15) multEl.classList.add('hot');
+  void multEl.offsetWidth;
+  multEl.classList.add('slam', 'on');
+  sfxMult();
+  cap.textContent = mult > 15
+    ? `배수 ×${fmtMult(mult)} · 오라 ON`
+    : `배수 ×${fmtMult(mult)} · 오라 없음`;
+  await new Promise((r) => setTimeout(r, 400));
+  multEl.classList.remove('slam');
+}
+
+async function previewJuiceMultAll() {
+  for (const m of JSP_MULTS) {
+    await previewJuiceMult(m);
+    await new Promise((r) => setTimeout(r, 380));
+  }
+}
+
 const SHAKE_SCORE = 100;       // 이 점수 이상일 때만 카메라 쉐이크
 const SHAKE_SCORE_HEAVY = 200; // 강한 쉐이크 + 펀치
 
@@ -8456,7 +8955,34 @@ function pulseScoreLand(el, gaugeEl) {
   setTimeout(() => el.classList.remove('score-land'), 700);
 }
 
-function animateNumber(el, from, to, ms, formatter = fmt) {
+/** ease: 'expo'(기본) | 'late' | 'dururung'(거문고 3연타 비트에 맞춰 진행) */
+function animateNumber(el, from, to, ms, formatter = fmt, { ease = 'expo' } = {}) {
+  const easeP = (p) => {
+    if (p >= 1) return 1;
+    if (ease === 'dururung') {
+      const { hits, settle, values } = SCORE_DURURUNG;
+      const total = hits[hits.length - 1] + settle;
+      const keyT = hits.map((t) => t / total).concat(1);
+      const keyV = values;
+      for (let i = 1; i < keyT.length; i++) {
+        if (p <= keyT[i]) {
+          const u = (p - keyT[i - 1]) / Math.max(1e-6, keyT[i] - keyT[i - 1]);
+          const s = u * u * (3 - 2 * u); // smoothstep
+          return keyV[i - 1] + (keyV[i] - keyV[i - 1]) * s;
+        }
+      }
+      return 1;
+    }
+    if (ease === 'late') {
+      // 시간 78%에 값 92%까지 → 마지막 구간만 천천히
+      const tSplit = 0.78;
+      const vSplit = 0.92;
+      if (p <= tSplit) return (p / tSplit) * vSplit;
+      const q = (p - tSplit) / (1 - tSplit);
+      return vSplit + (1 - vSplit) * (1 - (1 - q) * (1 - q));
+    }
+    return 1 - Math.pow(2, -10 * p);
+  };
   return new Promise((resolve) => {
     if (JUICE.skip || ms <= 0 || from === to) {
       el.textContent = formatter(to);
@@ -8467,7 +8993,7 @@ function animateNumber(el, from, to, ms, formatter = fmt) {
     const tick = (now) => {
       if (JUICE.skip) { el.textContent = formatter(to); resolve(); return; }
       const p = Math.min(1, (now - t0) / ms);
-      const eased = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);
+      const eased = easeP(p);
       el.textContent = formatter(Math.round(from + (to - from) * eased));
       if (p < 1) requestAnimationFrame(tick);
       else resolve();
@@ -8659,12 +9185,14 @@ async function playJuiceSequence(snap, fromRects = null) {
       eqEl.before(plusEl, flatEl);
     };
 
+    // 카드 칩 가산만 기존 대비 ~10% 빠르게 (아이템 정산 템포는 유지)
+    const CHIP_TEMPO = 0.9;
     if (bd.handBase > 0) {
       chips = bd.handBase;
       chipsEl.textContent = fmt(chips);
       chipsEl.style.transform = 'scale(1.2)';
       sfxChip();
-      await juiceWait(160);
+      await juiceWait(160 * CHIP_TEMPO);
       chipsEl.style.transform = '';
     }
 
@@ -8678,17 +9206,17 @@ async function playJuiceSequence(snap, fromRects = null) {
       sfxChip();
       if (step.isCore) {
         chips += step.chip;
-        await animateNumber(chipsEl, chips - step.chip, chips, juiceMs(125));
+        await animateNumber(chipsEl, chips - step.chip, chips, juiceMs(125 * CHIP_TEMPO));
       } else {
         ensureFlatUI();
         const from = flat;
         flat += step.chip;
-        await animateNumber(flatEl, from, flat, juiceMs(145));
+        await animateNumber(flatEl, from, flat, juiceMs(145 * CHIP_TEMPO));
         flatEl.style.transform = 'scale(1.18)';
-        await juiceWait(80);
+        await juiceWait(80 * CHIP_TEMPO);
         flatEl.style.transform = '';
       }
-      await juiceWait(200);
+      await juiceWait(200 * CHIP_TEMPO);
       w.classList.remove('pulse');
     }
 
@@ -8697,6 +9225,8 @@ async function playJuiceSequence(snap, fromRects = null) {
     const bumpMult = async (next, { heavy = false } = {}) => {
       mult = next;
       multEl.textContent = fmtMult(mult);
+      if (mult > 15) multEl.classList.add('hot');
+      else multEl.classList.remove('hot');
       multEl.classList.add('on');
       multEl.classList.remove('bump', 'slam');
       void multEl.offsetWidth;
@@ -8738,9 +9268,10 @@ async function playJuiceSequence(snap, fromRects = null) {
       if (tally) tally.style.opacity = '1';
     }
 
-    // 2.5) 아이템 정산 — ×·기본배수 먼저 켠 뒤, 아이템마다 카드/슬롯만 반응
+    // 2.5) 아이템 정산 — ×·기본배수 먼저 켠 뒤, 아이템마다 카드/슬롯·배수 반영
     snap._scoreBumped = snap._scoreBumped || new Set();
     const needsItemPhase = bd.jokerSteps.length > 0;
+    let multAnimatedInItems = false;
     if (needsItemPhase && !JUICE.skip) {
       $('jt-times').classList.add('on');
       multEl.classList.add('on');
@@ -8772,8 +9303,14 @@ async function playJuiceSequence(snap, fromRects = null) {
           await juiceWait(80);
           flatEl.style.transform = '';
         }
-        if (step.addMult) await bumpMult(mult + step.addMult);
-        if (step.xMult !== 1) await bumpMult(mult * step.xMult);
+        if (step.addMult) {
+          await bumpMult(mult + step.addMult);
+          multAnimatedInItems = true;
+        }
+        if (step.xMult !== 1) {
+          await bumpMult(mult * step.xMult);
+          multAnimatedInItems = true;
+        }
 
         if (step.money > 0 && !snap._moneyPaid) {
           addMoney(step.money);
@@ -8806,12 +9343,20 @@ async function playJuiceSequence(snap, fromRects = null) {
       if (snap.triggeredJokers?.length) pulseJokerSlots(snap.triggeredJokers);
     }
 
-    // 3) 최종 배수 확정 (아이템 없었으면 여기서 첫 등장 슬램)
+    // 3) 최종 배수 확정
+    // 아이템에서 이미 bump했으면 같은 배수로 heavy 슬램을 또 하지 않음 (두 번 둥둥 방지)
     $('jt-times').classList.add('on');
     multEl.textContent = fmtMult(bd.mult);
+    if (bd.mult > 15) multEl.classList.add('hot');
+    else multEl.classList.remove('hot');
     if (needsItemPhase && !JUICE.skip) {
       multEl.classList.add('on');
-      await bumpMult(bd.mult, { heavy: true });
+      if (!multAnimatedInItems) {
+        await bumpMult(bd.mult, { heavy: true });
+      } else {
+        mult = bd.mult;
+        multEl.textContent = fmtMult(bd.mult);
+      }
     } else {
       multEl.classList.remove('on', 'bump');
       void multEl.offsetWidth;
@@ -8824,10 +9369,10 @@ async function playJuiceSequence(snap, fromRects = null) {
     // 4) 최종 점수 롤업 → 사이드 착지
     eqEl.classList.add('on');
     const scoreEl = $('jt-score');
+    applyJuiceScoreStyle(scoreEl, bd.score);
     scoreEl.classList.add('on');
-    sfxScore();
-    const rollMs = juiceMs(Math.min(980, 320 + Math.abs(bd.score) * 1.35));
-    await animateNumber(scoreEl, 0, bd.score, rollMs);
+    const rollMs = sfxScore(bd.score);
+    await animateNumber(scoreEl, 0, bd.score, rollMs, fmt, { ease: 'dururung' });
     scoreEl.textContent = '+' + fmt(bd.score);
     scoreEl.classList.add('punch');
     chunhyangReact(bd.score, bd.handId);
@@ -8841,7 +9386,7 @@ async function playJuiceSequence(snap, fromRects = null) {
     if (tally) tally.classList.add('tally-fade');
 
     await flyScoreToSide(scoreEl, sideScore, '+' + fmt(bd.score));
-    sfxScoreLand();
+    sfxScoreLand(bd.score);
     pulseScoreLand(sideScore, gauge);
 
     const landMs = juiceMs(Math.min(580, 290 + Math.abs(bd.score) * 0.95));
@@ -8895,7 +9440,56 @@ async function playJuiceSequence(snap, fromRects = null) {
 // ── 시작 ───────────────────────────────────────────────────
 window.addEventListener('resize', () => {
   if (state.coachStep) renderCoach();
+  requestAnimationFrame(updateBgFigureForHand);
 });
+
+/**
+ * 배경 춘향 히트박스 — PNG는 직사각이라 투명 왼쪽이 넓음.
+ * 실제로 몸이 있는 우측 하단만 좁게 잡음.
+ */
+function bgFigureHitRect() {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const figH = vh * 0.78;
+  const figW = figH * 0.55;
+  // 이미지 폭의 오른쪽 ~45%만 (투명 여백·팔 바깥은 무시)
+  const left = Math.max(0, vw - figW * 0.45);
+  // 머리~상체 위쪽 여백은 조금 비움
+  const top = Math.max(0, vh - figH * 0.78);
+  return { left, top, right: vw, bottom: vh };
+}
+
+/** pad>0 이면 그 픽셀만큼 안쪽으로 들어와야 겹친 것으로 봄 */
+function rectsOverlap(a, b, pad = 0) {
+  return !(
+    a.right <= b.left + pad ||
+    a.left >= b.right - pad ||
+    a.bottom <= b.top + pad ||
+    a.top >= b.bottom - pad
+  );
+}
+
+/** 손패가 춘향 몸통 쪽에 어느 정도 들어오면 배경 춘향 숨김 */
+function updateBgFigureForHand() {
+  const el = $('bg-figure');
+  if (!el) return;
+  if (window.matchMedia('(max-width: 1399px)').matches) {
+    el.classList.remove('away');
+    return;
+  }
+  const fig = bgFigureHitRect();
+  // 투명 PNG 오탐 줄이려고 ~18px 정도 들어와야 숨김
+  const NEED = 18;
+  let overlap = false;
+  document.querySelectorAll('#handarea .card').forEach((card) => {
+    if (overlap) return;
+    const r = card.getBoundingClientRect();
+    if (r.width < 1 || r.height < 1) return;
+    if (rectsOverlap(r, fig, NEED)) overlap = true;
+  });
+  el.classList.toggle('away', overlap);
+}
+
 boot(); // 에셋 프리로드 → 첫 방문이면 룰 안내 → prep
 </script>
 </body>
