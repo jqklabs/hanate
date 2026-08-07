@@ -4843,10 +4843,10 @@ function syncHandSortBtn() {
   if (!btn) return;
   const byType = handSortMode === 'type';
   btn.classList.toggle('type', byType);
-  btn.textContent = byType ? '광·끗·피' : '월별';
+  btn.textContent = byType ? '종류별' : '월별';
   btn.title = byType
-    ? '손패 정렬: 광·끗·피 (누르면 월별)'
-    : '손패 정렬: 월별 (누르면 광·끗·피)';
+    ? '손패 정렬: 종류별 (누르면 월별)'
+    : '손패 정렬: 월별 (누르면 종류별)';
 }
 async function toggleHandSort() {
   handSortMode = handSortMode === 'month' ? 'type' : 'month';
