@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """아트 플레이트 위에 「화투로」 로고 · 부제 · CTA · 사행성 고지를 조판한다.
 
-4단 구조로 쌓는다.
-  1) 로고    gen/logo/logo_og.png       금박 붓글씨 · 12장 공용
-  2) 태그라인 gen/type/tagline/type.png  「꽃으로 수놓은 밤」 붓글씨 · 12장 공용
-  3) 월별 부제 게임 폰트 SSRockRegular    광고에서 본 글씨 = 게임에서 볼 글씨
-  4) CTA     gen/type/tcta/type.png     금박 붓글씨 · 12장 공용
+3단 구조로 쌓는다.
+  1) 로고     gen/logo/logo_og.png    금박 붓글씨 · 12장 공용
+  2) 월별 부제 게임 폰트 SSRockRegular  광고에서 본 글씨 = 게임에서 볼 글씨
+  3) CTA      gen/type/tcta/type.png  금박 붓글씨 · 12장 공용
 
-태그라인을 폰트가 아니라 이미지로 쓰는 이유: 인게임 폰트에 '놓' 이 없다.
+공통 태그라인(「꽃으로 수놓은 밤」)을 한 단 넣어봤으나 블록이 세로로 길어져 뺐다.
+자산은 gen/type/tagline/ 에 남아 있다.
 
 ※ SSRock 은 게임에 나오는 글자만 담은 서브셋이다(한글 557자 / 완성형 11,172자 중).
   문구를 고치면 반드시 커버리지를 다시 확인할 것 — 없는 글자는 두부(⊠)로 찍힌다.
@@ -36,7 +36,6 @@ NOTICE_FONTS = [f"{H}/Pretendard-Regular.otf", f"{H}/Pretendard-Light.otf", f"{H
 NFONT = next((p for p in NOTICE_FONTS if os.path.exists(p)), None)
 GAME_FONT = os.path.join(G, ".work", "SSRock.ttf")   # 인게임 폰트
 
-TAG_W_RATIO = 0.72     # 태그라인 폭 = 로고 폭 × 이 값
 CTA_W_RATIO = 0.46     # CTA 폭 = 로고 폭 × 이 값
 
 def _has(ch):
@@ -85,7 +84,6 @@ _logo_path = LOGO_OVERRIDE or os.path.join(G, "logo", "logo_ink.png" if INK else
 logo = fit(piece(_logo_path), LOGO_W)
 cta  = fit(piece(os.path.join(G, "logo", "cta_verm.png") if INK else os.path.join(G, "type", "tcta", "type.png")),
            round(LOGO_W * CTA_W_RATIO))
-tag  = fit(piece(os.path.join(G, "type", "tagline", "type.png")), round(LOGO_W * TAG_W_RATIO))
 SUB_COL   = (32, 30, 28, 255) if INK else (245, 238, 224, 255)
 SHADOW    = None if INK else (0, 0, 0, 175)
 NOTICE_COL = (44, 40, 36, 175) if INK else (255, 255, 255, 115)
@@ -94,10 +92,9 @@ _m = ImageDraw.Draw(Image.new("RGB", (1, 1)))
 sbb = _m.textbbox((0, 0), SUB, font=gfont)
 sub_w, sub_h = sbb[2] - sbb[0], sbb[3] - sbb[1]
 
-gap1 = round(LOGO_W * 0.045)   # 로고 → 태그라인
-gap2 = round(LOGO_W * 0.045)   # 태그라인 → 월별 부제
-gap3 = round(LOGO_W * 0.050)   # 월별 부제 → CTA
-block_h = logo.height + gap1 + tag.height + gap2 + sub_h + gap3 + cta.height
+gap1 = round(LOGO_W * 0.050)   # 로고 → 월별 부제
+gap2 = round(LOGO_W * 0.055)   # 월별 부제 → CTA
+block_h = logo.height + gap1 + sub_h + gap2 + cta.height
 cx = LX + LOGO_W // 2                        # 정렬 기준 = 로고 가로 중앙
 
 # 타이포가 앉을 자리를 살짝 눌러 가독성 확보 (아트를 덮지 않는 수준)
@@ -110,13 +107,12 @@ if not INK:
 
 y = LY
 art.alpha_composite(logo, (LX, y));                       y += logo.height + gap1
-art.alpha_composite(tag, (cx - tag.width // 2, y));       y += tag.height + gap2
 dsub = ImageDraw.Draw(art)
 sx = cx - sub_w // 2 - sbb[0]
 layers = ([(0, 0, SUB_COL)] if SHADOW is None else [(3, 3, SHADOW), (0, 0, SUB_COL)])
 for dx, dy, col in layers:
     dsub.text((sx + dx, y - sbb[1] + dy), SUB, font=gfont, fill=col)
-y += sub_h + gap3
+y += sub_h + gap2
 art.alpha_composite(cta,  (cx - cta.width // 2, y))
 
 # ── 사행성 고지 — 하단 중앙, 눈에 띄지 않되 판독 가능하게 ──────
@@ -133,4 +129,4 @@ art.convert("RGB").resize((SPEC_W, SPEC_H), Image.LANCZOS).save(OUT, quality=92)
 miss = [c for c in SUB if c != " " and not _has(c)]
 if miss:
     print(f"!! 인게임 폰트에 없는 글자: {''.join(miss)}  ({SUB})", file=sys.stderr)
-print(f"{OUT}  {SPEC_W}x{SPEC_H}  로고 {logo.size} 태그 {tag.size} 부제 {sub_w}x{sub_h} CTA {cta.size}  블록 {block_h}")
+print(f"{OUT}  {SPEC_W}x{SPEC_H}  로고 {logo.size} 부제 {sub_w}x{sub_h} CTA {cta.size}  블록 {block_h}")
