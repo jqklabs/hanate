@@ -84,8 +84,10 @@ _logo_path = LOGO_OVERRIDE or os.path.join(G, "logo", "logo_ink.png" if INK else
 logo = fit(piece(_logo_path), LOGO_W)
 cta  = fit(piece(os.path.join(G, "logo", "cta_verm.png") if INK else os.path.join(G, "type", "tcta", "type.png")),
            round(LOGO_W * CTA_W_RATIO))
-SUB_COL   = (32, 30, 28, 255) if INK else (245, 238, 224, 255)
-SHADOW    = None if INK else (0, 0, 0, 175)
+# 부제는 정보 전달용이지 시선을 끄는 층이 아니다. 로고와 CTA 가 금박이므로
+# 부제까지 순백 풀강도로 찍으면 위계가 무너진다 — 채도를 낮추고 투명도를 준다.
+SUB_COL   = (32, 30, 28, 235) if INK else (226, 218, 204, 205)
+SHADOW    = None if INK else (0, 0, 0, 120)
 NOTICE_COL = (44, 40, 36, 175) if INK else (255, 255, 255, 115)
 gfont = ImageFont.truetype(GAME_FONT, SUB_SIZE)
 _m = ImageDraw.Draw(Image.new("RGB", (1, 1)))
@@ -109,7 +111,7 @@ y = LY
 art.alpha_composite(logo, (LX, y));                       y += logo.height + gap1
 dsub = ImageDraw.Draw(art)
 sx = cx - sub_w // 2 - sbb[0]
-layers = ([(0, 0, SUB_COL)] if SHADOW is None else [(3, 3, SHADOW), (0, 0, SUB_COL)])
+layers = ([(0, 0, SUB_COL)] if SHADOW is None else [(2, 2, SHADOW), (0, 0, SUB_COL)])
 for dx, dy, col in layers:
     dsub.text((sx + dx, y - sbb[1] + dy), SUB, font=gfont, fill=col)
 y += sub_h + gap2

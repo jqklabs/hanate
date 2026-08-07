@@ -25,18 +25,18 @@ mkdir -p "$OUT"
 lay () { $PY src/lockup.py "$@"; }
 
 #      아트                   출력                        규격w 규격h crop  로고 lx  ly  부제                             크기
-lay $G/z01/01_january.png   $OUT/v3_01_january.jpg   1200 1200 1254 480  70  700 '1월부터 12월까지, 열두 판'        50
-lay $G/z02/02_february.png  $OUT/v3_02_february.jpg  1200  628  804 500  80  185 '당신이 고른 패가 승부를 만든다'    46
-lay $G/m03/art.png          $OUT/v3_03_march.jpg      960 1200 1280 450  60  735 '3월에서 대부분 멈춘다'            50
-lay $G/m04/art.png          $OUT/v3_04_april.jpg     1200  628  804 500  80  185 '패를 모을수록 점점 세진다'         46
-lay $G/m05/art.png          $OUT/v3_05_may.jpg       1200 1200 1254 480  70  700 '여기서 멈출까, 더 갈까'           50
-lay $G/m06/art.png          $OUT/v3_06_june.jpg       960 1200 1280 450  60  735 '6월, 아직 절반이다'              50
-lay $G/m07/art.png          $OUT/v3_07_july.jpg      1200  628  804 500  80  185 '아는 카드, 처음 보는 규칙'           46
-lay $G/m08/art.png          $OUT/v3_08_august.jpg    1200 1200 1254 480  70  700 '실패하면 다시 1월부터'            50
-lay $G/m09/art45.png        $OUT/v3_09_september.jpg  960 1200 1254 440  55  715 '9월부터는 판이 당신을 노린다'      46
-lay $G/m10/art.png          $OUT/v3_10_october.jpg   1200  628  804 500  80  185 '운이 아니라 선택이 이긴다'         46
-lay $G/m11/art.png          $OUT/v3_11_november.jpg  1200 1200 1254 480  70  700 '한 판에 기회는 네 번'             50
-lay $G/m12/art.png          $OUT/v3_12_december.jpg   960 1200 1280 450  60  735 '인공지능도 12월을 못 넘었다'       46
+lay $G/z01/01_january.png   $OUT/v3_01_january.jpg   1200 1200 1254 600  70  660 '1월부터 12월까지, 열두 판'        44
+lay $G/z02/02_february.png  $OUT/v3_02_february.jpg  1200  628  804 620  80  150 '당신이 고른 패가 승부를 만든다'    41
+lay $G/m03/art.png          $OUT/v3_03_march.jpg      960 1200 1280 560  60  700 '3월에서 대부분 멈춘다'            44
+lay $G/m04/art.png          $OUT/v3_04_april.jpg     1200  628  804 620  80  150 '패를 모을수록 점점 세진다'         41
+lay $G/m05/art.png          $OUT/v3_05_may.jpg       1200 1200 1254 600  70  660 '여기서 멈출까, 더 갈까'           44
+lay $G/m06/art.png          $OUT/v3_06_june.jpg       960 1200 1280 560  60  700 '6월, 아직 절반이다'              44
+lay $G/m07/art.png          $OUT/v3_07_july.jpg      1200  628  804 620  80  150 '아는 카드, 처음 보는 규칙'           41
+lay $G/m08/art.png          $OUT/v3_08_august.jpg    1200 1200 1254 600  70  660 '실패하면 다시 1월부터'            44
+lay $G/m09/art45.png        $OUT/v3_09_september.jpg  960 1200 1254 545  55  680 '9월부터는 판이 당신을 노린다'      41
+lay $G/m10/art.png          $OUT/v3_10_october.jpg   1200  628  804 620  80  150 '운이 아니라 선택이 이긴다'         41
+lay $G/m11/art.png          $OUT/v3_11_november.jpg  1200 1200 1254 600  70  660 '한 판에 기회는 네 번'             44
+lay $G/m12/art.png          $OUT/v3_12_december.jpg   960 1200 1280 560  60  700 '인공지능도 12월을 못 넘었다'       41
 
 echo
 echo "=== assets/ads-v3 ==="
