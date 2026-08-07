@@ -40,28 +40,9 @@ c4 = og.crop((left, 0, left + cw, oh)).resize((W, H), Image.LANCZOS)
 vignette(c4, 0.45).save(outdir + ('/C4-16x9.png' if ratio == '16x9' else '/C4.png'))
 print('플레이트 → C4' + ('-16x9' if ratio == '16x9' else '') + '.png')
 
-# ── C6: CTA — 로고와 카피가 있는 영역을 어두운 판 위에 앉힌다 ──
-plate = Image.new('RGB', (W, H), BG)
-bw = int(oh * W / H)
-bl = max(0, min(ow - bw, int(ow * 0.30) - bw // 2))
-bgimg = og.crop((bl, 0, bl + bw, oh)).resize((W, H), Image.LANCZOS)
-bgimg = bgimg.filter(ImageFilter.GaussianBlur(9))
-plate = Image.blend(plate, bgimg, 0.30)
-
-# 로고 + 카피 블록 (원본 비율 기준 좌표)
-lx0, ly0, lx1, ly1 = int(ow*0.075), int(oh*0.22), int(ow*0.46), int(oh*0.70)
-logo = og.crop((lx0, ly0, lx1, ly1))
-lw = int(W * (0.52 if ratio == '16x9' else 0.86))
-logo = logo.resize((lw, int(logo.height * lw / logo.width)), Image.LANCZOS)
-# 가장자리를 페더링해 붙인 티(직사각형 경계)를 없앤다
-import PIL.ImageDraw as D2
-mask = Image.new('L', logo.size, 0)
-pad = int(min(logo.size) * 0.10)
-D2.Draw(mask).rectangle([pad, pad, logo.width - pad, logo.height - pad], fill=255)
-mask = mask.filter(ImageFilter.GaussianBlur(pad * 0.7))
-plate.paste(logo, ((W - lw) // 2, (H - logo.height) // 2), mask)
-vignette(plate, 0.5).save(outdir + ('/C6-16x9.png' if ratio == '16x9' else '/C6.png'))
-print('플레이트 → C6' + ('-16x9' if ratio == '16x9' else '') + '.png')
+# C6(엔딩 CTA)는 여기서 만들지 않는다 — make-ending.mjs / ending.html 담당.
+# 배포 OG 아트는 게임명이 래스터에 구워져 있어 「십이화」로 못 바꾼다.
+# (지우려 해봤지만 굵은 금박 붓글씨는 흐리든 인페인트하든 자국이 남았다)
 `;
 
 export function makePlates() {

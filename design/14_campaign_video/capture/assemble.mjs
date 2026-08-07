@@ -292,11 +292,13 @@ const EDIT = [
        ① 낙하 : 크게 떠 있다가 drop(가속) ease로 내리꽂힌다. 착지가 컷 '끝'
        ② 착지 : 다음 컷 첫 프레임 = 부딪히는 순간. 제 크기보다 살짝 크게 박혔다가
                 (1.05) 진동하며 앉는다. 흔들림은 짧고 날카롭게(26/62) = 챡 */
-  { id: 'C6', kind: 'plate', use: 0.44, trans: 'fade', transDur: 0.06,
-    cam: { z: [4.60, 1.05], ease: 'drop' } },
-  { id: 'C6', kind: 'plate', use: 1.30, trans: 'fade', transDur: 0.033,
-    fx: { shake: 30, at: 0.0, flash: 0.16, decay: 26, freq: 62 },
-    cam: { z: [1.05, 1.00], ease: 'dash' } },
+  /* 로고 — **엔딩 씬 자체가 영상이다** (ending.html → plates/C6.mp4).
+     낙하·착지 진동·열두 달의 꽃이 전부 플레이트 안에서 일어난다.
+     예전엔 정지 이미지를 카메라 배율로 떨어뜨렸는데, 그러면 화면이 통째로
+     확대·축소될 뿐이라 '판에 내리친다'가 아니라 '줌아웃'으로 읽혔다.
+     여기서는 카메라를 거의 세워 둔다 — 움직임을 두 번 주면 서로 상쇄된다. */
+  { id: 'C6', kind: 'plate', use: 2.20, trans: 'fade', transDur: 0.06,
+    cam: { z: [1.03, 1.00], ease: 'brake' } },
 ];
 
 /* Higgsfield로 뽑아 끼울 시네마틱 슬롯.
@@ -728,7 +730,9 @@ function checkOverlaps(cuts) {
 }
 
 // recOnly — 생성 플레이트를 빼고 코드로 녹화한 컷만 이어붙인다 (검수용)
-export function assemble({ recOnly = false, ratio = '16x9' } = {}) {
+/* only — 특정 플레이트 컷만 따로 굽는다 (예: 엔딩 로고만 교체해 편집자가 갈아끼울 때).
+   본편을 통째로 다시 굽지 않아도 되고, 카메라·흔들림·플래시가 본편과 완전히 같다. */
+export function assemble({ recOnly = false, ratio = '16x9', only = null } = {}) {
   const [W, H] = RATIOS[ratio];
   const prof = PROFILE[ratio] || PROFILE['4x5'];
   SUFFIX = prof.suffix;
@@ -737,12 +741,15 @@ export function assemble({ recOnly = false, ratio = '16x9' } = {}) {
   mkdirSync(WORK, { recursive: true });
   mkdirSync(FINAL_DIR, { recursive: true });
 
-  const cuts = recOnly ? EDIT.filter((c) => c.kind !== 'plate') : EDIT;
+  let cuts = recOnly ? EDIT.filter((c) => c.kind !== 'plate') : EDIT;
+  if (only) cuts = cuts.filter((c) => only.includes(c.id || c.src));
+  if (!cuts.length) throw new Error(`컷이 없습니다 — only=${only}`);
   checkOverlaps(cuts);
-  checkCamera(cuts, { markAt, rectsAt, one });
+  if (!only) checkCamera(cuts, { markAt, rectsAt, one });
   const clips = cuts.map((c, i) => buildClip(c, i, W, H));
   const target = resolve(FINAL_DIR,
-    recOnly ? 'hwatro_recorded_only.mp4' : `hwatro_campaign_${ratio}.mp4`);
+    only ? `hwatro_${only.join('-')}_${ratio}.mp4`
+         : recOnly ? 'hwatro_recorded_only.mp4' : `hwatro_campaign_${ratio}.mp4`);
 
   if (existsSync(target)) {
     mkdirSync(resolve(FINAL_DIR, 'prev'), { recursive: true });
@@ -759,11 +766,13 @@ export function assemble({ recOnly = false, ratio = '16x9' } = {}) {
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const recOnly = process.argv.includes('--rec-only');
+  const oi = process.argv.indexOf('--only');
+  const only = oi >= 0 ? process.argv[oi + 1].split(',') : null;
   if (process.argv.includes('--ratios')) {
     // 완성본을 다시 자르지 않고 비율마다 원본에서 새로 렌더한다 (화질 유지)
-    for (const r of Object.keys(RATIOS)) assemble({ ratio: r });
+    for (const r of Object.keys(RATIOS)) assemble({ ratio: r, only });
   } else {
     const i = process.argv.indexOf('--ratio');
-    assemble({ recOnly, ratio: i >= 0 ? process.argv[i + 1] : '4x5' });
+    assemble({ recOnly, only, ratio: i >= 0 ? process.argv[i + 1] : '4x5' });
   }
 }

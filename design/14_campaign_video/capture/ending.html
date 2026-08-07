@@ -1,0 +1,129 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>엔딩 씬 — 십이화</title>
+<!--
+  엔딩(C6) 씬. **배경 한 장 + 로고를 쿵 찍는다.** 그게 전부다.
+
+    ① 낙하   로고가 화면 밖 크기에서 모션블러를 끌고 내리꽂힌다
+    ② 착지   짧고 날카로운 흔들림 + 감쇠 진동으로 앉는다
+    ③ 카피   「몇월까지 깰수있으세요?」가 아래에서 올라온다
+
+  배경은 제목 자리가 비어 있는 전용 키아트(art/bg_end*.png)다.
+  꽃·파티클 연출은 뺐다 — 스티커처럼 떠서 판을 망쳤다.
+
+  **시간은 renderFrame(t)의 순수 함수다.** rAF를 쓰지 않는다 —
+  캡처가 한 프레임씩 t를 지정해 찍기 때문에 프레임 유실이 원천적으로 없다.
+
+  ?ratio=16x9 로 가로, 기본은 4:5.
+-->
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #000; overflow: hidden; }
+
+  #plate {
+    position: relative; overflow: hidden;
+    width: var(--w); height: var(--h);
+    background: #070a08;
+    --u: calc(var(--h) / 100);        /* 크기 기준 = 높이의 1% */
+  }
+  /* 흔들림은 배경까지 같이 걸어야 충격으로 읽힌다 */
+  #shake { position: absolute; inset: -4%; }
+
+  #bg {
+    position: absolute; inset: 0;
+    background: url('art/bg_end_45.png') center/cover no-repeat;
+  }
+  body.r16x9 #bg { background-image: url('art/bg_end_16x9.png'); }
+
+  /* 착지 순간 가운데가 잠깐 달아오른다 */
+  #glow {
+    position: absolute; left: 50%; top: var(--cy); transform: translate(-50%, -50%);
+    width: 120%; aspect-ratio: 1/1; opacity: 0;
+    background: radial-gradient(closest-side, rgba(255,210,130,.55), transparent 70%);
+    mix-blend-mode: screen;
+  }
+
+  #logo {
+    position: absolute; left: 50%; top: var(--cy);
+    width: var(--logo-w); aspect-ratio: 1426 / 783;
+    margin-left: calc(var(--logo-w) / -2);
+    background: url('../../15_google_campaign/gen/logo/logo_og.png') center/contain no-repeat;
+    mix-blend-mode: screen;
+    transform-origin: 50% 50%;
+  }
+  #copy {
+    position: absolute; left: 50%; top: var(--copy-y);
+    width: var(--copy-w); aspect-ratio: 632 / 65;
+    margin-left: calc(var(--copy-w) / -2);
+    background: url('art/og_copy.png') center/contain no-repeat;
+  }
+  #flash {
+    position: absolute; inset: 0; background: #ffe9bd; mix-blend-mode: screen; opacity: 0;
+  }
+
+  /* 4:5 (기본) */
+  #plate { --w: 1080px; --h: 1350px; --cy: 46%; --logo-w: 82%; --copy-w: 60%; --copy-y: 64%; }
+  /* 16:9 */
+  body.r16x9 #plate { --w: 1920px; --h: 1080px; --cy: 46%; --logo-w: 48%; --copy-w: 31%; --copy-y: 70%; }
+</style>
+
+<div id="plate">
+  <div id="shake">
+    <div id="bg"></div>
+    <div id="glow"></div>
+    <div id="logo"></div>
+    <div id="copy"></div>
+  </div>
+  <div id="flash"></div>
+</div>
+
+<script>
+if (new URLSearchParams(location.search).get('ratio') === '16x9')
+  document.body.classList.add('r16x9');
+
+/* ── 타임라인 (초) ── */
+const T_HIT = 0.42;      // 착지
+const T_COPY = 0.85;     // 카피 등장
+const DUR = 2.20;        // 전체 길이
+
+const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+const drop = (p) => p * p * p;                     // 가속 낙하
+const brake = (p) => 1 - Math.pow(1 - p, 3);
+// 착지 후 감쇠 진동 — 챡 하고 앉는다
+const settle = (t) => Math.exp(-t * 17) * Math.cos(t * 48);
+
+const el = (id) => document.getElementById(id);
+const U = () => el('plate').clientHeight / 100;
+
+function renderFrame(t) {
+  const u = U();
+  const td = t - T_HIT;                             // 착지 기준 시간
+
+  // ① 로고 — 낙하 → 착지 진동
+  const z = t < T_HIT
+    ? 4.4 + (1.0 - 4.4) * drop(clamp01(t / T_HIT))
+    : 1 + settle(td) * .08;
+  const blur = t < T_HIT ? ((T_HIT - t) / T_HIT) * 16 : 0;
+  el('logo').style.transform = `translateY(-50%) scale(${z.toFixed(4)})`;
+  el('logo').style.filter = `blur(${blur.toFixed(2)}px) ` +
+    `drop-shadow(0 ${(u * .5).toFixed(1)}px ${(u * 1.6).toFixed(1)}px rgba(0,0,0,.75))`;
+
+  // ② 착지 — 흔들림 · 달아오름 · 짧은 섬광
+  const sh = td >= 0 ? Math.exp(-td * 14) : 0;
+  el('shake').style.transform =
+    `translate(${(Math.sin(td * 84) * sh * u * 1.4).toFixed(2)}px,` +
+    `${(Math.cos(td * 68) * sh * u * 2.4).toFixed(2)}px)`;
+  el('glow').style.opacity = td >= 0 ? Math.exp(-td * 6.5).toFixed(3) : '0';
+  // R8/R9 — 흰 섬광은 최소로. 짧고 약하게만 친다.
+  el('flash').style.opacity = td >= 0 ? (Math.exp(-td * 28) * .15).toFixed(3) : '0';
+
+  // ③ 카피 — 아래에서 올라온다
+  const cp = clamp01((t - T_COPY) / .5);
+  el('copy').style.opacity = cp.toFixed(3);
+  el('copy').style.transform = `translateY(${((1 - brake(cp)) * u * 2.2).toFixed(2)}px)`;
+}
+
+window.renderFrame = renderFrame;
+window.ENDING = { DUR, FPS: 60 };
+renderFrame(0);
+</script>
