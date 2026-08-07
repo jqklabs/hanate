@@ -1296,12 +1296,6 @@
     opacity: 0;
     pointer-events: none;
   }
-  .settle-skip-hint {
-    margin-top: 16px;
-    font-family: var(--font-ui); font-size: 11px; font-weight: 600;
-    color: rgba(212,175,55,.45); letter-spacing: .04em;
-  }
-
   /* ── 주막 (왼쪽 점수판 .panel 톤) ────────────────────────────── */
   #modal.shop-modal {
     position: relative;
@@ -2176,7 +2170,6 @@
   #juice-root {
     position: fixed; inset: 0; z-index: 120; pointer-events: none;
   }
-  #juice-root.skipable { pointer-events: auto; cursor: pointer; }
   body.juicing #actions button,
   body.juicing #deckbox { pointer-events: none; opacity: .45; }
   body.screen-shake { animation: screenShake .42s ease; }
@@ -3073,16 +3066,6 @@
     0% { opacity: 1; transform: translate(0,0) scale(1) rotate(0); }
     100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(.4) rotate(120deg); }
   }
-  /* PC: 하단 면책 문구 바로 위 (모바일은 media에서 액션바 기준으로 재지정) */
-  #juice-skip-hint {
-    position: fixed;
-    bottom: max(36px, calc(env(safe-area-inset-bottom) + 28px));
-    left: 50%; transform: translateX(-50%);
-    z-index: 61; font-size: 11px; color: rgba(255,255,255,.45); opacity: 0;
-    transition: opacity .3s; pointer-events: none;
-  }
-  #juice-root.skipable #juice-skip-hint { opacity: 1; }
-
   /* 버리기 — 손패에서 그대로 날아감 (박스/텍스트 없음) */
   .card.discarding {
     animation: discardOut .48s cubic-bezier(.4,0,.6,1) forwards;
@@ -3622,8 +3605,6 @@
     #juice-tally .jt-mult { font-size: 20px; }
     #juice-tally .jt-score { font-size: var(--jt-score-size, 24px); }
     #juice-cards { gap: 6px; min-height: 100px; align-items: flex-end; }
-    /* 면책 문구(버튼 위)와 안 겹치게 한 줄 분량 더 올림 */
-    #juice-skip-hint { font-size: 12px; bottom: calc(142px + env(safe-area-inset-bottom, 0px)); }
     #hand-banner {
       top: 26vh; font-size: clamp(28px, 8vw, 44px); max-width: 92vw;
       white-space: normal; text-align: center; line-height: 1.15;
@@ -3887,7 +3868,6 @@
 
 <div id="juice-root">
   <div id="hand-banner"></div>
-  <div id="juice-skip-hint">클릭하면 연출 스킵</div>
 </div>
 <div id="go-cascade" aria-hidden="true"><div class="go-stage" id="go-cascade-stage"></div></div>
 <div id="jumak-cascade" aria-hidden="true">
@@ -5297,13 +5277,6 @@ async function playSettleJuice() {
   const rows = () => [...document.querySelectorAll('#settle-table tr.settle-row')];
   const ov = $('modal-overlay');
   const m = $('modal');
-  // 스톱 클릭 버블이 스킵으로 먹히지 않게, 현재 클릭 끝난 뒤에만 리스너 등록
-  let skipArmed = false;
-  const skipHandler = () => { if (skipArmed) settleJuiceSkip = true; };
-  const armSkip = () => {
-    skipArmed = true;
-    if (ov) ov.addEventListener('click', skipHandler);
-  };
 
   // 줄별 금액 — +0냥은 무음, +1냥 이상 로그가 뜰 때마다 짤랑
   const settleAmts = (() => {
@@ -5324,7 +5297,6 @@ async function playSettleJuice() {
     // 한 줄씩 보여 주기 전에 진입 클릭이 끝날 때까지 한 템포
     await wait(40);
     if (state.screen !== 'settle') return;
-    armSkip();
 
     let list = rows();
     if (list.length) {
@@ -5334,13 +5306,8 @@ async function playSettleJuice() {
         await wait(900);
       } else {
         for (let i = 0; i < list.length; i++) {
-          if (state.screen !== 'settle') return;
+          if (state.screen !== 'settle' || settleJuiceSkip) return;
           list = rows();
-          if (settleJuiceSkip) {
-            list.forEach((r) => r.classList.add('on'));
-            thudAllPositive();
-            break;
-          }
           const row = list[i];
           if (!row) break;
           if (!row.classList.contains('on')) {
@@ -5350,11 +5317,11 @@ async function playSettleJuice() {
             await wait(final ? 900 : 520);
           }
         }
-        if (state.screen !== 'settle') return;
-        await wait(settleJuiceSkip ? 450 : 1400);
+        if (state.screen !== 'settle' || settleJuiceSkip) return;
+        await wait(1400);
       }
     }
-    if (state.screen !== 'settle') return;
+    if (state.screen !== 'settle' || settleJuiceSkip) return;
 
     // 정산 팝업을 완전히 내린 다음에야 주막 등장
     if (ov) {
@@ -5368,13 +5335,10 @@ async function playSettleJuice() {
       m.dataset.modalSig = '';
     }
     await wait(reduce ? 120 : 280);
-    if (state.screen !== 'settle') return;
+    if (state.screen !== 'settle' || settleJuiceSkip) return;
     await openShop();
   } finally {
-    if (ov) {
-      ov.removeEventListener('click', skipHandler);
-      ov.classList.remove('settle-out');
-    }
+    if (ov) ov.classList.remove('settle-out');
     settleJuiceBusy = false;
     settleJuiceSkip = false;
   }
@@ -5881,11 +5845,6 @@ function abortTransientUI() {
   } catch (_) {}
 
   document.body.classList.remove('juicing', 'screen-shake', 'punch');
-  const juice = $('juice-root');
-  if (juice) {
-    juice.classList.remove('skipable');
-    juice.onclick = null;
-  }
   const banner = $('hand-banner');
   if (banner) {
     banner.className = '';
@@ -7382,8 +7341,7 @@ function settleHTML() {
         ${rows.map(([k, v]) => `<tr class="settle-row"><td>${k}</td><td><span class="settle-amt">+${v}냥</span></td></tr>`).join('')}
         <tr class="total settle-row"><td>합계</td><td><span class="settle-amt">+${d.total}냥</span></td></tr>
       </table>
-    </div>
-    <div class="settle-skip-hint">클릭하면 건너뛰기</div>`;
+    </div>`;
 }
 
 function shopHTML() {
@@ -9023,27 +8981,6 @@ function animateNumber(el, from, to, ms, formatter = fmt, { ease = 'expo' } = {}
   });
 }
 
-function armJuiceSkip() {
-  const root = $('juice-root');
-  root.classList.add('skipable');
-  const handler = () => { JUICE.skip = true; JUICE.onSkip && JUICE.onSkip(); };
-  root.addEventListener('click', handler, { once: true });
-  const keyHandler = (e) => {
-    if (e.code === 'Space' || e.code === 'Enter' || e.code === 'Escape') {
-      e.preventDefault();
-      JUICE.skip = true;
-      JUICE.onSkip && JUICE.onSkip();
-      window.removeEventListener('keydown', keyHandler);
-    }
-  };
-  window.addEventListener('keydown', keyHandler);
-  return () => {
-    root.classList.remove('skipable');
-    root.removeEventListener('click', handler);
-    window.removeEventListener('keydown', keyHandler);
-  };
-}
-
 async function flyCardsFromHand(wraps, steps, fromRects) {
   if (!fromRects || JUICE.skip) {
     wraps.forEach((w) => w.classList.add('landed'));
@@ -9117,7 +9054,6 @@ async function playJuiceSequence(snap, fromRects = null) {
   JUICE.running = true;
   JUICE.skip = false;
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const disarm = armJuiceSkip();
   const bd = juiceBreakdown(snap);
   const pa = $('playedarea');
   const banner = $('hand-banner');
@@ -9447,7 +9383,6 @@ async function playJuiceSequence(snap, fromRects = null) {
     }
   } finally {
     applyJokerEconomy(snap);
-    disarm();
     banner.className = '';
     banner.textContent = '';
     banner.style.left = '';
