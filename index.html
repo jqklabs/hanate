@@ -763,13 +763,20 @@
   @media (min-width: 721px) {
     #btn-play, #btn-discard { width: 210px; box-sizing: border-box; }
   }
-  /* 연출 배속 — 구석 토글 */
-  #btn-fx-speed {
-    display: inline-block;
+  /* 손패 정렬·연출 배속 — 구석 토글 */
+  #corner-toggles {
     position: fixed;
     left: max(8px, env(safe-area-inset-left));
     bottom: max(8px, env(safe-area-inset-bottom));
     z-index: 45;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  #btn-hand-sort,
+  #btn-fx-speed {
+    display: inline-block;
     padding: 3px 7px;
     font-size: 10px;
     font-weight: 700;
@@ -782,6 +789,7 @@
     transition: opacity .15s ease, color .15s ease, border-color .15s ease, background .15s ease;
     font-variant-numeric: tabular-nums;
   }
+  #btn-hand-sort:hover, #btn-hand-sort:focus-visible,
   #btn-fx-speed:hover, #btn-fx-speed:focus-visible {
     opacity: 1;
     color: #94a3b8;
@@ -797,6 +805,16 @@
   #btn-fx-speed.fast:hover, #btn-fx-speed.fast:focus-visible {
     opacity: 1;
     color: #fef3c7;
+  }
+  #btn-hand-sort.type {
+    opacity: .85;
+    color: #a5b4fc;
+    border-color: rgba(165, 180, 252, .35);
+    background: rgba(0, 0, 0, .4);
+  }
+  #btn-hand-sort.type:hover, #btn-hand-sort.type:focus-visible {
+    opacity: 1;
+    color: #c7d2fe;
   }
   .smallbtn {
     background: rgba(12, 24, 18, .92); color: #e2e8f0;
@@ -1089,8 +1107,8 @@
   body[data-screen="welcome"] #legal-note,
   body[data-screen="prep"] #chunhyang,
   body[data-screen="welcome"] #chunhyang,
-  body[data-screen="prep"] #btn-fx-speed,
-  body[data-screen="welcome"] #btn-fx-speed {
+  body[data-screen="prep"] #corner-toggles,
+  body[data-screen="welcome"] #corner-toggles {
     visibility: hidden !important;
     pointer-events: none !important;
   }
@@ -3828,7 +3846,10 @@
 
 <div id="legal-note">본 게임은 실제 재화나 현금을 이용한 사행성 게임이 아닙니다.</div>
 
-<button type="button" id="btn-fx-speed" onclick="toggleJuiceSpeed()" title="연출 배속">×1</button>
+<div id="corner-toggles">
+  <button type="button" id="btn-hand-sort" onclick="toggleHandSort()" title="손패 정렬">월별</button>
+  <button type="button" id="btn-fx-speed" onclick="toggleJuiceSpeed()" title="연출 배속">×1</button>
+</div>
 
 <div id="chunhyang">
   <div id="ch-bubble"></div>
@@ -4796,12 +4817,48 @@ async function dealToHand({ playGen = null, isRoundStart = false, forceJunkTutor
 }
 
 const TYPE_ORDER = { kwang: 0, yeol: 1, tti: 2, ssangpi: 3, pi: 4 };
+/** 'month' = 월→종류 · 'type' = 광·끗·띠·피→월 */
+let handSortMode = 'month';
+try {
+  const saved = localStorage.getItem('hwatro_hand_sort');
+  if (saved === 'type' || saved === 'month') handSortMode = saved;
+} catch (_) {}
 function sortHand() {
   state.hand.sort((a, b) => {
     if (a.faceDown !== b.faceDown) return a.faceDown ? 1 : -1; // 뒷면은 맨 뒤 (정렬로 정보 누출 방지)
+    const ta = TYPE_ORDER[a.type] ?? 9;
+    const tb = TYPE_ORDER[b.type] ?? 9;
+    if (handSortMode === 'type') {
+      if (ta !== tb) return ta - tb;
+      if (a.month !== b.month) return a.month - b.month;
+      return (a.uid ?? 0) - (b.uid ?? 0);
+    }
     if (a.month !== b.month) return a.month - b.month;
-    return TYPE_ORDER[a.type] - TYPE_ORDER[b.type];
+    if (ta !== tb) return ta - tb;
+    return (a.uid ?? 0) - (b.uid ?? 0);
   });
+}
+function syncHandSortBtn() {
+  const btn = $('btn-hand-sort');
+  if (!btn) return;
+  const byType = handSortMode === 'type';
+  btn.classList.toggle('type', byType);
+  btn.textContent = byType ? '광·끗·피' : '월별';
+  btn.title = byType
+    ? '손패 정렬: 광·끗·피 (누르면 월별)'
+    : '손패 정렬: 월별 (누르면 광·끗·피)';
+}
+async function toggleHandSort() {
+  handSortMode = handSortMode === 'month' ? 'type' : 'month';
+  try { localStorage.setItem('hwatro_hand_sort', handSortMode); }
+  catch (_) {}
+  syncHandSortBtn();
+  if (state.screen === 'play' && !state.juicing && !state.dealing && state.hand.length >= 2) {
+    await sortHandAnimated();
+  } else {
+    sortHand();
+    if (state.screen === 'play') render();
+  }
 }
 
 function captureHandRects() {
@@ -4812,7 +4869,7 @@ function captureHandRects() {
   return map;
 }
 
-// FLIP: 드로우 직후 월별 정렬이 미끄러지듯 이동
+// FLIP: 드로우·정렬 전환 시 손패가 미끄러지듯 이동
 async function sortHandAnimated() {
   const handEl = $('handarea');
   if (!handEl || state.hand.length < 2) {
@@ -7038,6 +7095,7 @@ function renderTable() {
     auraHint.textContent = '';
   }
 
+  syncHandSortBtn();
   syncJuiceSpeedBtn();
 
   const n = state.selected.length;
@@ -9507,6 +9565,7 @@ function initBgSpine() {
   });
 }
 
+syncHandSortBtn();
 syncJuiceSpeedBtn();
 initBgSpine();
 boot(); // 에셋 프리로드 → 첫 방문이면 룰 안내 → prep
