@@ -126,7 +126,8 @@ async function scoreShow(api, { power = 1, jokerGains = null, hand = '',
     api.mark('go', { score: api.score, target: api.target });
     // 11고부터 20고까지 파편이 튀며 밀려 올라간다 — 앞의 세 단계를 받아 두 배로
     await api.goChase(goBig.from, goBig.to);
-    await api.wait(900);
+    /* 900ms는 체이스가 끝난 뒤 화면이 통째로 멎는 시간이었다(실측 1.22초 정지). */
+    await api.wait(320);
   } else {
     await api.wait(2100);    // 폭발 여운
   }
@@ -159,7 +160,7 @@ async function failShow(api) {
   api.releaseTally();
   await api.wait(860);
   api.mark('tally');
-  await api.wait(760);                       // pulse 없이 그냥 흘러간다
+  await api.wait(420);                       // pulse 없이 그냥 흘러간다 (760은 정지로 보였다)
 
   const gain = Math.max(0, api.score - before);
   api.mark('sum');
@@ -259,7 +260,9 @@ window.CAPTURE_SCENES = [
         { month: 9, type: 'tti', tag: 'cheongdan' },
       ]);
       api.mark('select');
-      await api.wait(520);
+      /* 예전엔 520ms였다. 그동안 화면이 **한 프레임도 안 바뀌어서**
+         드라마틱한 뜸이 아니라 영상이 멈춘 것처럼 보였다(실측 0.48초 정지). */
+      await api.wait(240);
       api.mark('play');
       api.holdTally();
       await api.play();

@@ -7,3 +7,10 @@ package-lock.json
 
 # macOS
 .DS_Store
+
+# 디자인 작업 중간 산출물 (스크립트로 재생성됨)
+design/*/capture/out/.work/
+design/*/capture/plates/
+design/*/capture/tmp/
+design/*/out/prev/
+design/15_google_campaign/gen/.work/

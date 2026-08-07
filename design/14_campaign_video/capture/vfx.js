@@ -92,7 +92,7 @@
   /* 폭을 88vw로 두면 족보 글자와 서로 가린다 → 72vw로 줄이고 세로로 떼어 놓는다 */
   .vfx-emblem {
     position: absolute; transform: translate(-50%,-50%) scale(.5) rotate(-8deg);
-    width: calc(var(--cap-stage, 100vw) * .80); height: auto; opacity: 0;
+    width: calc(var(--cap-unit, 100vw) * .80); height: auto; opacity: 0;
     animation: vfxEmblem var(--d, 1700ms) cubic-bezier(.13,1.3,.3,1) forwards;
   }
   /* 들이치고 **멈춘다.** 예전엔 마지막에 1.02 → 1.12로 계속 커져서
@@ -122,8 +122,8 @@
   /* 엠블럼 뒤 딤 — 뚫린 가운데로 비치는 카드를 가라앉혀 글자를 띄운다 */
   .vfx-emblem-dim {
     position: absolute; transform: translate(-50%,-50%);
-    width: calc(var(--cap-stage, 100vw) * 1.5);
-    height: calc(var(--cap-stage, 100vw) * 1.5);
+    width: calc(var(--cap-unit, 100vw) * 1.5);
+    height: calc(var(--cap-unit, 100vw) * 1.5);
     border-radius: 50%; opacity: 0;
     background: radial-gradient(circle,
       rgba(4,10,8,.62) 0%, rgba(4,10,8,.5) 38%, rgba(4,10,8,0) 66%);
@@ -220,7 +220,7 @@
     position: absolute; left: 50%; top: 50%;
     transform: translate(-50%,-50%);
     font-family: 'SSRock','BaigeTianxing','Malgun Gothic',sans-serif;
-    font-size: calc(var(--cap-stage, 100vw) * .142); line-height: 1;
+    font-size: calc(var(--cap-unit, 100vw) * .142); line-height: 1;
     color: #ffe9b0; white-space: nowrap;
     text-shadow: 0 0 26px rgba(255,180,60,.95), 0 0 80px rgba(255,150,30,.8),
                  0 10px 0 rgba(120,40,0,.5);
@@ -409,8 +409,8 @@
   }
   .vfx-clear .cl-ring {
     position: absolute; left: 50%; top: 50%;
-    width: calc(var(--cap-stage, 100vw) * .78);
-    height: calc(var(--cap-stage, 100vw) * .78);
+    width: calc(var(--cap-unit, 100vw) * .78);
+    height: calc(var(--cap-unit, 100vw) * .78);
     transform: translate(-50%,-50%); border-radius: 50%;
     border: 3px solid rgba(255,214,130,.55);
     box-shadow: 0 0 90px rgba(255,190,80,.35), inset 0 0 120px rgba(255,180,60,.16);
@@ -601,8 +601,10 @@
       /* 엠블럼 한가운데 빈 명판 안에 앉힌다 — 엠블럼과 같은 좌표.
          크기는 뷰포트가 아니라 '무대' 기준이어야 여백까지 계산하지 않는다.
          글자 수가 늘면(고도리 3자) 명판을 넘치므로 자수로 나눠 잡는다. */
+      /* 크기 기준은 무대 '폭'이 아니라 **짧은 변**(--cap-unit)이다.
+         가로 프로필에서 폭은 1536이라 폭 기준으로 재면 글자가 1.8배가 된다. */
       const stage = parseFloat(getComputedStyle(document.documentElement)
-        .getPropertyValue('--cap-stage')) || innerWidth;
+        .getPropertyValue('--cap-unit')) || innerWidth;
       const { x, y } = { x: innerWidth / 2, y: focusY() };
       const el = document.createElement('div');
       el.className = 'vfx-text';
@@ -716,7 +718,7 @@
      * 카드도 점수도 안 가리면서 "쌓이고 있다"만 전한다. */
     goJump(label, { big = false } = {}) {
       const cs = getComputedStyle(document.documentElement);
-      const stage = parseFloat(cs.getPropertyValue('--cap-stage')) || innerWidth;
+      const stage = parseFloat(cs.getPropertyValue('--cap-unit')) || innerWidth;
       const y = parseFloat(cs.getPropertyValue('--cap-go-y')) || innerHeight * 0.22;
       const x = innerWidth / 2;
       const size = Math.round(stage * (big ? 0.20 : 0.115));
@@ -752,7 +754,7 @@
       el.className = 'vfx-text';
       el.textContent = str;
       const stage = parseFloat(getComputedStyle(document.documentElement)
-        .getPropertyValue('--cap-stage')) || innerWidth;
+        .getPropertyValue('--cap-unit')) || innerWidth;
       const size = Math.min(stage * 0.34, stage * 0.86 / Math.max(1, str.length));
       el.style.cssText += `left:${innerWidth / 2}px;top:${focusY()}px;` +
         `font-size:${Math.round(size * (cold ? 0.82 : 1))}px;` +

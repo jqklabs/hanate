@@ -1,14 +1,17 @@
 #!/bin/zsh
-# 키프레임 → 힉스필드 영상. 시안이므로 **std(저화질)·무음** 고정.
-# 사용자가 시안을 고른 뒤에만 --mode pro로 같은 키프레임을 그대로 물려 재생성한다.
+# 키프레임 → 힉스필드 영상.
 #
-# 사용: ./make-clips.sh [슬롯...]   (인자 없으면 전부)
+# 시안은 std(저화질), 확정 후 최종본은 pro로 **같은 키프레임을 그대로 물려** 재생성한다.
+# std는 856×1072로 나와 최종 1080×1350에 1.26배 확대돼 들어간다 — 눈에 띄게 흐리다.
+#
+# 사용: MODE=pro ./make-clips.sh [슬롯...]   (MODE 기본 std, 인자 없으면 전부)
 set -e
 cd "$(dirname "$0")"
 KF=plates/drafts/kf
 RAW=plates/drafts/raw4
 mkdir -p "$RAW"
 
+MODE=${MODE:-std}
 ARGS="$*"
 want() { [[ -z "$ARGS" || " $ARGS " == *" $1 "* ]] }
 
@@ -16,10 +19,10 @@ want() { [[ -z "$ARGS" || " $ARGS " == *" $1 "* ]] }
 gen() {
   local name=$1 start=$2 end=$3 prompt=$4
   local -a ends; [[ $end == '-' ]] || ends=(--end-image "$KF/$end.png")
-  echo "── $name"
+  echo "── $name  (mode=$MODE)"
   local url=''
   for i in 1 2 3 4 5; do
-    url=$(higgsfield generate create kling3_0 --duration 5 --mode std --sound off \
+    url=$(higgsfield generate create kling3_0 --duration 5 --mode "$MODE" --sound off \
       --aspect_ratio 9:16 --start-image "$KF/$start.png" "${ends[@]}" \
       --prompt "$prompt" --wait --wait-timeout 20m 2>&1 | grep -o 'https://[^ ]*mp4' | tail -1)
     [[ -n $url ]] && break
@@ -32,6 +35,13 @@ gen() {
 
 # 그림체가 흔들리지 않게 모든 모션 프롬프트 끝에 붙인다
 STYLE='2D anime illustration style, hand-painted, not photorealistic, not 3D. No text.'
+
+# ══ H1 — 훅. 인터뷰 5초 풀클립 ══
+want H1 && gen H1 H1-start H1-end "Very slow push-in toward her eyes. She slowly
+rotates the Korean hwatu card between her fingers, speaking calmly to an unseen
+interviewer beside the camera, then her gaze shifts to the lens and a knowing,
+faintly cynical smirk deepens. Candle flame flickers, incense smoke drifts.
+Single continuous shot, no cuts. $STYLE"
 
 # ══ H2 ① 원작 [00:00-00:04] — 미디엄샷 고정, 손은 프레임 밖, **대사를 친다** ══
 # 17차에서 이걸 스틸로 뒀더니 "왜 정지 화면이 있냐"가 됐다. 원작은 정지가 아니라
@@ -85,5 +95,14 @@ backs with a small gold plum blossom. The hand must NOT cover, grab or hide them
 they simply sit there in front of him. No card faces ever.
 No face, no head, no shoulders - only the hand, the sleeve, the cards and the green
 mat. $STYLE"
+
+# ══ C4 — 인터뷰 회귀. 카메라를 정면으로 보며 되묻는다 ══
+want C4 && gen C4 C4-a C4-c "The woman sits behind a low wooden table in a dim
+tavern, looking straight into the camera lens. She tilts her head a few degrees,
+eyebrows lifting, and asks a question - lips moving naturally - then a knowing,
+faintly cynical smile settles in. The camera barely moves. Her face, hair ornaments
+and hanbok stay exactly as in the first frame throughout - same eyes, same hairline,
+same red tassel ornament. Warm candlelight from one side, half her face in shadow,
+background blurred. Single continuous shot. $STYLE"
 
 echo "완료 → $RAW"

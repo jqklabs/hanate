@@ -23,6 +23,18 @@ const RATIOS = {
   '1x1':  [1080, 1080],
   '9x16': [1080, 1920],
 };
+/* ── 비율 프로필 ───────────────────────────────────────────────
+ * 가로는 「세로를 자르거나 좌우를 덧댄 것」이 아니라 **처음부터 가로로 녹화한 판**이다.
+ * rig.js의 PROFILES / record.mjs의 PROFILES와 무대값이 같아야 한다.
+ * 무대/뷰 비율을 양쪽 다 0.80으로 맞춰 뒀기 때문에 기본 배율 Z가 거의 같고
+ * (1.256 ↔ 1.250), 줌 사다리와 컷 리스트를 그대로 공유한다. */
+const PROFILE = {
+  '4x5':  { view: 1080, stage: 860,  suffix: '' },
+  '16x9': { view: 1920, stage: 1280, suffix: '-16x9' },
+};
+/* 컷 리스트의 ZA/ZB/ZB2는 세로 기준(Z=1.256)으로 적혀 있다. 가로는 무대가 좁아
+   기본 배율이 1.50이므로 그 비(比)만큼 곱해 준다 — 컷을 비율별로 두 벌 쓰지 않는다. */
+let ZMUL = 1;
 const XFADE = 0.15;             // 컷 사이 크로스페이드 — 짧게 줘야 '컷'으로 읽힌다
 // ffmpeg(libfreetype)는 woff2를 못 읽는다. make-fonts.mjs가 만든 ttf를 쓴다.
 const FONT = resolve(HERE, 'fonts/SSRock.ttf');
@@ -63,7 +75,10 @@ const FONT = resolve(HERE, 'fonts/SSRock.ttf');
  * rig.js의 --cap-stage / record.mjs의 VIEW와 같은 값이어야 한다.
  * 무대 둘레의 여백은 카메라가 확대·팬할 때 잘리지 않게 하는 예비 공간이다. */
 const VIEW_W = 1080, STAGE_W = 860;
-const Z = VIEW_W / STAGE_W;     // ≈ 1.256 — 무대를 프레임에 꽉 채우는 기본 배율
+/* ≈ 1.256 — 무대를 프레임에 꽉 채우는 기본 배율.
+   가로 프로필(1920/1536 = 1.250)과 **0.5%밖에 차이가 안 난다** — 무대/뷰 비율을
+   양쪽 다 0.80으로 맞춰 뒀기 때문이다. 그래서 줌 사다리와 컷 리스트를 그대로 공유한다. */
+const Z = VIEW_W / STAGE_W;
 /* 줌 사다리 — **영상 전체에서 배율 변화는 딱 두 번**, 그리고 되돌아오지 않는다(R4).
  *   ZA (1막 손패를 읽는 넓은 배율)
  *    → ZB (카드가 놓이는 순간 한 번 밀고 들어감. 주막·몽타주까지 이 배율 유지)
@@ -106,7 +121,9 @@ const EDIT = [
     trans: 'fade', transDur: TR, cam: { zoom: [ZA, ZB], ease: 'dash' } },
   /* 놓였는데 **아무 일도 일어나지 않는다.** 성공 컷이라면 여기서 엠블럼이 터졌다.
      그 빈자리가 이 씬의 전부다 — 짧게 끊지 말 것. */
-  { src: 'A1', at: ['slam', -0.15], to: ['tally', -0.20], still: true, look: 'frame',
+  /* slam 직후 0.5초는 게임이 수식을 띄우기까지의 강제 대기라 화면이 완전히 멎는다.
+     '빈자리'가 이 씬의 연출이긴 해도 정지 프레임이 0.7초면 버벅임으로 읽힌다 → 뒤에서 든다. */
+  { src: 'A1', at: ['slam', +0.35], to: ['tally', -0.20], still: true, look: 'frame',
     cold: true, trans: 'fade', transDur: TR, cam: { zoom: ZB, ease: 'linear' } },
   // ×1 — 족보가 없다는 걸 수식이 스스로 말한다
   { src: 'A1', at: ['tally', -0.20], to: ['sum', -0.20], still: true, look: 'frame',
@@ -209,10 +226,11 @@ const EDIT = [
        정지(상체 고정) → 대사(턱만 격렬히, 입모양 또렷) → 팔을 들어올리며
        두 손가락 포즈로 착지·홀드
      포즈가 하이라이트라 잘라내지 않는다. 대신 생성 원본 5.04s를
-     **1.26배속(setpts)으로 눌러 4.0s**로 만든 파일을 쓴다 — 앞을 잘라 짧게 만들면
+     **1.68배속(setpts)으로 눌러 3.0s**로 만든 파일을 쓴다 — 앞을 잘라 짧게 만들면
      정지 구간이 사라져 '정과 동의 충돌'이 깨진다. 전체를 빠르게 해야 3단계가
-     하나도 안 빠지고 템포만 올라간다. */
-  { id: 'H3b', kind: 'plate', use: 4.0, trans: 'fade', transDur: 0.033,
+     하나도 안 빠지고 템포만 올라간다.
+     (16:9판은 reframe 결과물을 다시 감았다 — 아웃페인트를 재생성하지 않는다) */
+  { id: 'H3b', kind: 'plate', use: 3.0, trans: 'fade', transDur: 0.033,
     cam: { z: [1.00, 1.00], ease: 'linear' } },
   /* ③ 인서트 — 원작 [01:31-01:33] 판돈이 우측에서 중앙으로. 우리는 패 4장(뒷면).
      원작은 일갈 직후 정적을 길게 뒀다 — 이 컷 앞머리의 '멈춘 손'이 그 정적이다. */
@@ -243,7 +261,8 @@ const EDIT = [
     trans: 'fade', transDur: TR, fx: { shake: 9, at: 0.22 }, hot: true,
     cam: { zoom: ZB2, ease: 'linear' } },
   // 11고 → 20고 체이스 — 쌓아 올린 것을 두 배로 뛰는 한 방
-  { src: 'A3', at: ['go', -0.35], use: 3.30, still: true, look: 'frame',
+  // 체이스가 끝난 뒤 남던 정지 구간만큼 줄인다 (3.30 → 2.35)
+  { src: 'A3', at: ['go', -0.35], use: 2.35, still: true, look: 'frame',
     trans: 'fade', transDur: TR, fx: { shake: 6, at: 0.10 },
     cam: { zoom: ZB2, ease: 'linear' } },
 
@@ -304,15 +323,24 @@ const ff = (args) => {
   return execFileSync('ffmpeg', ['-y', '-v', 'error', ...args], { stdio: 'inherit' });
 };
 
+/* 비율마다 녹화분과 매니페스트가 따로 있다 — 4:5 결과물이 가로 작업에 덮이면 안 된다.
+   assemble()이 시작할 때 SUFFIX를 정한다. */
+let SUFFIX = '';
 const readManifest = () => {
-  const p = resolve(OUT, 'manifest.json');
+  const p = resolve(OUT, `manifest${SUFFIX}.json`);
   return existsSync(p) ? JSON.parse(readFileSync(p, 'utf8')) : {};
 };
 
+/* 비율 전용 플레이트가 있으면 그걸 먼저 쓴다 (plates/16x9/H1.mp4 …).
+   4:5 플레이트를 가로 프레임에 그냥 쓰면 크롭돼서 얼굴이 잘린다 —
+   가로용은 Higgsfield reframe으로 좌우를 이어 그린 별도 파일이다. */
 function findPlate(id) {
-  if (!existsSync(PLATES)) return null;
-  const f = readdirSync(PLATES).find((n) => n.replace(/\.[^.]+$/, '') === id);
-  return f ? resolve(PLATES, f) : null;
+  for (const dir of [SUFFIX ? resolve(PLATES, SUFFIX.slice(1)) : null, PLATES]) {
+    if (!dir || !existsSync(dir)) continue;
+    const f = readdirSync(dir).find((n) => n.replace(/\.[^.]+$/, '') === id);
+    if (f) return resolve(dir, f);
+  }
+  return null;
 }
 
 const esc = (t) => t.replace(/\\/g, '\\\\').replace(/:/g, '\\:').replace(/'/g, "\\\\'");
@@ -414,7 +442,7 @@ function camera(cut, W, H) {
    * 게임 컷은 배율을 '고정'하고 주시점만 옮긴다. */
   if (cut.cam.zoom) {
     const zz = Array.isArray(cut.cam.zoom) ? cut.cam.zoom : [cut.cam.zoom, cut.cam.zoom];
-    [z0, z1] = zz;
+    [z0, z1] = [zz[0] * ZMUL, zz[1] * ZMUL];   // 비율 프로필 보정
   } else if (cut.cam.fill) {
     const [fl0, fl1] = arr(cut.cam.fill);
     const [w0, w1] = arr(f.w), [h0, h1] = arr(f.h);
@@ -579,12 +607,17 @@ function buildClip(cut, idx, W, H) {
   const rate = slow * speed;
   const ramp = rate === 1 ? '' : `setpts=PTS/${rate},`;
   const grade = cut.hot ? GRADE_HOT : cut.cold ? GRADE_COLD : GRADE;
-  const vf = `${ramp}${camera(cut, W, H)}${impact(cut.fx, W, H)}${grade}` +
+  const [cw, ch] = [W, H];
+  const vf = `${ramp}${camera(cut, cw, ch)}${impact(cut.fx, cw, ch)}${grade}` +
              `,format=yuv420p${drawtext(cut.caption, H)}`;
-  const enc = ['-an', '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-r', String(FPS)];
+  /* 중간 컷은 xfade에서 한 번 더 인코딩된다 — 여기서 아끼면 세대 손실이 누적된다.
+     CRF 14 + slow. 파일이 커지지만 어차피 .work는 중간 산출물이다. */
+  const enc = ['-an', '-c:v', 'libx264', '-preset', 'slow', '-crf', '14', '-r', String(FPS)];
 
   if (cut.kind !== 'plate') {
-    const src = resolve(OUT, `scene-${id}.webm`);
+    /* 무손실 캡처본(.mp4)이 있으면 그걸 쓴다. 옛 저화질 .webm은 폴백. */
+    const mp4 = resolve(OUT, `scene-${id}${SUFFIX}.mp4`);
+    const src = existsSync(mp4) ? mp4 : resolve(OUT, `scene-${id}${SUFFIX}.webm`);
     if (!existsSync(src)) throw new Error(`녹화분 없음: ${src} — record를 먼저 실행하세요`);
     /* -ss/-t 는 반드시 입력 옵션으로 둔다.
      * 출력 옵션으로 두면 setpts로 압축된 '출력' 길이 기준으로 잘려서
@@ -598,7 +631,10 @@ function buildClip(cut, idx, W, H) {
   if (plate) {
     const still = /\.(png|jpe?g|webp)$/i.test(plate);
     ff([...(still ? ['-loop', '1'] : []), '-i', plate, '-t', String(cut.use),
-        '-vf', `scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H},${vf}` +
+        /* reframe 산출물은 1280×720이라 1920까지 올린다 — 기본 bicubic보다
+           lanczos가 선을 덜 뭉갠다. */
+        '-vf', `scale=${cw}:${ch}:force_original_aspect_ratio=increase:flags=lanczos,` +
+               `crop=${cw}:${ch},${vf}` +
                plateLine(cut.line, H, cut.lineIn),
         ...enc, dst]);
     return dst;
@@ -663,7 +699,11 @@ function crossfade(clips, cuts, dst) {
     prev = out;
   }
   ff([...inputs, '-filter_complex', expr.replace(/;$/, ''), '-map', '[out]',
-      '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-pix_fmt', 'yuv420p', dst]);
+      /* 최종 인코딩. 예전엔 CRF 18/medium이라 1080×1350·60fps에 5.6Mbps밖에 안 붙어
+         파티클·폭발 프레임에서 블록이 보였다. 광고 소재는 한 번 굽고 끝이라 아낄 이유가 없다. */
+      '-c:v', 'libx264', '-preset', 'slow', '-crf', '16',
+      '-maxrate', '24M', '-bufsize', '48M',
+      '-pix_fmt', 'yuv420p', '-movflags', '+faststart', dst]);
 }
 
 /* 같은 녹화에서 온 이웃 컷이 소스 시간축에서 겹치면 같은 장면이 두 번 재생된다.
@@ -690,6 +730,9 @@ function checkOverlaps(cuts) {
 // recOnly — 생성 플레이트를 빼고 코드로 녹화한 컷만 이어붙인다 (검수용)
 export function assemble({ recOnly = false, ratio = '16x9' } = {}) {
   const [W, H] = RATIOS[ratio];
+  const prof = PROFILE[ratio] || PROFILE['4x5'];
+  SUFFIX = prof.suffix;
+  ZMUL = (prof.view / prof.stage) / (PROFILE['4x5'].view / PROFILE['4x5'].stage);
   rmSync(WORK, { recursive: true, force: true });
   mkdirSync(WORK, { recursive: true });
   mkdirSync(FINAL_DIR, { recursive: true });

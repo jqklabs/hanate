@@ -53,11 +53,31 @@
    * FRAME_CY = 0.50 은 무대(860×1075)가 뷰포트(1080×1350) 정중앙에 있기 때문이다.
    * 기본 배율 ZB(1.293)에서 크롭 창이 0.113~0.887 → 낸 패(0.35~0.51)·수식·
    * 손패(0.59~0.70)가 다 들어오고 ffmpeg 클램프에도 안 걸린다. */
-  const VIEW_W = 1080, VIEW_H = 1350;      // record.mjs의 VIEW와 같아야 한다
-  const STAGE_W = 860, STAGE_H = 1075;     // 아래 CSS의 --cap-stage(-h)와 같아야 한다
+  /* ── 캡처 프로필 — 세로(4:5)와 가로(16:9) ─────────────────────
+   * 가로는 「자른 세로」가 아니라 **처음부터 가로로 그린 판**이다.
+   * 무대/뷰 비율을 0.80으로 맞춰 두면 카메라 헤드룸과 기본 배율(≈1.25)이
+   * 두 프로필에서 같아진다 → 편집(assemble)의 줌 사다리를 그대로 쓸 수 있다.
+   *
+   * 게임 UI는 세로로 ~620px 고정이라 864 높이 무대에 여유 있게 들어간다.
+   * 카드 크기·간격은 세로판과 **똑같이** 두고, 넓어진 좌우는 게임 배경이 채운다 —
+   * 합성으로 덧대는 게 아니라 같은 화면의 진짜 배경이 이어진다. */
+  const PROFILES = {
+    portrait:  { VIEW_W: 1080, VIEW_H: 1350, STAGE_W: 860,  STAGE_H: 1075 },
+    /* 무대를 1536으로 잡으면 카메라가 뷰포트를 거의 그대로 보게 돼(배율 1.25)
+       게임이 프레임의 절반만 채우고 나머지가 텅 빈다.
+       1280×720으로 좁히면 배율이 1.5가 되어 세로판과 **같은 밀도**가 나온다.
+       (무대는 16:9 유지 — 1280/720 = 1.778) */
+    landscape: { VIEW_W: 1920, VIEW_H: 1080, STAGE_W: 1280, STAGE_H: 720 },
+  };
+  const RATIO = Q.get('ratio') === '16x9' ? 'landscape' : 'portrait';
+  const { VIEW_W, VIEW_H, STAGE_W, STAGE_H } = PROFILES[RATIO];
+  /* 오버레이 **크기**의 기준자. 무대 폭을 쓰면 가로에서 1536이 되어 엠블럼·글자가
+     1.8배로 커진다. 짧은 변을 쓰면 860 ↔ 864라 두 프로필에서 크기가 같다.
+     (위치 계산에는 여전히 진짜 폭 --cap-stage가 필요하다 — 섞지 말 것) */
+  const UNIT = Math.min(STAGE_W, STAGE_H);
   const FRAME_CY = 0.50;                   // 프레임 중심 — 카메라도 오버레이도 여기
-  const POP_DY = 0.115;                    // 점수 팝업은 프레임 중심 아래로 이만큼
-  const GO_DY = 0.20;                      // 고 스탬프는 프레임 중심 위로 이만큼
+  const POP_DY = RATIO === 'landscape' ? 0.150 : 0.115;   // 점수 팝업 (중심 아래)
+  const GO_DY = RATIO === 'landscape' ? 0.255 : 0.20;     // 고 스탬프 (중심 위)
 
   // ── 캡처 전용 CSS ──────────────────────────────────────────
   const css = document.createElement('style');
@@ -76,7 +96,8 @@
          더 확대하거나 팬해도 바깥에 진짜 화면이 있어 잘리지 않는다.
        record.mjs의 VIEW, assemble.mjs의 STAGE와 반드시 같은 값을 쓸 것.
        (위 STAGE_W/STAGE_H 상수와 같은 값 — 한쪽만 고치면 프레임이 어긋난다) */
-    :root { --cap-stage: ${STAGE_W}px; --cap-stage-h: ${STAGE_H}px; }
+    :root { --cap-stage: ${STAGE_W}px; --cap-stage-h: ${STAGE_H}px;
+            --cap-unit: ${UNIT}px; }
     body.cap-clean {
       box-sizing: border-box !important; min-height: 100vh !important;
       padding-top: calc((100vh - var(--cap-stage-h)) / 2) !important;
@@ -86,6 +107,21 @@
       max-width: var(--cap-stage) !important;
       margin-left: auto !important; margin-right: auto !important;
     }
+    /* ── 가로 프로필 전용 ────────────────────────────────────
+       무대가 1536이라 #table을 그대로 두면 낸 패 영역이 프레임 끝까지 늘어나
+       카드 3장이 거대한 빈 상자 안에 떠 있는 그림이 된다.
+       → **카드 블록은 세로판과 같은 크기로 두고**, 넓어진 좌우는 게임 배경이 받는다.
+       (덧댄 이미지가 아니라 같은 화면의 진짜 배경이라 이음새가 없다)
+       상단바만 무대 폭을 다 쓴다 — 바는 넓을수록 자연스럽다. */
+    body.cap-land #table { max-width: 940px !important; margin: 0 auto !important; }
+    /* 상점 모달도 같이 조인다. 무대 폭(1280) 기준이면 1184까지 늘어나
+       진열 3칸이 헐겁게 퍼지고 보유 칸 줄이 텅 빈다. */
+    body.cap-land #modal { max-width: 960px !important; }
+    body.cap-land #playedarea,
+    body.cap-land #handarea,
+    body.cap-land #actions { max-width: 940px !important;
+                             margin-left: auto !important; margin-right: auto !important; }
+
     /* 게임은 우측 춘향(#chunhyang) 자리로 min-width:861px에서 padding-right:200px을 준다.
        영상에서는 춘향을 뺐는데 이 여백만 남아 #table이 638px로 쪼그라들었고,
        그래서 판 전체가 왼쪽으로 치우치고 손패 8장이 두 줄로 접혔다. */
@@ -532,6 +568,7 @@
 
     clean(opts = {}) {
       document.body.classList.add('cap-clean');
+      if (RATIO === 'landscape') document.body.classList.add('cap-land');
       api.clearAnchor();
       api.setFrameVars();       // 오버레이 기준선 확정 — 이후 씬 내내 안 바뀐다
       api.useHiResCards();

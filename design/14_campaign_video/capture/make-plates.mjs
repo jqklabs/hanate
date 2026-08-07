@@ -15,8 +15,10 @@ const SCRIPT = `
 import sys
 from PIL import Image, ImageFilter
 src, outdir = sys.argv[1], sys.argv[2]
+ratio = sys.argv[3] if len(sys.argv) > 3 else '4x5'
 og = Image.open(src).convert('RGB')
-W, H = 1080, 1920
+# 가로는 OG 아트(1731×909)가 원래 가로라 크롭 없이 그대로 살릴 수 있다 — 오히려 선명해진다
+W, H = (1920, 1080) if ratio == '16x9' else (1080, 1920)
 BG = (13, 31, 24)
 
 def vignette(im, strength=0.55):
@@ -35,8 +37,8 @@ cw = int(oh * W / H)                     # 9:16 비율의 크롭 폭
 cx = int(ow * 0.62)                      # 인물 중심
 left = max(0, min(ow - cw, cx - cw // 2))
 c4 = og.crop((left, 0, left + cw, oh)).resize((W, H), Image.LANCZOS)
-vignette(c4, 0.45).save(outdir + '/C4.png')
-print('플레이트 → C4.png')
+vignette(c4, 0.45).save(outdir + ('/C4-16x9.png' if ratio == '16x9' else '/C4.png'))
+print('플레이트 → C4' + ('-16x9' if ratio == '16x9' else '') + '.png')
 
 # ── C6: CTA — 로고와 카피가 있는 영역을 어두운 판 위에 앉힌다 ──
 plate = Image.new('RGB', (W, H), BG)
@@ -49,7 +51,7 @@ plate = Image.blend(plate, bgimg, 0.30)
 # 로고 + 카피 블록 (원본 비율 기준 좌표)
 lx0, ly0, lx1, ly1 = int(ow*0.075), int(oh*0.22), int(ow*0.46), int(oh*0.70)
 logo = og.crop((lx0, ly0, lx1, ly1))
-lw = int(W * 0.86)
+lw = int(W * (0.52 if ratio == '16x9' else 0.86))
 logo = logo.resize((lw, int(logo.height * lw / logo.width)), Image.LANCZOS)
 # 가장자리를 페더링해 붙인 티(직사각형 경계)를 없앤다
 import PIL.ImageDraw as D2
@@ -58,16 +60,18 @@ pad = int(min(logo.size) * 0.10)
 D2.Draw(mask).rectangle([pad, pad, logo.width - pad, logo.height - pad], fill=255)
 mask = mask.filter(ImageFilter.GaussianBlur(pad * 0.7))
 plate.paste(logo, ((W - lw) // 2, (H - logo.height) // 2), mask)
-vignette(plate, 0.5).save(outdir + '/C6.png')
-print('플레이트 → C6.png')
+vignette(plate, 0.5).save(outdir + ('/C6-16x9.png' if ratio == '16x9' else '/C6.png'))
+print('플레이트 → C6' + ('-16x9' if ratio == '16x9' else '') + '.png')
 `;
 
 export function makePlates() {
   mkdirSync(PLATES, { recursive: true });
   const have = new Set(readdirSync(PLATES).map((f) => f.replace(/\.[^.]+$/, '')));
-  if (have.has('C4') && have.has('C6')) return;
+  // (비율별 산출물이라 가드는 두지 않는다 — 필요하면 그때그때 다시 굽는다)
   if (!existsSync(PY)) throw new Error('.venv가 없습니다 — make-fonts.mjs를 먼저 실행하세요');
-  execFileSync(PY, ['-c', SCRIPT, resolve(ROOT, 'assets/OG/OG1.png'), PLATES],
+  const RATIO = process.argv.includes('--ratio')
+    ? process.argv[process.argv.indexOf('--ratio') + 1] : '4x5';
+  execFileSync(PY, ['-c', SCRIPT, resolve(ROOT, 'assets/OG/OG1.png'), PLATES, RATIO],
     { stdio: 'inherit' });
 }
 
