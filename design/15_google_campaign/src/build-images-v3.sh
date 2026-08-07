@@ -35,7 +35,7 @@ lay $G/m07/art.png          $OUT/v3_07_july.jpg      1200  628  804 620  80  150
 lay $G/m08/art.png          $OUT/v3_08_august.jpg    1200 1200 1254 600  70  660 '실패하면 다시 1월부터'            44
 lay $G/f09/art.png          $OUT/v3_09_september.jpg  960 1200 1280 545  55  695 '국화가 필 때 승부가 갈린다'        42
 lay $G/m10/art.png          $OUT/v3_10_october.jpg   1200  628  804 620  80  150 '운이 아니라 선택이 이긴다'         41
-lay $G/m11/art.png          $OUT/v3_11_november.jpg  1200 1200 1254 600  70  660 '한 판에 기회는 네 번'             44
+lay $G/f11/art.png          $OUT/v3_11_november.jpg  1200 1200 1254 600  70  660 '꽃 하나에 기회는 네 번'           44
 lay $G/f12/art.png          $OUT/v3_12_december.jpg   960 1200 1280 560  60  700 '마지막 꽃까지 갈 수 있나'         42
 
 echo
