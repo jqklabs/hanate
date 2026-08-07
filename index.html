@@ -7816,7 +7816,10 @@ function applyJokerEconomy(snap) {
 function juiceBreakdown(snap) {
   const { cards, result, env } = snap;
   let handId = result.handId;
-  let core = result.core || cards;
+  // lastPlay.cards는 스냅샷 복사본, result.core는 원본 참조 → uid로 다시 붙인다
+  const coreUids = new Set((result.core || []).map((c) => c.uid));
+  let core = cards.filter((c) => coreUids.has(c.uid));
+  if (!core.length) core = [...cards];
   if (env.boss === 'no_shake' && ['month2', 'month3', 'chongtong'].includes(handId)) {
     handId = 'none';
     core = [...cards];
@@ -7831,7 +7834,7 @@ function juiceBreakdown(snap) {
   const jokerChips = Math.max(0, result.flat - cardFlat);
   const baseMult = HAND_BY_ID[result.handId]?.mult ?? 1;
   const ctx = {
-    cards, handId: result.handId, core: result.core || core,
+    cards, handId: result.handId, core,
     boss: env.boss, mitjangChips: env.mitjangChips,
   };
   // 특수패 슬롯 왼쪽→오른쪽 · 발동분만 — 칩 → +배수 → ×배수 → 냥
@@ -7856,7 +7859,7 @@ function juiceBreakdown(snap) {
   return {
     handBase: 0, steps, jokerChips, jokerSteps, baseMult, ctx,
     flatSum: result.flat, cardFlat, mult: result.mult, score: result.score,
-    handId: result.handId, core: result.core || core,
+    handId: result.handId, core,
   };
 }
 
