@@ -4091,7 +4091,9 @@ function handDisplayName(handId, core) {
     return `${core[0].month}월 2장`;
   if (handId === 'dan' && core && core.length) {
     for (const t of ['hongdan', 'cheongdan', 'chodan']) {
-      if (core.every((c) => c.tags.includes(t))) return DAN_LABEL[t];
+      // 비광우산으로 비단이 초단에 섞인 경우도 초단으로 표시
+      if (core.every((c) => c.tags.includes(t) || (t === 'chodan' && c.tags.includes('bi_tti'))))
+        return DAN_LABEL[t];
     }
   }
   return HAND_BY_ID[handId] ? HAND_BY_ID[handId].name : handId;
@@ -4121,7 +4123,9 @@ const goLevelReached = (base, score, cur = 0) => {
 function topByBaseChip(arr, n) {
   return [...arr].sort((a, b) => baseChip(b) - baseChip(a) || a.uid - b.uid).slice(0, n);
 }
-function detectHandInfo(cards) {
+/** opts.biAsNormal — 비광우산: 12월을 삼광·고도리·초단에 일반패처럼 편입 */
+function detectHandInfo(cards, opts = {}) {
+  const biAsNormal = !!opts.biAsNormal;
   const kw = cards.filter((c) => c.type === 'kwang');
   const byMonth = {};
   for (const c of cards) (byMonth[c.month] = byMonth[c.month] || []).push(c);
@@ -4131,17 +4135,27 @@ function detectHandInfo(cards) {
   if (kw.length === 5) return { handId: 'ogwang', core: kw };
   if (kw.length === 4) return { handId: 'sagwang', core: kw };
   if (maxMonth >= 4) return { handId: 'chongtong', core: monthGroups[0] };
-  const birds = cards.filter((c) => c.tags.includes('godori'));
+  // 고도리: 우산 있으면 12월 제비도 새 자리로 셈 → 비고도리 대신 고도리
+  const birds = cards.filter((c) =>
+    c.tags.includes('godori') || (biAsNormal && c.tags.includes('biyeol')));
   if (birds.length === 3) return { handId: 'godori', core: birds };
-  // 비고도리: 12월 제비 + 고도리 새 2장 (2·4·8 중 둘)
-  const swallow = cards.filter((c) => c.tags.includes('biyeol'));
-  if (swallow.length >= 1 && birds.length >= 2) {
-    return { handId: 'bigodori', core: [swallow[0], ...topByBaseChip(birds, 2)] };
+  // 비고도리: 12월 제비 + 고도리 새 2장 (2·4·8 중 둘) — 우산 없을 때만
+  if (!biAsNormal) {
+    const swallow = cards.filter((c) => c.tags.includes('biyeol'));
+    const godoriOnly = cards.filter((c) => c.tags.includes('godori'));
+    if (swallow.length >= 1 && godoriOnly.length >= 2) {
+      return { handId: 'bigodori', core: [swallow[0], ...topByBaseChip(godoriOnly, 2)] };
+    }
   }
-  if (kw.length === 3)
-    return { handId: kw.some((c) => c.tags.includes('bikwang')) ? 'bisamgwang' : 'samgwang', core: kw };
+  // 삼광: 우산 있으면 비광 포함도 삼광 (비삼광 아님)
+  if (kw.length === 3) {
+    const bi = kw.some((c) => c.tags.includes('bikwang'));
+    return { handId: (!biAsNormal && bi) ? 'bisamgwang' : 'samgwang', core: kw };
+  }
   for (const t of ['hongdan', 'cheongdan', 'chodan']) {
-    const set = cards.filter((c) => c.tags.includes(t));
+    // 초단: 우산 있으면 비단(12월 띠)도 초단 자리
+    const set = cards.filter((c) =>
+      c.tags.includes(t) || (biAsNormal && t === 'chodan' && c.tags.includes('bi_tti')));
     if (set.length === 3) return { handId: 'dan', core: set };
   }
   // 병풍: 연속된 달 5개 (스트레이트 · 달마다 칩 최고 1장 코어)
@@ -4162,7 +4176,7 @@ function detectHandInfo(cards) {
   if (maxMonth >= 3) return { handId: 'month3', core: topByBaseChip(monthGroups[0], 3) };
   const yeol = cards.filter((c) => effType(c) === 'yeol');
   if (yeol.length >= 3) return { handId: 'yeol3', core: topByBaseChip(yeol, 3) };
-  // 비단(12월 띠)은 전통 룰대로 띠 셋에서 제외
+  // 비단(12월 띠)은 전통 룰대로 띠 셋에서 제외 (우산도 초단만 열어 줌)
   const tti = cards.filter((c) => c.type === 'tti' && !c.tags.includes('bi_tti'));
   if (tti.length >= 3) return { handId: 'tti3', core: topByBaseChip(tti, 3) };
   // 피5: 쌍피=2 환산 합 ≥5. 피/쌍피만 코어, 나머지(열끗 등)는 flat
@@ -4181,7 +4195,7 @@ function detectHandInfo(cards) {
   }
   return { handId: 'none', core: [...cards] };
 }
-function detectHand(cards) { return detectHandInfo(cards).handId; }
+function detectHand(cards, opts) { return detectHandInfo(cards, opts).handId; }
 
 // ── 특수패 22종 (커먼 / 레어 / 에픽 / 레전더리) ───────────
 // 훅 ctx: { cards, handId, core, boss, mitjangChips }
@@ -4233,7 +4247,7 @@ const JOKERS = [
     addMult: (x) => x.cards.filter((c) => c.tags.includes('chodan')).length * 2 },
   // ── 에픽 ───────────────────────────────────────────────
   { id: 'bigwang_usan', name: '비광우산', icon: '☔', rarity: 'epic', price: 9, kind: '×배수',
-    desc: '족보를 이루는 카드에 비(12월)가 들어가면 배수가 2배가 됩니다. 무조합에는 적용되지 않습니다.',
+    desc: '12월 패를 삼광·고도리·초단에 쓸 수 있게 해 줍니다(비삼광·비고도리 대신). 족보 코어에 12월이 있으면 배수가 2배가 됩니다. 무조합에는 적용되지 않습니다.',
     xMult: (x) => {
       if (x.handId === 'none') return 1;
       return x.core.some((c) => c.month === 12) ? 2 : 1;
@@ -4305,7 +4319,8 @@ function cardChip(c, env) {
 // 족보 기본칩 없음. (코어 카드칩) × 족보 배수 + 나머지(flat).
 // 반환: { handId, chips, mult, flat, score, kwangPlayed }
 function computeScore(cards, env) {
-  let { handId, core } = detectHandInfo(cards);
+  const biAsNormal = (env.jokerIds || []).includes('bigwang_usan');
+  let { handId, core } = detectHandInfo(cards, { biAsNormal });
   if (env.boss === 'no_shake' && ['month2', 'month3', 'chongtong'].includes(handId)) {
     handId = 'none';
     core = [...cards]; // 무조합 강등 시엔 전부 코어 (배수 1이라 결과 동일)
@@ -4839,7 +4854,8 @@ async function sortHandAnimated() {
 
 // 낸 패 표시용 정렬: 코어(왼쪽) → flat, 각 그룹은 월↑ · 칩↑ · uid
 function sortPlayedCards(cards, env) {
-  let { handId, core } = detectHandInfo(cards);
+  const biAsNormal = (env.jokerIds || []).includes('bigwang_usan');
+  let { handId, core } = detectHandInfo(cards, { biAsNormal });
   if (env.boss === 'no_shake' && ['month2', 'month3', 'chongtong'].includes(handId)) {
     core = [...cards];
   }
@@ -5913,7 +5929,7 @@ function findBestPlayHint() {
   if (!best || !best.cards.length) return null;
 
   if (best.handId && best.handId !== 'none') {
-    const { core } = detectHandInfo(best.cards);
+    const core = best.core;
     const picks = (core && core.length) ? core : best.cards;
     if (!picks.length) return null;
     return {
@@ -6434,7 +6450,7 @@ function chunhyangHint() {
   const pace = Math.max(1, state.target - state.roundScore) / Math.max(1, state.playsLeft);
   const tier = HANDS.findIndex((h) => h.id === best.handId);
   if (tier >= 0 && tier <= 6)
-    return { mood: '😍', text: `${handDisplayName(best.handId, detectHandInfo(best.cards).core)}이 손에 있어요! 지금이 찬스예요!` };
+    return { mood: '😍', text: `${handDisplayName(best.handId, best.core)}이 손에 있어요! 지금이 찬스예요!` };
   if (best.score >= pace * 1.5)
     return { mood: '😊', text: '이 손패면 넉넉해요~ 자신 있게 나가봐요.' };
   if (best.score >= pace * 0.9)
@@ -7799,7 +7815,8 @@ function applyJokerEconomy(snap) {
 
 function juiceBreakdown(snap) {
   const { cards, result, env } = snap;
-  let { handId, core } = detectHandInfo(cards);
+  let handId = result.handId;
+  let core = result.core || cards;
   if (env.boss === 'no_shake' && ['month2', 'month3', 'chongtong'].includes(handId)) {
     handId = 'none';
     core = [...cards];
