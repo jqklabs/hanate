@@ -8,7 +8,7 @@ const VARIANTS = ['OG1', 'OG2', 'OGB1', 'OGB2'];
 const ORIGIN = 'https://hanate.jqklabs.com';
 
 function inviteHtml(name) {
-  const img = `${ORIGIN}/Assets/OG/${name}.jpg`;
+  const img = `${ORIGIN}/Assets/OG/${name}.jpg?v=34`;
   const pageUrl = `${ORIGIN}/invite/${name}`;
   return `<!DOCTYPE html>
 <html lang="ko">
@@ -45,7 +45,7 @@ location.replace('/${name}');
 }
 
 function landHtml(name) {
-  const img = `${ORIGIN}/Assets/OG/${name}.jpg`;
+  const img = `${ORIGIN}/Assets/OG/${name}.jpg?v=34`;
   const pageUrl = `${ORIGIN}/${name}`;
   // /{name} 도 공유 가능하도록 OG 메타 포함 (유입 추적 후 본편으로)
   return `<!DOCTYPE html>
