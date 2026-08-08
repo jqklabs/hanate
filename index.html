@@ -9571,6 +9571,14 @@ function initBgSpine() {
     alpha: true,
     backgroundColor: '#00000000',
     premultipliedAlpha: true,
+    // 기본 사방 10% 패딩은 치마를 위로 띄움 → 하단 패딩 줄여 바닥에 앉힘
+    viewport: {
+      padLeft: '6%',
+      padRight: '8%',
+      padTop: '10%',
+      padBottom: '0%',
+      transitionTime: 0,
+    },
     success(player) {
       // setAnimation만 하면 currentViewport가 먼저 잡혀 SpinePlayer 내부 auto-play가 스킵됨
       try {
