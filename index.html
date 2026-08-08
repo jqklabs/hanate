@@ -91,25 +91,11 @@
   #bg-spine {
     position: absolute;
     right: -4%;
-    /* 치마 단이 화면 바닥에 닿게 — 예전 BackgroundFigure bottom 0% 느낌 */
-    bottom: -3%;
-    width: min(56vw, 700px);
-    height: min(92vh, 1040px);
+    /* 치마 단이 화면 하단에 닿도록 더 아래로 */
+    bottom: -28%;
+    width: min(58vw, 720px);
+    height: min(100vh, 1160px);
     pointer-events: none;
-  }
-  /* WebGL 캔버스엔 부모 filter가 안 먹는 경우가 많아, 은은한 라이팅은 이중으로 */
-  #bg-spine::before {
-    content: '';
-    position: absolute;
-    left: 6%; right: 4%; top: 18%; bottom: 0;
-    background: radial-gradient(
-      ellipse 58% 52% at 48% 55%,
-      rgba(255, 248, 230, 0.2) 0%,
-      rgba(255, 255, 255, 0.08) 42%,
-      transparent 72%
-    );
-    pointer-events: none;
-    z-index: 0;
   }
   #bg-spine.spine-player,
   #bg-spine .spine-player {
@@ -119,11 +105,14 @@
     height: 100% !important;
     background: transparent !important;
   }
+  /* WebGL엔 CSS drop-shadow 미적용 → 숨기고 2D 미러에 흰 아우라를 픽셀로 그림 */
   #bg-spine canvas.spine-player-canvas {
-    filter:
-      drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.4))
-      drop-shadow(0 0 8px rgba(255, 255, 255, 0.2))
-      drop-shadow(0 0 22px rgba(255, 255, 255, 0.1));
+    opacity: 0;
+  }
+  #bg-spine-glow {
+    position: absolute;
+    pointer-events: none;
+    z-index: 2;
   }
   #bg-spine .spine-player-controls,
   #bg-spine .spine-player-button,
@@ -9552,6 +9541,64 @@ function updateBgFigureForHand() {
 
 /** 배경 춘향 Spine — 첫 애니(idle_breath)만 루프 */
 let bgSpinePlayer = null;
+let bgSpineGlowRaf = 0;
+/** WebGL → 2D 스냅샷 후 shadowBlur (WebGL 소스는 CSS/shadow 아우라가 무시됨) */
+function startBgSpineGlowMirror(host) {
+  const src = host.querySelector('canvas.spine-player-canvas');
+  if (!src) return;
+  let glow = $('bg-spine-glow');
+  if (!glow) {
+    glow = document.createElement('canvas');
+    glow.id = 'bg-spine-glow';
+    host.appendChild(glow);
+  }
+  const mid = document.createElement('canvas');
+  const midCtx = mid.getContext('2d', { alpha: true });
+  const ctx = glow.getContext('2d', { alpha: true });
+  const PAD = 28;
+  const tick = () => {
+    bgSpineGlowRaf = requestAnimationFrame(tick);
+    if (!host.isConnected) return;
+    if (host.closest('#bg-figure.away')) return;
+    const w = src.width;
+    const h = src.height;
+    if (!w || !h) return;
+    if (mid.width !== w || mid.height !== h) {
+      mid.width = w;
+      mid.height = h;
+    }
+    const gw = w + PAD * 2;
+    const gh = h + PAD * 2;
+    if (glow.width !== gw || glow.height !== gh) {
+      glow.width = gw;
+      glow.height = gh;
+      glow.style.left = `-${PAD}px`;
+      glow.style.top = `-${PAD}px`;
+      glow.style.width = `calc(100% + ${PAD * 2}px)`;
+      glow.style.height = `calc(100% + ${PAD * 2}px)`;
+    }
+    try {
+      midCtx.clearRect(0, 0, w, h);
+      midCtx.drawImage(src, 0, 0);
+      ctx.clearRect(0, 0, gw, gh);
+      // 원래 BackgroundFigure 흰 drop-shadow 1.5 / 7 / 18
+      ctx.shadowColor = 'rgba(255,255,255,0.28)';
+      ctx.shadowBlur = 3;
+      ctx.drawImage(mid, PAD, PAD);
+      ctx.shadowColor = 'rgba(255,255,255,0.14)';
+      ctx.shadowBlur = 14;
+      ctx.drawImage(mid, PAD, PAD);
+      ctx.shadowColor = 'rgba(255,255,255,0.08)';
+      ctx.shadowBlur = 28;
+      ctx.drawImage(mid, PAD, PAD);
+      ctx.shadowBlur = 0;
+      ctx.shadowColor = 'transparent';
+      ctx.drawImage(mid, PAD, PAD);
+    } catch (_) {}
+  };
+  if (bgSpineGlowRaf) cancelAnimationFrame(bgSpineGlowRaf);
+  tick();
+}
 function initBgSpine() {
   const host = $('bg-spine');
   if (!host || host.dataset.ready) return;
@@ -9571,11 +9618,12 @@ function initBgSpine() {
     alpha: true,
     backgroundColor: '#00000000',
     premultipliedAlpha: true,
-    // 기본 사방 10% 패딩은 치마를 위로 띄움 → 하단 패딩 줄여 바닥에 앉힘
+    preserveDrawingBuffer: true, // 2D 미러용
+    // padTop↑ → 캔버스 안에서 더 아래로
     viewport: {
-      padLeft: '6%',
-      padRight: '8%',
-      padTop: '10%',
+      padLeft: '5%',
+      padRight: '6%',
+      padTop: '30%',
       padBottom: '0%',
       transitionTime: 0,
     },
@@ -9585,6 +9633,7 @@ function initBgSpine() {
         player.setAnimation(FIRST_ANIM, true);
         player.play();
       } catch (_) {}
+      startBgSpineGlowMirror(host);
     },
     error(player, reason) {
       console.warn('[spine]', reason);
