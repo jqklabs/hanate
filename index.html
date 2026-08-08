@@ -9619,11 +9619,11 @@ function initBgSpine() {
     backgroundColor: '#00000000',
     premultipliedAlpha: true,
     preserveDrawingBuffer: true, // 2D 미러용
-    // padTop↑ → 캔버스 안에서 더 아래로
+    // padTop↑ → 캔버스 안에서 아래로 (과하면 가라앉음)
     viewport: {
       padLeft: '5%',
       padRight: '6%',
-      padTop: '30%',
+      padTop: '16%',
       padBottom: '0%',
       transitionTime: 0,
     },
