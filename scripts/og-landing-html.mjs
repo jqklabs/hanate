@@ -15,11 +15,11 @@ function inviteHtml(name) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>화투로 — 무한의 판</title>
+<title>십이화 — 무한의 판</title>
 <meta name="description" content="12월까지 클리어 쫄? ㅋㅋ">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="화투로">
-<meta property="og:title" content="화투로 — 무한의 판">
+<meta property="og:site_name" content="십이화">
+<meta property="og:title" content="십이화 — 무한의 판">
 <meta property="og:description" content="12월까지 클리어 쫄? ㅋㅋ">
 <meta property="og:url" content="${pageUrl}">
 <meta property="og:image" content="${img}">
@@ -28,7 +28,7 @@ function inviteHtml(name) {
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="화투로 — 무한의 판">
+<meta name="twitter:title" content="십이화 — 무한의 판">
 <meta name="twitter:description" content="12월까지 클리어 쫄? ㅋㅋ">
 <meta name="twitter:image" content="${img}">
 <script>
@@ -53,11 +53,11 @@ function landHtml(name) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>화투로 — 무한의 판</title>
+<title>십이화 — 무한의 판</title>
 <meta name="description" content="12월까지 클리어 쫄? ㅋㅋ">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="화투로">
-<meta property="og:title" content="화투로 — 무한의 판">
+<meta property="og:site_name" content="십이화">
+<meta property="og:title" content="십이화 — 무한의 판">
 <meta property="og:description" content="12월까지 클리어 쫄? ㅋㅋ">
 <meta property="og:url" content="${pageUrl}">
 <meta property="og:image" content="${img}">
@@ -66,7 +66,7 @@ function landHtml(name) {
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="화투로 — 무한의 판">
+<meta name="twitter:title" content="십이화 — 무한의 판">
 <meta name="twitter:description" content="12월까지 클리어 쫄? ㅋㅋ">
 <meta name="twitter:image" content="${img}">
 <script>
