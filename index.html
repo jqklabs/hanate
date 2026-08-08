@@ -9,8 +9,8 @@
 <meta property="og:site_name" content="십이화">
 <meta property="og:title" content="십이화 — 무한의 판">
 <meta property="og:description" content="12월까지 클리어 쫄? ㅋㅋ">
-<meta property="og:url" content="https://hwatro.jqklabs.com/">
-<meta property="og:image" content="https://hwatro.jqklabs.com/Assets/OG/OG1.jpg">
+<meta property="og:url" content="https://hanate.jqklabs.com/">
+<meta property="og:image" content="https://hanate.jqklabs.com/Assets/OG/OG1.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:type" content="image/jpeg">
@@ -18,7 +18,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="십이화 — 무한의 판">
 <meta name="twitter:description" content="12월까지 클리어 쫄? ㅋㅋ">
-<meta name="twitter:image" content="https://hwatro.jqklabs.com/Assets/OG/OG1.jpg">
+<meta name="twitter:image" content="https://hanate.jqklabs.com/Assets/OG/OG1.jpg">
 <meta name="google-adsense-account" content="ca-pub-1930460760996573">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1930460760996573"
      crossorigin="anonymous"></script>
@@ -158,6 +158,17 @@
     background: transparent;
     border-bottom: none;
     flex-wrap: wrap; position: relative; z-index: 40;
+  }
+  /* SSRock에 '십' 글리프 없음 → 로고만 한자 十(Baige) + 이화(SSRock) */
+  .brand-mark {
+    font-family: 'SSRock', 'BaigeTianxing', 'Malgun Gothic', sans-serif;
+    font-weight: 400;
+    font-synthesis: none;
+  }
+  .brand-mark .shi {
+    font-family: 'BaigeTianxing', 'SSRock', serif;
+    font-weight: 400;
+    font-synthesis: none;
   }
   #logo {
     font-family: var(--font-overlay); font-weight: 400; font-size: 22px;
@@ -3706,10 +3717,14 @@
     opacity: 0; visibility: hidden; pointer-events: none;
   }
   #boot-load .bl-brand {
-    font-family: var(--font-overlay); font-weight: 400;
+    font-family: 'SSRock', 'BaigeTianxing', 'Malgun Gothic', sans-serif;
+    font-weight: 400;
     font-size: clamp(34px, 9vw, 52px);
     color: var(--gold-soft); letter-spacing: 0.08em;
     text-shadow: 0 2px 0 rgba(0,0,0,.35), 0 0 40px rgba(212,175,55,.2);
+  }
+  #boot-load .bl-brand .shi {
+    font-family: 'BaigeTianxing', 'SSRock', serif;
   }
   #boot-load .bl-sub {
     font-family: var(--font-overlay); font-size: 13px; font-weight: 400;
@@ -3786,7 +3801,7 @@
 <div id="bg-figure" aria-hidden="true"><div id="bg-spine"></div></div>
 
 <div id="boot-load" role="status" aria-live="polite" aria-busy="true">
-  <div class="bl-brand">십이화</div>
+  <div class="bl-brand" aria-label="십이화"><span class="shi" aria-hidden="true">十</span>이화</div>
   <div class="bl-sub">고스톱 · 무한의 판</div>
   <div class="bl-msg" id="boot-load-msg">패를 섞는 중…</div>
   <div class="bl-bar"><div class="bl-fill" id="boot-load-fill"></div></div>
@@ -3794,7 +3809,7 @@
 </div>
 
 <div id="topbar">
-  <div id="logo">십이화<small>고스톱 · 무한의 판</small></div>
+  <div id="logo"><span class="brand-mark" aria-label="십이화"><span class="shi" aria-hidden="true">十</span>이화</span><small>고스톱 · 무한의 판</small></div>
   <div id="jokerbar"></div>
   <div id="topbar-right">
     <div id="moneybox"></div>
@@ -6333,8 +6348,8 @@ async function preloadOverlayFonts() {
   try {
     if (!document.fonts || !document.fonts.load) return;
     await Promise.all([
-      document.fonts.load('16px BaigeTianxing', '십이화 병풍 고도리'),
-      document.fonts.load('16px SSRock', '십이화 병풍 123'),
+      document.fonts.load('16px BaigeTianxing', '十 二'),
+      document.fonts.load('16px SSRock', '이화 병풍 고도리 123'),
     ]);
   } catch (_) {}
 }
@@ -7309,7 +7324,7 @@ function renderModal() {
 
 function welcomeHTML() {
   return `
-    <h2>🎴 십이화 — 고스톱: 무한의 판</h2>
+    <h2>🎴 <span class="brand-mark" aria-label="십이화"><span class="shi" aria-hidden="true">十</span>이화</span> — 고스톱: 무한의 판</h2>
     <div class="sub" style="margin-bottom:10px">한국 화투 48장으로 족보를 맞춰 목표 점수를 넘기는 <b>1인 런</b>입니다.
       1월부터 12월까지 한 해를 버텨보세요.</div>
     <div class="help-sections">

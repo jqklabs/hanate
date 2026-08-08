@@ -45,9 +45,9 @@
 | `/{name}` | OG 미리보기 + `hwatro_og_image` 저장 후 `/` 로 이동 → Firestore 기록 |
 
 **공유할 링크 (슬래시 하나):**
-- 랜덤: `https://hwatro.jqklabs.com/invite`
-- 고정: `https://hwatro.jqklabs.com/invite/OG1` 또는 `https://hwatro.jqklabs.com/OG1`
-- ❌ `https://hwatro.jqklabs.com//OG1` (슬래시 두 개)
+- 랜덤: `https://hanate.jqklabs.com/invite`
+- 고정: `https://hanate.jqklabs.com/invite/OG1` 또는 `https://hanate.jqklabs.com/OG1`
+- ❌ `https://hanate.jqklabs.com//OG1` (슬래시 두 개)
 
 참고: 카카오 캐시가 남으면 디버거로 재스크랩. OG 이미지는 `Assets/OG/{name}.jpg` (1200×630).
 
@@ -185,14 +185,14 @@ Anonymous Auth: 무료, Spark 에서 사용 가능.
 Authentication → Settings → Authorized domains:
 
 - `localhost`
-- `hwatro.jqklabs.com`
+- `hanate.jqklabs.com`
 - (필요 시) `*.vercel.app` 프리뷰 도메인
 
 ### 5. Vercel 환경 변수 (배포)
 
 - `FIREBASE_CONFIG_JSON` — `projectId`, `apiKey`, `measurementId` 등 **기존과 동일 JSON**  
 - Firestore 는 같은 Firebase 프로젝트면 **추가 env 불필요**  
-- Redeploy 후 `https://hwatro.jqklabs.com/firebase-config.js` 가 `null` 이 아닌지 확인
+- Redeploy 후 `https://hanate.jqklabs.com/firebase-config.js` 가 `null` 이 아닌지 확인
 
 ### 6. 동작 확인
 

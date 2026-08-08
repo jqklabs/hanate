@@ -71,7 +71,7 @@ node test/test-game.mjs   # 단위 테스트 + 300런 시뮬레이션
 1. Vercel → hwatro → **Settings → Environment Variables**
 2. `FIREBASE_CONFIG_JSON` = firebaseConfig JSON 한 줄 (`measurementId` 포함)
 3. **Redeploy**
-4. Firebase → Authorized domains에 `hwatro.jqklabs.com` 추가
+4. Firebase → Authorized domains에 `hanate.jqklabs.com` 추가
 
 ### `run_end` 파라미터
 

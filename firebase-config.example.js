@@ -12,7 +12,7 @@
  *   (firebaseConfig 객체를 JSON 한 줄로. 배포 시 scripts/generate-firebase-config.mjs 가 생성)
  *
  * Firebase Console → Authentication → Authorized domains:
- *   localhost, hwatro.jqklabs.com, *.vercel.app
+ *   localhost, hanate.jqklabs.com, *.vercel.app
  */
 window.FIREBASE_CONFIG = {
   apiKey: 'YOUR_API_KEY',

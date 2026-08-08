@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const VARIANTS = ['OG1', 'OG2', 'OGB1', 'OGB2'];
-const ORIGIN = 'https://hwatro.jqklabs.com';
+const ORIGIN = 'https://hanate.jqklabs.com';
 
 function inviteHtml(name) {
   const img = `${ORIGIN}/Assets/OG/${name}.jpg`;
