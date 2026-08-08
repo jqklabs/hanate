@@ -90,21 +90,40 @@
   }
   #bg-spine {
     position: absolute;
-    right: -6%;
-    bottom: -10%;
-    width: min(56vw, 680px);
-    height: min(88vh, 980px);
+    right: -4%;
+    /* 치마 단이 화면 바닥에 닿게 — 예전 BackgroundFigure bottom 0% 느낌 */
+    bottom: -3%;
+    width: min(56vw, 700px);
+    height: min(92vh, 1040px);
     pointer-events: none;
-    filter:
-      drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.28))
-      drop-shadow(0 0 7px rgba(255, 255, 255, 0.14))
-      drop-shadow(0 0 18px rgba(255, 255, 255, 0.06));
+  }
+  /* WebGL 캔버스엔 부모 filter가 안 먹는 경우가 많아, 은은한 라이팅은 이중으로 */
+  #bg-spine::before {
+    content: '';
+    position: absolute;
+    left: 6%; right: 4%; top: 18%; bottom: 0;
+    background: radial-gradient(
+      ellipse 58% 52% at 48% 55%,
+      rgba(255, 248, 230, 0.2) 0%,
+      rgba(255, 255, 255, 0.08) 42%,
+      transparent 72%
+    );
+    pointer-events: none;
+    z-index: 0;
   }
   #bg-spine.spine-player,
   #bg-spine .spine-player {
+    position: relative;
+    z-index: 1;
     width: 100% !important;
     height: 100% !important;
     background: transparent !important;
+  }
+  #bg-spine canvas.spine-player-canvas {
+    filter:
+      drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.4))
+      drop-shadow(0 0 8px rgba(255, 255, 255, 0.2))
+      drop-shadow(0 0 22px rgba(255, 255, 255, 0.1));
   }
   #bg-spine .spine-player-controls,
   #bg-spine .spine-player-button,
