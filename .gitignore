@@ -14,3 +14,22 @@ design/*/capture/plates/
 design/*/capture/tmp/
 design/*/out/prev/
 design/15_google_campaign/gen/.work/
+
+# Premiere 작업 파일 — .prproj / .sh / .py 만 커밋한다
+design/*/premiere/Adobe Premiere Pro Auto-Save/
+design/*/premiere/Adobe Premiere Pro Audio Previews/
+design/*/premiere/Adobe Premiere Pro Preview Files/
+design/*/premiere/Adobe Premiere Pro Captured Video/
+*.prin
+*.prlock
+*.cfa
+*.pek
+
+# Premiere에서 뽑은 렌더 (수백 MB, 최종본은 design/*/out 으로 간다)
+design/*/premiere/*.mp4
+design/*/premiere/*.mov
+design/*/premiere/*.wav
+
+# AAF에서 뽑아낸 오디오 — premiere/build_audio.py 로 재생성됨
+design/*/audio-clips/_aaf_essence/
+design/*/audio-clips/hwatro_master_mix.wav
