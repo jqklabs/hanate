@@ -28,9 +28,10 @@ SUB, SUB_SIZE = sys.argv[9], int(sys.argv[10])
 INK = len(sys.argv) > 11 and sys.argv[11] == "ink"   # 크림 한지 배경용 먹색 조판
 LOGO_OVERRIDE = sys.argv[12] if len(sys.argv) > 12 else None   # 로고 파일 교체 (네이밍 비교용)
 
-# 「사행성 게임」이라는 단어 자체를 문면에서 뺀다 — 분류기는 부정문을 잘 읽지
-# 못하므로, 아니라고 쓰는 것보다 그 단어를 안 쓰는 편이 안전하다.
-NOTICE = "본 게임은 실제 재화나 현금을 이용하지 않습니다"
+# 하단 고지문은 뺐다. 「사행성 게임」은 물론 「재화」·「현금」도 그 자체가
+# 도박 분류의 신호가 될 수 있어서, 소재에는 아무것도 쓰지 않는 편을 택했다.
+# 이 고지는 랜딩페이지와 이의 제기 문서에서 담당한다 (README §4-1).
+NOTICE = None
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # src/ 의 상위 = 캠페인 루트
 G = os.path.join(HERE, "gen")
 H = os.path.expanduser("~/Library/Fonts")
@@ -119,8 +120,8 @@ for dx, dy, col in layers:
 y += sub_h + gap2
 art.alpha_composite(cta,  (cx - cta.width // 2, y))
 
-# ── 사행성 고지 — 하단 중앙, 눈에 띄지 않되 판독 가능하게 ──────
-if NFONT:
+# ── 사행성 고지 — 현재 미사용 (NOTICE = None) ────────────────
+if NOTICE and NFONT:
     d = ImageDraw.Draw(art)
     fn = ImageFont.truetype(NFONT, max(17, round(W * 0.0165)))
     bb = d.textbbox((0, 0), NOTICE, font=fn)
