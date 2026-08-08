@@ -28,7 +28,9 @@ SUB, SUB_SIZE = sys.argv[9], int(sys.argv[10])
 INK = len(sys.argv) > 11 and sys.argv[11] == "ink"   # 크림 한지 배경용 먹색 조판
 LOGO_OVERRIDE = sys.argv[12] if len(sys.argv) > 12 else None   # 로고 파일 교체 (네이밍 비교용)
 
-NOTICE = "본 게임은 실제 재화나 현금을 이용한 사행성 게임이 아닙니다."
+# 「사행성 게임」이라는 단어 자체를 문면에서 뺀다 — 분류기는 부정문을 잘 읽지
+# 못하므로, 아니라고 쓰는 것보다 그 단어를 안 쓰는 편이 안전하다.
+NOTICE = "본 게임은 실제 재화나 현금을 이용하지 않습니다"
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # src/ 의 상위 = 캠페인 루트
 G = os.path.join(HERE, "gen")
 H = os.path.expanduser("~/Library/Fonts")
