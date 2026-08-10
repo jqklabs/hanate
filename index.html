@@ -357,10 +357,161 @@
     box-shadow: inset 0 0 0 1px rgba(196, 162, 90, .12);
   }
   #moneybox .delta { font-size: 13px; color: #a3e635; }
+  #top-settings {
+    flex-shrink: 0;
+    width: 40px; height: 40px; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    background: rgba(8, 16, 12, .45);
+    border: 1px solid rgba(196, 162, 90, .4);
+    box-shadow: inset 0 0 0 1px rgba(196, 162, 90, .12);
+    color: #e8cd7a;
+    font-size: 18px; line-height: 1;
+    cursor: pointer;
+  }
+  #top-settings:hover, #top-settings:focus-visible {
+    background: rgba(20, 32, 22, .7);
+    border-color: rgba(232, 205, 122, .55);
+    color: #fde68a;
+  }
   #top-help, #top-tutor, #top-labels {
     display: none; flex-shrink: 0;
     background: rgba(255,255,255,.14); color: #e2e8f0;
     padding: 7px 10px; font-size: 13px; font-weight: 800; border-radius: 8px;
+  }
+  /* ── 설정 팝업 ───────────────────────── */
+  #settings-overlay {
+    position: fixed; inset: 0; z-index: 125;
+    display: none; align-items: center; justify-content: center;
+    padding: 18px;
+    background: rgba(4, 12, 8, .64);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+  }
+  #settings-overlay.show { display: flex; }
+  #settings-panel {
+    --font-set: 'Malgun Gothic', 'Apple SD Gothic Neo', 'Hiragino Sans', 'Yu Gothic UI', 'Noto Sans JP', sans-serif;
+    width: min(380px, 94vw);
+    border-radius: 18px;
+    padding: 22px 22px 10px;
+    font-family: var(--font-set);
+    color: #e8e0cc;
+    background:
+      linear-gradient(180deg, rgba(232, 205, 122, .10), transparent 56px),
+      linear-gradient(165deg, #2a4030 0%, #152418 100%);
+    border: 1px solid rgba(212, 175, 55, .42);
+    box-shadow:
+      0 24px 64px rgba(0,0,0,.55),
+      inset 0 1px 0 rgba(255,255,255,.07);
+  }
+  #settings-panel .set-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px;
+    margin: 0 2px 6px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(232, 205, 122, .18);
+  }
+  #settings-panel .set-head h2 {
+    margin: 0;
+    font-family: var(--font-overlay);
+    font-weight: 400; font-synthesis: none;
+    font-size: 26px; color: var(--gold-soft);
+    letter-spacing: 0.14em;
+  }
+  #settings-panel .set-close {
+    width: 30px; height: 30px; padding: 0; border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(0,0,0,.28);
+    color: #cbd5e1; font-size: 18px; line-height: 1; cursor: pointer;
+    font-family: var(--font-set);
+  }
+  #settings-panel .set-close:hover {
+    background: rgba(255,255,255,.12); color: #fff;
+    border-color: rgba(232, 205, 122, .35);
+  }
+  #settings-panel .set-row {
+    display: flex; flex-direction: column; gap: 9px;
+    padding: 14px 2px;
+    margin: 0;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  #settings-panel .set-row:last-child { border-bottom: none; }
+  #settings-panel .set-label {
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--font-set);
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.04em;
+    color: rgba(232, 224, 204, .78);
+  }
+  #settings-panel .set-label .set-val {
+    font-variant-numeric: tabular-nums;
+    color: #fde68a; font-weight: 800; font-size: 12px;
+  }
+  #settings-panel input[type="range"] {
+    width: 100%; height: 4px; cursor: pointer;
+    accent-color: #c4a25a;
+    background: transparent;
+  }
+  #settings-panel .set-seg {
+    display: grid; gap: 6px;
+    padding: 3px;
+    border-radius: 10px;
+    background: rgba(0,0,0,.28);
+    border: 1px solid rgba(255,255,255,.06);
+  }
+  #settings-panel .set-seg-2 { grid-template-columns: 1fr 1fr; }
+  #settings-panel .set-seg-3 { grid-template-columns: 1fr 1fr 1fr; }
+  #settings-panel .set-seg button,
+  #settings-panel .set-toggle {
+    padding: 9px 8px; border-radius: 8px;
+    font-family: var(--font-set);
+    font-size: 13px; font-weight: 700;
+    color: #94a3b8;
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  #settings-panel .set-seg button:hover {
+    color: #e2e8f0;
+    background: rgba(255,255,255,.05);
+  }
+  #settings-panel .set-seg button.on {
+    color: #1a160e;
+    background: linear-gradient(180deg, #efe0a8, #c9a84e);
+    border-color: rgba(253, 230, 138, .35);
+    box-shadow: 0 1px 0 rgba(255,255,255,.2) inset;
+  }
+  #settings-panel .set-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; text-align: left;
+    padding: 2px 0;
+    color: #e8e0cc;
+    font-size: 13.5px; font-weight: 700;
+  }
+  #settings-panel .set-toggle:hover { color: #f8fafc; }
+  #settings-panel .set-toggle .set-sw {
+    position: relative;
+    width: 42px; height: 24px; min-width: 42px; padding: 0;
+    border-radius: 999px;
+    background: rgba(0,0,0,.4);
+    border: 1px solid rgba(255,255,255,.12);
+    transition: background .15s ease, border-color .15s ease;
+  }
+  #settings-panel .set-toggle .set-sw::after {
+    content: '';
+    position: absolute; top: 2px; left: 2px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #94a3b8;
+    transition: transform .18s ease, background .15s ease;
+  }
+  #settings-panel .set-toggle.on .set-sw {
+    background: linear-gradient(180deg, #efe0a8, #c9a84e);
+    border-color: rgba(253, 230, 138, .45);
+  }
+  #settings-panel .set-toggle.on .set-sw::after {
+    transform: translateX(18px);
+    background: #1a160e;
   }
   /* 옵션 오버레이(월·열끗) 숨김 — 광은 항상, 쌍피는 이중 점, 띠·피·점수는 미표시 */
   body.hide-card-labels .card .month-badge,
@@ -802,78 +953,8 @@
   @media (min-width: 721px) {
     #btn-play, #btn-discard { width: 210px; box-sizing: border-box; }
   }
-  /* 손패 정렬·연출 배속 — 구석 토글 */
-  #corner-toggles {
-    position: fixed;
-    left: max(8px, env(safe-area-inset-left));
-    bottom: max(8px, env(safe-area-inset-bottom));
-    z-index: 45;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-  #btn-hand-sort,
-  #btn-fx-speed,
-  #locale-toggle button {
-    display: inline-block;
-    padding: 3px 7px;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    border-radius: 4px;
-    color: rgba(148, 163, 184, .45);
-    background: transparent;
-    border: 1px solid transparent;
-    opacity: .4;
-    transition: opacity .15s ease, color .15s ease, border-color .15s ease, background .15s ease;
-    font-variant-numeric: tabular-nums;
-  }
-  #locale-toggle {
-    position: fixed;
-    right: max(8px, env(safe-area-inset-right));
-    bottom: max(8px, env(safe-area-inset-bottom));
-    z-index: 46;
-    display: flex;
-    gap: 2px;
-  }
-  #locale-toggle button.on {
-    opacity: .9;
-    color: #e8cd7a;
-    border-color: rgba(232, 205, 122, .35);
-    background: rgba(0, 0, 0, .4);
-  }
-  #btn-hand-sort:hover, #btn-hand-sort:focus-visible,
-  #btn-fx-speed:hover, #btn-fx-speed:focus-visible,
-  #locale-toggle button:hover, #locale-toggle button:focus-visible {
-    opacity: 1;
-    color: #94a3b8;
-    background: rgba(0,0,0,.35);
-    border-color: rgba(255,255,255,.12);
-  }
-  #locale-toggle button.on:hover, #locale-toggle button.on:focus-visible {
-    color: #f5e6b0;
-  }
-  #btn-fx-speed.fast {
-    opacity: .85;
-    color: #fde68a;
-    border-color: rgba(253, 230, 138, .35);
-    background: rgba(0, 0, 0, .4);
-  }
-  #btn-fx-speed.fast:hover, #btn-fx-speed.fast:focus-visible {
-    opacity: 1;
-    color: #fef3c7;
-  }
-  #btn-hand-sort.type {
-    opacity: .85;
-    color: #a5b4fc;
-    border-color: rgba(165, 180, 252, .35);
-    background: rgba(0, 0, 0, .4);
-  }
-  #btn-hand-sort.type:hover, #btn-hand-sort.type:focus-visible {
-    opacity: 1;
-    color: #c7d2fe;
-  }
+  /* 언어는 설정 패널로 이동 — 구석 토글 비표시 */
+  #locale-toggle { display: none !important; }
   .smallbtn {
     background: rgba(12, 24, 18, .92); color: #e2e8f0;
     border: 1px solid rgba(255,255,255,.14);
@@ -1173,10 +1254,6 @@
   body[data-screen="prep"] #chunhyang,
   body[data-screen="welcome"] #chunhyang,
   body[data-screen="langpick"] #chunhyang,
-  body[data-screen="prep"] #corner-toggles,
-  body[data-screen="welcome"] #corner-toggles,
-  body[data-screen="langpick"] #corner-toggles,
-  body[data-screen="langpick"] #locale-toggle,
   body[data-screen="langpick"] #topbar {
     visibility: hidden !important;
     pointer-events: none !important;
@@ -3305,6 +3382,9 @@
       text-align: center; white-space: nowrap;
       line-height: 1;
     }
+    #top-settings {
+      width: 28px; height: 28px; font-size: 14px; border-radius: 6px;
+    }
     #top-help, #top-tutor, #top-labels {
       display: inline-flex; align-items: center; justify-content: center;
       padding: 0; width: 28px; height: 28px; font-size: 12px;
@@ -3898,6 +3978,7 @@
   <div id="jokerbar"></div>
   <div id="topbar-right">
     <div id="moneybox"></div>
+    <button type="button" id="top-settings" onclick="openSettings()" title="설정" aria-label="설정">⚙</button>
     <button type="button" id="top-help" class="smallbtn" onclick="openHelp()" title="족보표 / 도움말">📖</button>
     <button type="button" id="top-tutor" class="smallbtn" onclick="replayTutorials()" title="튜토리얼 다시 보기">✨</button>
     <button type="button" id="top-labels" class="smallbtn" onclick="toggleCardLabels()" title="월·열끗 표기 토글">🏷</button>
@@ -3946,9 +4027,50 @@
 
 <div id="legal-note">본 게임은 실제 재화나 현금을 이용한 사행성 게임이 아닙니다.</div>
 
-<div id="corner-toggles">
-  <button type="button" id="btn-hand-sort" onclick="toggleHandSort()" title="손패 정렬">월별</button>
-  <button type="button" id="btn-fx-speed" onclick="toggleJuiceSpeed()" title="연출 배속">×1</button>
+<div id="settings-overlay" onclick="if(event.target===this)closeSettings()" aria-hidden="true">
+  <div id="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="set-head">
+      <h2 id="settings-title">설정</h2>
+      <button type="button" class="set-close" onclick="closeSettings()" aria-label="닫기">×</button>
+    </div>
+    <div class="set-row">
+      <div class="set-label"><span id="set-bgm-label">BGM</span><span class="set-val" id="set-bgm-val">30%</span></div>
+      <input type="range" id="set-bgm" min="0" max="100" step="1" value="30"
+             oninput="setBgmVolume(+this.value / 100)" />
+    </div>
+    <div class="set-row">
+      <div class="set-label"><span id="set-sfx-label">효과음</span><span class="set-val" id="set-sfx-val">50%</span></div>
+      <input type="range" id="set-sfx" min="0" max="100" step="1" value="50"
+             oninput="setSfxVolume(+this.value / 100)" />
+    </div>
+    <div class="set-row">
+      <div class="set-label"><span id="set-lang-label">언어</span></div>
+      <div class="set-seg set-seg-3" id="set-lang">
+        <button type="button" data-lang="kr" onclick="setLocale('kr')">한국어</button>
+        <button type="button" data-lang="jp" onclick="setLocale('jp')">日本語</button>
+        <button type="button" data-lang="en" onclick="setLocale('en')">English</button>
+      </div>
+    </div>
+    <div class="set-row">
+      <button type="button" class="set-toggle" id="set-fx" onclick="toggleJuiceSpeed()" aria-pressed="false">
+        <span id="set-fx-label">연출 2배속</span>
+        <span class="set-sw" aria-hidden="true"></span>
+      </button>
+    </div>
+    <div class="set-row">
+      <div class="set-label"><span id="set-sort-label">손패 정렬</span></div>
+      <div class="set-seg set-seg-2">
+        <button type="button" id="set-sort-month" class="on" onclick="setHandSort('month')">월별</button>
+        <button type="button" id="set-sort-type" onclick="setHandSort('type')">종류별</button>
+      </div>
+    </div>
+    <div class="set-row">
+      <button type="button" class="set-toggle" id="set-playlog" onclick="togglePlayLogVisible()" aria-pressed="true">
+        <span id="set-playlog-label">내기 기록</span>
+        <span class="set-sw" aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
 </div>
 
 <div id="locale-toggle" aria-label="Language">
@@ -4239,7 +4361,7 @@ const TARGETS = [160, 240, 330, 450, 600, 820, 1150, 1600, 2200, 3000, 4100, 550
 const BOSS_ROUNDS = [3, 6, 9, 12];
 const MILD_BOSSES = ['pibak', 'gwangbak', 'meongbak'];
 // 고 무제한: n고 = 목표 ×(1+0.6n), 성공 보너스 n×m냥 (m=현재 월)
-const goMult = (n) => 1 + 0.6 * n;
+const goMult = (n) => Math.round((1 + 0.6 * n) * 10) / 10;
 const goBonus = (n, m) => n * m;
 // n고 문턱 점수. 고 선언 시 이미 넘어 있는 문턱은 전부 소급 인정("밀치기 고") —
 // 선언 단계는 항상 "아직 못 넘은 첫 문턱"이라 목표 > 현재 점수가 보장되고, 즉시 재충족 연쇄는 불가.
@@ -4537,6 +4659,10 @@ const I18N = {
     hintPlay: '내기 감', hintDiscard: '버리기 감',
     sortMonth: '월별', sortType: '종류별',
     sortTitleMonth: '손패 정렬: 월별 (누르면 종류별)', sortTitleType: '손패 정렬: 종류별 (누르면 월별)',
+    settingsBtn: '설정', settingsTitle: '설정',
+    settingsBgm: 'BGM', settingsSfx: '효과음',
+    settingsLang: '언어', settingsFx: '연출 2배속',
+    settingsSort: '손패 정렬', settingsPlayLog: '내기 기록', settingsClose: '닫기',
     score: '점수', needScore: '남은 점수', achieved: '달성!',
     sideHelp: '📖 족보표 / 도움말', sideTutor: '✨ 튜토리얼 다시 보기',
     labelsShow: '🏷 월·열끗 보이기', labelsHide: '🏷 월·열끗 숨기기',
@@ -4621,6 +4747,10 @@ const I18N = {
     hintPlay: 'Play feel', hintDiscard: 'Discard feel',
     sortMonth: 'Month', sortType: 'Type',
     sortTitleMonth: 'Sort: by month (tap for type)', sortTitleType: 'Sort: by type (tap for month)',
+    settingsBtn: 'Settings', settingsTitle: 'Settings',
+    settingsBgm: 'BGM', settingsSfx: 'SFX',
+    settingsLang: 'Language', settingsFx: '2× effects',
+    settingsSort: 'Hand sort', settingsPlayLog: 'Play log', settingsClose: 'Close',
     score: 'Score', needScore: 'To go', achieved: 'Clear!',
     sideHelp: '📖 Hands / Help', sideTutor: '✨ Replay tutorials',
     labelsShow: '🏷 Show labels', labelsHide: '🏷 Hide labels',
@@ -4705,6 +4835,10 @@ const I18N = {
     hintPlay: '出し感', hintDiscard: '捨て感',
     sortMonth: '月別', sortType: '種類別',
     sortTitleMonth: '手札: 月別 (タップで種類別)', sortTitleType: '手札: 種類別 (タップで月別)',
+    settingsBtn: '設定', settingsTitle: '設定',
+    settingsBgm: 'BGM', settingsSfx: '効果音',
+    settingsLang: '言語', settingsFx: '演出2倍速',
+    settingsSort: '手札並べ替え', settingsPlayLog: '出し記録', settingsClose: '閉じる',
     score: 'スコア', needScore: '残り', achieved: '達成!',
     sideHelp: '📖 役表 / ヘルプ', sideTutor: '✨ チュートリアル',
     labelsShow: '🏷 ラベル表示', labelsHide: '🏷 ラベル非表示',
@@ -5139,26 +5273,43 @@ function t(key) {
 
 function getLocale() { return locale; }
 
-function setLocale(lang) {
-  if (!LOCALE_CODES.includes(lang) || lang === locale) return;
-  try { localStorage.setItem(LOCALE_STORE, lang); } catch (_) {}
+/** URL의 ?lang= 만 갱신 (리로드·경로 이동 없음). 게임은 항상 index.html 한 파일 */
+function syncLocaleUrl(lang) {
   try {
     const u = new URL(location.href);
     if (lang === 'kr') u.searchParams.delete('lang');
     else u.searchParams.set('lang', lang);
-    location.replace(u.pathname + u.search + u.hash);
-  } catch (_) { location.reload(); }
+    const next = u.pathname + u.search + u.hash;
+    if (next !== location.pathname + location.search + location.hash) {
+      history.replaceState(null, '', next);
+    }
+  } catch (_) {}
+}
+
+function setLocale(lang) {
+  if (!LOCALE_CODES.includes(lang) || lang === locale) return;
+  locale = lang;
+  try { localStorage.setItem(LOCALE_STORE, lang); } catch (_) {}
+  syncLocaleUrl(lang);
+  // 프리뷰 라벨 등 캐시된 UI 문구 갱신
+  const pv = $('previewbox');
+  if (pv) pv.innerHTML = '';
+  applyLocaleChrome();
+  render();
 }
 
 /** 언어 선택 화면에서 확정 — 같은 언어(기본 kr)여도 진행 */
 function confirmLocale(lang) {
   if (!LOCALE_CODES.includes(lang)) return;
+  const changed = lang !== locale;
+  locale = lang;
   try { localStorage.setItem(LOCALE_STORE, lang); } catch (_) {}
-  if (lang !== locale) {
-    setLocale(lang);
-    return;
-  }
+  syncLocaleUrl(lang);
   state.screen = hasSeenHowto() ? 'prep' : 'welcome';
+  if (changed) {
+    const pv = $('previewbox');
+    if (pv) pv.innerHTML = '';
+  }
   applyLocaleChrome();
   render();
 }
@@ -5288,6 +5439,7 @@ function applyLocaleChrome() {
   const sh = $('side-help'); if (sh) sh.textContent = p.sideHelp;
   const st = $('side-tutor'); if (st) st.textContent = p.sideTutor;
   const plt = $('playlog-title'); if (plt) plt.textContent = p.playLogTitle;
+  syncSettingsLocale();
   // side-labels text set by setCardLabelsHidden / toggle
 }
 
@@ -5716,15 +5868,25 @@ function sortHand() {
   });
 }
 function syncHandSortBtn() {
-  const btn = $('btn-hand-sort');
-  if (!btn) return;
   const byType = handSortMode === 'type';
-  btn.classList.toggle('type', byType);
-  btn.textContent = byType ? t('sortType') : t('sortMonth');
-  btn.title = byType ? t('sortTitleType') : t('sortTitleMonth');
+  const monthBtn = $('set-sort-month');
+  const typeBtn = $('set-sort-type');
+  if (monthBtn) {
+    monthBtn.classList.toggle('on', !byType);
+    monthBtn.textContent = t('sortMonth');
+  }
+  if (typeBtn) {
+    typeBtn.classList.toggle('on', byType);
+    typeBtn.textContent = t('sortType');
+  }
 }
-async function toggleHandSort() {
-  handSortMode = handSortMode === 'month' ? 'type' : 'month';
+async function setHandSort(mode) {
+  if (mode !== 'month' && mode !== 'type') return;
+  if (handSortMode === mode) {
+    syncHandSortBtn();
+    return;
+  }
+  handSortMode = mode;
   try { localStorage.setItem('hwatro_hand_sort', handSortMode); }
   catch (_) {}
   syncHandSortBtn();
@@ -5734,6 +5896,9 @@ async function toggleHandSort() {
     sortHand();
     if (state.screen === 'play') render();
   }
+}
+async function toggleHandSort() {
+  await setHandSort(handSortMode === 'month' ? 'type' : 'month');
 }
 
 function captureHandRects() {
@@ -5879,19 +6044,49 @@ let juiceSpeed = 1;
 try {
   if (+localStorage.getItem('hwatro_fx_speed') === 2) juiceSpeed = 2;
 } catch (_) {}
-function toggleJuiceSpeed() {
-  juiceSpeed = juiceSpeed === 2 ? 1 : 2;
+function setJuiceSpeed(n) {
+  juiceSpeed = n === 2 ? 2 : 1;
   try { localStorage.setItem('hwatro_fx_speed', String(juiceSpeed)); }
   catch (_) {}
   syncJuiceSpeedBtn();
 }
+function toggleJuiceSpeed() {
+  setJuiceSpeed(juiceSpeed === 2 ? 1 : 2);
+}
 function syncJuiceSpeedBtn() {
-  const btn = $('btn-fx-speed');
-  if (!btn) return;
   const fast = juiceSpeed === 2;
-  btn.classList.toggle('fast', fast);
-  btn.textContent = fast ? '×2' : '×1';
-  btn.title = fast ? '연출 2배속 (켜짐) — 누르면 원래 속도' : '연출 배속 — 누르면 2배속';
+  const btn = $('set-fx');
+  if (!btn) return;
+  btn.classList.toggle('on', fast);
+  btn.setAttribute('aria-pressed', fast ? 'true' : 'false');
+}
+
+/** 사이드 '내기 기록' 패널 표시 */
+let playLogVisible = true;
+try {
+  if (localStorage.getItem('hwatro_playlog') === '0') playLogVisible = false;
+} catch (_) {}
+function setPlayLogVisible(on) {
+  playLogVisible = !!on;
+  try { localStorage.setItem('hwatro_playlog', playLogVisible ? '1' : '0'); }
+  catch (_) {}
+  syncPlayLogBtn();
+  const lp = $('playlog-panel');
+  if (!lp) return;
+  if (playLogVisible && state.playLog && state.playLog.length > 0) {
+    lp.style.display = 'block';
+  } else {
+    lp.style.display = 'none';
+  }
+}
+function togglePlayLogVisible() {
+  setPlayLogVisible(!playLogVisible);
+}
+function syncPlayLogBtn() {
+  const btn = $('set-playlog');
+  if (!btn) return;
+  btn.classList.toggle('on', playLogVisible);
+  btn.setAttribute('aria-pressed', playLogVisible ? 'true' : 'false');
 }
 
 // ── 내기 ───────────────────────────────────────────────────
@@ -7198,6 +7393,8 @@ function warmSfxInBackground() {
       a.src = url;
       try { a.load(); } catch (_) {}
     });
+    ensureBgm();
+    try { bgmAudio.load(); } catch (_) {}
   } catch (_) {}
 }
 
@@ -7358,9 +7555,56 @@ function hookModalKeys() {
   window._hwatroModalKeys = true;
   window.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
+    if ($('settings-overlay')?.classList.contains('show')) {
+      e.preventDefault();
+      closeSettings();
+      return;
+    }
     if (state.screen === 'help') { e.preventDefault(); closeHelp(); }
     else if (state.screen === 'deckpeek') { e.preventDefault(); closeDeckPeek(); }
   });
+}
+
+function syncSettingsLocale() {
+  const p = pack();
+  const btn = $('top-settings');
+  if (btn) {
+    btn.title = p.settingsBtn;
+    btn.setAttribute('aria-label', p.settingsBtn);
+  }
+  const title = $('settings-title');
+  if (title) title.textContent = p.settingsTitle;
+  const close = document.querySelector('#settings-panel .set-close');
+  if (close) close.setAttribute('aria-label', p.settingsClose);
+  const bgmL = $('set-bgm-label'); if (bgmL) bgmL.textContent = p.settingsBgm;
+  const sfxL = $('set-sfx-label'); if (sfxL) sfxL.textContent = p.settingsSfx;
+  const langL = $('set-lang-label'); if (langL) langL.textContent = p.settingsLang;
+  const fxL = $('set-fx-label'); if (fxL) fxL.textContent = p.settingsFx;
+  const sortL = $('set-sort-label'); if (sortL) sortL.textContent = p.settingsSort;
+  const plL = $('set-playlog-label'); if (plL) plL.textContent = p.settingsPlayLog;
+  document.querySelectorAll('#set-lang button').forEach((b) => {
+    b.classList.toggle('on', b.getAttribute('data-lang') === locale);
+  });
+  syncVolUi();
+  syncHandSortBtn();
+  syncJuiceSpeedBtn();
+  syncPlayLogBtn();
+}
+
+function openSettings() {
+  const ov = $('settings-overlay');
+  if (!ov) return;
+  syncSettingsLocale();
+  ov.classList.add('show');
+  ov.setAttribute('aria-hidden', 'false');
+  startBgm();
+}
+
+function closeSettings() {
+  const ov = $('settings-overlay');
+  if (!ov) return;
+  ov.classList.remove('show');
+  ov.setAttribute('aria-hidden', 'true');
 }
 
 // ── 남은 덱 보기 ───────────────────────────────────────────
@@ -7542,7 +7786,13 @@ function bindActionLongPress(btn, action) {
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 const fmt = (n) => n.toLocaleString('ko-KR');
-const fmtMult = (m) => (Number.isInteger(m) ? m : m.toFixed(2).replace(/0+$/, '').replace(/\.$/, ''));
+/** 배수 표시 — 부동소수 먼지(3.999999…)를 소수 둘째까지 반올림 */
+const fmtMult = (m) => {
+  const n = Math.round(Number(m) * 100) / 100;
+  if (!Number.isFinite(n)) return '0';
+  if (Math.abs(n - Math.round(n)) < 1e-9) return String(Math.round(n));
+  return n.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+};
 
 const TTI_LABEL = { hongdan: '홍단', cheongdan: '청단', chodan: '초단', bi_tti: '비단' };
 
@@ -7856,7 +8106,7 @@ function renderSide() {
   const gl = $('golevel');
   if (state.goLevel > 0) {
     gl.style.display = 'block';
-    gl.textContent = t('goLevel')(state.goLevel, goMult(state.goLevel), goBonus(state.goLevel, state.round));
+    gl.textContent = t('goLevel')(state.goLevel, fmtMult(goMult(state.goLevel)), goBonus(state.goLevel, state.round));
   } else gl.style.display = 'none';
 
   // 프리뷰 — 틀은 처음부터 펼쳐 두고 값만 갱신 (접었다 펴지 않음)
@@ -7912,7 +8162,7 @@ function renderSide() {
       : t('deckTitle');
 
   const lp = $('playlog-panel');
-  if (state.playLog.length > 0) {
+  if (playLogVisible && state.playLog.length > 0) {
     lp.style.display = 'block';
     $('playlog').innerHTML = state.playLog
       .map((p, i) => `<div><span><span class="lognum">${i + 1}.</span> ${esc(p.hand)}</span><b>${fmt(p.score)}</b></div>`)
@@ -8269,7 +8519,7 @@ function gostopHTML() {
     ? tu('gostopStopTipN')(state.goLevel, goBonus(state.goLevel, state.round))
     : tu('gostopStopTip0');
   const goTip = (jump > 1 ? tu('gostopJump')(jump) : '')
-    + tu('gostopGoTip')(fmt(newTarget), goMult(n), goBonus(n, state.round));
+    + tu('gostopGoTip')(fmt(newTarget), fmtMult(goMult(n)), goBonus(n, state.round));
   const goTitle = n <= 1
     ? `<div class="t">${tu('gostopGo1')}</div>`
     : `<div class="t go-btn-stage" id="go-btn-stage" data-from="0" data-to="${n}"></div>`;
@@ -8796,12 +9046,71 @@ const SFX = {
   // 주막 등장 — 파일만 교체하면 됨 (현재 go_final 복제 플레이스홀더)
   jumak: 'Assets/SFX/jumak_appear.mp3',
 };
+const BGM_SRC = 'Assets/BGM/korean_jazz_loop.mp3?v=3';
+/** BGM/SFX 볼륨 0~1 (분리). BGM 기본 30% · 효과음 기본 50% */
+function clampVol(n, fallback = 0.5) {
+  const v = Number(n);
+  return Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : fallback;
+}
+let bgmVolume = 0.3;
+let sfxVolume = 0.5;
+try {
+  const bgmRaw = localStorage.getItem('hwatro_bgm_vol');
+  const sfxRaw = localStorage.getItem('hwatro_sfx_vol');
+  const legacy = localStorage.getItem('hwatro_volume');
+  if (bgmRaw != null && bgmRaw !== '') bgmVolume = clampVol(bgmRaw, 0.3);
+  else if (legacy != null && legacy !== '') bgmVolume = clampVol(legacy, 0.3);
+  if (sfxRaw != null && sfxRaw !== '') sfxVolume = clampVol(sfxRaw);
+  else if (legacy != null && legacy !== '') sfxVolume = clampVol(legacy);
+} catch (_) {}
+let bgmAudio = null;
 let _sfxUnlocked = false;
 let _audioCtx = null;
 function audioCtx() {
   if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if (_audioCtx.state === 'suspended') _audioCtx.resume();
   return _audioCtx;
+}
+function ensureBgm() {
+  if (bgmAudio) return bgmAudio;
+  bgmAudio = new Audio(BGM_SRC);
+  bgmAudio.loop = true;
+  bgmAudio.preload = 'auto';
+  bgmAudio.volume = bgmVolume;
+  return bgmAudio;
+}
+function startBgm() {
+  try {
+    const a = ensureBgm();
+    a.volume = bgmVolume;
+    const p = a.play();
+    if (p && typeof p.catch === 'function') p.catch(() => {});
+  } catch (_) {}
+}
+function syncVolUi() {
+  const bgmPct = Math.round(bgmVolume * 100);
+  const sfxPct = Math.round(sfxVolume * 100);
+  const bgmSlider = $('set-bgm');
+  if (bgmSlider && +bgmSlider.value !== bgmPct) bgmSlider.value = String(bgmPct);
+  const bgmVal = $('set-bgm-val');
+  if (bgmVal) bgmVal.textContent = `${bgmPct}%`;
+  const sfxSlider = $('set-sfx');
+  if (sfxSlider && +sfxSlider.value !== sfxPct) sfxSlider.value = String(sfxPct);
+  const sfxVal = $('set-sfx-val');
+  if (sfxVal) sfxVal.textContent = `${sfxPct}%`;
+}
+function setBgmVolume(v) {
+  bgmVolume = clampVol(v, 0);
+  try { localStorage.setItem('hwatro_bgm_vol', String(bgmVolume)); }
+  catch (_) {}
+  if (bgmAudio) bgmAudio.volume = bgmVolume;
+  syncVolUi();
+}
+function setSfxVolume(v) {
+  sfxVolume = clampVol(v, 0);
+  try { localStorage.setItem('hwatro_sfx_vol', String(sfxVolume)); }
+  catch (_) {}
+  syncVolUi();
 }
 function unlockSfx() {
   if (_sfxUnlocked) return;
@@ -8812,6 +9121,7 @@ function unlockSfx() {
     a.volume = 0.001;
     a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {});
   } catch (_) {}
+  startBgm();
 }
 document.addEventListener('pointerdown', unlockSfx, { once: true, passive: true });
 
@@ -8820,7 +9130,7 @@ function playSfx(src, { volume = 0.55, rate = 1, whenMs = 0, maxMs = 0, fadeMs =
   const run = () => {
     try {
       const a = new Audio(src);
-      const vol = Math.min(1, Math.max(0, volume));
+      const vol = Math.min(1, Math.max(0, volume * sfxVolume));
       a.volume = vol;
       a.playbackRate = Math.min(2, Math.max(0.5, rate));
       a.play().catch(() => {});
@@ -10490,6 +10800,7 @@ function initBgSpine() {
 
 syncHandSortBtn();
 syncJuiceSpeedBtn();
+syncPlayLogBtn();
 initBgSpine();
 boot(); // 에셋 프리로드 → 첫 방문이면 룰 안내 → prep
 </script>
