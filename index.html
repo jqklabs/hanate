@@ -4052,17 +4052,17 @@
       </div>
     </div>
     <div class="set-row">
-      <button type="button" class="set-toggle" id="set-fx" onclick="toggleJuiceSpeed()" aria-pressed="false">
-        <span id="set-fx-label">연출 2배속</span>
-        <span class="set-sw" aria-hidden="true"></span>
-      </button>
-    </div>
-    <div class="set-row">
       <div class="set-label"><span id="set-sort-label">손패 정렬</span></div>
       <div class="set-seg set-seg-2">
         <button type="button" id="set-sort-month" class="on" onclick="setHandSort('month')">월별</button>
         <button type="button" id="set-sort-type" onclick="setHandSort('type')">종류별</button>
       </div>
+    </div>
+    <div class="set-row">
+      <button type="button" class="set-toggle" id="set-fx" onclick="toggleJuiceSpeed()" aria-pressed="false">
+        <span id="set-fx-label">연출 2배속</span>
+        <span class="set-sw" aria-hidden="true"></span>
+      </button>
     </div>
     <div class="set-row">
       <button type="button" class="set-toggle" id="set-playlog" onclick="togglePlayLogVisible()" aria-pressed="true">
@@ -4955,7 +4955,7 @@ const I18N_UI = {
     prepStart: '▶ 1월 시작',
     gostopH2: '🎉 목표 달성!',
     gostopSub: (score, target, plays, cards) => `${score} / ${target}점 · 내기 ${plays} · 패 ${cards}`,
-    gostopStop: '✋ 스톱',
+    gostopStop: '스톱',
     gostopStopTip0: '지금 정산하고 안전하게 다음 판으로',
     gostopStopTipN: (n, bonus) => `지금 정산하고 다음 판으로<br>(${n}고 보너스 <b>+${bonus}냥</b> 확보)`,
     gostopGo1: '1고',
@@ -5057,7 +5057,7 @@ const I18N_UI = {
     prepStart: '▶ Start January',
     gostopH2: '🎉 Target cleared!',
     gostopSub: (score, target, plays, cards) => `${score} / ${target} · plays ${plays} · cards ${cards}`,
-    gostopStop: '✋ Stop',
+    gostopStop: 'Stop',
     gostopStopTip0: 'Cash out and move on safely',
     gostopStopTipN: (n, bonus) => `Cash out and continue<br>(Go ${n} bonus <b>+${bonus} nyang</b> locked in)`,
     gostopGo1: 'Go 1',
@@ -5159,7 +5159,7 @@ const I18N_UI = {
     prepStart: '▶ 1月スタート',
     gostopH2: '🎉 目標達成!',
     gostopSub: (score, target, plays, cards) => `${score} / ${target}点 · 出し ${plays} · 札 ${cards}`,
-    gostopStop: '✋ ストップ',
+    gostopStop: 'ストップ',
     gostopStopTip0: '今清算して安全に次へ',
     gostopStopTipN: (n, bonus) => `今清算して次へ<br>(${n}ゴーボーナス <b>+${bonus}両</b>確保)`,
     gostopGo1: '1ゴー',
