@@ -102,9 +102,14 @@
     position: fixed; inset: 0; z-index: 0;
     pointer-events: none;
     background: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .45s ease, visibility .45s ease;
+  }
+  /* 부트 로딩이 끝난 뒤에만 배경 (로딩창에 춘향 비노출) */
+  body.booted #bg-figure {
     opacity: 1;
     visibility: visible;
-    transition: opacity .45s ease, visibility .45s ease;
   }
   #bg-spine {
     position: absolute;
@@ -137,13 +142,13 @@
   #bg-spine .spine-player-canvas-container + * {
     display: none !important;
   }
-  #bg-figure.away {
+  body.booted #bg-figure.away {
     opacity: 0;
     visibility: hidden;
   }
   /* 1400px 미만 — fade-out으로 숨김 (display:none 이면 트랜지션 불가) */
   @media (max-width: 1399px) {
-    #bg-figure {
+    body.booted #bg-figure {
       opacity: 0;
       visibility: hidden;
     }
@@ -3796,25 +3801,6 @@
     background-attachment: fixed;
     transition: opacity .45s ease, visibility .45s ease;
   }
-  #boot-load::before {
-    content: '';
-    position: absolute; inset: 0; z-index: 0;
-    pointer-events: none;
-    background: url('Assets/BackgroundFigure.webp?v=33') no-repeat right -32% bottom -16% / auto 78%;
-    filter:
-      drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.28))
-      drop-shadow(0 0 7px rgba(255, 255, 255, 0.14))
-      drop-shadow(0 0 18px rgba(255, 255, 255, 0.06));
-    opacity: 1;
-    visibility: visible;
-    transition: opacity .45s ease, visibility .45s ease;
-  }
-  @media (max-width: 1399px) {
-    #boot-load::before {
-      opacity: 0;
-      visibility: hidden;
-    }
-  }
   #boot-load > * { position: relative; z-index: 1; }
   #boot-load.done {
     opacity: 0; visibility: hidden; pointer-events: none;
@@ -3952,7 +3938,7 @@
       <button id="btn-discard" class="bigbtn" onclick="discardSelected()"></button>
       <div id="deckbox" role="button" tabindex="0" title="남은 덱 (클릭하여 보기)"
            onclick="openDeckPeek()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDeckPeek();}">
-        <span class="deck-ico">🂠</span>덱 <b id="deck-val">0</b>
+        <span class="deck-ico">🂠</span><span id="lbl-deck">덱</span> <b id="deck-val">0</b>
       </div>
     </div>
   </main>
@@ -4563,6 +4549,7 @@ const I18N = {
     goLevel: (n, mult, bonus) => `🔥 ${n}고! (목표 ×${mult} · 성공 시 +${bonus}냥)`,
     pvPick: '패를 선택하세요', pvFacedown: '뒷면 포함 · 미리보기 불가',
     pvBase: '기본합', pvMult: '배수', pvFlat: '+점수', pvTotal: '예상 점수',
+    deckShort: '덱',
     deckTitle: '남은 덱 (클릭하여 보기)', deckLow: (n) => `남은 덱 ${n}장 · 부족! (클릭하여 보기)`,
     deckFog: '안개 — 패 보기 불가',
     playHint: '카드를 고르고 <b>내기</b>를 누르세요',
@@ -4646,6 +4633,7 @@ const I18N = {
     goLevel: (n, mult, bonus) => `🔥 Go ${n}! (target ×${mult} · win +${bonus} nyang)`,
     pvPick: 'Select cards', pvFacedown: 'Face-down included · no preview',
     pvBase: 'Chips', pvMult: 'Mult', pvFlat: '+Flat', pvTotal: 'Est. score',
+    deckShort: 'Deck',
     deckTitle: 'Deck left (click to peek)', deckLow: (n) => `Deck ${n} left · low! (click)`,
     deckFog: 'Fog — peek disabled',
     playHint: 'Pick cards and press <b>Play</b>',
@@ -4729,6 +4717,7 @@ const I18N = {
     goLevel: (n, mult, bonus) => `🔥 ${n}ゴー! (目標×${mult} · 成功+${bonus}両)`,
     pvPick: '札を選んでください', pvFacedown: '裏札あり · プレビュー不可',
     pvBase: '基本', pvMult: '倍率', pvFlat: '+加点', pvTotal: '予想スコア',
+    deckShort: '山札',
     deckTitle: '山札 (クリックで確認)', deckLow: (n) => `山札 ${n}枚 · 少ない! (クリック)`,
     deckFog: '霧 — 確認不可',
     playHint: '札を選んで <b>出し</b> を押す',
@@ -5295,6 +5284,7 @@ function applyLocaleChrome() {
   });
   const ls = $('lbl-score'); if (ls) ls.textContent = p.score;
   const ln = $('lbl-need'); if (ln) ln.textContent = p.needScore;
+  const ld = $('lbl-deck'); if (ld) ld.textContent = p.deckShort;
   const sh = $('side-help'); if (sh) sh.textContent = p.sideHelp;
   const st = $('side-tutor'); if (st) st.textContent = p.sideTutor;
   const plt = $('playlog-title'); if (plt) plt.textContent = p.playLogTitle;
@@ -7171,7 +7161,7 @@ async function mapPool(items, limit, worker) {
 async function preloadCardImages(onProgress) {
   const arts = [...new Set(buildDeck().map((c) => c.art).filter(Boolean))];
   const overlays = [...new Set(Object.values(CARD_OVERLAY))];
-  const urls = ['Assets/Background.webp', 'Assets/BackgroundFigure.webp', 'Assets/jumak.png'].concat(arts, overlays);
+  const urls = ['Assets/Background.webp', 'Assets/jumak.png'].concat(arts, overlays);
   const total = urls.length || 1;
   let done = 0;
   onProgress(0, total);
@@ -7216,6 +7206,7 @@ function hideBootLoad() {
   if (!el) return;
   el.classList.add('done');
   el.setAttribute('aria-busy', 'false');
+  document.body.classList.add('booted');
   setTimeout(() => { if (el.parentNode) el.remove(); }, 500);
 }
 
