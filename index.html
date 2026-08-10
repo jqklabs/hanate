@@ -5995,6 +5995,7 @@ function toggleHintBundle(uid, uids, { charge = false } = {}) {
       state.janAuraLeft = Math.max(0, state.janAuraLeft - 1);
       state.janAuraCharged = true;
     }
+    sfxCardSelect();
   }
   return true;
 }
@@ -6026,6 +6027,7 @@ function toggleSelect(uid) {
   else {
     if (state.selected.length >= 5) { flashActions(); return; }
     state.selected.push(uid);
+    sfxCardSelect();
   }
   state.hoverReact = null;
   render();
@@ -9043,6 +9045,7 @@ const SFX = {
   goStep: 'Assets/SFX/go_step.mp3',
   goFinal: 'Assets/SFX/go_final.mp3',
   overflow: 'Assets/SFX/overflow.mp3',
+  select: 'Assets/SFX/hwatu_select.mp3',
   // 주막 등장 — 파일만 교체하면 됨 (현재 go_final 복제 플레이스홀더)
   jumak: 'Assets/SFX/jumak_appear.mp3',
 };
@@ -9173,6 +9176,15 @@ function sfxChip() {
   playSfx(SFX.slap, {
     volume: 0.06 + Math.random() * 0.02,
     rate: 0.98 + Math.random() * 0.05,
+  });
+}
+/** 손패 카드 선택 — 종이 질감, slap·play보다 낮고 짧게 */
+function sfxCardSelect() {
+  playSfx(SFX.select, {
+    volume: 0.12,
+    rate: 1.16 + Math.random() * 0.05,
+    maxMs: 110,
+    fadeMs: 35,
   });
 }
 function sfxMult() {
