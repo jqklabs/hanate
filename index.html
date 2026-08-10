@@ -5535,8 +5535,8 @@ function formatJokerGain(id, { short = false } = {}) {
   const g = state.jokerGains[id];
   if (!g || (!g.score && !g.money)) return short ? t('gainZero') : t('gainNone');
   const parts = [];
-  if (g.score) parts.push(`+${fmt(g.score)}${t('unitScore')}`);
-  if (g.money) parts.push(`+${t('nyang')(g.money)}`);
+  if (g.score) parts.push(`+ ${fmt(g.score)}${t('unitScore')}`);
+  if (g.money) parts.push(`+ ${t('nyang')(g.money)}`);
   return short ? parts.join(' · ') : `${locale === 'en' ? 'Gain ' : locale === 'jp' ? '累積 ' : '누적 이득 '}${parts.join(' · ')}`;
 }
 
@@ -9046,7 +9046,7 @@ const SFX = {
   // 주막 등장 — 파일만 교체하면 됨 (현재 go_final 복제 플레이스홀더)
   jumak: 'Assets/SFX/jumak_appear.mp3',
 };
-const BGM_SRC = 'Assets/BGM/korean_jazz_loop.mp3?v=4';
+const BGM_SRC = 'Assets/BGM/korean_jazz_loop.mp3?v=5';
 /** BGM/SFX 볼륨 0~1 (분리). BGM 기본 30% · 효과음 기본 100% */
 function clampVol(n, fallback = 0.5) {
   const v = Number(n);
