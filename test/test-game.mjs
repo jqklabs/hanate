@@ -209,6 +209,11 @@ console.log('[5] 특수패·박 회귀');
   assert(rChoUsan.handId === 'dan' && rChoUsan.mult === 8,
     `우산 비단초단 → 초단×2 (실제 ${rChoUsan.handId}/${rChoUsan.mult})`);
   assert(E.handDisplayName('dan', [biti, cho[0], cho[1]]) === '초단', '우산 비단초단 표시명=초단');
+  const hong1 = pick((c) => c.tags.includes('hongdan'))[0];
+  const cheong1 = pick((c) => c.tags.includes('cheongdan'))[0];
+  const rTtiUsan = E.computeScore([hong1, cheong1, biti], env({ jokerIds: ['bigwang_usan'] }));
+  assert(rTtiUsan.handId === 'tti3' && rTtiUsan.mult === 6 && rTtiUsan.core.some((c) => c.tags.includes('bi_tti')),
+    `우산 홍·청·비단 → 띠셋×2 (실제 ${rTtiUsan.handId}/${rTtiUsan.mult})`);
   const tti3 = [
     pick((c) => c.tags.includes('hongdan'))[0],
     pick((c) => c.tags.includes('cheongdan'))[0],
