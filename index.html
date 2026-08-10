@@ -4039,8 +4039,8 @@
              oninput="setBgmVolume(+this.value / 100)" />
     </div>
     <div class="set-row">
-      <div class="set-label"><span id="set-sfx-label">효과음</span><span class="set-val" id="set-sfx-val">50%</span></div>
-      <input type="range" id="set-sfx" min="0" max="100" step="1" value="50"
+      <div class="set-label"><span id="set-sfx-label">효과음</span><span class="set-val" id="set-sfx-val">100%</span></div>
+      <input type="range" id="set-sfx" min="0" max="100" step="1" value="100"
              oninput="setSfxVolume(+this.value / 100)" />
     </div>
     <div class="set-row">
@@ -9046,22 +9046,22 @@ const SFX = {
   // 주막 등장 — 파일만 교체하면 됨 (현재 go_final 복제 플레이스홀더)
   jumak: 'Assets/SFX/jumak_appear.mp3',
 };
-const BGM_SRC = 'Assets/BGM/korean_jazz_loop.mp3?v=3';
-/** BGM/SFX 볼륨 0~1 (분리). BGM 기본 30% · 효과음 기본 50% */
+const BGM_SRC = 'Assets/BGM/korean_jazz_loop.mp3?v=4';
+/** BGM/SFX 볼륨 0~1 (분리). BGM 기본 30% · 효과음 기본 100% */
 function clampVol(n, fallback = 0.5) {
   const v = Number(n);
   return Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : fallback;
 }
 let bgmVolume = 0.3;
-let sfxVolume = 0.5;
+let sfxVolume = 1;
 try {
   const bgmRaw = localStorage.getItem('hwatro_bgm_vol');
   const sfxRaw = localStorage.getItem('hwatro_sfx_vol');
   const legacy = localStorage.getItem('hwatro_volume');
   if (bgmRaw != null && bgmRaw !== '') bgmVolume = clampVol(bgmRaw, 0.3);
   else if (legacy != null && legacy !== '') bgmVolume = clampVol(legacy, 0.3);
-  if (sfxRaw != null && sfxRaw !== '') sfxVolume = clampVol(sfxRaw);
-  else if (legacy != null && legacy !== '') sfxVolume = clampVol(legacy);
+  if (sfxRaw != null && sfxRaw !== '') sfxVolume = clampVol(sfxRaw, 1);
+  else if (legacy != null && legacy !== '') sfxVolume = clampVol(legacy, 1);
 } catch (_) {}
 let bgmAudio = null;
 let _sfxUnlocked = false;
