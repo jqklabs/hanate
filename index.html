@@ -10,15 +10,15 @@
 <meta property="og:title" content="십이화 — 무한의 판">
 <meta property="og:description" content="12월까지 클리어 쫄? ㅋㅋ">
 <meta property="og:url" content="https://hanate.jqklabs.com/">
-<meta property="og:image" content="https://hanate.jqklabs.com/Assets/OG/OG1.jpg?v=34">
+<meta property="og:image" content="https://hanate.jqklabs.com/Assets/OG/kr/OG1.jpg?v=34">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:type" content="image/jpeg">
-<meta property="og:locale" content="ko_KR">
+<meta property="og:locale" content="ko_KR" id="meta-og-locale">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="십이화 — 무한의 판">
 <meta name="twitter:description" content="12월까지 클리어 쫄? ㅋㅋ">
-<meta name="twitter:image" content="https://hanate.jqklabs.com/Assets/OG/OG1.jpg?v=34">
+<meta name="twitter:image" content="https://hanate.jqklabs.com/Assets/OG/kr/OG1.jpg?v=34">
 <meta name="google-adsense-account" content="ca-pub-1930460760996573">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1930460760996573"
      crossorigin="anonymous"></script>
@@ -41,15 +41,33 @@
     font-style: normal;
     font-display: swap;
   }
+  /* 숫자·기호만 SSRock — 로케일 무관하게 한국어 디스플레이 숫자 유지 */
+  @font-face {
+    font-family: 'SSRockNum';
+    src: url('Assets/Fonts/SSRockRegular.woff2?v=2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0025, U+002B, U+002C, U+002D, U+002E, U+0030-0039, U+00D7, U+2212, U+FF0B, U+FF0C, U+FF0D, U+FF0E, U+FF10-FF19, U+FFE3;
+  }
+  /* 일본어 디스플레이 — SSRock/백게와 비슷한 붓글씨 톤 (OFL, JP locale에서만 스택에 넣음) */
+  @font-face {
+    font-family: 'Yuji Boku';
+    src: url('Assets/Fonts/YujiBoku-Japanese.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
   :root {
     --felt: #1a4a2e; --felt-dark: #113020;
     --panel: rgba(10, 22, 14, .78); --panel-line: rgba(196, 162, 90, .42);
     --frame: #c4a25a; --frame-dim: rgba(196, 162, 90, .28); --frame-deep: #8a6e3a;
     --ink: #1f2937; --red: #c0392b; --gold: #d4af37; --gold-soft: #e8cd7a;
     --chip-blue: #60a5fa; --mult-red: #f87171;
-    --font-overlay: 'SSRock', 'BaigeTianxing', 'Malgun Gothic', sans-serif;
-    --font-overlay-num: 'SSRock', 'BaigeTianxing', 'Malgun Gothic', sans-serif;
-    --font-ui: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+    --font-num: 'SSRockNum', 'SSRock', 'BaigeTianxing', 'Malgun Gothic', sans-serif;
+    --font-overlay: 'SSRockNum', 'SSRock', 'BaigeTianxing', 'Malgun Gothic', sans-serif;
+    --font-overlay-num: 'SSRockNum', 'SSRock', 'BaigeTianxing', 'Malgun Gothic', sans-serif;
+    --font-ui: 'SSRockNum', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
@@ -503,11 +521,19 @@
   }
   #playedarea .hint { color: rgba(255,255,255,.35); font-size: 14px; }
   #playresult { text-align: center; width: 100%; }
-  #playresult .r-hand { font-size: 26px; font-weight: 900; color: var(--gold-soft); }
-  #playresult .r-formula { font-size: 15px; color: #e2e8f0; }
-  #playresult .r-formula .c { color: var(--chip-blue); font-weight: 800; }
-  #playresult .r-formula .m { color: var(--mult-red); font-weight: 800; }
-  #playresult .r-score { font-size: 30px; font-weight: 900; color: #fff; }
+  #playresult .r-hand { font-size: 26px; font-weight: 400; color: var(--gold-soft); font-synthesis: none; }
+  #playresult .r-formula { font-size: 15px; color: #e2e8f0; font-weight: 400; font-synthesis: none; }
+  #playresult .r-formula .c { color: var(--chip-blue); font-weight: 400; }
+  #playresult .r-formula .m { color: var(--mult-red); font-weight: 400; }
+  #playresult .r-score { font-size: 30px; font-weight: 400; color: #fff; font-synthesis: none; }
+  /* 숫자는 항상 SSRockNum — bold 합성으로 글리프 깨짐 방지 */
+  #playresult .num,
+  #juice-tally .num,
+  .jt-chips, .jt-mult, .jt-score, .jt-flat {
+    font-family: var(--font-overlay-num);
+    font-weight: 400;
+    font-synthesis: none;
+  }
   /* pop 애니 제거: 카드 선택 시 render가 DOM을 다시 그리며 반복 재생되던 버그 방지 */
 
   /* padding: 추천 ✦/↓ 뱃지가 카드 밖으로 나가도 잘리지 않게 */
@@ -783,7 +809,8 @@
     gap: 4px;
   }
   #btn-hand-sort,
-  #btn-fx-speed {
+  #btn-fx-speed,
+  #locale-toggle button {
     display: inline-block;
     padding: 3px 7px;
     font-size: 10px;
@@ -797,12 +824,30 @@
     transition: opacity .15s ease, color .15s ease, border-color .15s ease, background .15s ease;
     font-variant-numeric: tabular-nums;
   }
+  #locale-toggle {
+    position: fixed;
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    z-index: 46;
+    display: flex;
+    gap: 2px;
+  }
+  #locale-toggle button.on {
+    opacity: .9;
+    color: #e8cd7a;
+    border-color: rgba(232, 205, 122, .35);
+    background: rgba(0, 0, 0, .4);
+  }
   #btn-hand-sort:hover, #btn-hand-sort:focus-visible,
-  #btn-fx-speed:hover, #btn-fx-speed:focus-visible {
+  #btn-fx-speed:hover, #btn-fx-speed:focus-visible,
+  #locale-toggle button:hover, #locale-toggle button:focus-visible {
     opacity: 1;
     color: #94a3b8;
     background: rgba(0,0,0,.35);
     border-color: rgba(255,255,255,.12);
+  }
+  #locale-toggle button.on:hover, #locale-toggle button.on:focus-visible {
+    color: #f5e6b0;
   }
   #btn-fx-speed.fast {
     opacity: .85;
@@ -1109,16 +1154,77 @@
   body[data-screen="welcome"] #previewbox,
   body[data-screen="welcome"] #playedarea,
   body[data-screen="welcome"] #handarea,
+  body[data-screen="langpick"] #roundpanel,
+  body[data-screen="langpick"] #scorepanel,
+  body[data-screen="langpick"] #previewbox,
+  body[data-screen="langpick"] #playedarea,
+  body[data-screen="langpick"] #handarea,
   body[data-screen="prep"] #actions,
   body[data-screen="welcome"] #actions,
+  body[data-screen="langpick"] #actions,
   body[data-screen="prep"] #legal-note,
   body[data-screen="welcome"] #legal-note,
+  body[data-screen="langpick"] #legal-note,
   body[data-screen="prep"] #chunhyang,
   body[data-screen="welcome"] #chunhyang,
+  body[data-screen="langpick"] #chunhyang,
   body[data-screen="prep"] #corner-toggles,
-  body[data-screen="welcome"] #corner-toggles {
+  body[data-screen="welcome"] #corner-toggles,
+  body[data-screen="langpick"] #corner-toggles,
+  body[data-screen="langpick"] #locale-toggle,
+  body[data-screen="langpick"] #topbar {
     visibility: hidden !important;
     pointer-events: none !important;
+  }
+  #modal.langpick-modal {
+    max-width: 420px;
+    text-align: center;
+  }
+  #modal.langpick-modal h2 {
+    margin-bottom: 6px;
+  }
+  #modal.langpick-modal .langpick-sub {
+    font-size: 12px;
+    color: rgba(241, 245, 249, .72);
+    line-height: 1.45;
+    margin-bottom: 16px;
+  }
+  #modal.langpick-modal .langpick-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  #modal.langpick-modal .langpick-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    width: 100%;
+    padding: 14px 12px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, rgba(30, 50, 38, .95), rgba(16, 32, 24, .98));
+    border: 1px solid rgba(196, 162, 90, .45);
+    color: #f8fafc;
+    cursor: pointer;
+    transition: border-color .15s ease, transform .12s ease, background .15s ease;
+  }
+  #modal.langpick-modal .langpick-btn:hover,
+  #modal.langpick-modal .langpick-btn:focus-visible {
+    border-color: rgba(232, 205, 122, .85);
+    background: linear-gradient(180deg, rgba(48, 72, 52, .98), rgba(22, 40, 28, .98));
+    transform: translateY(-1px);
+  }
+  #modal.langpick-modal .langpick-btn .lp-name {
+    font-family: var(--font-overlay);
+    font-size: 20px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+  #modal.langpick-modal .langpick-btn .lp-code {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gold-soft);
+    opacity: .85;
   }
   body[data-screen="play"] #actions {
     visibility: visible !important;
@@ -3802,7 +3908,7 @@
 </div>
 
 <div id="topbar">
-  <div id="logo">십이화<small>고스톱 · 무한의 판</small></div>
+  <div id="logo">십이화<small id="logo-sub">고스톱 · 무한의 판</small></div>
   <div id="jokerbar"></div>
   <div id="topbar-right">
     <div id="moneybox"></div>
@@ -3820,19 +3926,19 @@
       <div id="bossbanner" style="display:none; margin-top:8px;"></div>
     </div>
     <div class="panel" id="scorepanel">
-      <div class="statline"><span>점수</span><b class="score-frac"><span id="score-val">0</span><span class="score-slash"> / </span><span id="target-val">0</span></b></div>
+      <div class="statline"><span id="lbl-score">점수</span><b class="score-frac"><span id="score-val">0</span><span class="score-slash"> / </span><span id="target-val">0</span></b></div>
       <div id="gauge"><div id="gauge-fill"></div></div>
-      <div class="statline"><span>남은 점수</span><b id="need-val"></b></div>
+      <div class="statline"><span id="lbl-need">남은 점수</span><b id="need-val"></b></div>
       <div class="golevel" id="golevel" style="display:none;"></div>
     </div>
     <div class="panel" id="previewbox"></div>
     <div class="side-nav">
-      <button class="smallbtn side-help" onclick="openHelp()">📖 족보표 / 도움말</button>
-      <button class="smallbtn side-tutor" onclick="replayTutorials()">✨ 튜토리얼 다시 보기</button>
-      <button class="smallbtn side-labels" onclick="toggleCardLabels()">🏷 월·열끗 숨기기</button>
+      <button class="smallbtn side-help" id="side-help" onclick="openHelp()">📖 족보표 / 도움말</button>
+      <button class="smallbtn side-tutor" id="side-tutor" onclick="replayTutorials()">✨ 튜토리얼 다시 보기</button>
+      <button class="smallbtn side-labels" id="side-labels" onclick="toggleCardLabels()">🏷 월·열끗 숨기기</button>
     </div>
     <div class="panel" id="playlog-panel" style="display:none;">
-      <div style="font-size:11px; color:var(--gold-soft); font-weight:800; margin-bottom:5px;">이번 판 내기 기록</div>
+      <div id="playlog-title" style="font-size:11px; color:var(--gold-soft); font-weight:800; margin-bottom:5px;">이번 판 내기 기록</div>
       <div id="playlog"></div>
     </div>
     <div id="seedinfo"></div>
@@ -3859,11 +3965,17 @@
   <button type="button" id="btn-fx-speed" onclick="toggleJuiceSpeed()" title="연출 배속">×1</button>
 </div>
 
+<div id="locale-toggle" aria-label="Language">
+  <button type="button" data-lang="kr" onclick="setLocale('kr')">KR</button>
+  <button type="button" data-lang="en" onclick="setLocale('en')">EN</button>
+  <button type="button" data-lang="jp" onclick="setLocale('jp')">JP</button>
+</div>
+
 <div id="chunhyang">
   <div id="ch-bubble"></div>
   <div id="ch-hint-tabs" hidden>
-    <button type="button" data-hint="play" onclick="setTouchHint('play')">내기 감</button>
-    <button type="button" data-hint="discard" onclick="setTouchHint('discard')">버리기 감</button>
+    <button type="button" data-hint="play" id="ch-hint-play" onclick="setTouchHint('play')">내기 감</button>
+    <button type="button" data-hint="discard" id="ch-hint-discard" onclick="setTouchHint('discard')">버리기 감</button>
   </div>
   <div id="ch-figure">
     <svg viewBox="0 0 120 190" width="110" xmlns="http://www.w3.org/2000/svg" aria-label="춘향이">
@@ -3898,7 +4010,7 @@
     <div class="jp-meta" id="joker-pop-meta"></div>
     <div class="jp-desc" id="joker-pop-desc"></div>
     <div class="jp-gain" id="joker-pop-gain"></div>
-    <button type="button" class="jp-close" onclick="closeJokerPop()">닫기</button>
+    <button type="button" class="jp-close" id="joker-pop-close" onclick="closeJokerPop()">닫기</button>
   </div>
 </div>
 
@@ -3909,7 +4021,7 @@
 <div id="jumak-cascade" aria-hidden="true">
   <div class="jumak-stage" id="jumak-cascade-stage">
     <img class="jumak-frame" src="Assets/jumak.png" alt="" draggable="false">
-    <div class="jumak-label">주막 등장</div>
+    <div class="jumak-label" id="jumak-label">주막 등장</div>
   </div>
 </div>
 <div id="coach-root" aria-hidden="true"></div>
@@ -4422,6 +4534,773 @@ function evaluateHand(hand, env) {
    ==== ENGINE END ====
    ================================================================ */
 
+// ── locale / i18n (한영일 kr/en/jp — ENGINE 한국어 정본, 표시만 번역) ──
+const LOCALE_STORE = 'hwatro_locale';
+const LOCALE_CODES = ['kr', 'en', 'jp'];
+const LOCALE_ALIAS = { ja: 'jp', zh: 'en' };
+
+const I18N = {
+  kr: {
+    htmlLang: 'ko', ogLocale: 'ko_KR',
+    brand: '십이화', title: '십이화 — 무한의 판', logoSub: '고스톱 · 무한의 판',
+    bootShuffle: '패를 섞는 중…', bootUnfurl: '그림을 펼치는 중…', bootAlmost: '거의 다 됐습니다…', bootOpen: '판을 여는 중…',
+    btnPlay: '내기', btnDiscard: '버리기',
+    playTitle: (n) => `내기 · ${n}회 남음`, discardTitle: (n) => `버리기 · ${n}회 남음`,
+    legal: '본 게임은 실제 재화나 현금을 이용한 사행성 게임이 아닙니다.',
+    helpTitle: '족보표 / 도움말', tutorTitle: '튜토리얼 다시 보기', labelsTitle: '월·열끗 표기 토글',
+    hintPlay: '내기 감', hintDiscard: '버리기 감',
+    sortMonth: '월별', sortType: '종류별',
+    sortTitleMonth: '손패 정렬: 월별 (누르면 종류별)', sortTitleType: '손패 정렬: 종류별 (누르면 월별)',
+    score: '점수', needScore: '남은 점수', achieved: '달성!',
+    sideHelp: '📖 족보표 / 도움말', sideTutor: '✨ 튜토리얼 다시 보기',
+    labelsShow: '🏷 월·열끗 보이기', labelsHide: '🏷 월·열끗 숨기기',
+    playLogTitle: '이번 판 내기 기록',
+    emptyJoker: '특수패<br>빈 슬롯', nyang: (n) => `${n}냥`,
+    seasonLineDay: (m) => `이달의 패: <b>${m} 카드 칩 ×2</b><br>낮 — 광·열끗 칩 +2`,
+    seasonLineNight: (m) => `이달의 패: <b>${m} 카드 칩 ×2</b><br>밤 — 띠·피·쌍피 칩 +2`,
+    roundMeta: (r, t) => `(판 ${r}/${t})`, bak: '(박)',
+    bossNull: ' → 피박보험으로 무효!',
+    goLevel: (n, mult, bonus) => `🔥 ${n}고! (목표 ×${mult} · 성공 시 +${bonus}냥)`,
+    pvPick: '패를 선택하세요', pvFacedown: '뒷면 포함 · 미리보기 불가',
+    pvBase: '기본합', pvMult: '배수', pvFlat: '+점수', pvTotal: '예상 점수',
+    deckTitle: '남은 덱 (클릭하여 보기)', deckLow: (n) => `남은 덱 ${n}장 · 부족! (클릭하여 보기)`,
+    deckFog: '안개 — 패 보기 불가',
+    playHint: '카드를 고르고 <b>내기</b>를 누르세요',
+    auraJunkTutor: '🗑️ 빨간 빛 — 버릴 약한 패 (눌러 고르고 버리기, 최대 5장)',
+    auraJunk: '🗑️ 버리기 추천 · 빨간 패를 누르면 한꺼번에 골라져요 (한 장씩 해제 가능)',
+    auraPlayNone: '✨ 내기 추천 · 빛나는 패를 누르면 칩 최고 패가 골라져요',
+    auraPlay: (name) => `✨ 내기 추천 · 빛나는 패를 누르면 ${name}이 한 번에 골라져요`,
+    gainNone: '아직 이득 없음', gainZero: '이득 0',
+    mitjangNow: (n) => ` 지금 누적 ${n}칩입니다.`,
+    bestChipHand: '최고 칩 패', discardWord: '버리기',
+    unitChip: '칩', unitMult: '배', unitScore: '점',
+    months: {1:'송학',2:'매조',3:'벚꽃',4:'흑싸리',5:'난초',6:'모란',7:'홍싸리',8:'공산',9:'국진',10:'단풍',11:'오동',12:'비'},
+    hands: {ogwang:'오광',sagwang:'사광',chongtong:'총통',godori:'고도리',bigodori:'비고도리',samgwang:'삼광',bisamgwang:'비삼광',dan:'홍단/청단/초단',byeongpung:'병풍',month3:'폭탄',yeol3:'열끗 셋',tti3:'띠 셋',pi5:'피 5장',month2:'같은 달 2장',none:'무조합'},
+    handMonth2: (n) => `${n}월 2장`,
+    dan: {hongdan:'홍단',cheongdan:'청단',chodan:'초단'},
+    tti: {hongdan:'홍단',cheongdan:'청단',chodan:'초단',bi_tti:'비단'},
+    cardTag: {kwang:'광',bikwang:'비광',yeol:'열끗',yeolBird:'열끗(새)',ssangpi:'쌍피',pi:'피'},
+    rarity: {common:'커먼',rare:'레어',epic:'에픽',legendary:'레전더리'},
+    gobak: '고박', missTarget: '목표 미달',
+    handConds: {
+      ogwang:'광 5장 전부', sagwang:'광 4장 (비광 무관)', chongtong:'같은 달 4장',
+      godori:'2·4·8월 열끗(새) 3장', bigodori:'12월 제비 + 고도리 새 2장',
+      samgwang:'광 3장 (비광 제외)', bisamgwang:'광 3장 (비광 포함)',
+      dan:'홍단·청단·초단 중 한 세트 3장', byeongpung:'연속된 달 5장 (스트레이트)', month3:'같은 달 3장',
+      yeol3:'열끗 3장 이상 (배수 타는 건 칩 높은 3장)', tti3:'띠 3장 이상 (비단 제외, 배수 타는 건 칩 높은 3장)',
+      pi5:'피·쌍피 환산 합 5 이상 (나머지는 +점수)', month2:'같은 달 2장', none:'해당 없음',
+    },
+    jokers: {
+      gwangpari:{name:'광팔이',kind:'경제',desc:'광을 낼 때마다 냥을 1개 받습니다. 한 판에 세 번까지 적용됩니다.'},
+      pi_merchant:{name:'피장사',kind:'+점수',desc:'낸 피마다 4점, 쌍피마다 8점을 배수 밖에서 더합니다.'},
+      meongtta:{name:'멍따',kind:'+점수',desc:'낸 멍(열끗)마다 6점을 배수 밖에서 더합니다.'},
+      jjokjipge:{name:'쪽집게',kind:'+배수',desc:'쪽(같은 달 두 장)을 내면 배수가 2 올라갑니다.'},
+      ssangpi_sarang:{name:'쌍피보따리',kind:'+점수',desc:'낸 쌍피마다 12점을 배수 밖에서 더합니다.'},
+      tti_jjang:{name:'띠장수',kind:'+점수',desc:'낸 띠마다 5점을 배수 밖에서 더합니다.'},
+      ssakssuri:{name:'싹쓸이',kind:'+점수',desc:'다섯 장을 딱 맞춰 내면 35점을 배수 밖에서 더합니다.'},
+      godori_kkun:{name:'고도리꾼',kind:'+배수',desc:'고도리 새(2·4·8월 멍)를 낼 때마다 배수가 3씩 올라갑니다.'},
+      dangol:{name:'단골',kind:'+배수',desc:'홍단·청단·초단이나 띠셋을 내면 배수가 7 올라갑니다.'},
+      heundeulgi:{name:'흔들기',kind:'×배수',desc:'같은 달을 두 장 이상 내면 배수가 1.5배가 됩니다. 흔들기 금지 판에서는 효과가 없습니다.'},
+      gwang_sujip:{name:'광모이',kind:'+점수',desc:'낸 광마다 10점을 배수 밖에서 더합니다. 비광도 포함됩니다.'},
+      pi_ohjang:{name:'피오장',kind:'+배수',desc:'피 다섯 장 족보를 내면 배수가 3 올라갑니다.'},
+      chodan_aeho:{name:'초단꾼',kind:'+배수',desc:'낸 초단마다 배수가 2씩 올라갑니다.'},
+      bigwang_usan:{name:'비광우산',kind:'×배수',desc:'12월 패를 삼광·고도리·초단에 쓸 수 있게 해 줍니다(비삼광·비고도리 대신). 족보 코어에 12월이 있으면 배수가 2배가 됩니다. 무조합에는 적용되지 않습니다.'},
+      poktan:{name:'폭탄',kind:'×배수',desc:'폭탄(같은 달 세 장)이나 총통을 내면 배수가 3배가 됩니다.'},
+      mitjang:{name:'밑장빼기',kind:'성장',desc:'버릴 때마다 영구로 10점이 쌓입니다. 점수는 배수 밖에서 더해지며, 팔면 초기화됩니다.'},
+      pibak_boheom:{name:'피박보험',kind:'방어',desc:'피박·광박·멍박을 막아 주고, 판을 끝낼 때 냥을 1개 더 받습니다.'},
+      yeol_janchi:{name:'멍잔치',kind:'×배수',desc:'멍셋(열끗 셋)을 내면 배수가 2배가 됩니다.'},
+      samgwang_nori:{name:'삼광판',kind:'+배수',desc:'낸 광마다 배수가 3씩 올라갑니다. 비광도 포함됩니다.'},
+      sipidal:{name:'열두사철',kind:'+배수',desc:'낸 패에 섞인 달 수마다 배수가 2씩 올라갑니다.'},
+      ogwang_kkum:{name:'오광소원',kind:'×배수',desc:'광을 세 장 이상 내면 배수가 2.5배가 됩니다. 비광도 포함됩니다.'},
+      paewang:{name:'명인',kind:'×배수',desc:'족보가 성립하면 배수가 2배가 됩니다. 무조합에는 적용되지 않습니다.'},
+    },
+    bosses: {
+      pibak:{name:'피박',desc:'피·쌍피의 카드 칩이 0 (족보 판정에는 카운트)'},
+      gwangbak:{name:'광박',desc:'광·비광의 카드 칩이 0'},
+      meongbak:{name:'멍박',desc:'열끗의 카드 칩이 0'},
+      no_shake:{name:'흔들기 금지',desc:'같은 달 2장/3장/총통 족보가 무조합으로 강등 (흔들기 특수패도 무효)'},
+      bibaram:{name:'비바람',desc:'이 판 동안 버리기 사용 불가'},
+      angae:{name:'안개',desc:'손패 중 2장이 뒷면으로 온다 (내는 순간 공개)'},
+    },
+  },
+  en: {
+    htmlLang: 'en', ogLocale: 'en_US',
+    brand: 'Sibiwha', title: 'Sibiwha — Infinite Table', logoSub: 'Go-Stop · Infinite Table',
+    bootShuffle: 'Shuffling…', bootUnfurl: 'Laying out art…', bootAlmost: 'Almost ready…', bootOpen: 'Opening the table…',
+    btnPlay: 'Play', btnDiscard: 'Discard',
+    playTitle: (n) => `Play · ${n} left`, discardTitle: (n) => `Discard · ${n} left`,
+    legal: 'This is not a real-money gambling game.',
+    helpTitle: 'Hands / Help', tutorTitle: 'Replay tutorials', labelsTitle: 'Toggle month / ribbon labels',
+    hintPlay: 'Play feel', hintDiscard: 'Discard feel',
+    sortMonth: 'Month', sortType: 'Type',
+    sortTitleMonth: 'Sort: by month (tap for type)', sortTitleType: 'Sort: by type (tap for month)',
+    score: 'Score', needScore: 'To go', achieved: 'Clear!',
+    sideHelp: '📖 Hands / Help', sideTutor: '✨ Replay tutorials',
+    labelsShow: '🏷 Show labels', labelsHide: '🏷 Hide labels',
+    playLogTitle: 'Plays this round',
+    emptyJoker: 'Joker<br>empty', nyang: (n) => `${n} nyang`,
+    seasonLineDay: (m) => `Month cards: <b>${m} chips ×2</b><br>Day — Gwang & Yeol +2`,
+    seasonLineNight: (m) => `Month cards: <b>${m} chips ×2</b><br>Night — Ribbon & Pi +2`,
+    roundMeta: (r, t) => `(Round ${r}/${t})`, bak: '(Bak)',
+    bossNull: ' → negated by Pi-Bak Insurance!',
+    goLevel: (n, mult, bonus) => `🔥 Go ${n}! (target ×${mult} · win +${bonus} nyang)`,
+    pvPick: 'Select cards', pvFacedown: 'Face-down included · no preview',
+    pvBase: 'Chips', pvMult: 'Mult', pvFlat: '+Flat', pvTotal: 'Est. score',
+    deckTitle: 'Deck left (click to peek)', deckLow: (n) => `Deck ${n} left · low! (click)`,
+    deckFog: 'Fog — peek disabled',
+    playHint: 'Pick cards and press <b>Play</b>',
+    auraJunkTutor: '🗑️ Red glow — weak discards (tap & discard, max 5)',
+    auraJunk: '🗑️ Discard tip · tap red cards to select (untap one by one)',
+    auraPlayNone: '✨ Play tip · tap glow for highest-chip set',
+    auraPlay: (name) => `✨ Play tip · tap glow to pick ${name}`,
+    gainNone: 'No gain yet', gainZero: 'Gain 0',
+    mitjangNow: (n) => ` Stacked ${n} chips now.`,
+    bestChipHand: 'Best chip set', discardWord: 'Discard',
+    unitChip: '', unitMult: '', unitScore: '',
+    months: {1:'Pine Crane',2:'Plum Bird',3:'Cherry',4:'Black Bush',5:'Orchid',6:'Peony',7:'Red Bush',8:'Empty Mtn',9:'Chrysanthemum',10:'Maple',11:'Paulownia',12:'Rain'},
+    hands: {ogwang:'Five Bright',sagwang:'Four Bright',chongtong:'Chongtong',godori:'Godori',bigodori:'Rain Godori',samgwang:'Three Bright',bisamgwang:'Rain Three',dan:'Red/Blue/Grass Ribbons',byeongpung:'Byungpung',month3:'Bomb',yeol3:'Three Animals',tti3:'Three Ribbons',pi5:'Five Junk',month2:'Month Pair',none:'No combo'},
+    handMonth2: (n) => `Month ${n} pair`,
+    dan: {hongdan:'Red Ribbon',cheongdan:'Blue Ribbon',chodan:'Grass Ribbon'},
+    tti: {hongdan:'Red',cheongdan:'Blue',chodan:'Grass',bi_tti:'Rain Rib.'},
+    cardTag: {kwang:'Bright',bikwang:'Rain Bright',yeol:'Animal',yeolBird:'Animal(bird)',ssangpi:'Double Pi',pi:'Pi'},
+    rarity: {common:'Common',rare:'Rare',epic:'Epic',legendary:'Legendary'},
+    gobak: 'Go-bak', missTarget: 'Missed target',
+    handConds: {
+      ogwang:'All 5 Bright', sagwang:'Any 4 Bright', chongtong:'4 of same month',
+      godori:'Feb/Apr/Aug bird animals ×3', bigodori:'Dec swallow + 2 Godori birds',
+      samgwang:'3 Bright (no Rain Bright)', bisamgwang:'3 Bright (incl. Rain)',
+      dan:'One full ribbon set of 3', byeongpung:'5 months in a row', month3:'3 of same month',
+      yeol3:'3+ animals (mult on top 3 chips)', tti3:'3+ ribbons (excl. rain ribbon; mult on top 3)',
+      pi5:'Pi value ≥5 (rest is flat)', month2:'2 of same month', none:'None',
+    },
+    jokers: {
+      gwangpari:{name:'Bright Seller',kind:'Economy',desc:'Gain 1 nyang each time you play a Bright. Up to 3 times per round.'},
+      pi_merchant:{name:'Pi Merchant',kind:'+Score',desc:'+4 flat per Pi, +8 flat per Double Pi.'},
+      meongtta:{name:'Animal Tax',kind:'+Score',desc:'+6 flat per Animal played.'},
+      jjokjipge:{name:'Pair Sniper',kind:'+Mult',desc:'Month Pair adds +2 mult.'},
+      ssangpi_sarang:{name:'Double Bundle',kind:'+Score',desc:'+12 flat per Double Pi.'},
+      tti_jjang:{name:'Ribbon Dealer',kind:'+Score',desc:'+5 flat per Ribbon.'},
+      ssakssuri:{name:'Clean Sweep',kind:'+Score',desc:'Play exactly 5 cards for +35 flat.'},
+      godori_kkun:{name:'Godori Hunter',kind:'+Mult',desc:'Each Godori bird adds +3 mult.'},
+      dangol:{name:'Regular',kind:'+Mult',desc:'Ribbon set or Three Ribbons: +7 mult.'},
+      heundeulgi:{name:'Shake',kind:'×Mult',desc:'2+ cards of one month: ×1.5 mult. Disabled under No-Shake.'},
+      gwang_sujip:{name:'Bright Gather',kind:'+Score',desc:'+10 flat per Bright (incl. Rain).'},
+      pi_ohjang:{name:'Five Junk+',kind:'+Mult',desc:'Five Junk hand: +3 mult.'},
+      chodan_aeho:{name:'Grass Fan',kind:'+Mult',desc:'Each Grass Ribbon: +2 mult.'},
+      bigwang_usan:{name:'Rain Umbrella',kind:'×Mult',desc:'Dec cards count for Three Bright / Godori / Grass. ×2 if core has Dec. Not on No combo.'},
+      poktan:{name:'Bomb!',kind:'×Mult',desc:'Bomb or Chongtong: ×3 mult.'},
+      mitjang:{name:'Bottom Deal',kind:'Growth',desc:'Each discard permanently stacks +10 flat. Resets if sold.'},
+      pibak_boheom:{name:'Pi-Bak Cover',kind:'Defense',desc:'Blocks Pi/Gwang/Animal Bak and +1 nyang on settle.'},
+      yeol_janchi:{name:'Animal Feast',kind:'×Mult',desc:'Three Animals: ×2 mult.'},
+      samgwang_nori:{name:'Bright Board',kind:'+Mult',desc:'Each Bright: +3 mult (incl. Rain).'},
+      sipidal:{name:'Twelve Seasons',kind:'+Mult',desc:'+2 mult per distinct month in the play.'},
+      ogwang_kkum:{name:'Five Wish',kind:'×Mult',desc:'3+ Brights: ×2.5 mult (incl. Rain).'},
+      paewang:{name:'Master',kind:'×Mult',desc:'Any real hand: ×2 mult. Not on No combo.'},
+    },
+    bosses: {
+      pibak:{name:'Pi Bak',desc:'Pi & Double Pi chips = 0 (still count for hands)'},
+      gwangbak:{name:'Bright Bak',desc:'Bright chips = 0'},
+      meongbak:{name:'Animal Bak',desc:'Animal chips = 0'},
+      no_shake:{name:'No Shake',desc:'Month pair / bomb / Chongtong become No combo (Shake joker off)'},
+      bibaram:{name:'Rainstorm',desc:'No discards this round'},
+      angae:{name:'Fog',desc:'2 hand cards arrive face-down (reveal when played)'},
+    },
+  },
+  jp: {
+    htmlLang: 'ja', ogLocale: 'ja_JP',
+    brand: '十二花', title: '十二花 — 無限の卓', logoSub: 'ゴストップ · 無限の卓',
+    bootShuffle: '札を混ぜています…', bootUnfurl: '絵を広げています…', bootAlmost: 'もう少しです…', bootOpen: '卓を開いています…',
+    btnPlay: '出し', btnDiscard: '捨て',
+    playTitle: (n) => `出し · 残り${n}`, discardTitle: (n) => `捨て · 残り${n}`,
+    legal: '本ゲームは現金・実通貨を用いた賭博ではありません。',
+    helpTitle: '役表 / ヘルプ', tutorTitle: 'チュートリアル再表示', labelsTitle: '月・リボン表示切替',
+    hintPlay: '出し感', hintDiscard: '捨て感',
+    sortMonth: '月別', sortType: '種類別',
+    sortTitleMonth: '手札: 月別 (タップで種類別)', sortTitleType: '手札: 種類別 (タップで月別)',
+    score: 'スコア', needScore: '残り', achieved: '達成!',
+    sideHelp: '📖 役表 / ヘルプ', sideTutor: '✨ チュートリアル',
+    labelsShow: '🏷 ラベル表示', labelsHide: '🏷 ラベル非表示',
+    playLogTitle: 'この卓の出し記録',
+    emptyJoker: '特殊札<br>空き', nyang: (n) => `${n}両`,
+    seasonLineDay: (m) => `今月札: <b>${m} チップ×2</b><br>昼 — 光・十＋2`,
+    seasonLineNight: (m) => `今月札: <b>${m} チップ×2</b><br>夜 — 短冊・カス＋2`,
+    roundMeta: (r, t) => `(卓 ${r}/${t})`, bak: '(バク)',
+    bossNull: ' → 皮バク保険で無効!',
+    goLevel: (n, mult, bonus) => `🔥 ${n}ゴー! (目標×${mult} · 成功+${bonus}両)`,
+    pvPick: '札を選んでください', pvFacedown: '裏札あり · プレビュー不可',
+    pvBase: '基本', pvMult: '倍率', pvFlat: '+加点', pvTotal: '予想スコア',
+    deckTitle: '山札 (クリックで確認)', deckLow: (n) => `山札 ${n}枚 · 少ない! (クリック)`,
+    deckFog: '霧 — 確認不可',
+    playHint: '札を選んで <b>出し</b> を押す',
+    auraJunkTutor: '🗑️ 赤光 — 弱い捨て札 (選んで捨て、最大5)',
+    auraJunk: '🗑️ 捨て推奨 · 赤札をタップで一括選択',
+    auraPlayNone: '✨ 出し推奨 · 光る札で最高チップ役',
+    auraPlay: (name) => `✨ 出し推奨 · 光る札で ${name} を一括選択`,
+    gainNone: 'まだ利益なし', gainZero: '利益0',
+    mitjangNow: (n) => ` 現在累積 ${n}チップ。`,
+    bestChipHand: '最高チップ役', discardWord: '捨て',
+    unitChip: 'チップ', unitMult: '倍', unitScore: '点',
+    months: {1:'松鶴',2:'梅に鶯',3:'桜',4:'黒蓬',5:'蘭',6:'牡丹',7:'赤蓬',8:'空山',9:'菊',10:'紅葉',11:'桐',12:'雨'},
+    hands: {ogwang:'五光',sagwang:'四光',chongtong:'総通',godori:'五鳥',bigodori:'雨五鳥',samgwang:'三光',bisamgwang:'雨三光',dan:'赤短/青短/草短',byeongpung:'屏風',month3:'爆弾',yeol3:'十セット',tti3:'短冊セット',pi5:'カス5',month2:'同月2枚',none:'役なし'},
+    handMonth2: (n) => `${n}月 2枚`,
+    dan: {hongdan:'赤短',cheongdan:'青短',chodan:'草短'},
+    tti: {hongdan:'赤短',cheongdan:'青短',chodan:'草短',bi_tti:'雨短'},
+    cardTag: {kwang:'光',bikwang:'雨光',yeol:'十',yeolBird:'十(鳥)',ssangpi:'カス×2',pi:'カス'},
+    rarity: {common:'コモン',rare:'レア',epic:'エピック',legendary:'レジェンド'},
+    gobak: 'ゴーバク', missTarget: '目標未達',
+    handConds: {
+      ogwang:'光5枚すべて', sagwang:'光4枚', chongtong:'同月4枚',
+      godori:'2·4·8月の鳥十×3', bigodori:'12月ツバメ＋五鳥の鳥2',
+      samgwang:'光3 (雨光なし)', bisamgwang:'光3 (雨光含む)',
+      dan:'赤短・青短・草短のいずれか3枚', byeongpung:'連続月5枚', month3:'同月3枚',
+      yeol3:'十3枚以上', tti3:'短冊3枚以上 (雨短除く)',
+      pi5:'カス換算合計5以上', month2:'同月2枚', none:'なし',
+    },
+    jokers: {
+      gwangpari:{name:'光売り',kind:'経済',desc:'光を出すたび両+1。1卓につき最大3回。'},
+      pi_merchant:{name:'カス商人',kind:'+点',desc:'カスごとに+4、カス×2ごとに+8を倍率外加算。'},
+      meongtta:{name:'十打ち',kind:'+点',desc:'十ごとに+6を倍率外加算。'},
+      jjokjipge:{name:'ピンセット',kind:'+倍率',desc:'同月2枚で倍率+2。'},
+      ssangpi_sarang:{name:'カス包み',kind:'+点',desc:'カス×2ごとに+12を倍率外加算。'},
+      tti_jjang:{name:'短冊屋',kind:'+点',desc:'短冊ごとに+5を倍率外加算。'},
+      ssakssuri:{name:'掃討',kind:'+点',desc:'ちょうど5枚出しで+35を倍率外加算。'},
+      godori_kkun:{name:'五鳥使い',kind:'+倍率',desc:'五鳥の鳥ごとに倍率+3。'},
+      dangol:{name:'常連',kind:'+倍率',desc:'短冊役や短冊セットで倍率+7。'},
+      heundeulgi:{name:'揺らし',kind:'×倍率',desc:'同月2枚以上で倍率×1.5。揺らし禁止卓では無効。'},
+      gwang_sujip:{name:'光集め',kind:'+点',desc:'光ごとに+10を倍率外加算。雨光含む。'},
+      pi_ohjang:{name:'カス五',kind:'+倍率',desc:'カス5役で倍率+3。'},
+      chodan_aeho:{name:'草短好き',kind:'+倍率',desc:'草短ごとに倍率+2。'},
+      bigwang_usan:{name:'雨傘',kind:'×倍率',desc:'12月札を三光・五鳥・草短に使える。コアに12月があれば×2。役なしには無効。'},
+      poktan:{name:'爆弾',kind:'×倍率',desc:'爆弾や総通で倍率×3。'},
+      mitjang:{name:'底抜き',kind:'成長',desc:'捨てるたび恒久+10点が積み上がる。売るとリセット。'},
+      pibak_boheom:{name:'皮バク保険',kind:'防御',desc:'皮/光/十バクを防ぎ、清算時に両+1。'},
+      yeol_janchi:{name:'十宴',kind:'×倍率',desc:'十セットで倍率×2。'},
+      samgwang_nori:{name:'三光卓',kind:'+倍率',desc:'光ごとに倍率+3。雨光含む。'},
+      sipidal:{name:'十二季節',kind:'+倍率',desc:'出した月の種類ごとに倍率+2。'},
+      ogwang_kkum:{name:'五光の願い',kind:'×倍率',desc:'光3枚以上で×2.5。雨光含む。'},
+      paewang:{name:'名人',kind:'×倍率',desc:'役が成立すれば×2。役なしは無効。'},
+    },
+    bosses: {
+      pibak:{name:'皮バク',desc:'カス・カス×2のチップ0 (役判定には数える)'},
+      gwangbak:{name:'光バク',desc:'光チップ0'},
+      meongbak:{name:'十バク',desc:'十チップ0'},
+      no_shake:{name:'揺らし禁止',desc:'同月2/3/総通が役なしに (揺らし札も無効)'},
+      bibaram:{name:'風雨',desc:'この卓は捨て不可'},
+      angae:{name:'霧',desc:'手札2枚が裏で来る (出す瞬間公開)'},
+    },
+  },
+};
+
+
+/** 화면/튜토리얼 카피 (help · welcome · coach · modals) */
+const I18N_UI = {
+  kr: {
+    close: '닫기',
+    skip: '건너뛰기',
+    gotIt: '알겠어요',
+    helpH2: '📖 족보표',
+    helpIntro: '위에서부터 먼저 성립하는 족보 <b>하나</b>로 판정합니다.<br>점수 = (<b>족보 구성 카드</b> 칩) × 배수 + 나머지 낸 카드 칩',
+    legendS: '최고', legendA: '상위', legendB: '중위', legendC: '기본', legendD: '무조합',
+    chipKwang: '광', chipYeol: '열끗', chipTti: '띠', chipSsang: '쌍피', chipPi: '피',
+    helpTimeTitle: '시간 · 계절',
+    helpTimeBody: (m1, m12) => `판은 <b>1월(${m1})→12월(${m12})</b>로 흐릅니다. 이달의 패는 칩 <b>×2</b>.`,
+    helpTimeDay: '☀️ 홀수 달 낮 · 광·열끗 <em>+2</em>',
+    helpTimeNight: '🌙 짝수 달 밤 · 띠·피 <em>+2</em>',
+    helpRoundTitle: '한 판 · 고/스톱',
+    helpRoundBody: '내기 <b>4회</b> · 버리기 <b>4회</b> · 손패 <b>8장</b>. 목표를 넘기면 <b>고</b> 또는 <b>스톱</b>. 고는 무제한 — n고 문턱 = 목표 ×(1+0.6n), 내기 +1 · 손패 보충, 보너스 n×월 냥. 점수가 이미 넘은 문턱은 고 선언 시 <b>전부 소급 인정(밀치기)</b> — 큰 한 방이면 여러 단계를 한 번에 점프. 실패하면 <b>고박 = 런 종료</b>.',
+    helpRuleTitle: '특수 규칙',
+    helpRuleBody: '<b>3·6·9·12월</b>은 박 라운드(디버프). 안개는 손패 <b>2장</b>이 뒷면으로 옵니다.',
+    helpRuleTag: '박 라운드 디버프',
+    helpJokerTitle: '특수패 · 주막',
+    helpJokerBody: '특수패 <b>22종</b> · 소지 최대 <b>5</b>. 티어는 <b>커먼 / 레어 / 에픽 / 레전더리</b> (출현 약 55·28·13·4%). +점수는 배수 밖, +배수·×배수는 족보 배수에 얹힙니다.',
+    helpJokerTags: ['커먼 3–4냥', '레어 6–7냥', '에픽 9–11냥', '레전 13–15냥'],
+    welcomeH2: '🎴 십이화 — 고스톱: 무한의 판',
+    welcomeSub: '한국 화투 48장으로 족보를 맞춰 목표 점수를 넘기는 <b>1인 런</b>입니다. 1월부터 12월까지 한 해를 버텨보세요.',
+    welcomePlayTitle: '기본 플레이',
+    welcomePlayBody: '손패 <b>8장</b>에서 1~5장을 고른 뒤 <b>내기</b>로 점수를 쌓습니다. 마음에 안 들면 <b>버리기</b>로 패를 갈아끼울 수 있어요. 판마다 내기·버리기 각 <b>4회</b>.',
+    welcomeScoreTitle: '점수 · 족보',
+    welcomeScoreBody: '점수 = (<b>족보 구성 카드</b> 칩) × 배수 + 나머지 칩. 이달의 패는 칩 <b>×2</b>. 홀수 달은 낮(광·열끗 +2), 짝수 달은 밤(띠·피 +2).',
+    welcomeGoTitle: '고 / 스톱',
+    welcomeGoBody: '목표를 넘기면 <b>스톱</b>(정산) 또는 <b>고</b>(목표↑ · 내기 +1 · 보너스). 한 방이 크면 이미 넘은 고 문턱을 <b>한 번에 밀치며</b> 여러 단계 점프! 고는 무제한이지만, 실패하면 <b>고박 = 런 종료</b>. <b>3·6·9·12월</b>은 박 라운드(디버프)가 붙습니다.',
+    welcomeShopTitle: '주막',
+    welcomeShopBody: '판을 클리어하면 주막에서 <b>특수패</b>(커먼~레전더리 22종)를 사고팝니다. 소지 최대 5개.',
+    welcomeFoot: '자세한 족보표는 언제든 <b>📖 도움말</b>에서 볼 수 있어요.',
+    welcomeStart: '알겠어요 — 시작하기',
+    welcomeStartSub: '1월 준비 화면으로 이동합니다',
+    prepTitle: (flower, name) => `${flower} 1월 · ${name} 준비`,
+    prepTarget: (n) => `목표 : <b class="prep-target" style="color:var(--gold-soft)">${n}점</b>`,
+    prepStart: '▶ 1월 시작',
+    gostopH2: '🎉 목표 달성!',
+    gostopSub: (score, target, plays, cards) => `${score} / ${target}점 · 내기 ${plays} · 패 ${cards}`,
+    gostopStop: '✋ 스톱',
+    gostopStopTip0: '지금 정산하고 안전하게 다음 판으로',
+    gostopStopTipN: (n, bonus) => `지금 정산하고 다음 판으로<br>(${n}고 보너스 <b>+${bonus}냥</b> 확보)`,
+    gostopGo1: '1고',
+    gostopJump: (j) => `한 방으로 <b style="color:#fde68a">${j}단계 밀치기</b><br>`,
+    gostopGoTip: (target, mult, bonus) => `새 목표 <b>${target}점</b> (×${mult})<br>내기 <b>+1</b> · 손패 보충 · 성공 시 <b>+${bonus}냥</b><br>실패 시 <b>고박 = 런 종료</b>`,
+    settleTitle: '정산',
+    settleClear: (r, name) => `${r}월 · ${name} 클리어`,
+    settleInterest: (n) => `이자 (보유 ${n}냥)`,
+    settleBase: (bak) => `기본 상금${bak ? ' · 박' : ''}`,
+    settlePlayBonus: (n) => `남은 내기 ${n}회`,
+    settleGoBonus: (n) => `고 보너스 (${n}고)`,
+    settleTotal: '합계',
+    settleNyang: (n) => `+${n}냥`,
+    shopTitle: '주막',
+    shopSub: (r) => `${r}월 클리어 · 특수패를 사고 다음 달로`,
+    shopOwned: '내 특수패',
+    shopOffers: '오늘의 패',
+    shopReroll: (n) => `리롤 · ${n}냥`,
+    shopExtras: '다음 달 준비',
+    shopSold: '판매 완료',
+    shopEmpty: '빈 칸',
+    shopNext: '다음 판으로',
+    shopNextLabel: (flower, n, name) => `다음 <b>${flower} ${n}월 · ${name}</b>`,
+    shopTarget: (n) => `목표 ${n}점`,
+    shopBossPick: (n) => `⚠ ${n}월 대박 — 디버프 선택`,
+    shopBossNext: (n) => `⚠ 다음 ${n}월 박 라운드`,
+    shopNeedBoss: '디버프를 먼저 선택하세요',
+    gameoverH2: (reason) => `☠ 런 종료 — ${reason}`,
+    gameoverBody: (r, rounds, score, target, best, bestHand, earned, jokers) =>
+      `도달: ${r}월 / ${rounds}월 (${score} / ${target}점)<br>최고 한 방: ${best}점${bestHand ? ` (${bestHand})` : ''}<br>총 획득: ${earned}냥 · 특수패 ${jokers}개`,
+    retry: '🔄 다시 도전',
+    victoryH2: '🏆 승리! 12월 대박까지 한 해를 완주했습니다!',
+    victoryBody: (score, target, best, bestHand, earned, jokers) =>
+      `최종 점수: ${score} / ${target}점<br>최고 한 방: ${best}점${bestHand ? ` (${bestHand})` : ''}<br>총 획득: ${earned}냥 · 최종 특수패 ${jokers}개`,
+    newRun: '🔄 새 런 시작',
+    deckPeekTitle: '🂠 패 보기',
+    deckLeft: (n) => `남은 덱 <b>${n}</b>장`,
+    coachHandTitle: '✨ 조합 힌트',
+    coachHandNone: (n) => `<b>연두 빛</b>이 도는 패를 눌러 보세요. 조합이 없으면 칩 최고 패가 골라집니다.<br><span class="coach-muted">처음 ${n}회 무료 · 이후 추천 ON/OFF</span>`,
+    coachHandNamed: (name, n) => `<b>연두 빛</b>이 도는 패를 눌러 보세요. <b>${name}</b>이 한 번에 골라집니다.<br><span class="coach-muted">처음 ${n}회 무료 · 이후 추천 ON/OFF · 한 장씩 해제 가능</span>`,
+    coachHandFallback: '연두 빛 패를 눌러 조합을 골라 보세요. <b>1월 한정</b>이에요.',
+    coachPlayTitle: '🎯 내기',
+    coachPlayBody: '골랐으면 <b>내기</b>를 눌러 점수를 쌓아 보세요.',
+    coachJunkTitle: '🗑️ 버리기',
+    coachJunkSel: '<b>버리기</b>를 눌러 패를 갈아끼우세요 (한 번에 최대 5장). 버린 만큼 덱에서 보충됩니다.',
+    coachJunkPick: '조합이 약할 땐 <b>피</b>처럼 약한 패를 버리세요. <b style="color:#fca5a5">빨간 빛</b> 패를 누르면 추천분이 한 번에 골라져요 (최대 5장).',
+    coachScoredTitle: '✨ 점수 획득!',
+    coachScoredBody: (hand, score, chips, mult, flat, need) =>
+      `방금 <b>${hand}</b>으로 <b>+${score}점</b>!<br>점수 = (<b>족보 칩 ${chips}</b> × <b>${mult}배</b>)${flat ? ` + <b>${flat}</b>` : ''}.<br>목표까지 <b>남은 점수 ${need}</b> · 게이지를 확인하세요.`,
+    coachScoredFallback: '점수가 쌓였어요! 점수 = <b>족보 칩</b> × <b>배수</b> + 나머지.',
+    coachGoTitle: '🔥 고 / 스톱',
+    coachGoBody: '<b>스톱</b>은 지금 정산하고 다음 달로.<br><b>고</b>는 목표를 올리고 더 내지만, 실패하면 <b>고박 = 런 종료</b>!<br><span class="coach-muted">하나를 골라 보세요.</span>',
+    coachShopTitle: '🍶 주막',
+    coachShopBody: '특수패를 사고, 마음에 안 들면 <b>리롤</b>하세요. 준비되면 <b>다음 판으로</b>!',
+    coachDeckTitle: '🂠 남은 덱',
+    coachDeckBody: '오른쪽 <b>덱</b>을 눌러 보세요. 아직 안 나온 패를 미리 볼 수 있어요.<br><span class="coach-muted">언제든 다시 열어볼 수 있어요.</span>',
+    jumakAppear: '주막 등장',
+    surveyTitle: '설문 한 장만 부탁해요',
+    surveyBody: '플레이 소감이 궁금합니다.<br><b>1분이면</b> 끝나요.',
+    surveyYes: '설문하기',
+    surveyNo: '나중에',
+    surveyDone: '이미 참여했어요',
+  },
+  en: {
+    close: 'Close',
+    skip: 'Skip',
+    gotIt: 'Got it',
+    helpH2: '📖 Hands',
+    helpIntro: 'The first matching hand from the top wins.<br>Score = (hand <b>core</b> chips) × mult + other played chips',
+    legendS: 'Top', legendA: 'High', legendB: 'Mid', legendC: 'Basic', legendD: 'None',
+    chipKwang: 'Bright', chipYeol: 'Animal', chipTti: 'Ribbon', chipSsang: 'Dbl Pi', chipPi: 'Pi',
+    helpTimeTitle: 'Time · Season',
+    helpTimeBody: (m1, m12) => `Rounds run <b>Jan (${m1}) → Dec (${m12})</b>. Month cards get chips <b>×2</b>.`,
+    helpTimeDay: '☀️ Odd months · day · Bright/Animal <em>+2</em>',
+    helpTimeNight: '🌙 Even months · night · Ribbon/Pi <em>+2</em>',
+    helpRoundTitle: 'Round · Go/Stop',
+    helpRoundBody: '<b>4</b> plays · <b>4</b> discards · hand of <b>8</b>. Beat the target to <b>Go</b> or <b>Stop</b>. Go is unlimited — Go n threshold = target ×(1+0.6n), +1 play · redraw, bonus n×month nyang. Thresholds already cleared are <b>all credited on Go (push)</b> — a big hit can jump several steps. Fail = <b>Go-bak = run over</b>.',
+    helpRuleTitle: 'Special rules',
+    helpRuleBody: '<b>Mar/Jun/Sep/Dec</b> are Bak rounds (debuffs). Fog deals <b>2</b> face-down cards.',
+    helpRuleTag: 'Bak round debuffs',
+    helpJokerTitle: 'Jokers · Tavern',
+    helpJokerBody: '<b>22</b> jokers · hold up to <b>5</b>. Tiers: <b>Common / Rare / Epic / Legendary</b> (~55·28·13·4%). Flat score is outside mult; +mult / ×mult stack on the hand mult.',
+    helpJokerTags: ['Common 3–4', 'Rare 6–7', 'Epic 9–11', 'Legend 13–15'],
+    welcomeH2: '🎴 Sibiwha — Go-Stop: Infinite Table',
+    welcomeSub: 'A <b>solo run</b>: make hwatu hands and beat monthly targets with a 48-card Korean deck. Survive January through December.',
+    welcomePlayTitle: 'Basics',
+    welcomePlayBody: 'From an <b>8-card</b> hand, pick 1–5 and <b>Play</b> to score. Or <b>Discard</b> to redraw. Each round: <b>4</b> plays · <b>4</b> discards.',
+    welcomeScoreTitle: 'Score · Hands',
+    welcomeScoreBody: 'Score = (hand <b>core</b> chips) × mult + the rest. Month cards ×2 chips. Odd months are day (Bright/Animal +2), even are night (Ribbon/Pi +2).',
+    welcomeGoTitle: 'Go / Stop',
+    welcomeGoBody: 'Beat the target to <b>Stop</b> (cash out) or <b>Go</b> (raise target · +1 play · bonus). A huge hit can <b>push through</b> several Go steps at once! Unlimited Go, but fail = <b>Go-bak = run over</b>. <b>3·6·9·12</b> are Bak rounds.',
+    welcomeShopTitle: 'Tavern',
+    welcomeShopBody: 'Clear a month to shop <b>jokers</b> (Common–Legendary, 22 kinds). Hold up to 5.',
+    welcomeFoot: 'Full hand list is always in <b>📖 Help</b>.',
+    welcomeStart: 'Got it — Start',
+    welcomeStartSub: 'Go to January prep',
+    prepTitle: (flower, name) => `${flower} January · ${name} prep`,
+    prepTarget: (n) => `Target: <b class="prep-target" style="color:var(--gold-soft)">${n}</b>`,
+    prepStart: '▶ Start January',
+    gostopH2: '🎉 Target cleared!',
+    gostopSub: (score, target, plays, cards) => `${score} / ${target} · plays ${plays} · cards ${cards}`,
+    gostopStop: '✋ Stop',
+    gostopStopTip0: 'Cash out and move on safely',
+    gostopStopTipN: (n, bonus) => `Cash out and continue<br>(Go ${n} bonus <b>+${bonus} nyang</b> locked in)`,
+    gostopGo1: 'Go 1',
+    gostopJump: (j) => `One hit · <b style="color:#fde68a">push ${j} steps</b><br>`,
+    gostopGoTip: (target, mult, bonus) => `New target <b>${target}</b> (×${mult})<br><b>+1</b> play · redraw · win <b>+${bonus} nyang</b><br>Fail = <b>Go-bak = run over</b>`,
+    settleTitle: 'Settle',
+    settleClear: (r, name) => `Month ${r} · ${name} clear`,
+    settleInterest: (n) => `Interest (held ${n})`,
+    settleBase: (bak) => `Base prize${bak ? ' · Bak' : ''}`,
+    settlePlayBonus: (n) => `Leftover plays ×${n}`,
+    settleGoBonus: (n) => `Go bonus (Go ${n})`,
+    settleTotal: 'Total',
+    settleNyang: (n) => `+${n}`,
+    shopTitle: 'Tavern',
+    shopSub: (r) => `Month ${r} clear · buy jokers, then next month`,
+    shopOwned: 'Your jokers',
+    shopOffers: "Today's deals",
+    shopReroll: (n) => `Reroll · ${n}`,
+    shopExtras: 'Next month prep',
+    shopSold: 'Sold',
+    shopEmpty: 'Empty',
+    shopNext: 'Next round',
+    shopNextLabel: (flower, n, name) => `Next <b>${flower} ${n} · ${name}</b>`,
+    shopTarget: (n) => `Target ${n}`,
+    shopBossPick: (n) => `⚠ Month ${n} Bak — pick debuff`,
+    shopBossNext: (n) => `⚠ Next: month ${n} Bak`,
+    shopNeedBoss: 'Pick a debuff first',
+    gameoverH2: (reason) => `☠ Run over — ${reason}`,
+    gameoverBody: (r, rounds, score, target, best, bestHand, earned, jokers) =>
+      `Reached: month ${r} / ${rounds} (${score} / ${target})<br>Best hit: ${best}${bestHand ? ` (${bestHand})` : ''}<br>Earned: ${earned} · jokers ${jokers}`,
+    retry: '🔄 Try again',
+    victoryH2: '🏆 Victory! You finished the year through December Bak!',
+    victoryBody: (score, target, best, bestHand, earned, jokers) =>
+      `Final: ${score} / ${target}<br>Best hit: ${best}${bestHand ? ` (${bestHand})` : ''}<br>Earned: ${earned} · jokers ${jokers}`,
+    newRun: '🔄 New run',
+    deckPeekTitle: '🂠 Deck view',
+    deckLeft: (n) => `Deck left <b>${n}</b>`,
+    coachHandTitle: '✨ Hand tip',
+    coachHandNone: (n) => `Tap the <b>green glow</b>. If no combo, highest-chip cards are picked.<br><span class="coach-muted">First ${n} free · then tip ON/OFF</span>`,
+    coachHandNamed: (name, n) => `Tap the <b>green glow</b> to pick <b>${name}</b> at once.<br><span class="coach-muted">First ${n} free · then tip ON/OFF · untap one by one</span>`,
+    coachHandFallback: 'Tap the green glow to build a hand. <b>January only</b>.',
+    coachPlayTitle: '🎯 Play',
+    coachPlayBody: 'When ready, press <b>Play</b> to score.',
+    coachJunkTitle: '🗑️ Discard',
+    coachJunkSel: 'Press <b>Discard</b> to redraw (up to 5). Replaced from the deck.',
+    coachJunkPick: 'When weak, discard junk like <b>Pi</b>. Tap <b style="color:#fca5a5">red glow</b> to select the tip set (max 5).',
+    coachScoredTitle: '✨ Score!',
+    coachScoredBody: (hand, score, chips, mult, flat, need) =>
+      `Just scored <b>${hand}</b> for <b>+${score}</b>!<br>Score = (<b>hand chips ${chips}</b> × <b>${mult}</b>)${flat ? ` + <b>${flat}</b>` : ''}.<br><b>${need}</b> left to target — check the gauge.`,
+    coachScoredFallback: 'Points in! Score = <b>hand chips</b> × <b>mult</b> + flat.',
+    coachGoTitle: '🔥 Go / Stop',
+    coachGoBody: '<b>Stop</b> cashes out to next month.<br><b>Go</b> raises the target for more plays — fail = <b>Go-bak = run over</b>!<br><span class="coach-muted">Pick one.</span>',
+    coachShopTitle: '🍶 Tavern',
+    coachShopBody: 'Buy jokers, <b>reroll</b> if needed, then <b>Next round</b>!',
+    coachDeckTitle: '🂠 Deck left',
+    coachDeckBody: 'Tap the <b>deck</b> on the right to peek at remaining cards.<br><span class="coach-muted">You can open it anytime.</span>',
+    jumakAppear: 'Tavern opens',
+    surveyTitle: 'One quick survey?',
+    surveyBody: 'We would love your thoughts.<br>Takes about <b>1 minute</b>.',
+    surveyYes: 'Take survey',
+    surveyNo: 'Later',
+    surveyDone: 'Already done',
+  },
+  jp: {
+    close: '閉じる',
+    skip: 'スキップ',
+    gotIt: 'わかった',
+    helpH2: '📖 役表',
+    helpIntro: '上から最初に成立した役<b>ひとつ</b>で判定します。<br>スコア = (役の<b>コア</b>チップ) × 倍率 + それ以外のチップ',
+    legendS: '最高', legendA: '上位', legendB: '中位', legendC: '基本', legendD: '役なし',
+    chipKwang: '光', chipYeol: '十', chipTti: '短冊', chipSsang: 'カス×2', chipPi: 'カス',
+    helpTimeTitle: '時間 · 季節',
+    helpTimeBody: (m1, m12) => `卓は <b>1月(${m1})→12月(${m12})</b>。今月札はチップ <b>×2</b>。`,
+    helpTimeDay: '☀️ 奇数月・昼 · 光・十 <em>+2</em>',
+    helpTimeNight: '🌙 偶数月・夜 · 短冊・カス <em>+2</em>',
+    helpRoundTitle: '一卓 · ゴー/ストップ',
+    helpRoundBody: '出し <b>4回</b> · 捨て <b>4回</b> · 手札 <b>8枚</b>。目標超えで <b>ゴー</b> か <b>ストップ</b>。ゴーは無制限 — nゴー閾値 = 目標×(1+0.6n)、出し+1・補充、ボーナス n×月の両。すでに超えた閾値はゴー宣言時に <b>すべて遡及(押し)</b> — 大物なら複数段ジャンプ。失敗は <b>ゴーバク = ラン終了</b>。',
+    helpRuleTitle: '特殊ルール',
+    helpRuleBody: '<b>3·6·9·12月</b>はバク卓(デバフ)。霧は手札 <b>2枚</b>が裏で来ます。',
+    helpRuleTag: 'バク卓デバフ',
+    helpJokerTitle: '特殊札 · 酒屋',
+    helpJokerBody: '特殊札 <b>22種</b> · 所持最大 <b>5</b>。ティアは <b>コモン / レア / エピック / レジェンド</b> (出現 約55·28·13·4%)。+点は倍率外、+倍率・×倍率は役倍率に乗ります。',
+    helpJokerTags: ['コモン 3–4両', 'レア 6–7両', 'エピック 9–11両', 'レジェ 13–15両'],
+    welcomeH2: '🎴 十二花 — ゴストップ: 無限の卓',
+    welcomeSub: '韓国花札48枚で役を揃え目標を超える <b>1人ラン</b>。1月から12月まで一年を耐え抜け。',
+    welcomePlayTitle: '基本プレイ',
+    welcomePlayBody: '手札 <b>8枚</b>から1〜5枚選び <b>出し</b>でスコア。合わなければ <b>捨て</b>で入れ替え。各卓 出し·捨て 各 <b>4回</b>。',
+    welcomeScoreTitle: 'スコア · 役',
+    welcomeScoreBody: 'スコア = (役の<b>コア</b>チップ) × 倍率 + 残り。今月札は ×2。奇数月は昼(光·十 +2)、偶数月は夜(短冊·カス +2)。',
+    welcomeGoTitle: 'ゴー / ストップ',
+    welcomeGoBody: '目標超えで <b>ストップ</b>(清算) か <b>ゴー</b>(目標↑ · 出し+1 · ボーナス)。大物なら閾値を <b>一気に押し</b>複数段ジャンプ! ゴー無制限だが失敗は <b>ゴーバク = ラン終了</b>。<b>3·6·9·12月</b>はバク卓。',
+    welcomeShopTitle: '酒屋',
+    welcomeShopBody: 'クリア後、酒屋で <b>特殊札</b>(コモン〜レジェンド22種)を売買。所持最大5。',
+    welcomeFoot: '詳しい役表はいつでも <b>📖 ヘルプ</b>で。',
+    welcomeStart: 'わかった — はじめる',
+    welcomeStartSub: '1月の準備へ',
+    prepTitle: (flower, name) => `${flower} 1月 · ${name} 準備`,
+    prepTarget: (n) => `目標 : <b class="prep-target" style="color:var(--gold-soft)">${n}点</b>`,
+    prepStart: '▶ 1月スタート',
+    gostopH2: '🎉 目標達成!',
+    gostopSub: (score, target, plays, cards) => `${score} / ${target}点 · 出し ${plays} · 札 ${cards}`,
+    gostopStop: '✋ ストップ',
+    gostopStopTip0: '今清算して安全に次へ',
+    gostopStopTipN: (n, bonus) => `今清算して次へ<br>(${n}ゴーボーナス <b>+${bonus}両</b>確保)`,
+    gostopGo1: '1ゴー',
+    gostopJump: (j) => `一撃で <b style="color:#fde68a">${j}段押し</b><br>`,
+    gostopGoTip: (target, mult, bonus) => `新目標 <b>${target}点</b> (×${mult})<br>出し <b>+1</b> · 補充 · 成功で <b>+${bonus}両</b><br>失敗は <b>ゴーバク = ラン終了</b>`,
+    settleTitle: '清算',
+    settleClear: (r, name) => `${r}月 · ${name} クリア`,
+    settleInterest: (n) => `利息 (所持 ${n}両)`,
+    settleBase: (bak) => `基本賞金${bak ? ' · バク' : ''}`,
+    settlePlayBonus: (n) => `残出し ${n}回`,
+    settleGoBonus: (n) => `ゴーボーナス (${n}ゴー)`,
+    settleTotal: '合計',
+    settleNyang: (n) => `+${n}両`,
+    shopTitle: '酒屋',
+    shopSub: (r) => `${r}月クリア · 特殊札を買って次へ`,
+    shopOwned: '所持特殊札',
+    shopOffers: '今日の札',
+    shopReroll: (n) => `リロール · ${n}両`,
+    shopExtras: '来月の準備',
+    shopSold: '売却済',
+    shopEmpty: '空き',
+    shopNext: '次の卓へ',
+    shopNextLabel: (flower, n, name) => `次 <b>${flower} ${n}月 · ${name}</b>`,
+    shopTarget: (n) => `目標 ${n}点`,
+    shopBossPick: (n) => `⚠ ${n}月大バク — デバフ選択`,
+    shopBossNext: (n) => `⚠ 次 ${n}月バク卓`,
+    shopNeedBoss: '先にデバフを選んでください',
+    gameoverH2: (reason) => `☠ ラン終了 — ${reason}`,
+    gameoverBody: (r, rounds, score, target, best, bestHand, earned, jokers) =>
+      `到達: ${r}月 / ${rounds}月 (${score} / ${target}点)<br>最高一撃: ${best}点${bestHand ? ` (${bestHand})` : ''}<br>総獲得: ${earned}両 · 特殊札 ${jokers}`,
+    retry: '🔄 再挑戦',
+    victoryH2: '🏆 勝利! 12月大バクまで一年を完走!',
+    victoryBody: (score, target, best, bestHand, earned, jokers) =>
+      `最終: ${score} / ${target}点<br>最高一撃: ${best}点${bestHand ? ` (${bestHand})` : ''}<br>総獲得: ${earned}両 · 特殊札 ${jokers}`,
+    newRun: '🔄 新しいラン',
+    deckPeekTitle: '🂠 札を見る',
+    deckLeft: (n) => `山札 <b>${n}</b>枚`,
+    coachHandTitle: '✨ 役ヒント',
+    coachHandNone: (n) => `<b>緑の光</b>の札をタップ。役がなければ最高チップを選びます。<br><span class="coach-muted">最初 ${n}回無料 · 以降 ON/OFF</span>`,
+    coachHandNamed: (name, n) => `<b>緑の光</b>をタップで <b>${name}</b> を一括選択。<br><span class="coach-muted">最初 ${n}回無料 · 以降 ON/OFF · 1枚ずつ解除可</span>`,
+    coachHandFallback: '緑の光で役を選んで。<b>1月限定</b>です。',
+    coachPlayTitle: '🎯 出し',
+    coachPlayBody: '選んだら <b>出し</b> でスコアを積みましょう。',
+    coachJunkTitle: '🗑️ 捨て',
+    coachJunkSel: '<b>捨て</b>で入れ替え (一度に最大5)。山札から補充されます。',
+    coachJunkPick: '弱いときは <b>カス</b>などを捨てて。<b style="color:#fca5a5">赤光</b>をタップで推奨を一括選択 (最大5)。',
+    coachScoredTitle: '✨ スコア獲得!',
+    coachScoredBody: (hand, score, chips, mult, flat, need) =>
+      `さっき <b>${hand}</b> で <b>+${score}点</b>!<br>スコア = (<b>役チップ ${chips}</b> × <b>${mult}倍</b>)${flat ? ` + <b>${flat}</b>` : ''}。<br>目標まで <b>残り ${need}</b> · ゲージを確認。`,
+    coachScoredFallback: '点が入りました! スコア = <b>役チップ</b> × <b>倍率</b> + 加点。',
+    coachGoTitle: '🔥 ゴー / ストップ',
+    coachGoBody: '<b>ストップ</b>は今清算して次月へ。<br><b>ゴー</b>は目標を上げて続けるが、失敗は <b>ゴーバク = ラン終了</b>!<br><span class="coach-muted">どちらか選んで。</span>',
+    coachShopTitle: '🍶 酒屋',
+    coachShopBody: '特殊札を買い、合わなければ <b>リロール</b>。準備できたら <b>次の卓へ</b>!',
+    coachDeckTitle: '🂠 山札',
+    coachDeckBody: '右の <b>山札</b> をタップすると残り札を先に見られます。<br><span class="coach-muted">いつでも開けます。</span>',
+    jumakAppear: '酒屋登場',
+    surveyTitle: 'アンケートお願いします',
+    surveyBody: 'プレイの感想を聞かせてください。<br><b>1分</b>で終わります。',
+    surveyYes: '回答する',
+    surveyNo: 'あとで',
+    surveyDone: '参加済み',
+  },
+};
+
+function tu(key) {
+  const p = (I18N_UI[locale] || I18N_UI.kr);
+  const v = p[key];
+  if (v == null) return (I18N_UI.kr[key] != null ? I18N_UI.kr[key] : key);
+  return v;
+}
+
+
+function normalizeLocale(code) {
+  if (!code) return null;
+  const mapped = LOCALE_ALIAS[code] || code;
+  return LOCALE_CODES.includes(mapped) ? mapped : null;
+}
+
+function resolveLocale() {
+  try {
+    const q = new URLSearchParams(location.search).get('lang');
+    const fromQ = normalizeLocale(q);
+    if (fromQ) { localStorage.setItem(LOCALE_STORE, fromQ); return fromQ; }
+    const fromStore = normalizeLocale(localStorage.getItem(LOCALE_STORE));
+    if (fromStore) { localStorage.setItem(LOCALE_STORE, fromStore); return fromStore; }
+  } catch (_) {}
+  return 'kr';
+}
+
+/** 첫 방문: 저장·쿼리 로케일 없으면 언어 선택 화면 */
+function needsLocalePick() {
+  try {
+    const q = new URLSearchParams(location.search).get('lang');
+    if (normalizeLocale(q)) return false;
+    if (normalizeLocale(localStorage.getItem(LOCALE_STORE))) return false;
+  } catch (_) {}
+  return true;
+}
+
+let locale = resolveLocale();
+
+function pack() { return I18N[locale] || I18N.kr; }
+
+function t(key) {
+  const p = pack();
+  const v = p[key];
+  if (v == null) return I18N.kr[key] != null ? I18N.kr[key] : key;
+  return v;
+}
+
+function getLocale() { return locale; }
+
+function setLocale(lang) {
+  if (!LOCALE_CODES.includes(lang) || lang === locale) return;
+  try { localStorage.setItem(LOCALE_STORE, lang); } catch (_) {}
+  try {
+    const u = new URL(location.href);
+    if (lang === 'kr') u.searchParams.delete('lang');
+    else u.searchParams.set('lang', lang);
+    location.replace(u.pathname + u.search + u.hash);
+  } catch (_) { location.reload(); }
+}
+
+/** 언어 선택 화면에서 확정 — 같은 언어(기본 kr)여도 진행 */
+function confirmLocale(lang) {
+  if (!LOCALE_CODES.includes(lang)) return;
+  try { localStorage.setItem(LOCALE_STORE, lang); } catch (_) {}
+  if (lang !== locale) {
+    setLocale(lang);
+    return;
+  }
+  state.screen = hasSeenHowto() ? 'prep' : 'welcome';
+  applyLocaleChrome();
+  render();
+}
+
+function uiMonthName(n) {
+  return (pack().months && pack().months[n]) || (MONTHS[n - 1] && MONTHS[n - 1].name) || String(n);
+}
+
+function uiHandName(handId, core) {
+  const p = pack();
+  if (handId === 'month2' && core && core.length)
+    return (typeof p.handMonth2 === 'function' ? p.handMonth2(core[0].month) : `${core[0].month}`);
+  if (handId === 'dan' && core && core.length) {
+    for (const tag of ['hongdan', 'cheongdan', 'chodan']) {
+      if (core.every((c) => c.tags.includes(tag) || (tag === 'chodan' && c.tags.includes('bi_tti'))))
+        return (p.dan && p.dan[tag]) || DAN_LABEL[tag];
+    }
+  }
+  return (p.hands && p.hands[handId]) || (HAND_BY_ID[handId] && HAND_BY_ID[handId].name) || handId;
+}
+
+function uiJoker(def) {
+  if (!def) return { name: '', desc: '', kind: '' };
+  const j = pack().jokers && pack().jokers[def.id];
+  return {
+    name: (j && j.name) || def.name,
+    desc: (j && j.desc) || def.desc,
+    kind: (j && j.kind) || def.kind || '',
+  };
+}
+
+function uiBoss(def) {
+  if (!def) return { name: '', desc: '' };
+  const b = pack().bosses && pack().bosses[def.id];
+  return { name: (b && b.name) || def.name, desc: (b && b.desc) || def.desc };
+}
+
+function uiRarity(r) {
+  return (pack().rarity && pack().rarity[r]) || r;
+}
+
+function uiCardTag(card) {
+  const tags = pack().cardTag || {};
+  const tti = pack().tti || {};
+  if (card.type === 'kwang') return card.tags.includes('bikwang') ? (tags.bikwang || '비광') : (tags.kwang || '광');
+  if (card.type === 'yeol') return card.tags.includes('godori') ? (tags.yeolBird || '열끗(새)') : (tags.yeol || '열끗');
+  if (card.type === 'tti') {
+    const color = card.tags.find((x) => tti[x] || TTI_LABEL[x]) || 'bi_tti';
+    return tti[color] || TTI_LABEL[color];
+  }
+  if (card.type === 'ssangpi') return tags.ssangpi || '쌍피';
+  return tags.pi || '피';
+}
+
+function uiTtiLabel(tag) {
+  return (pack().tti && pack().tti[tag]) || TTI_LABEL[tag] || tag;
+}
+
+function uiHandCond(id) {
+  return (pack().handConds && pack().handConds[id]) || '';
+}
+
+function uiGameOverReason(reason) {
+  if (reason === 'gobak' || reason === '고박') return t('gobak');
+  if (reason === 'miss' || reason === '목표 미달') return t('missTarget');
+  return reason;
+}
+
+function applyLocaleFonts() {
+  const root = document.documentElement;
+  // 숫자는 항상 SSRockNum (unicode-range) — 로케일 바꿔도 한국어 숫자 글리프
+  const num = "'SSRockNum', 'SSRock', 'BaigeTianxing', 'Malgun Gothic', sans-serif";
+  root.style.setProperty('--font-num', num);
+  root.style.setProperty('--font-overlay-num', num);
+  if (locale === 'jp') {
+    // 글자는 Yuji Boku, 숫자만 앞단 SSRockNum이 가로챔
+    root.style.setProperty('--font-overlay', `'SSRockNum', 'Yuji Boku', 'Hiragino Mincho ProN', 'Yu Mincho', serif`);
+    root.style.setProperty('--font-ui', `'SSRockNum', 'Hiragino Sans', 'Yu Gothic', 'Noto Sans JP', sans-serif`);
+  } else if (locale === 'en') {
+    root.style.setProperty('--font-overlay', `'SSRockNum', 'SSRock', 'BaigeTianxing', Georgia, serif`);
+    root.style.setProperty('--font-ui', `'SSRockNum', system-ui, -apple-system, 'Segoe UI', sans-serif`);
+  } else {
+    root.style.removeProperty('--font-overlay');
+    root.style.removeProperty('--font-ui');
+  }
+}
+
+function applyLocaleChrome() {
+  const p = pack();
+  try {
+    document.documentElement.lang = p.htmlLang;
+    document.title = p.title;
+    const ogLoc = document.getElementById('meta-og-locale');
+    if (ogLoc) ogLoc.setAttribute('content', p.ogLocale);
+  } catch (_) {}
+  applyLocaleFonts();
+  const brand = document.querySelector('#boot-load .bl-brand');
+  if (brand) brand.textContent = p.brand;
+  const bootSub = document.querySelector('#boot-load .bl-sub');
+  if (bootSub) bootSub.textContent = p.logoSub;
+  const logo = document.querySelector('#logo');
+  if (logo) {
+    const sub = logo.querySelector('small');
+    logo.childNodes[0].textContent = p.brand;
+    if (sub) sub.textContent = p.logoSub;
+  }
+  const bootMsg = $('boot-load-msg');
+  if (bootMsg) bootMsg.textContent = p.bootShuffle;
+  const legal = $('legal-note');
+  if (legal) legal.textContent = p.legal;
+  const help = $('top-help');
+  if (help) help.title = p.helpTitle;
+  const tutor = $('top-tutor');
+  if (tutor) tutor.title = p.tutorTitle;
+  const labels = $('top-labels');
+  if (labels) labels.title = p.labelsTitle;
+  const hp = $('ch-hint-play');
+  if (hp) hp.textContent = p.hintPlay;
+  const hd = $('ch-hint-discard');
+  if (hd) hd.textContent = p.hintDiscard;
+  document.querySelectorAll('#locale-toggle button').forEach((btn) => {
+    btn.classList.toggle('on', btn.getAttribute('data-lang') === locale);
+  });
+  const ls = $('lbl-score'); if (ls) ls.textContent = p.score;
+  const ln = $('lbl-need'); if (ln) ln.textContent = p.needScore;
+  const sh = $('side-help'); if (sh) sh.textContent = p.sideHelp;
+  const st = $('side-tutor'); if (st) st.textContent = p.sideTutor;
+  const plt = $('playlog-title'); if (plt) plt.textContent = p.playLogTitle;
+  // side-labels text set by setCardLabelsHidden / toggle
+}
+
 // 일시 비활성 — true로 되돌리면 춘향 조력자·훈수 예약 복구
 const CHUNHYANG_ENABLED = false;
 
@@ -4433,7 +5312,7 @@ let rng = mulberry32(runSeed);
 const JAN_AURA_USES = 3; // 1월 조합 오라·일괄선택 횟수
 
 const state = {
-  screen: 'play', // play | gostop | settle | shop | gameover | victory | help | deckpeek | prep | welcome
+  screen: 'play', // play | gostop | settle | shop | gameover | victory | help | deckpeek | prep | welcome | langpick
   round: 1,
   baseTarget: TARGETS[0],
   target: TARGETS[0],
@@ -4512,11 +5391,11 @@ function bumpJokerGain(id, { score = 0, money = 0 } = {}) {
 /** 특수패 누적 이득 문구 (설명문과 별도). short면 슬롯용 축약 */
 function formatJokerGain(id, { short = false } = {}) {
   const g = state.jokerGains[id];
-  if (!g || (!g.score && !g.money)) return short ? '이득 0' : '아직 이득 없음';
+  if (!g || (!g.score && !g.money)) return short ? t('gainZero') : t('gainNone');
   const parts = [];
-  if (g.score) parts.push(`+${fmt(g.score)}점`);
-  if (g.money) parts.push(`+${g.money}냥`);
-  return short ? parts.join(' · ') : `누적 이득 ${parts.join(' · ')}`;
+  if (g.score) parts.push(`+${fmt(g.score)}${t('unitScore')}`);
+  if (g.money) parts.push(`+${t('nyang')(g.money)}`);
+  return short ? parts.join(' · ') : `${locale === 'en' ? 'Gain ' : locale === 'jp' ? '累積 ' : '누적 이득 '}${parts.join(' · ')}`;
 }
 
 // ── 판 진행 ────────────────────────────────────────────────
@@ -4851,10 +5730,8 @@ function syncHandSortBtn() {
   if (!btn) return;
   const byType = handSortMode === 'type';
   btn.classList.toggle('type', byType);
-  btn.textContent = byType ? '종류별' : '월별';
-  btn.title = byType
-    ? '손패 정렬: 종류별 (누르면 월별)'
-    : '손패 정렬: 월별 (누르면 종류별)';
+  btn.textContent = byType ? t('sortType') : t('sortMonth');
+  btn.title = byType ? t('sortTitleType') : t('sortTitleMonth');
 }
 async function toggleHandSort() {
   handSortMode = handSortMode === 'month' ? 'type' : 'month';
@@ -5083,7 +5960,7 @@ function playSelected() {
       month: state.round,
       play_turn: state.runStats.playTurnInRound,
       hand_id: result.handId,
-      hand_label: handDisplayName(result.handId, result.core),
+      hand_label: uiHandName(result.handId, result.core),
       cards_played: cardsTelemetrySummary(cards),
       score: result.score,
       money: state.money,
@@ -5092,10 +5969,10 @@ function playSelected() {
   }
   if (result.score > state.stats.bestSingle) {
     state.stats.bestSingle = result.score;
-    state.stats.bestSingleHand = handDisplayName(result.handId, result.core);
+    state.stats.bestSingleHand = uiHandName(result.handId, result.core);
   }
   state.playsLeft--;
-  state.playLog.push({ hand: handDisplayName(result.handId, result.core), score: result.score });
+  state.playLog.push({ hand: uiHandName(result.handId, result.core), score: result.score });
   for (const c of cards) {
     state.playedCards.push({ ...c, tags: [...(c.tags || [])], faceDown: false });
   }
@@ -5243,7 +6120,7 @@ function checkAfterPlay() {
     state.screen = 'gostop';
     maybeStartGoStopCoach();
   } else if (state.playsLeft === 0) {
-    gameOver(state.goLevel > 0 ? '고박' : '목표 미달');
+    gameOver(state.goLevel > 0 ? 'gobak' : 'miss');
   }
 }
 
@@ -5642,6 +6519,10 @@ function markInviteFromUrl() {
       localStorage.setItem('hwatro_from_invite', '1');
       localStorage.setItem('hwatro_og_image', og);
     }
+    // ?lang= 은 resolveLocale에서 이미 반영; 초대 유입 locale 유지
+    if (locale && LOCALE_CODES.includes(locale)) {
+      localStorage.setItem(LOCALE_STORE, locale);
+    }
   } catch (_) {}
 }
 
@@ -5689,7 +6570,7 @@ function initFirebaseTelemetry() {
   _firebaseTelemetry = import('./firebase-telemetry.mjs')
     .then(async (m) => {
       const t = await m.setup(cfg);
-      if (t?.registerUser) await t.registerUser(isInviteUser(), getOgImageAttr());
+      if (t?.registerUser) await t.registerUser(isInviteUser(), getOgImageAttr(), getLocale());
       return t;
     })
     .catch(() => null);
@@ -5707,6 +6588,7 @@ function logSessionStartTelemetry() {
   const params = {
     returning_user: returning,
     days_since_last: daysSince,
+    locale: getLocale(),
   };
   const og = getOgImageAttr();
   if (og) params.og_image = og;
@@ -5787,9 +6669,9 @@ function setCardLabelsHidden(hidden) {
   catch (_) {}
   document.body.classList.toggle('hide-card-labels', hidden);
   const side = document.querySelector('.side-labels');
-  if (side) side.textContent = hidden ? '🏷 월·열끗 보이기' : '🏷 월·열끗 숨기기';
+  if (side) side.textContent = hidden ? t('labelsShow') : t('labelsHide');
   const top = $('top-labels');
-  if (top) top.title = hidden ? '월·열끗 보이기' : '월·열끗 숨기기';
+  if (top) top.title = hidden ? t('labelsShow') : t('labelsHide');
 }
 function toggleCardLabels() {
   setCardLabelsHidden(!cardLabelsHidden());
@@ -5854,14 +6736,14 @@ function surveyPromptHTML() {
     <div class="survey-prompt">
       <div class="survey-corners" aria-hidden="true"></div>
       <div class="survey-badge" aria-hidden="true">🎴</div>
-      <div class="survey-title">설문 한 장만 부탁해요</div>
+      <div class="survey-title">${tu('surveyTitle')}</div>
       <div class="survey-rule" aria-hidden="true"></div>
-      <div class="survey-body">플레이 소감이 궁금합니다.<br><b>1분이면</b> 끝나요.</div>
+      <div class="survey-body">${tu('surveyBody')}</div>
       <div class="survey-actions">
-        <button type="button" class="survey-yes" onclick="openSurvey()">설문하기</button>
-        <button type="button" class="survey-no" onclick="dismissSurveyPrompt()">나중에</button>
+        <button type="button" class="survey-yes" onclick="openSurvey()">${tu('surveyYes')}</button>
+        <button type="button" class="survey-no" onclick="dismissSurveyPrompt()">${tu('surveyNo')}</button>
       </div>
-      <button type="button" class="survey-done-link" onclick="markSurveyAlreadyDone()">이미 참여했어요</button>
+      <button type="button" class="survey-done-link" onclick="markSurveyAlreadyDone()">${tu('surveyDone')}</button>
     </div>`;
 }
 
@@ -6028,7 +6910,7 @@ function findBestPlayHint() {
       kind: 'play',
       uids: picks.map((c) => c.uid),
       handId: best.handId,
-      name: handDisplayName(best.handId, core),
+      name: uiHandName(best.handId, core),
       score: best.score,
     };
   }
@@ -6043,7 +6925,7 @@ function findBestPlayHint() {
     kind: 'play',
     uids: [top.uid],
     handId: 'none',
-    name: '최고 칩 패',
+    name: t('bestChipHand'),
     score: computeScore([top], env).score,
   };
 }
@@ -6094,7 +6976,7 @@ function getJanJunkSuggest() {
 function getActiveCoachHint() {
   if (state.coachStep === 'junk') {
     const uids = getJanJunkSuggest();
-    return uids.length ? { kind: 'junk', uids, name: '버리기' } : null;
+    return uids.length ? { kind: 'junk', uids, name: t('discardWord') } : null;
   }
   if (!hintsActive()) return null;
   const play = findBestPlayHint();
@@ -6120,7 +7002,7 @@ function getActiveCoachHint() {
   if (play.score >= pace * 0.9) return play;
   // 약손 + 버릴 약패 있음 → 버리기
   if (play.score < pace * 0.85) {
-    return { kind: 'junk', uids: junkUids, name: '버리기' };
+    return { kind: 'junk', uids: junkUids, name: t('discardWord') };
   }
   return play;
 }
@@ -6266,8 +7148,8 @@ function setBootLoadProgress(done, total) {
   if (pctEl) pctEl.textContent = pct + '%';
   if (msg) {
     msg.textContent = pct < 100
-      ? (pct < 40 ? '패를 섞는 중…' : pct < 80 ? '그림을 펼치는 중…' : '거의 다 됐습니다…')
-      : '판을 여는 중…';
+      ? (pct < 40 ? t('bootShuffle') : pct < 80 ? t('bootUnfurl') : t('bootAlmost'))
+      : t('bootOpen');
   }
 }
 
@@ -6426,6 +7308,7 @@ function initCardTune() {
 
 async function boot() {
   markInviteFromUrl();
+  applyLocaleChrome();
   hookRunVisibility();
   hookModalKeys();
   initSessionStats();
@@ -6459,7 +7342,9 @@ async function boot() {
   hideBootLoad();
   warmSfxInBackground();
   logSessionStartTelemetry();
-  state.screen = hasSeenHowto() ? 'prep' : 'welcome';
+  state.screen = needsLocalePick()
+    ? 'langpick'
+    : (hasSeenHowto() ? 'prep' : 'welcome');
   render();
 }
 
@@ -6542,7 +7427,7 @@ function chunhyangHint() {
   const pace = Math.max(1, state.target - state.roundScore) / Math.max(1, state.playsLeft);
   const tier = HANDS.findIndex((h) => h.id === best.handId);
   if (tier >= 0 && tier <= 6)
-    return { mood: '😍', text: `${handDisplayName(best.handId, best.core)}이 손에 있어요! 지금이 찬스예요!` };
+    return { mood: '😍', text: `${uiHandName(best.handId, best.core)}이 손에 있어요! 지금이 찬스예요!` };
   if (best.score >= pace * 1.5)
     return { mood: '😊', text: '이 손패면 넉넉해요~ 자신 있게 나가봐요.' };
   if (best.score >= pace * 0.9)
@@ -6742,24 +7627,24 @@ function cardHTML(card, opts = {}) {
   let body = '', tag = '', tagOpt = false;
   if (card.type === 'kwang') {
     if (card.tags.includes('bikwang')) cls += ' rain';
-    tag = card.tags.includes('bikwang') ? '비광' : '광';
+    tag = uiCardTag(card);
   } else if (card.type === 'yeol') {
-    tag = card.tags.includes('godori') ? '열끗(새)' : '열끗';
+    tag = uiCardTag(card);
     tagOpt = true;
   } else if (card.type === 'tti') {
     const color = card.tags.find((x) => TTI_LABEL[x]) || 'bi_tti';
     cls += ' ' + color;
-    tag = TTI_LABEL[color];
+    tag = uiTtiLabel(color);
   } else if (card.type === 'ssangpi') {
-    tag = '쌍피';
+    tag = uiCardTag(card);
   } else {
-    tag = '피';
+    tag = uiCardTag(card);
   }
   const overlaySrc = CARD_OVERLAY[card.type];
   const overlayOpt = card.type === 'yeol';
   if (card.art) {
     cls += ' has-art';
-    body = `<img class="face-img" src="${esc(assetSrc(card.art))}" alt="${esc(M.name)} ${esc(tag)}" draggable="false">`;
+    body = `<img class="face-img" src="${esc(assetSrc(card.art))}" alt="${esc(uiMonthName(card.month))} ${esc(tag)}" draggable="false">`;
     if (overlaySrc) {
       const ovCls = overlayOpt ? 'face-overlay overlay-opt' : 'face-overlay';
       body += `<img class="${ovCls}" src="${esc(assetSrc(overlaySrc))}" alt="" draggable="false">`;
@@ -6770,7 +7655,7 @@ function cardHTML(card, opts = {}) {
     body = `<div class="art">${M.yeolArt}</div>`;
   } else if (card.type === 'tti') {
     const color = card.tags.find((x) => TTI_LABEL[x]) || 'bi_tti';
-    body = `<div class="ribbon">${color === 'chodan' ? '' : TTI_LABEL[color]}</div>`;
+    body = `<div class="ribbon">${color === 'chodan' ? '' : uiTtiLabel(color)}</div>`;
   } else {
     body = `<div class="art">${M.flower}</div>`;
   }
@@ -6786,7 +7671,7 @@ function cardHTML(card, opts = {}) {
   const click = opts.selectable && !discarding ? ` onclick="toggleSelect(${card.uid})"` : '';
   const monthLabel = card.art
     ? `<div class="month-badge">${hanjaMonth(card.month)}</div>`
-    : `<div class="month">${hanjaMonth(card.month)}</div><div class="mname">${M.name}</div>`;
+    : `<div class="month">${hanjaMonth(card.month)}</div><div class="mname">${uiMonthName(card.month)}</div>`;
   // 이모지 폴백: 광 상시 / 열끗 옵션 / 띠·피·쌍피는 그림(+쌍피 점)
   const showTag = !card.art && (card.type === 'kwang' || tagOpt);
   const tagHtml = showTag
@@ -6896,20 +7781,21 @@ function renderTopbar() {
     const j = state.jokers[i];
     if (j) {
       const def = JOKER_BY_ID[j.id];
+      const uj = uiJoker(def);
       const tap = isTouchUI() ? ` onclick="showJokerPop(${i})" role="button"` : '';
       const gain = formatJokerGain(def.id);
-      const gainEmpty = gain === '아직 이득 없음' ? ' empty' : '';
+      const gainEmpty = gain === t('gainNone') ? ' empty' : '';
       slots += `<div class="jokerslot filled aura-${def.rarity}" data-jid="${esc(def.id)}" tabindex="0"${tap}>
-        <div class="jname">${esc(def.name)}</div>
-        ${def.kind ? `<div class="jkind">${esc(def.kind)}</div>` : ''}
-        <div class="jtip">${esc(def.desc)}${def.id === 'mitjang' ? `<br>지금 누적 ${state.mitjangChips}칩입니다.` : ''}<div class="jtip-gain${gainEmpty}">${esc(gain)}</div></div>
+        <div class="jname">${esc(uj.name)}</div>
+        ${uj.kind ? `<div class="jkind">${esc(uj.kind)}</div>` : ''}
+        <div class="jtip">${esc(uj.desc)}${def.id === 'mitjang' ? `<br>${esc(t('mitjangNow')(state.mitjangChips).trim())}` : ''}<div class="jtip-gain${gainEmpty}">${esc(gain)}</div></div>
       </div>`;
     } else {
-      slots += `<div class="jokerslot">특수패<br>빈 슬롯</div>`;
+      slots += `<div class="jokerslot">${t('emptyJoker')}</div>`;
     }
   }
   $('jokerbar').innerHTML = slots;
-  $('moneybox').textContent = `💰 ${state.money}냥`;
+  $('moneybox').textContent = `💰 ${t('nyang')(state.money)}`;
 }
 
 function showJokerPop(idx) {
@@ -6917,18 +7803,19 @@ function showJokerPop(idx) {
   const j = state.jokers[idx];
   if (!j) return;
   const def = JOKER_BY_ID[j.id];
-  const rarityKo = { common: '커먼', rare: '레어', epic: '에픽', legendary: '레전더리' };
+  const uj = uiJoker(def);
   $('joker-pop-icon').textContent = def.icon;
-  $('joker-pop-name').textContent = def.name;
+  $('joker-pop-name').textContent = uj.name;
   $('joker-pop-meta').innerHTML = `
-    <span class="o-rarity r-${def.rarity}">${rarityKo[def.rarity]}</span>
-    <span class="o-kind">${esc(def.kind || '')}</span>`;
-  $('joker-pop-desc').textContent = def.desc + (def.id === 'mitjang' ? ` 지금 누적 ${state.mitjangChips}칩입니다.` : '');
+    <span class="o-rarity r-${def.rarity}">${uiRarity(def.rarity)}</span>
+    <span class="o-kind">${esc(uj.kind || '')}</span>`;
+  $('joker-pop-desc').textContent = uj.desc + (def.id === 'mitjang' ? t('mitjangNow')(state.mitjangChips) : '');
   const gain = formatJokerGain(def.id);
   const gainEl = $('joker-pop-gain');
   gainEl.textContent = gain;
-  gainEl.classList.toggle('empty', gain === '아직 이득 없음');
+  gainEl.classList.toggle('empty', gain === t('gainNone'));
   $('joker-pop-overlay').classList.add('show');
+  const jc = $('joker-pop-close'); if (jc) jc.textContent = tu('close');
 }
 
 function closeJokerPop() {
@@ -6939,12 +7826,12 @@ function setNeedVal(score) {
   const el = $('need-val');
   if (!el) return;
   const need = Math.max(0, state.target - score);
-  el.textContent = need === 0 ? '달성!' : fmt(need);
+  el.textContent = need === 0 ? t('achieved') : fmt(need);
   el.classList.toggle('done', need === 0);
 }
 
 function renderSide() {
-  const bossTag = isBossRound(state.round) ? ' <span class="bak">(박)</span>' : '';
+  const bossTag = isBossRound(state.round) ? ` <span class="bak">${t('bak')}</span>` : '';
   const M = MONTHS[state.round - 1];
   const night = isNight();
   const rp = $('roundpanel');
@@ -6952,17 +7839,16 @@ function renderSide() {
     rp.classList.toggle('day', !night);
     rp.classList.toggle('night', night);
   }
-  $('roundlabel').innerHTML = `${M.flower} ${hanjaMonth(state.round)} · ${M.name} ${night ? '🌙' : '☀️'}` +
-    ` <span class="round-meta">(판 ${state.round}/${ROUNDS})</span>${bossTag}`;
-  $('seasonline').innerHTML = `이달의 패: <b>${hanjaMonth(state.round)} 카드 칩 ×2</b><br>` +
-    (night ? '밤 — 띠·피·쌍피 칩 +2' : '낮 — 광·열끗 칩 +2');
+  $('roundlabel').innerHTML = `${M.flower} ${hanjaMonth(state.round)} · ${uiMonthName(state.round)} ${night ? '🌙' : '☀️'}` +
+    ` <span class="round-meta">${t('roundMeta')(state.round, ROUNDS)}</span>${bossTag}`;
+  $('seasonline').innerHTML = (night ? t('seasonLineNight') : t('seasonLineDay'))(hanjaMonth(state.round));
 
   const bb = $('bossbanner');
   if (state.boss) {
-    const b = BOSS_BY_ID[state.boss];
+    const b = uiBoss(BOSS_BY_ID[state.boss]);
     const nullified = hasJoker('pibak_boheom') && MILD_BOSSES.includes(state.boss);
     bb.style.display = 'block';
-    bb.innerHTML = `⚠ <b>${b.name}</b> — ${esc(b.desc)}${nullified ? ' <span class="nullified">→ 피박보험으로 무효!</span>' : ''}`;
+    bb.innerHTML = `⚠ <b>${esc(b.name)}</b> — ${esc(b.desc)}${nullified ? ` <span class="nullified">${t('bossNull')}</span>` : ''}`;
   } else bb.style.display = 'none';
 
   $('target-val').textContent = fmt(state.target);
@@ -6979,7 +7865,7 @@ function renderSide() {
   const gl = $('golevel');
   if (state.goLevel > 0) {
     gl.style.display = 'block';
-    gl.textContent = `🔥 ${state.goLevel}고! (목표 ×${goMult(state.goLevel)} · 성공 시 +${goBonus(state.goLevel, state.round)}냥)`;
+    gl.textContent = t('goLevel')(state.goLevel, goMult(state.goLevel), goBonus(state.goLevel, state.round));
   } else gl.style.display = 'none';
 
   // 프리뷰 — 틀은 처음부터 펼쳐 두고 값만 갱신 (접었다 펴지 않음)
@@ -6989,12 +7875,12 @@ function renderSide() {
   let chips = '—', mult = '—', flat = '—', score = '—';
   let flatOff = true;
   if (sel.length === 0) {
-    handName = '패를 선택하세요';
+    handName = t('pvPick');
   } else if (sel.some((c) => c.faceDown)) {
-    handName = '뒷면 포함 · 미리보기 불가';
+    handName = t('pvFacedown');
   } else {
     const r = computeScore(sel, scoreEnv());
-    handName = handDisplayName(r.handId, r.core);
+    handName = uiHandName(r.handId, r.core);
     chips = fmt(r.chips);
     mult = fmtMult(r.mult);
     flat = fmt(r.flat);
@@ -7006,13 +7892,13 @@ function renderSide() {
     pv.innerHTML = `
       <div class="pv-hand"></div>
       <div class="pv-boxes">
-        <div class="pv-box chips"><span class="lbl">기본합</span><span class="val"></span></div>
+        <div class="pv-box chips"><span class="lbl">${t('pvBase')}</span><span class="val"></span></div>
         <div class="pv-op">×</div>
-        <div class="pv-box mult"><span class="lbl">배수</span><span class="val"></span></div>
+        <div class="pv-box mult"><span class="lbl">${t('pvMult')}</span><span class="val"></span></div>
         <div class="pv-op">+</div>
-        <div class="pv-box flat"><span class="lbl">+점수</span><span class="val"></span></div>
+        <div class="pv-box flat"><span class="lbl">${t('pvFlat')}</span><span class="val"></span></div>
       </div>
-      <div class="pv-total"><span class="tl">예상 점수</span><span class="tv"></span></div>`;
+      <div class="pv-total"><span class="tl">${t('pvTotal')}</span><span class="tv"></span></div>`;
   }
   pv.querySelector('.pv-hand').textContent = handName;
   pv.querySelector('.pv-box.chips .val').textContent = chips;
@@ -7029,10 +7915,10 @@ function renderSide() {
   deckbox.setAttribute('aria-disabled', deckBlocked ? 'true' : 'false');
   deckbox.tabIndex = deckBlocked ? -1 : 0;
   deckbox.title = deckBlocked
-    ? '안개 — 패 보기 불가'
+    ? t('deckFog')
     : state.deck.length > 0 && state.deck.length <= 5
-      ? `남은 덱 ${state.deck.length}장 · 부족! (클릭하여 보기)`
-      : '남은 덱 (클릭하여 보기)';
+      ? t('deckLow')(state.deck.length)
+      : t('deckTitle');
 
   const lp = $('playlog-panel');
   if (state.playLog.length > 0) {
@@ -7059,15 +7945,15 @@ function renderTable() {
       pa.innerHTML =
         state.lastPlay.cards.map((c) => cardHTML(c, { reveal: true })).join('') +
         `<div id="playresult">
-          <div class="r-hand">${handDisplayName(r.handId, r.core)}</div>
-          <div class="r-formula"><span class="c">${fmt(r.chips)}칩</span> × <span class="m">${fmtMult(r.mult)}배</span>${r.flat ? ` + ${fmt(r.flat)}` : ''}</div>
-          <div class="r-score">+${fmt(r.score)}점</div>
+          <div class="r-hand">${uiHandName(r.handId, r.core)}</div>
+          <div class="r-formula"><span class="c"><span class="num">${fmt(r.chips)}</span>${t('unitChip')}</span> × <span class="m"><span class="num">${fmtMult(r.mult)}</span>${t('unitMult')}</span>${r.flat ? ` + <span class="num">${fmt(r.flat)}</span>` : ''}</div>
+          <div class="r-score">+<span class="num">${fmt(r.score)}</span>${t('unitScore')}</div>
         </div>`;
     }
   } else {
     pa.dataset.playSig = '';
     pa.classList.remove('juice-stage', 'play-fade-out');
-    pa.innerHTML = `<div class="hint">카드를 고르고 <b>내기</b>를 누르세요</div>`;
+    pa.innerHTML = `<div class="hint">${t('playHint')}</div>`;
   }
 
   const hint = (state.screen === 'play') ? getActiveCoachHint() : null;
@@ -7086,17 +7972,17 @@ function renderTable() {
   if (state.coachStep === 'junk') {
     auraHint.hidden = false;
     auraHint.classList.add('junk');
-    auraHint.textContent = '🗑️ 빨간 빛 — 버릴 약한 패 (눌러 고르고 버리기, 최대 5장)';
+    auraHint.textContent = t('auraJunkTutor');
   } else if (hint && hint.kind === 'junk') {
     auraHint.hidden = false;
     auraHint.classList.add('junk');
-    auraHint.textContent = '🗑️ 버리기 추천 · 빨간 패를 누르면 한꺼번에 골라져요 (한 장씩 해제 가능)';
+    auraHint.textContent = t('auraJunk');
   } else if (hint && hint.kind === 'play') {
     auraHint.hidden = false;
     auraHint.classList.remove('junk');
     auraHint.textContent = hint.handId === 'none'
-      ? '✨ 내기 추천 · 빛나는 패를 누르면 칩 최고 패가 골라져요'
-      : `✨ 내기 추천 · 빛나는 패를 누르면 ${hint.name}이 한 번에 골라져요`;
+      ? t('auraPlayNone')
+      : t('auraPlay')(hint.name);
   } else {
     auraHint.hidden = true;
     auraHint.classList.remove('junk');
@@ -7110,11 +7996,11 @@ function renderTable() {
   const canAct = state.screen === 'play' && !state.juicing && !state.dealing;
   const playBtn = $('btn-play');
   const discardBtn = $('btn-discard');
-  syncActionBtn(playBtn, '내기', state.playsLeft);
-  playBtn.title = `내기 · ${state.playsLeft}회 남음`;
+  syncActionBtn(playBtn, t('btnPlay'), state.playsLeft);
+  playBtn.title = t('playTitle')(state.playsLeft);
   playBtn.disabled = !canAct || n < 1 || n > 5 || state.playsLeft <= 0 || state.coachStep === 'junk';
-  syncActionBtn(discardBtn, '버리기', state.discardsLeft);
-  discardBtn.title = `버리기 · ${state.discardsLeft}회 남음`;
+  syncActionBtn(discardBtn, t('btnDiscard'), state.discardsLeft);
+  discardBtn.title = t('discardTitle')(state.discardsLeft);
   discardBtn.disabled = !canAct || n < 1 || n > 5 || state.discardsLeft <= 0;
   if (CHUNHYANG_ENABLED) {
     $('btn-play').onmouseenter = () => setChunhyangHover('play');
@@ -7153,57 +8039,57 @@ function renderCoach() {
   const aura = (!isShop && !isGoStop) ? getJanAuraBest() : null;
   const handText = aura
     ? (aura.handId === 'none'
-      ? `<b>연두 빛</b>이 도는 패를 눌러 보세요. 조합이 없으면 칩 최고 패가 골라집니다.<br><span class="coach-muted">처음 ${JAN_AURA_USES}회 무료 · 이후 추천 ON/OFF</span>`
-      : `<b>연두 빛</b>이 도는 패를 눌러 보세요. <b>${aura.name}</b>이 한 번에 골라집니다.<br><span class="coach-muted">처음 ${JAN_AURA_USES}회 무료 · 이후 추천 ON/OFF · 한 장씩 해제 가능</span>`)
-    : `연두 빛 패를 눌러 조합을 골라 보세요. <b>1월 한정</b>이에요.`;
+      ? tu('coachHandNone')(JAN_AURA_USES)
+      : tu('coachHandNamed')(aura.name, JAN_AURA_USES))
+    : tu('coachHandFallback');
 
   const playRes = state.lastPlay && state.lastPlay.result;
   const scoredBody = playRes
-    ? `방금 <b>${handDisplayName(playRes.handId, playRes.core)}</b>으로 <b>+${fmt(playRes.score)}점</b>!<br>
-       점수 = (<b>족보 칩 ${fmt(playRes.chips)}</b> × <b>${fmtMult(playRes.mult)}배</b>)${playRes.flat ? ` + <b>${fmt(playRes.flat)}</b>` : ''}.<br>
-       목표까지 <b>남은 점수 ${fmt(Math.max(0, state.target - state.roundScore))}</b> · 게이지를 확인하세요.`
-    : `점수가 쌓였어요! 점수 = <b>족보 칩</b> × <b>배수</b> + 나머지.`;
+    ? tu('coachScoredBody')(
+        uiHandName(playRes.handId, playRes.core),
+        fmt(playRes.score),
+        fmt(playRes.chips),
+        fmtMult(playRes.mult),
+        playRes.flat ? fmt(playRes.flat) : '',
+        fmt(Math.max(0, state.target - state.roundScore))
+      )
+    : tu('coachScoredFallback');
 
-  // next: null → 액션으로만 진행 (다음 버튼 없음). 확인이 필요할 때만 라벨.
   const junkHasSel = state.selected.length > 0;
   const steps = {
     hand: {
-      sel: '#handarea', pad: 10, title: '✨ 조합 힌트', body: handText, next: null,
+      sel: '#handarea', pad: 10, title: tu('coachHandTitle'), body: handText, next: null,
     },
     play: {
-      sel: '#btn-play', pad: 8, title: '🎯 내기',
-      body: `골랐으면 <b>내기</b>를 눌러 점수를 쌓아 보세요.`,
+      sel: '#btn-play', pad: 8, title: tu('coachPlayTitle'),
+      body: tu('coachPlayBody'),
       next: null,
     },
     junk: {
       sel: junkHasSel ? '#btn-discard' : '#handarea',
       pad: 8,
-      title: '🗑️ 버리기',
-      body: junkHasSel
-        ? `<b>버리기</b>를 눌러 패를 갈아끼우세요 (한 번에 최대 5장). 버린 만큼 덱에서 보충됩니다.`
-        : `조합이 약할 땐 <b>피</b>처럼 약한 패를 버리세요. <b style="color:#fca5a5">빨간 빛</b> 패를 누르면 추천분이 한 번에 골라져요 (최대 5장).`,
+      title: tu('coachJunkTitle'),
+      body: junkHasSel ? tu('coachJunkSel') : tu('coachJunkPick'),
       next: null,
     },
     scored: {
-      sel: '#playedarea', pad: 10, title: '✨ 점수 획득!',
+      sel: '#playedarea', pad: 10, title: tu('coachScoredTitle'),
       body: scoredBody,
-      next: '알겠어요',
+      next: tu('gotIt'),
     },
     gostop: {
-      sel: '#gs-actions', pad: 10, title: '🔥 고 / 스톱',
-      body: `<b>스톱</b>은 지금 정산하고 다음 달로.<br><b>고</b>는 목표를 올리고 더 내지만, 실패하면 <b>고박 = 런 종료</b>!<br><span class="coach-muted">하나를 골라 보세요.</span>`,
+      sel: '#gs-actions', pad: 10, title: tu('coachGoTitle'),
+      body: tu('coachGoBody'),
       next: null,
     },
     shop: {
-      sel: '#shop-offers', pad: 10, title: '🍶 주막',
-      body: CHUNHYANG_ENABLED
-        ? `특수패를 사고, 마음에 안 들면 <b>리롤</b>하세요. 준비되면 <b>다음 판으로</b>!<br><span class="coach-muted">춘향 훈수도 여기서 예약할 수 있어요.</span>`
-        : `특수패를 사고, 마음에 안 들면 <b>리롤</b>하세요. 준비되면 <b>다음 판으로</b>!`,
-      next: '알겠어요',
+      sel: '#shop-offers', pad: 10, title: tu('coachShopTitle'),
+      body: tu('coachShopBody'),
+      next: tu('gotIt'),
     },
     deck: {
-      sel: '#deckbox', pad: 8, title: '🂠 남은 덱',
-      body: `오른쪽 <b>덱</b>을 눌러 보세요. 아직 안 나온 패를 미리 볼 수 있어요.<br><span class="coach-muted">언제든 다시 열어볼 수 있어요.</span>`,
+      sel: '#deckbox', pad: 8, title: tu('coachDeckTitle'),
+      body: tu('coachDeckBody'),
       next: null,
     },
   };
@@ -7230,9 +8116,9 @@ function renderCoach() {
   const panelLeft = Math.min(Math.max(12, x), window.innerWidth - 360);
 
   const actions = cfg.next
-    ? `<button type="button" class="coach-skip" onclick="coachSkip()">건너뛰기</button>
+    ? `<button type="button" class="coach-skip" onclick="coachSkip()">${tu('skip')}</button>
         <button type="button" class="coach-next" onclick="coachNext()">${cfg.next}</button>`
-    : `<button type="button" class="coach-skip" onclick="coachSkip()">건너뛰기</button>`;
+    : `<button type="button" class="coach-skip" onclick="coachSkip()">${tu('skip')}</button>`;
 
   root.classList.add('on');
   root.setAttribute('aria-hidden', 'false');
@@ -7253,12 +8139,13 @@ function renderModal() {
   const ov = $('modal-overlay');
   const m = $('modal');
   const screens = {
+    langpick: langpickHTML,
     welcome: welcomeHTML, prep: prepHTML, gostop: gostopHTML, settle: settleHTML, shop: shopHTML,
     gameover: gameoverHTML, victory: victoryHTML, help: helpHTML, deckpeek: deckpeekHTML,
   };
   const fn = screens[state.screen];
   if (!fn) {
-    m.classList.remove('gostop-modal', 'shop-modal', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal', 'prep-modal');
+    m.classList.remove('gostop-modal', 'shop-modal', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal', 'prep-modal', 'langpick-modal');
     m.dataset.modalSig = '';
     ov.classList.remove('show', 'gostop-open', 'settle-out', 'prep-open');
     return;
@@ -7303,106 +8190,104 @@ function renderModal() {
   }
 
   m.dataset.modalSig = state.screen;
-  m.classList.remove('gostop-modal', 'shop-modal', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal', 'prep-modal');
+  m.classList.remove('gostop-modal', 'shop-modal', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal', 'prep-modal', 'langpick-modal');
   if (state.screen === 'shop') m.classList.add('shop-modal');
   if (state.screen === 'prep') m.classList.add('prep-modal');
   if (state.screen === 'deckpeek') m.classList.add('deckpeek-modal');
   if (state.screen === 'help' || state.screen === 'welcome') m.classList.add('howto-modal');
+  if (state.screen === 'langpick') m.classList.add('langpick-modal', 'howto-modal');
   if (state.screen === 'gameover' || state.screen === 'victory') m.classList.add('end-modal');
   ov.classList.remove('gostop-open', 'settle-out', 'prep-open');
-  if (state.screen === 'prep') ov.classList.add('prep-open');
+  if (state.screen === 'prep' || state.screen === 'langpick') ov.classList.add('prep-open');
   m.innerHTML = fn();
   ov.classList.add('show');
 }
 
+function langpickHTML() {
+  return `
+    <h2>십이화 · Sibiwha · 十二花</h2>
+    <div class="langpick-sub">
+      언어를 선택하세요<br>
+      Choose your language<br>
+      言語を選んでください
+    </div>
+    <div class="langpick-list">
+      <button type="button" class="langpick-btn" onclick="confirmLocale('kr')">
+        <span class="lp-name">한국어</span>
+        <span class="lp-code">KR</span>
+      </button>
+      <button type="button" class="langpick-btn" onclick="confirmLocale('en')">
+        <span class="lp-name">English</span>
+        <span class="lp-code">EN</span>
+      </button>
+      <button type="button" class="langpick-btn" onclick="confirmLocale('jp')">
+        <span class="lp-name" style="font-family:'Yuji Boku','Hiragino Mincho ProN',serif">日本語</span>
+        <span class="lp-code">JP</span>
+      </button>
+    </div>`;
+}
+
 function welcomeHTML() {
   return `
-    <h2>🎴 십이화 — 고스톱: 무한의 판</h2>
-    <div class="sub" style="margin-bottom:10px">한국 화투 48장으로 족보를 맞춰 목표 점수를 넘기는 <b>1인 런</b>입니다.
-      1월부터 12월까지 한 해를 버텨보세요.</div>
+    <h2>${tu('welcomeH2')}</h2>
+    <div class="sub" style="margin-bottom:10px">${tu('welcomeSub')}</div>
     <div class="help-sections">
       <div class="help-card hc-round">
-        <div class="hc-title"><span class="ico">🃏</span>기본 플레이</div>
-        <div class="hc-body">
-          손패 <b>8장</b>에서 1~5장을 고른 뒤 <b>내기</b>로 점수를 쌓습니다.
-          마음에 안 들면 <b>버리기</b>로 패를 갈아끼울 수 있어요.
-          판마다 내기·버리기 각 <b>4회</b>.
-        </div>
+        <div class="hc-title"><span class="ico">🃏</span>${tu('welcomePlayTitle')}</div>
+        <div class="hc-body">${tu('welcomePlayBody')}</div>
       </div>
       <div class="help-card hc-time">
-        <div class="hc-title"><span class="ico">✨</span>점수 · 족보</div>
-        <div class="hc-body">
-          점수 = (<b>족보 구성 카드</b> 칩) × 배수 + 나머지 칩.
-          이달의 패는 칩 <b>×2</b>. 홀수 달은 낮(광·열끗 +2), 짝수 달은 밤(띠·피 +2).
-        </div>
+        <div class="hc-title"><span class="ico">✨</span>${tu('welcomeScoreTitle')}</div>
+        <div class="hc-body">${tu('welcomeScoreBody')}</div>
       </div>
       <div class="help-card hc-rule">
-        <div class="hc-title"><span class="ico">🔥</span>고 / 스톱</div>
-        <div class="hc-body">
-          목표를 넘기면 <b>스톱</b>(정산) 또는 <b>고</b>(목표↑ · 내기 +1 · 보너스).
-          한 방이 크면 이미 넘은 고 문턱을 <b>한 번에 밀치며</b> 여러 단계 점프!
-          고는 무제한이지만, 실패하면 <b>고박 = 런 종료</b>.
-          <b>3·6·9·12월</b>은 박 라운드(디버프)가 붙습니다.
-        </div>
+        <div class="hc-title"><span class="ico">🔥</span>${tu('welcomeGoTitle')}</div>
+        <div class="hc-body">${tu('welcomeGoBody')}</div>
       </div>
       <div class="help-card hc-helper">
-        <div class="hc-title"><span class="ico">🍶</span>주막</div>
-        <div class="hc-body">
-          판을 클리어하면 주막에서 <b>특수패</b>(커먼~레전더리 22종)를 사고팝니다. 소지 최대 5개.
-        </div>
+        <div class="hc-title"><span class="ico">🍶</span>${tu('welcomeShopTitle')}</div>
+        <div class="hc-body">${tu('welcomeShopBody')}</div>
       </div>
     </div>
-    <div class="sub help-muted" style="margin-top:12px">자세한 족보표는 언제든 <b>📖 도움말</b>에서 볼 수 있어요.</div>
+    <div class="sub help-muted" style="margin-top:12px">${tu('welcomeFoot')}</div>
     <div class="modal-actions">
       <button class="choicebtn btn-stop" style="text-align:center" onclick="dismissWelcome()">
-        <div class="t">알겠어요 — 시작하기</div>
-        <div class="d">1월 준비 화면으로 이동합니다</div>
+        <div class="t">${tu('welcomeStart')}</div>
+        <div class="d">${tu('welcomeStartSub')}</div>
       </button>
     </div>`;
 }
 
 function prepHTML() {
   const M = MONTHS[0];
-  const booked = state.chunhyangNext;
-  const chBlock = CHUNHYANG_ENABLED ? `
-    <div class="sub prep-stats">목표 : <b class="prep-target" style="color:var(--gold-soft)">${fmt(TARGETS[0])}점</b><br>
-      라운드 시작 전에 춘향이 훈수를 예약하면 그 달 내내 패를 봐줍니다.</div>
-    <div class="boss-preview" style="border-color:rgba(212,175,55,.45);background:rgba(120,85,20,.22);color:#fde68a;margin-top:12px">
-      🍶 <b>춘향 훈수</b> — 3냥 · ${booked ? '예약 완료!' : '미예약'}
-      <button class="smallbtn" style="margin-left:8px" onclick="buyChunhyangNext()" ${booked || state.money < 3 ? 'disabled' : ''}>${booked ? '✓ 예약됨' : '예약'}</button>
-    </div>` : `
-    <div class="sub prep-stats">목표 : <b class="prep-target" style="color:var(--gold-soft)">${fmt(TARGETS[0])}점</b></div>`;
   return `
-    <h2>${M.flower} 1월 · ${M.name} 준비</h2>
-    ${chBlock}
+    <h2>${tu('prepTitle')(M.flower, uiMonthName(1))}</h2>
+    <div class="sub prep-stats">${tu('prepTarget')(fmt(TARGETS[0]))}</div>
     <div class="modal-actions">
       <button class="choicebtn btn-stop prep-start" onclick="beginFromPrep()">
-        <div class="t">▶ 1월 시작</div>
+        <div class="t">${tu('prepStart')}</div>
       </button>
     </div>`;
 }
 
 function gostopHTML() {
-  // 밀치기 고: 이미 넘은 문턱은 소급 인정 → 선언 단계 = 아직 못 넘은 첫 문턱
   const n = goLevelReached(state.baseTarget, state.roundScore, state.goLevel) + 1;
-  const jump = n - state.goLevel; // 1이면 일반 고, 2 이상이면 밀치기
+  const jump = n - state.goLevel;
   const newTarget = goThreshold(state.baseTarget, n);
   const stopTip = state.goLevel > 0
-    ? `지금 정산하고 다음 판으로<br>(${state.goLevel}고 보너스 <b>+${goBonus(state.goLevel, state.round)}냥</b> 확보)`
-    : '지금 정산하고 안전하게 다음 판으로';
-  const goTip = (jump > 1 ? `한 방으로 <b style="color:#fde68a">${jump}단계 밀치기</b><br>` : '')
-    + `새 목표 <b>${fmt(newTarget)}점</b> (×${goMult(n)})<br>`
-    + `내기 <b>+1</b> · 손패 보충 · 성공 시 <b>+${goBonus(n, state.round)}냥</b><br>`
-    + `실패 시 <b>고박 = 런 종료</b>`;
+    ? tu('gostopStopTipN')(state.goLevel, goBonus(state.goLevel, state.round))
+    : tu('gostopStopTip0');
+  const goTip = (jump > 1 ? tu('gostopJump')(jump) : '')
+    + tu('gostopGoTip')(fmt(newTarget), goMult(n), goBonus(n, state.round));
   const goTitle = n <= 1
-    ? `<div class="t">1고</div>`
+    ? `<div class="t">${tu('gostopGo1')}</div>`
     : `<div class="t go-btn-stage" id="go-btn-stage" data-from="0" data-to="${n}"></div>`;
   return `
-    <h2>🎉 목표 달성!</h2>
-    <div class="sub">${fmt(state.roundScore)} / ${fmt(state.target)}점 · 내기 ${state.playsLeft} · 패 ${cardsRemaining()}</div>
+    <h2>${tu('gostopH2')}</h2>
+    <div class="sub">${tu('gostopSub')(fmt(state.roundScore), fmt(state.target), state.playsLeft, cardsRemaining())}</div>
     <div class="modal-actions" id="gs-actions">
       <button class="choicebtn btn-stop gs-simple" onclick="chooseStop()">
-        <div class="t">✋ 스톱</div>
+        <div class="t">${tu('gostopStop')}</div>
         <div class="gs-tip">${stopTip}</div>
       </button>
       <button class="choicebtn btn-go gs-simple" onclick="chooseGo()">
@@ -7415,40 +8300,39 @@ function gostopHTML() {
 function settleHTML() {
   const d = state.settleData;
   const rows = [
-    [`이자 (보유 ${d.moneyBefore}냥)`, d.interest],
-    [`기본 상금${isBossRound(state.round) ? ' · 박' : ''}`, d.base],
-    [`남은 내기 ${d.playBonus}회`, d.playBonus],
+    [tu('settleInterest')(d.moneyBefore), d.interest],
+    [tu('settleBase')(isBossRound(state.round)), d.base],
+    [tu('settlePlayBonus')(d.playBonus), d.playBonus],
   ];
-  if (d.goBonus) rows.push([`고 보너스 (${state.goLevel}고)`, d.goBonus]);
-  if (d.insBonus) rows.push(['피박보험', d.insBonus]);
-  const M = MONTHS[state.round - 1];
+  if (d.goBonus) rows.push([tu('settleGoBonus')(state.goLevel), d.goBonus]);
+  if (d.insBonus) rows.push([uiJoker(JOKER_BY_ID.pibak_boheom).name, d.insBonus]);
   return `
-    <h2 class="settle-title">정산</h2>
-    <div class="settle-month">${state.round}월 · ${esc(M.name)} 클리어</div>
+    <h2 class="settle-title">${tu('settleTitle')}</h2>
+    <div class="settle-month">${tu('settleClear')(state.round, esc(uiMonthName(state.round)))}</div>
     <div class="settle-tally">
       <table class="settle-table" id="settle-table">
-        ${rows.map(([k, v]) => `<tr class="settle-row"><td>${k}</td><td><span class="settle-amt">+${v}냥</span></td></tr>`).join('')}
-        <tr class="total settle-row"><td>합계</td><td><span class="settle-amt">+${d.total}냥</span></td></tr>
+        ${rows.map(([k, v]) => `<tr class="settle-row"><td>${k}</td><td><span class="settle-amt">${tu('settleNyang')(v)}</span></td></tr>`).join('')}
+        <tr class="total settle-row"><td>${tu('settleTotal')}</td><td><span class="settle-amt">${tu('settleNyang')(d.total)}</span></td></tr>
       </table>
     </div>`;
 }
 
 function shopHTML() {
-  const rarityKo = { common: '커먼', rare: '레어', epic: '에픽', legendary: '레전더리' };
   const offers = state.shopOffers.map((o, i) => {
     const j = o.joker;
+    const uj = uiJoker(j);
     const cant = state.money < j.price || state.jokers.length >= 5;
     return `<div class="offer aura-${j.rarity}${o.sold ? ' sold' : ''}">
       <div class="o-icon">${j.icon}</div>
-      <div class="o-name">${esc(j.name)}</div>
+      <div class="o-name">${esc(uj.name)}</div>
       <div class="o-meta">
-        <span class="o-rarity r-${j.rarity}">${rarityKo[j.rarity]}</span>
-        <span class="o-kind">${esc(j.kind || '')}</span>
+        <span class="o-rarity r-${j.rarity}">${uiRarity(j.rarity)}</span>
+        <span class="o-kind">${esc(uj.kind || '')}</span>
       </div>
-      <div class="o-desc">${esc(j.desc)}</div>
+      <div class="o-desc">${esc(uj.desc)}</div>
       ${o.sold
-        ? '<div class="o-sold-tag">판매 완료</div>'
-        : `<button class="o-buy" onclick="buyJoker(${i})" ${cant ? 'disabled' : ''}>${j.price}냥</button>`}
+        ? `<div class="o-sold-tag">${tu('shopSold')}</div>`
+        : `<button class="o-buy" onclick="buyJoker(${i})" ${cant ? 'disabled' : ''}>${t('nyang')(j.price)}</button>`}
     </div>`;
   }).join('');
 
@@ -7457,28 +8341,29 @@ function shopHTML() {
     const j = state.jokers[i];
     if (!j) {
       return `<div class="owned-slot empty" aria-label="빈 특수패 칸">
-        <span class="os-plus">＋</span><span>빈 칸</span>
+        <span class="os-plus">＋</span><span>${tu('shopEmpty')}</span>
       </div>`;
     }
     const def = JOKER_BY_ID[j.id];
-    const desc = def.desc + (def.id === 'mitjang' ? ` 지금 누적 ${state.mitjangChips}칩입니다.` : '');
+    const uj = uiJoker(def);
+    const desc = uj.desc + (def.id === 'mitjang' ? t('mitjangNow')(state.mitjangChips) : '');
     const gain = formatJokerGain(def.id);
     const gainShort = formatJokerGain(def.id, { short: true });
-    const gainEmpty = gain === '아직 이득 없음' ? ' empty' : '';
+    const gainEmpty = gain === t('gainNone') ? ' empty' : '';
     const pop = state.shopFlashOwned === i ? ' pop' : '';
     return `<div class="owned-slot filled aura-${def.rarity}${pop}" onclick="toggleOwnedTip(${i}, event)" title="탭하면 설명">
       <div class="os-tip">${esc(desc)}<div class="os-tip-gain${gainEmpty}">${esc(gain)}</div></div>
       <div class="os-head">
-        <div class="os-name">${esc(def.name)}</div>
+        <div class="os-name">${esc(uj.name)}</div>
         <div class="os-meta">
-          <span class="o-rarity r-${def.rarity}">${rarityKo[def.rarity]}</span>
-          ${def.kind ? `<span class="o-kind">${esc(def.kind)}</span>` : ''}
+          <span class="o-rarity r-${def.rarity}">${uiRarity(def.rarity)}</span>
+          ${uj.kind ? `<span class="o-kind">${esc(uj.kind)}</span>` : ''}
         </div>
       </div>
       <div class="os-desc">${esc(desc)}</div>
       <div class="os-foot">
         <div class="os-gain${gainEmpty}">${esc(gainShort)}</div>
-        <button type="button" class="os-sell" onclick="event.stopPropagation(); sellJoker(${i})">+${Math.floor(j.paid / 2)}냥</button>
+        <button type="button" class="os-sell" onclick="event.stopPropagation(); sellJoker(${i})">+${t('nyang')(Math.floor(j.paid / 2))}</button>
       </div>
     </div>`;
   }).join('');
@@ -7488,16 +8373,16 @@ function shopHTML() {
   if (isBossRound(next)) {
     if (state.bossCandidates && state.bossCandidates.length > 1) {
       bossBlock = `<div class="shop-util su-boss">
-        <div class="su-title">⚠ ${next}월 대박 — 디버프 선택</div>
+        <div class="su-title">${tu('shopBossPick')(next)}</div>
         ${state.bossCandidates.map((id) => {
-          const b = BOSS_BY_ID[id];
+          const b = uiBoss(BOSS_BY_ID[id]);
           return `<button class="boss-candidate${state.nextBoss === id ? ' selected' : ''}" onclick="pickBossCandidate('${id}')">${esc(b.name)} — ${esc(b.desc)}</button>`;
         }).join('')}
       </div>`;
     } else if (state.nextBoss) {
-      const b = BOSS_BY_ID[state.nextBoss];
+      const b = uiBoss(BOSS_BY_ID[state.nextBoss]);
       bossBlock = `<div class="shop-util su-boss">
-        <div class="su-title">⚠ 다음 ${next}월 박 라운드</div>
+        <div class="su-title">${tu('shopBossNext')(next)}</div>
         <b>${esc(b.name)}</b> — ${esc(b.desc)}
       </div>`;
     }
@@ -7520,24 +8405,24 @@ function shopHTML() {
       <div class="shop-body">
         <div class="shop-sign">
           <div class="shop-titles">
-            <h2>주막</h2>
-            <div class="shop-sub">${state.round}월 클리어 · 특수패를 사고 다음 달로</div>
+            <h2>${tu('shopTitle')}</h2>
+            <div class="shop-sub">${tu('shopSub')(state.round)}</div>
           </div>
           <div class="shop-wallet"><b>${state.money}냥</b></div>
         </div>
         <section class="shop-sec" id="shop-owned">
-          <div class="shop-sec-h">내 특수패 <span>${state.jokers.length}/5</span></div>
+          <div class="shop-sec-h">${tu('shopOwned')} <span>${state.jokers.length}/5</span></div>
           <div class="shop-owned-slots">${ownedSlots}</div>
         </section>
         <section class="shop-sec" id="shop-offers">
           <div class="shop-sec-h">
-            오늘의 패
-            <button type="button" class="shop-reroll" onclick="reroll()" ${state.money < state.rerollCost ? 'disabled' : ''}>리롤 · ${state.rerollCost}냥</button>
+            ${tu('shopOffers')}
+            <button type="button" class="shop-reroll" onclick="reroll()" ${state.money < state.rerollCost ? 'disabled' : ''}>${tu('shopReroll')(state.rerollCost)}</button>
           </div>
           <div class="shop-offers">${offers}</div>
         </section>
         ${(makBlock || bossBlock) ? `<section class="shop-sec" id="shop-extras">
-          <div class="shop-sec-h">다음 달 준비</div>
+          <div class="shop-sec-h">${tu('shopExtras')}</div>
           <div class="shop-utils" style="${bossBlock ? '' : 'grid-template-columns:1fr'}">
             ${makBlock}
             ${bossBlock}
@@ -7545,33 +8430,37 @@ function shopHTML() {
         </section>` : ''}
       </div>
       <footer class="shop-footer" id="shop-footer">
-        <div class="sf-next">다음 <b>${nm.flower} ${next}월 · ${nm.name}</b>
-          <div class="sf-target">목표 ${fmt(TARGETS[next - 1])}점</div></div>
-        <button id="btn-nextround" onclick="nextRound()" ${needPick ? 'disabled title="디버프를 먼저 선택하세요"' : ''}>다음 판으로</button>
+        <div class="sf-next">${tu('shopNextLabel')(nm.flower, next, uiMonthName(next))}
+          <div class="sf-target">${tu('shopTarget')(fmt(TARGETS[next - 1]))}</div></div>
+        <button id="btn-nextround" onclick="nextRound()" ${needPick ? `disabled title="${tu('shopNeedBoss')}"` : ''}>${tu('shopNext')}</button>
       </footer>
     </div>`;
 }
 
 function gameoverHTML() {
   return `
-    <h2>☠ 런 종료 — ${esc(state.gameOverReason)}</h2>
+    <h2>${tu('gameoverH2')(esc(uiGameOverReason(state.gameOverReason)))}</h2>
     <div class="sub">
-      도달: ${state.round}월 / ${ROUNDS}월 (${fmt(state.roundScore)} / ${fmt(state.target)}점)<br>
-      최고 한 방: ${fmt(state.stats.bestSingle)}점${state.stats.bestSingleHand ? ` (${esc(state.stats.bestSingleHand)})` : ''}<br>
-      총 획득: ${fmt(state.stats.totalEarned)}냥 · 특수패 ${state.jokers.length}개
+      ${tu('gameoverBody')(
+        state.round, ROUNDS, fmt(state.roundScore), fmt(state.target),
+        fmt(state.stats.bestSingle), state.stats.bestSingleHand ? esc(state.stats.bestSingleHand) : '',
+        fmt(state.stats.totalEarned), state.jokers.length
+      )}
     </div>
-    <div class="modal-actions"><button class="choicebtn btn-go" style="text-align:center" onclick="restart()"><div class="t">🔄 다시 도전</div></button></div>`;
+    <div class="modal-actions"><button class="choicebtn btn-go" style="text-align:center" onclick="restart()"><div class="t">${tu('retry')}</div></button></div>`;
 }
 
 function victoryHTML() {
   return `
-    <h2>🏆 승리! 12월 대박까지 한 해를 완주했습니다!</h2>
+    <h2>${tu('victoryH2')}</h2>
     <div class="sub">
-      최종 점수: ${fmt(state.roundScore)} / ${fmt(state.target)}점<br>
-      최고 한 방: ${fmt(state.stats.bestSingle)}점${state.stats.bestSingleHand ? ` (${esc(state.stats.bestSingleHand)})` : ''}<br>
-      총 획득: ${fmt(state.stats.totalEarned)}냥 · 최종 특수패 ${state.jokers.length}개
+      ${tu('victoryBody')(
+        fmt(state.roundScore), fmt(state.target),
+        fmt(state.stats.bestSingle), state.stats.bestSingleHand ? esc(state.stats.bestSingleHand) : '',
+        fmt(state.stats.totalEarned), state.jokers.length
+      )}
     </div>
-    <div class="modal-actions"><button class="choicebtn btn-stop" style="text-align:center" onclick="restart()"><div class="t">🔄 새 런 시작</div></button></div>`;
+    <div class="modal-actions"><button class="choicebtn btn-stop" style="text-align:center" onclick="restart()"><div class="t">${tu('newRun')}</div></button></div>`;
 }
 
 function deckpeekHTML() {
@@ -7600,7 +8489,7 @@ function deckpeekHTML() {
       return html;
     }).join('');
     return `<div class="dp-row">
-      <div class="dp-month">${hanjaMonth(M.n)}<small>${esc(M.name)}</small></div>
+      <div class="dp-month">${hanjaMonth(M.n)}<small>${esc(uiMonthName(M.n))}</small></div>
       <div class="dp-cards">${cardsHtml}</div>
     </div>`;
   };
@@ -7610,10 +8499,10 @@ function deckpeekHTML() {
   return `
     <div class="modal-head">
       <h2 class="deck-peek-title" style="margin:0;flex:1;min-width:0">
-        <span class="dp-heading">🂠 패 보기</span>
-        <span class="deck-peek-count${low ? ' deck-low' : ''}">남은 덱 <b>${state.deck.length}</b>장</span>
+        <span class="dp-heading">${tu('deckPeekTitle')}</span>
+        <span class="deck-peek-count${low ? ' deck-low' : ''}">${tu('deckLeft')(state.deck.length)}</span>
       </h2>
-      <button type="button" class="modal-close" onclick="closeDeckPeek()" aria-label="닫기">×</button>
+      <button type="button" class="modal-close" onclick="closeDeckPeek()" aria-label="${tu('close')}">×</button>
     </div>
     <div class="deck-peek-cols">
       <div class="deck-peek-col">${left}</div>
@@ -7621,22 +8510,12 @@ function deckpeekHTML() {
     </div>
     <div class="modal-actions">
       <button class="choicebtn btn-stop" style="text-align:center" onclick="closeDeckPeek()">
-        <div class="t">닫기</div>
+        <div class="t">${tu('close')}</div>
       </button>
     </div>`;
 }
 
 function helpHTML() {
-  const conds = {
-    ogwang: '광 5장 전부', sagwang: '광 4장 (비광 무관)', chongtong: '같은 달 4장',
-    godori: '2·4·8월 열끗(새) 3장', bigodori: '12월 제비 + 고도리 새 2장',
-    samgwang: '광 3장 (비광 제외)', bisamgwang: '광 3장 (비광 포함)',
-    dan: '홍단·청단·초단 중 한 세트 3장',
-    byeongpung: '연속된 달 5장 (스트레이트)', month3: '같은 달 3장',
-    yeol3: '열끗 3장 이상 (배수 타는 건 칩 높은 3장)',
-    tti3: '띠 3장 이상 (비단 제외, 배수 타는 건 칩 높은 3장)',
-    pi5: '피·쌍피 환산 합 5 이상 (나머지는 +점수)', month2: '같은 달 2장', none: '해당 없음',
-  };
   const HAND_VIS = {
     ogwang: '🕊️', sagwang: '🏯', chongtong: '🎴', godori: '🐦', bigodori: '🌧️🐦',
     samgwang: '🌕', bisamgwang: '☔', dan: '🎀',
@@ -7650,81 +8529,56 @@ function helpHTML() {
       <div class="hb-rank">${i + 1}</div>
       <div class="hb-vis" aria-hidden="true">${HAND_VIS[h.id] || '🎴'}</div>
       <div>
-        <div class="hb-name">${h.name}</div>
-        <div class="hb-cond">${conds[h.id]}</div>
+        <div class="hb-name">${uiHandName(h.id)}</div>
+        <div class="hb-cond">${uiHandCond(h.id)}</div>
       </div>
       <div class="hb-mult">×${h.mult}</div>
     </div>`;
   }).join('');
+  const tags = (tu('helpJokerTags') || []).map((s) => `<span>${s}</span>`).join('');
   return `
     <div class="modal-head">
-      <h2>📖 족보표</h2>
-      <button type="button" class="modal-close" onclick="closeHelp()" aria-label="닫기">×</button>
+      <h2>${tu('helpH2')}</h2>
+      <button type="button" class="modal-close" onclick="closeHelp()" aria-label="${tu('close')}">×</button>
     </div>
-    <div class="sub" style="margin-bottom:6px">위에서부터 먼저 성립하는 족보 <b>하나</b>로 판정합니다.<br>
-      점수 = (<b>족보 구성 카드</b> 칩) × 배수 + 나머지 낸 카드 칩</div>
+    <div class="sub" style="margin-bottom:6px">${tu('helpIntro')}</div>
     <div class="handbook-legend">
-      <span class="lg"><span class="dot" style="background:#fbbf24"></span>최고</span>
-      <span class="lg"><span class="dot" style="background:#f87171"></span>상위</span>
-      <span class="lg"><span class="dot" style="background:#60a5fa"></span>중위</span>
-      <span class="lg"><span class="dot" style="background:#86efac"></span>기본</span>
-      <span class="lg"><span class="dot" style="background:#64748b"></span>무조합</span>
+      <span class="lg"><span class="dot" style="background:#fbbf24"></span>${tu('legendS')}</span>
+      <span class="lg"><span class="dot" style="background:#f87171"></span>${tu('legendA')}</span>
+      <span class="lg"><span class="dot" style="background:#60a5fa"></span>${tu('legendB')}</span>
+      <span class="lg"><span class="dot" style="background:#86efac"></span>${tu('legendC')}</span>
+      <span class="lg"><span class="dot" style="background:#64748b"></span>${tu('legendD')}</span>
     </div>
     <div class="handbook">${rows}</div>
     <div class="chip-legend">
-      <span>광 <b>12</b></span><span>열끗 <b>8</b></span><span>띠 <b>6</b></span>
-      <span>쌍피 <b>5</b></span><span>피 <b>2</b></span>
+      <span>${tu('chipKwang')} <b>12</b></span><span>${tu('chipYeol')} <b>8</b></span><span>${tu('chipTti')} <b>6</b></span>
+      <span>${tu('chipSsang')} <b>5</b></span><span>${tu('chipPi')} <b>2</b></span>
     </div>
     <div class="help-sections">
       <div class="help-card hc-time">
-        <div class="hc-title"><span class="ico">🌓</span>시간 · 계절</div>
-        <div class="hc-body">
-          판은 <b>1월(송학)→12월(비)</b>로 흐릅니다. 이달의 패는 칩 <b>×2</b>.
-        </div>
+        <div class="hc-title"><span class="ico">🌓</span>${tu('helpTimeTitle')}</div>
+        <div class="hc-body">${tu('helpTimeBody')(uiMonthName(1), uiMonthName(12))}</div>
         <div class="help-tags">
-          <span>☀️ 홀수 달 낮 · 광·열끗 <em>+2</em></span>
-          <span>🌙 짝수 달 밤 · 띠·피 <em>+2</em></span>
+          <span>${tu('helpTimeDay')}</span>
+          <span>${tu('helpTimeNight')}</span>
         </div>
       </div>
       <div class="help-card hc-round">
-        <div class="hc-title"><span class="ico">🎯</span>한 판 · 고/스톱</div>
-        <div class="hc-body">
-          내기 <b>4회</b> · 버리기 <b>4회</b> · 손패 <b>8장</b>. 목표를 넘기면 <b>고</b> 또는 <b>스톱</b>.
-          고는 무제한 — n고 문턱 = 목표 ×(1+0.6n), 내기 +1 · 손패 보충, 보너스 n×월 냥.
-          점수가 이미 넘은 문턱은 고 선언 시 <b>전부 소급 인정(밀치기)</b> — 큰 한 방이면 여러 단계를 한 번에 점프.
-          실패하면 <b>고박 = 런 종료</b>.
-        </div>
+        <div class="hc-title"><span class="ico">🎯</span>${tu('helpRoundTitle')}</div>
+        <div class="hc-body">${tu('helpRoundBody')}</div>
       </div>
       <div class="help-card hc-rule">
-        <div class="hc-title"><span class="ico">🃏</span>특수 규칙</div>
-        <div class="hc-body">
-          <b>3·6·9·12월</b>은 박 라운드(디버프). 안개는 손패 <b>2장</b>이 뒷면으로 옵니다.
-        </div>
-        <div class="help-tags">
-          <span>박 라운드 디버프</span>
-        </div>
+        <div class="hc-title"><span class="ico">🃏</span>${tu('helpRuleTitle')}</div>
+        <div class="hc-body">${tu('helpRuleBody')}</div>
+        <div class="help-tags"><span>${tu('helpRuleTag')}</span></div>
       </div>
       <div class="help-card hc-helper">
-        <div class="hc-title"><span class="ico">🍶</span>특수패 · 주막</div>
-        <div class="hc-body">
-          특수패 <b>22종</b> · 소지 최대 <b>5</b>. 티어는
-          <b>커먼 / 레어 / 에픽 / 레전더리</b> (출현 약 55·28·13·4%).
-          +점수는 배수 밖, +배수·×배수는 족보 배수에 얹힙니다.
-        </div>
-        <div class="help-tags">
-          <span>커먼 3–4냥</span><span>레어 6–7냥</span>
-          <span>에픽 9–11냥</span><span>레전 13–15냥</span>
-        </div>
+        <div class="hc-title"><span class="ico">🍶</span>${tu('helpJokerTitle')}</div>
+        <div class="hc-body">${tu('helpJokerBody')}</div>
+        <div class="help-tags">${tags}</div>
       </div>
-      ${CHUNHYANG_ENABLED ? `<div class="help-card hc-helper">
-        <div class="hc-title"><span class="ico">🍶</span>춘향 훈수</div>
-        <div class="hc-body">
-          준비/주막에서 <b>3냥</b>에 다음 달 훈수를 예약하면 그 달 내내 패를 봐줍니다.
-          패를 고른 뒤 내기·버리기에 마우스를 올리면 다음 패를 예측해 표정이 바뀝니다.
-        </div>
-      </div>` : ''}
     </div>
-    <div class="modal-actions"><button class="choicebtn btn-stop" style="text-align:center" onclick="closeHelp()"><div class="t">닫기</div></button></div>`;
+    <div class="modal-actions"><button class="choicebtn btn-stop" style="text-align:center" onclick="closeHelp()"><div class="t">${tu('close')}</div></button></div>`;
 }
 
 function flashActions() {
@@ -8254,6 +9108,8 @@ async function playGoCascade(fromLevel, toLevel) {
 
 // 상점 진입 직전 — 주막 프레임 + "주막 등장" 슬램 (n고 풀스크린과 동일 톤)
 async function playJumakAppear() {
+  const jl = $('jumak-label'); if (jl) jl.textContent = tu('jumakAppear');
+
   const overlay = $('jumak-cascade');
   const stage = $('jumak-cascade-stage');
   if (!overlay || !stage) return;
@@ -9191,7 +10047,7 @@ async function playJuiceSequence(snap, fromRects = null) {
 
     // 1) 족보 배너 슬램
     const tier = juiceTier(bd.handId);
-    const handName = handDisplayName(bd.handId, bd.core);
+    const handName = uiHandName(bd.handId, bd.core);
     const anchor = handBannerAnchor();
     banner.style.left = anchor.cx + 'px';
     banner.style.top = anchor.cy + 'px';

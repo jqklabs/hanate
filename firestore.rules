@@ -35,6 +35,10 @@ service cloud.firestore {
             || (request.resource.data.og_image is string
                 && request.resource.data.og_image.size() > 0
                 && request.resource.data.og_image.size() <= 32)
+          )
+          && (
+            !request.resource.data.keys().hasAny(['locale'])
+            || request.resource.data.locale in ['kr', 'en', 'jp']
           );
       }
       allow create: if request.auth != null && validUser() && !exists(/databases/$(database)/documents/users/$(userId));
