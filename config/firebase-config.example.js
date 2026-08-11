@@ -5,7 +5,7 @@
  * 2. Google Analytics(GA4) 연결 — measurementId 필수
  * 3. Firestore Database 생성 (Production) — docs/analytics.md 체크리스트
  * 4. Authentication → Anonymous 활성화
- * 5. Firestore Rules — firestore.rules 내용 Publish
+ * 5. Firestore Rules — config/firestore.rules 내용 Publish
  * 6. 이 파일을 firebase-config.js 로 복사 후 값 입력
  *
  * Vercel: Settings → Environment Variables → FIREBASE_CONFIG_JSON

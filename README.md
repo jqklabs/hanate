@@ -15,7 +15,8 @@
 
 ```bash
 python3 -m http.server 8080   # 로컬 (Firebase 테스트)
-node test/test-game.mjs       # 엔진 테스트
+npm test                      # 또는 node test/test-game.mjs
+npm run og:gen                # OG/invite 랜딩 HTML → pages/
 ```
 
 ## 게임 규칙
@@ -34,12 +35,19 @@ node test/test-game.mjs       # 엔진 테스트
 ## 구조
 
 ```
-index.html        게임 전체 (ENGINE 순수 로직 + UI 레이어, 마커로 분리)
-test/test-game.mjs  엔진 추출 단위 테스트 + 그리디 봇 풀런 시뮬레이션
+index.html              게임 (ENGINE + UI)
+pages/                  OG·invite 랜딩 (생성물, npm run og:gen)
+Assets/                 카드·BGM·SFX·OG 이미지
+config/                 firebase-config.example.js, firestore.rules
+lib/                    firebase-telemetry.mjs
+scripts/                빌드·OG 생성
+test/test-game.mjs      엔진 테스트 + 시뮬
+docs/                   기획·분석 (docs/STRUCTURE.md 참고)
+design/                 밸런스·와이어프레임
 ```
 
 ```bash
-node test/test-game.mjs   # 단위 테스트 + 300런 시뮬레이션
+npm test   # 단위 테스트 + 300런 시뮬레이션
 ```
 
 ## Firebase Analytics (선택)
@@ -62,7 +70,7 @@ node test/test-game.mjs   # 단위 테스트 + 300런 시뮬레이션
 ### 로컬
 
 1. Firebase Console → 웹 앱 + **Google Analytics(GA4)** 연결 (`measurementId` 필요)
-2. `firebase-config.example.js` → `firebase-config.js` 복사 후 값 입력
+2. `config/firebase-config.example.js` → 루트 `firebase-config.js` 복사 후 값 입력
 3. Authorized domains: `localhost` 추가
 4. `python3 -m http.server 8080` → 한 팔 플레이 → Console **Analytics → DebugView** 또는 **Realtime**
 

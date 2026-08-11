@@ -1,6 +1,6 @@
 rules_version = '2';
 // Firebase Console → Firestore → Rules 에 붙여넣기
-// Anonymous Auth 활성화 필수 (firebase-telemetry.mjs 가 signInAnonymously 사용)
+// Anonymous Auth 활성화 필수 (lib/firebase-telemetry.mjs 가 signInAnonymously 사용)
 
 service cloud.firestore {
   match /databases/{database}/documents {

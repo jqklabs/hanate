@@ -63,7 +63,7 @@
 - 유저별: 쿼리 `uid == <uuid>`
 - 월별 내기: `params.month` 는 map 안 필드 → 필요 시 콘솔 필터 또는 BigQuery(Blaze) / 내보내기
 
-보안 규칙: [`firestore.rules`](../firestore.rules) — 익명 Auth 로 **create 만** 허용, read/update/delete 차단.
+보안 규칙: [`firestore.rules`](../config/firestore.rules) — 익명 Auth 로 **create 만** 허용, read/update/delete 차단.
 
 ---
 
@@ -179,7 +179,7 @@ Anonymous Auth: 무료, Spark 에서 사용 가능.
 ### 2. 보안 규칙 배포
 
 1. Firestore → **Rules** 탭  
-2. 저장소 [`firestore.rules`](../firestore.rules) 내용 붙여넣기 → **Publish**
+2. 저장소 [`firestore.rules`](../config/firestore.rules) 내용 붙여넣기 → **Publish**
 
 ### 3. Anonymous Authentication
 

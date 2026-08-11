@@ -1,0 +1,10 @@
+{
+  "name": "hwatro",
+  "private": true,
+  "description": "십이화 — 고스톱: 무한의 판",
+  "scripts": {
+    "test": "node test/test-game.mjs",
+    "og:gen": "node scripts/og-landing-html.mjs",
+    "firebase:config": "node scripts/generate-firebase-config.mjs"
+  }
+}
