@@ -955,7 +955,7 @@
   #hand-sort button.on { color: #fde68a; }
   #hand-sort button:hover:not(:disabled):not(.on) { color: #e2e8f0; }
   #hand-sort.sort-blocked { opacity: .45; pointer-events: none; }
-  #deckbox {
+  #deckbox, .deck-pill {
     display: inline-flex; align-items: center; gap: 5px;
     padding: 11px 12px; border-radius: 999px;
     background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.14);
@@ -963,24 +963,27 @@
     white-space: nowrap; user-select: none;
     cursor: pointer;
   }
-  #deckbox:hover {
+  .deck-pill {
+    font-family: inherit; line-height: 1;
+  }
+  #deckbox:hover, .deck-pill:hover {
     border-color: rgba(253, 230, 138, .45);
     background: rgba(0,0,0,.38);
   }
-  #deckbox:focus-visible {
+  #deckbox:focus-visible, .deck-pill:focus-visible {
     outline: 2px solid rgba(253, 230, 138, .65);
     outline-offset: 2px;
   }
-  #deckbox .deck-ico { font-size: 15px; opacity: .9; }
-  #deckbox b { color: #fde68a; font-variant-numeric: tabular-nums; }
+  #deckbox .deck-ico, .deck-pill .deck-ico { font-size: 15px; opacity: .9; }
+  #deckbox b, .deck-pill b { color: #fde68a; font-variant-numeric: tabular-nums; }
   /* 덱 5장 미만 — 바깥 은은한 빨간 호흡 글로우 */
-  #deckbox.deck-low {
+  #deckbox.deck-low, .deck-pill.deck-low {
     border-color: rgba(248, 113, 113, .42);
     color: #fecaca;
     background: linear-gradient(180deg, rgba(127, 29, 29, .38), rgba(69, 10, 10, .45));
     animation: deck-low-breathe 2.4s ease-in-out infinite;
   }
-  #deckbox.deck-low b { color: #fff1f2; }
+  #deckbox.deck-low b, .deck-pill.deck-low b { color: #fff1f2; }
   #deckbox.deck-blocked {
     opacity: .42; cursor: not-allowed; pointer-events: none;
     border-color: rgba(148, 163, 184, .25);
@@ -1003,7 +1006,7 @@
     #hand-sort .hand-sort-thumb { transition: none; }
   }
   @media (prefers-reduced-motion: reduce) {
-    #deckbox.deck-low {
+    #deckbox.deck-low, .deck-pill.deck-low {
       animation: none;
       box-shadow:
         0 0 0 1px rgba(248, 113, 113, .25),
@@ -1272,6 +1275,49 @@
   }
   #modal.gostop-modal .modal-actions {
     gap: 14px; margin-top: 22px; overflow: visible;
+  }
+  #modal.gostop-modal .gs-head-row {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 12px; margin-bottom: 12px;
+  }
+  #modal.gostop-modal .gs-head-row h2 { margin: 0; flex: 1; min-width: 0; }
+  #modal.gostop-modal .gs-deck-peek {
+    flex-shrink: 0; padding: 8px 10px; font-size: 13px;
+  }
+  #modal.gostop-modal .gs-next-target {
+    text-align: center;
+    margin: 2px 0 20px;
+    padding: 18px 14px 16px;
+    border-radius: 14px;
+    background: rgba(0,0,0,.24);
+    border: 1px solid rgba(201,169,78,.28);
+  }
+  #modal.gostop-modal .gs-next-label {
+    font-family: var(--font-ui);
+    font-size: 12px; font-weight: 800;
+    color: #94a3b8; letter-spacing: 0.04em;
+  }
+  #modal.gostop-modal .gs-next-score {
+    margin-top: 6px;
+    font-family: var(--font-overlay-num);
+    font-size: 52px; font-weight: 400; line-height: 1;
+    color: var(--gold-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  #modal.gostop-modal .gs-next-unit {
+    font-family: var(--font-overlay);
+    font-size: 26px; font-weight: 400;
+    margin-left: 2px; vertical-align: 0.08em;
+  }
+  #modal.gostop-modal .gs-go-jump {
+    position: absolute; top: 7px; right: 9px; z-index: 2;
+    padding: 3px 8px; border-radius: 999px; pointer-events: none;
+    font-family: var(--font-ui);
+    font-size: 10px; font-weight: 800; line-height: 1.2; letter-spacing: 0.02em;
+    color: #fef3c7;
+    background: rgba(0,0,0,.32);
+    border: 1px solid rgba(253,230,138,.32);
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
   }
   #modal h2 { margin: 0 0 12px; color: var(--gold-soft); font-size: 19px; }
   .modal-head {
@@ -3787,6 +3833,9 @@
       overflow: hidden;
     }
     #modal.gostop-modal .modal-actions { overflow: hidden; }
+    #modal.gostop-modal .gs-next-target { margin-bottom: 16px; padding: 14px 10px 12px; }
+    #modal.gostop-modal .gs-next-score { font-size: 44px; }
+    #modal.gostop-modal .gs-next-unit { font-size: 22px; }
     .choicebtn { min-width: 0; flex: 1 1 140px; }
     .choicebtn.gs-simple {
       min-width: 0; padding: 18px 10px; min-height: 78px;
@@ -5095,12 +5144,15 @@ const I18N_UI = {
     prepStart: '▶ 1월 시작',
     gostopH2: '🎉 목표 달성!',
     gostopSub: (score, target, plays, cards) => `${score} / ${target}점 · 내기 ${plays} · 패 ${cards}`,
+    gostopNextLabel: (n) => `${n}고 시 새 목표`,
+    gostopGoJump: (j) => `${j}단계 밀치기`,
+    scoreUnit: '점',
     gostopStop: '스톱',
     gostopStopTip0: '지금 정산하고 안전하게 다음 판으로',
     gostopStopTipN: (n, bonus) => `지금 정산하고 다음 판으로<br>(${n}고 보너스 <b>+${bonus}냥</b> 확보)`,
     gostopGo1: '1고',
-    gostopJump: (j) => `한 방으로 <b style="color:#fde68a">${j}단계 밀치기</b><br>`,
-    gostopGoTip: (target, mult, bonus) => `새 목표 <b>${target}점</b> (×${mult})<br>내기 <b>+1</b> · 손패 보충 · 성공 시 <b>+${bonus}냥</b><br>실패 시 <b>고박 = 런 종료</b>`,
+    gostopJump: (j) => `<b>${j}단계 밀치기</b><br>`,
+    gostopGoTip: (bonus) => `내기 <b>+1</b> · 손패 보충 · 성공 시 <b>+${bonus}냥</b><br>실패 시 <b>고박 = 런 종료</b>`,
     settleTitle: '정산',
     settleClear: (r, name) => `${r}월 · ${name} 클리어`,
     settleInterest: (n) => `이자 (보유 ${n}냥)`,
@@ -5197,12 +5249,15 @@ const I18N_UI = {
     prepStart: '▶ Start January',
     gostopH2: '🎉 Target cleared!',
     gostopSub: (score, target, plays, cards) => `${score} / ${target} · plays ${plays} · cards ${cards}`,
+    gostopNextLabel: (n) => `Go ${n} — new target`,
+    gostopGoJump: (j) => `+${j} steps`,
+    scoreUnit: '',
     gostopStop: 'Stop',
     gostopStopTip0: 'Cash out and move on safely',
     gostopStopTipN: (n, bonus) => `Cash out and continue<br>(Go ${n} bonus <b>+${bonus} nyang</b> locked in)`,
     gostopGo1: 'Go 1',
-    gostopJump: (j) => `One hit · <b style="color:#fde68a">push ${j} steps</b><br>`,
-    gostopGoTip: (target, mult, bonus) => `New target <b>${target}</b> (×${mult})<br><b>+1</b> play · redraw · win <b>+${bonus} nyang</b><br>Fail = <b>Go-bak = run over</b>`,
+    gostopJump: (j) => `<b>+${j} steps</b><br>`,
+    gostopGoTip: (bonus) => `<b>+1</b> play · redraw · win <b>+${bonus} nyang</b><br>Fail = <b>Go-bak = run over</b>`,
     settleTitle: 'Settle',
     settleClear: (r, name) => `Month ${r} · ${name} clear`,
     settleInterest: (n) => `Interest (held ${n})`,
@@ -5299,12 +5354,15 @@ const I18N_UI = {
     prepStart: '▶ 1月スタート',
     gostopH2: '🎉 目標達成!',
     gostopSub: (score, target, plays, cards) => `${score} / ${target}点 · 出し ${plays} · 札 ${cards}`,
+    gostopNextLabel: (n) => `${n}ゴー時の新目標`,
+    gostopGoJump: (j) => `${j}段押し`,
+    scoreUnit: '点',
     gostopStop: 'ストップ',
     gostopStopTip0: '今清算して安全に次へ',
     gostopStopTipN: (n, bonus) => `今清算して次へ<br>(${n}ゴーボーナス <b>+${bonus}両</b>確保)`,
     gostopGo1: '1ゴー',
-    gostopJump: (j) => `一撃で <b style="color:#fde68a">${j}段押し</b><br>`,
-    gostopGoTip: (target, mult, bonus) => `新目標 <b>${target}点</b> (×${mult})<br>出し <b>+1</b> · 補充 · 成功で <b>+${bonus}両</b><br>失敗は <b>ゴーバク = ラン終了</b>`,
+    gostopJump: (j) => `<b>${j}段押し</b><br>`,
+    gostopGoTip: (bonus) => `出し <b>+1</b> · 補充 · 成功で <b>+${bonus}両</b><br>失敗は <b>ゴーバク = ラン終了</b>`,
     settleTitle: '清算',
     settleClear: (r, name) => `${r}月 · ${name} クリア`,
     settleInterest: (n) => `利息 (所持 ${n}両)`,
@@ -7829,8 +7887,7 @@ function openDeckPeek() {
     return;
   }
   if (state.juicing || state.dealing) return;
-  if (state.screen !== 'play') return;
-  if (state.boss === 'angae') return;
+  if (state.screen !== 'play' && state.screen !== 'gostop') return;
   if (state.coachStep === 'deck') {
     state.coachStep = null;
     markDeckCoachSeen();
@@ -8364,17 +8421,13 @@ function renderSide() {
   pv.querySelector('.pv-total .tv').textContent = score;
 
   $('deck-val').textContent = `${state.deck.length}`;
-  const deckBlocked = state.boss === 'angae' && state.screen === 'play';
+  const deckLow = state.deck.length > 0 && state.deck.length <= 5;
   const deckbox = $('deckbox');
-  deckbox.classList.toggle('deck-low', !deckBlocked && state.deck.length > 0 && state.deck.length <= 5);
-  deckbox.classList.toggle('deck-blocked', deckBlocked);
-  deckbox.setAttribute('aria-disabled', deckBlocked ? 'true' : 'false');
-  deckbox.tabIndex = deckBlocked ? -1 : 0;
-  deckbox.title = deckBlocked
-    ? t('deckFog')
-    : state.deck.length > 0 && state.deck.length <= 5
-      ? t('deckLow')(state.deck.length)
-      : t('deckTitle');
+  deckbox.classList.toggle('deck-low', deckLow);
+  deckbox.classList.remove('deck-blocked');
+  deckbox.setAttribute('aria-disabled', 'false');
+  deckbox.tabIndex = 0;
+  deckbox.title = deckLow ? t('deckLow')(state.deck.length) : t('deckTitle');
 
   const lp = $('playlog-panel');
   if (playLogVisible && state.playLog.length > 0) {
@@ -8741,20 +8794,36 @@ function gostopHTML() {
     ? tu('gostopStopTipN')(state.goLevel, goBonus(state.goLevel, state.round))
     : tu('gostopStopTip0');
   const goTip = (jump > 1 ? tu('gostopJump')(jump) : '')
-    + tu('gostopGoTip')(fmt(newTarget), fmtMult(goMult(n)), goBonus(n, state.round));
+    + tu('gostopGoTip')(goBonus(n, state.round));
   const goTitle = n <= 1
     ? `<div class="t">${tu('gostopGo1')}</div>`
     : `<div class="t go-btn-stage" id="go-btn-stage" data-from="0" data-to="${n}"></div>`;
+  const deckLow = state.deck.length > 0 && state.deck.length <= 5;
+  const deckPillCls = `deck-pill gs-deck-peek${deckLow ? ' deck-low' : ''}`;
+  const goJumpHtml = jump > 1
+    ? `<div class="gs-go-jump">${tu('gostopGoJump')(jump)}</div>`
+    : '';
+  const goBtnCls = `choicebtn btn-go gs-simple${jump > 1 ? ' has-jump' : ''}`;
   return `
-    <h2>${tu('gostopH2')}</h2>
-    <div class="sub">${tu('gostopSub')(fmt(state.roundScore), fmt(state.target), state.playsLeft, cardsRemaining())}</div>
+    <div class="gs-head-row">
+      <h2>${tu('gostopH2')}</h2>
+      <button type="button" class="${deckPillCls}" onclick="openDeckPeek()"
+        aria-label="${esc(t('deckTitle'))}">
+        <span class="deck-ico">🂠</span> <b>${state.deck.length}</b>
+      </button>
+    </div>
+    <div class="gs-next-target">
+      <div class="gs-next-label">${tu('gostopNextLabel')(n)}</div>
+      <div class="gs-next-score">${fmt(newTarget)}<span class="gs-next-unit">${tu('scoreUnit')}</span></div>
+    </div>
     <div class="modal-actions" id="gs-actions">
       <button class="choicebtn btn-stop gs-simple" onclick="chooseStop()">
         <div class="t">${tu('gostopStop')}</div>
         <div class="gs-tip">${stopTip}</div>
       </button>
-      <button class="choicebtn btn-go gs-simple" onclick="chooseGo()">
+      <button class="${goBtnCls}" onclick="chooseGo()">
         ${goTitle}
+        ${goJumpHtml}
         <div class="gs-tip">${goTip}</div>
       </button>
     </div>`;
@@ -8942,11 +9011,14 @@ function deckpeekHTML() {
   for (let m = 1; m <= 12; m++) {
     byMonth[m].sort((a, b) => TYPE_ORDER[a.type] - TYPE_ORDER[b.type]);
   }
+  const fogPeek = state.boss === 'angae';
   const rowHTML = (M) => {
     const cards = byMonth[M.n];
     const cardsHtml = cards.map((c) => {
-      let html = cardHTML(c, { reveal: true, noSeason: true });
-      if (heldUids.has(c.uid)) html = html.replace('class="card ', 'class="card dp-held ');
+      const inHand = heldUids.has(c.uid);
+      const reveal = !(fogPeek && inHand && c.faceDown);
+      let html = cardHTML(c, { reveal, noSeason: true });
+      if (inHand && !fogPeek) html = html.replace('class="card ', 'class="card dp-held ');
       else if (playedUids.has(c.uid)) html = html.replace('class="card ', 'class="card dp-played ');
       else if (discardedUids.has(c.uid)) html = html.replace('class="card ', 'class="card dp-discarded ');
       return html;
