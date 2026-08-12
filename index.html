@@ -7166,18 +7166,31 @@ function shouldShowSurveyPrompt() {
     && !state.surveyDismissed;
 }
 
+function surveyTrackParams(extra) {
+  const params = {
+    screen: state.screen === 'victory' ? 'victory' : 'gameover',
+    month: state.month || 0,
+    locale: getLocale(),
+  };
+  if (extra) Object.assign(params, extra);
+  return params;
+}
+
 function openSurvey() {
+  trackEvent('survey_enter', surveyTrackParams());
   window.open(SURVEY_URL, '_blank', 'noopener,noreferrer');
   markSurveyCompleted();
   render();
 }
 
 function dismissSurveyPrompt() {
+  trackEvent('survey_close', surveyTrackParams({ reason: 'later' }));
   state.surveyDismissed = true;
   render();
 }
 
 function markSurveyAlreadyDone() {
+  trackEvent('survey_close', surveyTrackParams({ reason: 'already_done' }));
   markSurveyCompleted();
   render();
 }

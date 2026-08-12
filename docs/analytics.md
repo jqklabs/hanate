@@ -157,6 +157,27 @@ Anonymous Auth: 무료, Spark 에서 사용 가능.
 |----------|------|--------|
 | `money_after` | number | 정산 후 보유 냥 |
 
+### survey_enter — 설문하기 클릭 (구글폼 새 탭)
+
+게임오버/승리 설문 팝업에서 **설문하기** 버튼 클릭 시 1회.
+
+| 파라미터 | 타입 | 데이터 |
+|----------|------|--------|
+| `screen` | string | `gameover` / `victory` |
+| `month` | number | 종료 시점 월 |
+| `locale` | string | UI 언어 (`kr`/`en`/`jp`) |
+
+### survey_close — 설문 팝업 닫기
+
+팝업을 닫을 때 (설문하기로 폼 진입한 경우는 `survey_enter`만, close 없음).
+
+| 파라미터 | 타입 | 데이터 |
+|----------|------|--------|
+| `screen` | string | `gameover` / `victory` |
+| `month` | number | 종료 시점 월 |
+| `locale` | string | UI 언어 (`kr`/`en`/`jp`) |
+| `reason` | string | `later`(나중에) / `already_done`(이미 참여했어요) |
+
 ### 리텐션 (별도 이벤트 없음)
 
 | 수단 | 데이터 |
@@ -200,14 +221,25 @@ Authentication → Settings → Authorized domains:
 - Firestore 는 같은 Firebase 프로젝트면 **추가 env 불필요**  
 - Redeploy 후 `https://hanate.jqklabs.com/firebase-config.js` 가 `null` 이 아닌지 확인
 
-### 6. 동작 확인
+### 6. 동작 확인 (기존 이벤트)
 
 1. 로컬 또는 라이브에서 게임 플레이 (내기·버리기·상점 등)  
 2. Firestore → `events` — 문서가 쌓이는지 확인  
 3. (선택) `?ga_debug=1` → GA4 DebugView  
 4. Anonymous Auth 실패 시: Firestore 문서 없음, Analytics 만 동작
 
-### 7. GA4 맞춤 정의 (선택, Analytics 쪽)
+### 7. 설문 이벤트 확인 (`survey_enter` / `survey_close`)
+
+**배포 전 필수:** `config/firestore.rules` 를 Console Rules에 다시 **Publish** 해야 새 이벤트 create가 통과한다. (화이트리스트에 없으면 Permission denied → Firestore에 안 쌓임. Analytics는 규칙과 무관하게 갈 수 있음.)
+
+1. 배포(또는 로컬) 후 런을 **게임오버** 또는 **승리**까지 진행 → 설문 팝업 표시  
+2. **나중에** 클릭 → Firestore `events` 쿼리 `event == survey_close`, `params.reason == later`  
+3. (같은 기기면) `localStorage`에서 `hwatro_survey_done` 삭제 후 다시 게임오버 → **이미 참여했어요** → `survey_close` + `reason == already_done`  
+4. 다시 설문 팝업이 뜨게 한 뒤 **설문하기** → `event == survey_enter` (close는 없어야 함)  
+5. (선택) `?ga_debug=1` 로 동일 액션 → GA4 **DebugView** 에 `survey_enter` / `survey_close` 실시간 확인  
+6. Analytics → Events 목록에 커스텀 이벤트가 보이려면 **최대 24시간** 걸릴 수 있음. 즉시 확인은 DebugView 또는 Firestore.
+
+### 8. GA4 맞춤 정의 (선택, Analytics 쪽)
 
 Firestore 에는 파라미터가 그대로 남으므로 **필수 아님**. GA4 리포트용으로만:
 
@@ -216,6 +248,8 @@ Firestore 에는 파라미터가 그대로 남으므로 **필수 아님**. GA4 �
 | hand_play | `month`, `hand_id`, `score`, `money` … |
 | cards_discard | `month`, `card_count`, `money` |
 | shop_buy | `joker_id`, `price` |
+| survey_enter | `screen`, `month`, `locale` |
+| survey_close | `screen`, `month`, `locale`, `reason` |
 
 ---
 
@@ -223,9 +257,9 @@ Firestore 에는 파라미터가 그대로 남으므로 **필수 아님**. GA4 �
 
 | 파일 | 내용 |
 |------|------|
-| `firebase-telemetry.mjs` | Analytics + Firestore 동시 기록, Anonymous Auth |
-| `firestore.rules` | create-only, 이벤트 화이트리스트 |
-| `index.html` | 변경 없음 (`trackEvent` 그대로) |
+| `lib/firebase-telemetry.mjs` | Analytics + Firestore 동시 기록, Anonymous Auth |
+| `config/firestore.rules` | create-only, 이벤트 화이트리스트 (`survey_enter`/`survey_close` 포함) |
+| `index.html` | `trackEvent` — 설문 진입·닫기 포함 |
 
 ---
 
@@ -234,6 +268,6 @@ Firestore 에는 파라미터가 그대로 남으므로 **필수 아님**. GA4 �
 | 증상 | 원인 | 조치 |
 |------|------|------|
 | `events` 에 문서 없음 | Anonymous Auth 미활성 | Auth → Anonymous Enable |
-| Permission denied | Rules 미배포 / 잘못된 rules | `firestore.rules` Publish |
+| Permission denied | Rules 미배포 / 잘못된 rules | `config/firestore.rules` Publish |
 | `firebase-config.js` = null | Vercel env / 미배포 | `FIREBASE_CONFIG_JSON` + Redeploy |
 | 하루 중 쓰기 멈춤 | 20K writes/일 초과 | Export 후 old data 삭제 또는 Blaze |
