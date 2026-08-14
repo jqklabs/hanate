@@ -15,9 +15,7 @@
 </p>
 
 <p align="center">
-  <a href="https://hanate.jqklabs.com/invite"><strong>🎴 지금 플레이 (invite)</strong></a>
-  &nbsp;·&nbsp;
-  <a href="https://hanate.jqklabs.com">본편</a>
+  <a href="https://hanate.jqklabs.com/invite"><strong>🎴 지금 플레이</strong></a>
   &nbsp;·&nbsp;
   <a href="https://hanate.jqklabs.com/invite/en">EN</a>
   &nbsp;·&nbsp;
@@ -47,7 +45,6 @@
 | 링크 | URL |
 |------|-----|
 | **초대 (공유용)** | https://hanate.jqklabs.com/invite |
-| 게임 본편 | https://hanate.jqklabs.com |
 | EN / JP 초대 | `/invite/en` · `/invite/jp` |
 
 로컬은 `index.html`만 열면 됩니다. 빌드 불필요. 시드: `?seed=42`
