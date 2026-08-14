@@ -20,6 +20,12 @@
 <meta name="twitter:description" content="12월까지 클리어 쫄? ㅋㅋ">
 <meta name="twitter:image" content="https://hanate.jqklabs.com/Assets/OG/kr/OG1.jpg?v=34">
 <meta name="google-adsense-account" content="ca-pub-1930460760996573">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="십이화">
+<link rel="apple-touch-icon" href="Assets/Icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="Assets/Icons/icon-192.png">
+<link rel="manifest" href="site.webmanifest">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1930460760996573"
      crossorigin="anonymous"></script>
 <script>window.FIREBASE_CONFIG = window.FIREBASE_CONFIG ?? null;</script>
@@ -1480,7 +1486,8 @@
     background: rgba(4, 12, 8, .82);
   }
 
-  #survey-overlay {
+  #survey-overlay,
+  #shortcut-overlay {
     position: fixed; inset: 0;
     background:
       radial-gradient(ellipse 70% 55% at 50% 42%, rgba(212,175,55,.12), transparent 70%),
@@ -1488,8 +1495,11 @@
     display: none; align-items: center; justify-content: center;
     z-index: 120; padding: 20px;
   }
-  #survey-overlay.show { display: flex; }
-  #survey-overlay .survey-prompt {
+  #survey-overlay.show,
+  #shortcut-overlay.show { display: flex; }
+  #shortcut-overlay { z-index: 119; }
+  #survey-overlay .survey-prompt,
+  #shortcut-overlay .survey-prompt {
     position: relative;
     margin: 0; padding: 40px 40px 32px;
     max-width: 560px; width: 100%;
@@ -1506,33 +1516,43 @@
     overflow: hidden;
   }
   #survey-overlay .survey-prompt::before,
-  #survey-overlay .survey-prompt::after {
+  #survey-overlay .survey-prompt::after,
+  #shortcut-overlay .survey-prompt::before,
+  #shortcut-overlay .survey-prompt::after {
     content: '';
     position: absolute; width: 18px; height: 18px;
     border: 2px solid var(--gold-soft); opacity: .7; pointer-events: none;
   }
-  #survey-overlay .survey-prompt::before {
+  #survey-overlay .survey-prompt::before,
+  #shortcut-overlay .survey-prompt::before {
     top: 12px; left: 12px; border-right: none; border-bottom: none; border-radius: 4px 0 0 0;
   }
-  #survey-overlay .survey-prompt::after {
+  #survey-overlay .survey-prompt::after,
+  #shortcut-overlay .survey-prompt::after {
     top: 12px; right: 12px; border-left: none; border-bottom: none; border-radius: 0 4px 0 0;
   }
-  #survey-overlay .survey-corners {
+  #survey-overlay .survey-corners,
+  #shortcut-overlay .survey-corners {
     position: absolute; inset: 0; pointer-events: none;
   }
   #survey-overlay .survey-corners::before,
-  #survey-overlay .survey-corners::after {
+  #survey-overlay .survey-corners::after,
+  #shortcut-overlay .survey-corners::before,
+  #shortcut-overlay .survey-corners::after {
     content: '';
     position: absolute; width: 18px; height: 18px;
     border: 2px solid var(--gold-soft); opacity: .7;
   }
-  #survey-overlay .survey-corners::before {
+  #survey-overlay .survey-corners::before,
+  #shortcut-overlay .survey-corners::before {
     bottom: 12px; left: 12px; border-right: none; border-top: none; border-radius: 0 0 0 4px;
   }
-  #survey-overlay .survey-corners::after {
+  #survey-overlay .survey-corners::after,
+  #shortcut-overlay .survey-corners::after {
     bottom: 12px; right: 12px; border-left: none; border-top: none; border-radius: 0 0 4px 0;
   }
-  #survey-overlay .survey-badge {
+  #survey-overlay .survey-badge,
+  #shortcut-overlay .survey-badge {
     display: inline-flex; align-items: center; justify-content: center;
     width: 54px; height: 54px; margin-bottom: 14px;
     border-radius: 50%;
@@ -1540,59 +1560,131 @@
     box-shadow: 0 6px 18px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.45);
     font-size: 26px; line-height: 1;
   }
-  #survey-overlay .survey-title {
+  #shortcut-overlay .survey-badge {
+    width: 72px; height: 72px; padding: 0; overflow: hidden;
+    background: #1a1208;
+  }
+  #shortcut-overlay .survey-badge img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  #survey-overlay .survey-title,
+  #shortcut-overlay .survey-title {
     color: var(--gold-soft); font-family: var(--font-overlay);
     font-weight: 400; font-synthesis: none;
     font-size: 30px; line-height: 1.25; margin: 0 0 12px; letter-spacing: 0.02em;
   }
-  #survey-overlay .survey-rule {
+  #survey-overlay .survey-rule,
+  #shortcut-overlay .survey-rule {
     width: 72px; height: 2px; margin: 0 auto 16px;
     background: linear-gradient(90deg, transparent, var(--gold), transparent);
     opacity: .85;
   }
-  #survey-overlay .survey-body {
+  #survey-overlay .survey-body,
+  #shortcut-overlay .survey-body {
     color: #e2e8f0; font-family: var(--font-ui);
     font-size: 16px; font-weight: 600; line-height: 1.55; margin-bottom: 28px;
   }
-  #survey-overlay .survey-body b { color: #fde68a; font-weight: 800; }
-  #survey-overlay .survey-actions {
+  #survey-overlay .survey-body b,
+  #shortcut-overlay .survey-body b { color: #fde68a; font-weight: 800; }
+  #shortcut-overlay .shortcut-steps {
+    text-align: left; margin: 0 0 24px; padding: 14px 16px;
+    border-radius: 12px; background: rgba(0,0,0,.28);
+    border: 1px solid rgba(255,255,255,.1);
+    color: #e2e8f0; font-family: var(--font-ui);
+    font-size: 15px; font-weight: 600; line-height: 1.55;
+  }
+  #shortcut-overlay .shortcut-steps ol {
+    margin: 0; padding-left: 1.25em;
+  }
+  #shortcut-overlay .shortcut-steps li { margin: 0.35em 0; }
+  #shortcut-overlay .shortcut-steps b { color: #fde68a; font-weight: 800; }
+  #survey-overlay .survey-actions,
+  #shortcut-overlay .survey-actions {
     display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
   }
-  #survey-overlay .survey-actions button {
+  #survey-overlay .survey-actions button,
+  #shortcut-overlay .survey-actions button {
     flex: 1; min-width: 160px; max-width: 240px; padding: 18px 20px;
     border-radius: 14px; font-family: var(--font-overlay);
     font-weight: 400; font-synthesis: none;
     font-size: 22px; letter-spacing: 0.04em; cursor: pointer;
     transition: transform .12s ease, filter .12s ease;
   }
-  #survey-overlay .survey-actions button:active { transform: scale(.97); }
-  #survey-overlay .survey-yes {
+  #survey-overlay .survey-actions button:active,
+  #shortcut-overlay .survey-actions button:active { transform: scale(.97); }
+  #survey-overlay .survey-yes,
+  #shortcut-overlay .survey-yes {
     border: none;
     background: linear-gradient(180deg, #fbbf24, #f59e0b 45%, #d97706);
     color: #1a1205;
     box-shadow: 0 8px 20px rgba(217,119,6,.35), inset 0 1px 0 rgba(255,255,255,.35);
   }
-  #survey-overlay .survey-yes:hover { filter: brightness(1.06); }
-  #survey-overlay .survey-no {
+  #survey-overlay .survey-yes:hover,
+  #shortcut-overlay .survey-yes:hover { filter: brightness(1.06); }
+  #survey-overlay .survey-no,
+  #shortcut-overlay .survey-no {
     border: 1.5px solid rgba(255,255,255,.28);
     background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.35));
     color: #f1f5f9;
     box-shadow: 0 6px 16px rgba(0,0,0,.25);
   }
-  #survey-overlay .survey-no:hover { border-color: rgba(255,255,255,.42); background: rgba(255,255,255,.1); }
-  #survey-overlay .survey-done-link {
+  #survey-overlay .survey-no:hover,
+  #shortcut-overlay .survey-no:hover { border-color: rgba(255,255,255,.42); background: rgba(255,255,255,.1); }
+  #survey-overlay .survey-done-link,
+  #shortcut-overlay .survey-done-link {
     display: inline-block; margin-top: 20px; padding: 0;
     border: none; background: none; color: #94a3b8;
     font-family: var(--font-ui); font-size: 14px; font-weight: 600;
     text-decoration: underline; cursor: pointer;
   }
-  #survey-overlay .survey-done-link:hover { color: #e2e8f0; }
+  #survey-overlay .survey-done-link:hover,
+  #shortcut-overlay .survey-done-link:hover { color: #e2e8f0; }
+  /* 본문·버튼: UI 폰트(SSRock 일부 한글 글리프 누락) / 제목: 오버레이 붓글씨 */
+  #shortcut-overlay .survey-body,
+  #shortcut-overlay .shortcut-steps,
+  #shortcut-overlay .survey-actions button,
+  #shortcut-overlay .survey-done-link {
+    font-family: var(--font-ui) !important;
+    font-synthesis: none;
+  }
+  #shortcut-overlay .survey-title {
+    font-family: var(--font-overlay) !important;
+    font-weight: 400;
+    font-synthesis: none;
+    letter-spacing: 0.02em;
+  }
+  #shortcut-overlay .survey-actions button {
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+  }
+  #shortcut-overlay .survey-actions:empty { display: none; }
+  #shortcut-overlay .shortcut-close {
+    position: absolute; top: 12px; right: 12px; z-index: 2;
+    width: 36px; height: 36px; padding: 0;
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 10px;
+    background: rgba(0,0,0,.35);
+    color: #e2e8f0;
+    font-family: var(--font-ui);
+    font-size: 22px; font-weight: 700; line-height: 1;
+    cursor: pointer;
+  }
+  #shortcut-overlay .shortcut-close:hover {
+    background: rgba(255,255,255,.12);
+    border-color: rgba(255,255,255,.4);
+    color: #fff;
+  }
   @media (max-width: 520px) {
-    #survey-overlay .survey-prompt { padding: 32px 22px 26px; }
-    #survey-overlay .survey-title { font-size: 26px; }
-    #survey-overlay .survey-actions button {
+    #survey-overlay .survey-prompt,
+    #shortcut-overlay .survey-prompt { padding: 32px 22px 26px; }
+    #survey-overlay .survey-title,
+    #shortcut-overlay .survey-title { font-size: 26px; }
+    #survey-overlay .survey-actions button,
+    #shortcut-overlay .survey-actions button {
       min-width: 100%; max-width: none; font-size: 20px; padding: 16px 18px;
     }
+    #shortcut-overlay .survey-actions button { font-size: 18px; }
   }
 
   /* ── 정산 장부 ────────────────────────────── */
@@ -4295,6 +4387,7 @@
 
 <div id="modal-overlay"><div id="modal"></div></div>
 <div id="survey-overlay" aria-hidden="true"></div>
+<div id="shortcut-overlay" aria-hidden="true"></div>
 
 <div id="joker-pop-overlay" onclick="closeJokerPop()">
   <div class="joker-pop-card" role="dialog" aria-labelledby="joker-pop-name" onclick="event.stopPropagation()">
@@ -5210,6 +5303,17 @@ const I18N_UI = {
     surveyYes: '설문하기',
     surveyNo: '나중에',
     surveyDone: '이미 참여했어요',
+    shortcutTitle: '다음에 바로 들어오게',
+    shortcutBodyMobile: '홈 화면에 두면 <b>앱처럼</b> 바로 열 수 있어요.',
+    shortcutBodyDesktop: '즐겨찾기에 두면 <b>다시 찾기</b>가 쉬워요.',
+    shortcutCtaInstall: '홈 화면에 추가',
+    shortcutCtaGuide: '추가 방법 보기',
+    shortcutAck: '확인했어요',
+    shortcutNo: '나중에',
+    shortcutDone: '이미 추가했어요',
+    shortcutStepsIos: '<ol><li>하단 <b>공유</b> 버튼(□↑)을 탭하세요</li><li><b>홈 화면에 추가</b>를 고르세요</li><li><b>추가</b>를 눌러 완료하세요</li></ol>',
+    shortcutStepsAndroid: '<ol><li>오른쪽 위 <b>메뉴(⋮)</b>를 탭하세요</li><li><b>홈 화면에 추가</b> 또는 <b>앱 설치</b>를 고르세요</li><li>확인을 눌러 완료하세요</li></ol>',
+    shortcutStepsDesktop: '<ol><li>주소창 오른쪽 <b>별표(즐겨찾기)</b>를 누르세요</li><li>또는 단축키 <b>Ctrl+D</b> / Mac은 <b>⌘+D</b></li><li>저장하면 다음에 바로 찾을 수 있어요</li></ol>',
   },
   en: {
     close: 'Close',
@@ -5315,6 +5419,17 @@ const I18N_UI = {
     surveyYes: 'Take survey',
     surveyNo: 'Later',
     surveyDone: 'Already done',
+    shortcutTitle: 'Come back in one tap',
+    shortcutBodyMobile: 'Add to your <b>Home Screen</b> to open it like an app.',
+    shortcutBodyDesktop: 'Bookmark this page so it’s <b>easy to find</b> again.',
+    shortcutCtaInstall: 'Add to Home Screen',
+    shortcutCtaGuide: 'Show me how',
+    shortcutAck: 'Got it',
+    shortcutNo: 'Later',
+    shortcutDone: 'Already added',
+    shortcutStepsIos: '<ol><li>Tap the <b>Share</b> button (□↑)</li><li>Choose <b>Add to Home Screen</b></li><li>Tap <b>Add</b> to finish</li></ol>',
+    shortcutStepsAndroid: '<ol><li>Tap the <b>menu (⋮)</b> at the top right</li><li>Choose <b>Add to Home screen</b> or <b>Install app</b></li><li>Confirm to finish</li></ol>',
+    shortcutStepsDesktop: '<ol><li>Click the <b>star</b> in the address bar</li><li>Or press <b>Ctrl+D</b> / on Mac <b>⌘+D</b></li><li>Save — you’ll find it next time</li></ol>',
   },
   jp: {
     close: '閉じる',
@@ -5420,6 +5535,17 @@ const I18N_UI = {
     surveyYes: '回答する',
     surveyNo: 'あとで',
     surveyDone: '参加済み',
+    shortcutTitle: 'すぐ戻れるように',
+    shortcutBodyMobile: 'ホーム画面に追加すると <b>アプリのように</b> 開けます。',
+    shortcutBodyDesktop: 'ブックマークしておくと <b>次に見つけやすい</b>です。',
+    shortcutCtaInstall: 'ホーム画面に追加',
+    shortcutCtaGuide: 'やり方を見る',
+    shortcutAck: 'わかった',
+    shortcutNo: 'あとで',
+    shortcutDone: '追加済み',
+    shortcutStepsIos: '<ol><li>下の <b>共有</b> ボタン(□↑)をタップ</li><li><b>ホーム画面に追加</b> を選ぶ</li><li><b>追加</b> で完了</li></ol>',
+    shortcutStepsAndroid: '<ol><li>右上の <b>メニュー(⋮)</b> をタップ</li><li><b>ホーム画面に追加</b> または <b>アプリをインストール</b></li><li>確認して完了</li></ol>',
+    shortcutStepsDesktop: '<ol><li>アドレスバー右の <b>星(ブックマーク)</b> をクリック</li><li>または <b>Ctrl+D</b> / Macは <b>⌘+D</b></li><li>保存すれば次回すぐ開けます</li></ol>',
   },
 };
 
@@ -5682,6 +5808,8 @@ const state = {
   settleData: null,
   gameOverReason: '',
   surveyDismissed: false,
+  shortcutSessionDismissed: false,
+  shortcutGuideOpen: false,
   stats: { bestSingle: 0, bestSingleHand: '', totalEarned: 0 },
   runStats: null,
   helpReturn: null,
@@ -7075,11 +7203,15 @@ function gameOver(reason) {
   flushRunTelemetry();
   state.gameOverReason = reason;
   state.surveyDismissed = false;
+  state.shortcutSessionDismissed = false;
+  state.shortcutGuideOpen = false;
   state.screen = 'gameover';
 }
 function victory() {
   flushRunTelemetry();
   state.surveyDismissed = false;
+  state.shortcutSessionDismissed = false;
+  state.shortcutGuideOpen = false;
   state.screen = 'victory';
 }
 function resetRun() {
@@ -7094,6 +7226,7 @@ function resetRun() {
     lastPlay: null, juicing: false, dealing: false, pendingGoStop: false, playLog: [],
     playedCards: [], discardedCards: [],
     settleData: null, gameOverReason: '', surveyDismissed: false,
+    shortcutSessionDismissed: false, shortcutGuideOpen: false,
     stats: { bestSingle: 0, bestSingleHand: '', totalEarned: 0 },
     runStats: null,
     janAuraLeft: 0, janAuraCharged: false, hintEnabled: false,
@@ -7221,6 +7354,265 @@ function renderSurvey() {
     return;
   }
   ov.innerHTML = surveyPromptHTML();
+  ov.classList.add('show');
+  ov.setAttribute('aria-hidden', 'false');
+}
+
+// ── 홈화면/즐겨찾기 제안 ───────────────────────────────────
+// 노출: 설문 팝업이 없을 때 · gameover/victory 또는 prep(round≥2)
+// 재노출: 「나중에」→ 7일 스누즈, 최대 3회 · 「이미 추가/확인」→ 영구 숨김
+// 자동 설치: beforeinstallprompt 있을 때만 · 그 외는 OS별 안내
+const SHORTCUT_DONE_KEY = 'hwatro_shortcut_done';
+const SHORTCUT_LATER_KEY = 'hwatro_shortcut_later';
+const SHORTCUT_SHOWS_KEY = 'hwatro_shortcut_shows';
+const SHORTCUT_SNOOZE_MS = 7 * 86400000;
+const SHORTCUT_MAX_SHOWS = 3;
+
+let _deferredInstallPrompt = null;
+let _shortcutShowLogged = false;
+let _shortcutAutoInstallTried = false;
+
+function registerShortcutServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    const swUrl = new URL('sw.js', location.href).href;
+    navigator.serviceWorker.register(swUrl).catch(() => {});
+  } catch (_) {}
+}
+
+function hookShortcutInstallPrompt() {
+  registerShortcutServiceWorker();
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    _deferredInstallPrompt = e;
+    if (shouldShowShortcutPrompt() && !_shortcutAutoInstallTried) {
+      tryAutoInstallShortcut();
+    }
+  });
+  window.addEventListener('appinstalled', () => {
+    _deferredInstallPrompt = null;
+    markShortcutDone();
+    state.shortcutSessionDismissed = true;
+    render();
+  });
+}
+
+function isStandaloneDisplay() {
+  try {
+    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
+    if (window.navigator.standalone === true) return true;
+  } catch (_) {}
+  return false;
+}
+
+function shortcutPlatform() {
+  const ua = navigator.userAgent || '';
+  const isIOS = /iPad|iPhone|iPod/.test(ua)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (isIOS) return 'ios';
+  if (/Android/i.test(ua)) return 'android';
+  return 'desktop';
+}
+
+function shortcutMode() {
+  if (_deferredInstallPrompt) return 'install';
+  const p = shortcutPlatform();
+  if (p === 'ios') return 'guide_ios';
+  if (p === 'android') return 'guide_android';
+  return 'guide_desktop';
+}
+
+function hasShortcutDone() {
+  try { return localStorage.getItem(SHORTCUT_DONE_KEY) === '1'; }
+  catch (_) { return false; }
+}
+
+function markShortcutDone() {
+  try { localStorage.setItem(SHORTCUT_DONE_KEY, '1'); }
+  catch (_) {}
+}
+
+function shortcutShowCount() {
+  try { return Math.max(0, parseInt(localStorage.getItem(SHORTCUT_SHOWS_KEY) || '0', 10) || 0); }
+  catch (_) { return 0; }
+}
+
+function bumpShortcutShowCount() {
+  try { localStorage.setItem(SHORTCUT_SHOWS_KEY, String(shortcutShowCount() + 1)); }
+  catch (_) {}
+}
+
+function isShortcutSnoozed() {
+  try {
+    const raw = localStorage.getItem(SHORTCUT_LATER_KEY);
+    if (!raw) return false;
+    const t = Date.parse(raw);
+    if (!Number.isFinite(t)) return false;
+    return Date.now() - t < SHORTCUT_SNOOZE_MS;
+  } catch (_) { return false; }
+}
+
+function snoozeShortcutPrompt() {
+  try { localStorage.setItem(SHORTCUT_LATER_KEY, new Date().toISOString()); }
+  catch (_) {}
+}
+
+function isShortcutPreview() {
+  try { return new URLSearchParams(location.search).get('shortcutPreview') === '1'; }
+  catch (_) { return false; }
+}
+
+function shouldShowShortcutPrompt() {
+  if (isShortcutPreview()) {
+    return !state.shortcutSessionDismissed && !isStandaloneDisplay();
+  }
+  if (isStandaloneDisplay() || hasShortcutDone()) return false;
+  if (state.shortcutSessionDismissed) return false;
+  if (shouldShowSurveyPrompt()) return false;
+  if (isShortcutSnoozed()) return false;
+  if (shortcutShowCount() >= SHORTCUT_MAX_SHOWS && !state.shortcutGuideOpen) return false;
+  const end = state.screen === 'gameover' || state.screen === 'victory';
+  const prepGate = state.screen === 'prep' && (state.round || 1) >= 2;
+  return end || prepGate;
+}
+
+function shortcutTrackParams(extra) {
+  const params = {
+    platform: shortcutPlatform(),
+    mode: shortcutMode(),
+    locale: getLocale(),
+    screen: state.screen || '',
+  };
+  if (extra) Object.assign(params, extra);
+  return params;
+}
+
+async function tryAutoInstallShortcut() {
+  if (!_deferredInstallPrompt || _shortcutAutoInstallTried) return false;
+  _shortcutAutoInstallTried = true;
+  const ev = _deferredInstallPrompt;
+  try {
+    if (!isShortcutPreview()) {
+      trackEvent('shortcut_prompt_click', shortcutTrackParams({ action: 'install_auto' }));
+    }
+    await ev.prompt();
+    const choice = await ev.userChoice;
+    _deferredInstallPrompt = null;
+    if (choice && choice.outcome === 'accepted') {
+      if (!isShortcutPreview()) {
+        trackEvent('shortcut_prompt_close', shortcutTrackParams({ reason: 'installed' }));
+      }
+      markShortcutDone();
+      state.shortcutSessionDismissed = true;
+      render();
+      return true;
+    }
+  } catch (_) {
+    // 제스처 없이 prompt 거부되는 브라우저 → 설치 버튼으로 폴백
+  }
+  render();
+  return false;
+}
+
+async function shortcutPrimaryAction() {
+  if (!_deferredInstallPrompt) return;
+  if (!isShortcutPreview()) {
+    trackEvent('shortcut_prompt_click', shortcutTrackParams({ action: 'install' }));
+  }
+  const ev = _deferredInstallPrompt;
+  _deferredInstallPrompt = null;
+  _shortcutAutoInstallTried = true;
+  try {
+    await ev.prompt();
+    const choice = await ev.userChoice;
+    if (choice && choice.outcome === 'accepted') {
+      if (!isShortcutPreview()) {
+        trackEvent('shortcut_prompt_close', shortcutTrackParams({ reason: 'installed' }));
+      }
+      markShortcutDone();
+      state.shortcutSessionDismissed = true;
+    }
+  } catch (_) {
+    _deferredInstallPrompt = ev;
+  }
+  render();
+}
+
+function dismissShortcutPrompt(reason) {
+  const why = reason || 'dismiss';
+  if (!isShortcutPreview()) {
+    trackEvent('shortcut_prompt_close', shortcutTrackParams({ reason: why }));
+    snoozeShortcutPrompt();
+  }
+  state.shortcutSessionDismissed = true;
+  state.shortcutGuideOpen = false;
+  render();
+}
+
+function markShortcutAlreadyDone() {
+  if (!isShortcutPreview()) {
+    trackEvent('shortcut_prompt_close', shortcutTrackParams({ reason: 'already' }));
+    markShortcutDone();
+  }
+  state.shortcutSessionDismissed = true;
+  state.shortcutGuideOpen = false;
+  render();
+}
+
+function shortcutStepsHtml() {
+  const p = shortcutPlatform();
+  if (p === 'ios') return tu('shortcutStepsIos');
+  if (p === 'android') return tu('shortcutStepsAndroid');
+  return tu('shortcutStepsDesktop');
+}
+
+function shortcutPromptHTML() {
+  const canInstall = shortcutMode() === 'install';
+  const mobile = shortcutPlatform() !== 'desktop';
+  const body = mobile ? tu('shortcutBodyMobile') : tu('shortcutBodyDesktop');
+  const actions = canInstall
+    ? `<div class="survey-actions">
+        <button type="button" class="survey-yes" onclick="shortcutPrimaryAction()">${tu('shortcutCtaInstall')}</button>
+      </div>`
+    : '';
+  return `
+    <div class="survey-prompt" role="dialog" aria-labelledby="shortcut-title">
+      <button type="button" class="shortcut-close" onclick="dismissShortcutPrompt('dismiss')" aria-label="${tu('close')}">×</button>
+      <div class="survey-corners" aria-hidden="true"></div>
+      <div class="survey-badge" aria-hidden="true"><img src="Assets/Icons/icon-192.png" alt=""></div>
+      <div class="survey-title" id="shortcut-title">${tu('shortcutTitle')}</div>
+      <div class="survey-rule" aria-hidden="true"></div>
+      <div class="survey-body">${body}</div>
+      <div class="shortcut-steps">${shortcutStepsHtml()}</div>
+      ${actions}
+      <button type="button" class="survey-done-link" onclick="markShortcutAlreadyDone()">${tu('shortcutDone')}</button>
+    </div>`;
+}
+
+function renderShortcutPrompt() {
+  const ov = $('shortcut-overlay');
+  if (!ov) return;
+  if (!shouldShowShortcutPrompt()) {
+    ov.classList.remove('show');
+    ov.setAttribute('aria-hidden', 'true');
+    ov.innerHTML = '';
+    _shortcutShowLogged = false;
+    _shortcutAutoInstallTried = false;
+    return;
+  }
+  if (!_shortcutShowLogged) {
+    _shortcutShowLogged = true;
+    if (!isShortcutPreview()) {
+      bumpShortcutShowCount();
+      trackEvent('shortcut_prompt_show', shortcutTrackParams({
+        show_n: shortcutShowCount(),
+      }));
+    }
+    if (_deferredInstallPrompt) {
+      queueMicrotask(() => { tryAutoInstallShortcut(); });
+    }
+  }
+  ov.innerHTML = shortcutPromptHTML();
   ov.classList.add('show');
   ov.setAttribute('aria-hidden', 'false');
 }
@@ -7780,6 +8172,7 @@ async function boot() {
   hookModalKeys();
   initSessionStats();
   initFirebaseTelemetry();
+  hookShortcutInstallPrompt();
   setCardLabelsHidden(cardLabelsHidden());
   resetRun();
   initCardTune();
@@ -7793,6 +8186,15 @@ async function boot() {
     hideBootLoad();
     openJuiceScorePreview();
     return;
+  }
+  if (previewQ.get('shortcutPreview') === '1') {
+    try {
+      localStorage.removeItem(SHORTCUT_DONE_KEY);
+      localStorage.removeItem(SHORTCUT_LATER_KEY);
+      localStorage.removeItem(SHORTCUT_SHOWS_KEY);
+    } catch (_) {}
+    state.shortcutSessionDismissed = false;
+    state.shortcutGuideOpen = false;
   }
   const t0 = performance.now();
   try {
@@ -7837,6 +8239,11 @@ function hookModalKeys() {
     if ($('settings-overlay')?.classList.contains('show')) {
       e.preventDefault();
       closeSettings();
+      return;
+    }
+    if ($('shortcut-overlay')?.classList.contains('show')) {
+      e.preventDefault();
+      dismissShortcutPrompt('esc');
       return;
     }
     if (state.screen === 'help') { e.preventDefault(); closeHelp(); }
@@ -8222,6 +8629,7 @@ function render() {
   renderChunhyang();
   renderModal();
   renderSurvey();
+  renderShortcutPrompt();
   renderCoach();
 }
 

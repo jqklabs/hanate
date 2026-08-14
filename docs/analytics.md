@@ -178,6 +178,38 @@ Anonymous Auth: 무료, Spark 에서 사용 가능.
 | `locale` | string | UI 언어 (`kr`/`en`/`jp`) |
 | `reason` | string | `later`(나중에) / `already_done`(이미 참여했어요) |
 
+### shortcut_prompt_show — 홈화면/즐겨찾기 제안 노출
+
+설문 팝업이 없을 때 · `gameover`/`victory` 또는 `prep`(2월부터). 이미 설치(standalone)·영구 숨김·7일 스누즈·최대 3회 노출이면 생략.
+
+| 파라미터 | 타입 | 데이터 |
+|----------|------|--------|
+| `platform` | string | `ios` / `android` / `desktop` |
+| `mode` | string | `install`(beforeinstallprompt) / `guide_ios` / `guide_android` / `guide_desktop` |
+| `locale` | string | UI 언어 |
+| `screen` | string | 현재 화면 |
+| `show_n` | number | 누적 노출 횟수 (이번 포함) |
+
+### shortcut_prompt_click — 제안 CTA
+
+| 파라미터 | 타입 | 데이터 |
+|----------|------|--------|
+| `platform` | string | 위와 동일 |
+| `mode` | string | 위와 동일 |
+| `locale` | string | UI 언어 |
+| `screen` | string | 현재 화면 |
+| `action` | string | `install` / `install_auto`(네이티브 설치 시도) |
+
+### shortcut_prompt_close — 제안 닫기
+
+| 파라미터 | 타입 | 데이터 |
+|----------|------|--------|
+| `platform` | string | 위와 동일 |
+| `mode` | string | 위와 동일 |
+| `locale` | string | UI 언어 |
+| `screen` | string | 현재 화면 |
+| `reason` | string | `dismiss`(X) / `esc` / `already`(이미 추가) / `installed`(설치 수락) — dismiss·esc 는 7일 스누즈 |
+
 ### 리텐션 (별도 이벤트 없음)
 
 | 수단 | 데이터 |
@@ -239,7 +271,17 @@ Authentication → Settings → Authorized domains:
 5. (선택) `?ga_debug=1` 로 동일 액션 → GA4 **DebugView** 에 `survey_enter` / `survey_close` 실시간 확인  
 6. Analytics → Events 목록에 커스텀 이벤트가 보이려면 **최대 24시간** 걸릴 수 있음. 즉시 확인은 DebugView 또는 Firestore.
 
-### 8. GA4 맞춤 정의 (선택, Analytics 쪽)
+### 8. 바로가기 제안 확인 (`shortcut_prompt_*`)
+
+동일하게 Rules Publish 필요. 설문과 **동시에 안 뜨고**, 설문 종료/미대상일 때만 노출.
+
+1. `hwatro_survey_done` 설정 또는 설문 **나중에** 후 → `shortcut_prompt_show`  
+2. **추가 방법 보기** → `shortcut_prompt_click` (`action=guide`) 후 스텝 표시  
+3. **나중에** → `shortcut_prompt_close` (`reason=later`) · 7일간 재노출 없음  
+4. 로컬 재테스트: `hwatro_shortcut_done` / `hwatro_shortcut_later` / `hwatro_shortcut_shows` 삭제  
+5. `mode=install` 은 Chrome이 `beforeinstallprompt`를 줄 때만 (manifest+설치 조건 충족 시). 대부분 환경은 `guide_*`.
+
+### 9. GA4 맞춤 정의 (선택, Analytics 쪽)
 
 Firestore 에는 파라미터가 그대로 남으므로 **필수 아님**. GA4 리포트용으로만:
 
@@ -250,6 +292,30 @@ Firestore 에는 파라미터가 그대로 남으므로 **필수 아님**. GA4 �
 | shop_buy | `joker_id`, `price` |
 | survey_enter | `screen`, `month`, `locale` |
 | survey_close | `screen`, `month`, `locale`, `reason` |
+| shortcut_prompt_show | `platform`, `mode`, `screen`, `show_n` |
+| shortcut_prompt_click | `platform`, `mode`, `action` |
+| shortcut_prompt_close | `platform`, `mode`, `reason` |
+
+---
+
+## 홈화면 / 즐겨찾기 제안 UX (제품 기준)
+
+| 항목 | 기준 |
+|------|------|
+| 모바일 | 팝업에 **안내 스텝 즉시 표시** · Android/Chrome은 SW+manifest로 설치 유도 |
+| PC | 즐겨찾기(별표 / Ctrl·⌘+D) 안내 즉시 표시 |
+| 자동 설치 | `beforeinstallprompt` 있으면 팝업 노출 시 `prompt()` 시도 · 실패 시 **홈 화면에 추가** 버튼 폴백. iOS·즐겨찾기는 OS 제한으로 안내만 가능 |
+| 이미 설치 | `display-mode: standalone` 또는 iOS `navigator.standalone` → 미노출 |
+| 노출 시점 | 설문 팝업 **미표시**일 때 · `gameover`/`victory` 또는 `prep`(round≥2) |
+| 나중에 | 7일 스누즈 (`hwatro_shortcut_later`) |
+| 영구 숨김 | 이미 추가 / 안내 확인 / 설치 수락 (`hwatro_shortcut_done`) |
+| 상한 | 기기당 최대 **3회** 노출 (`hwatro_shortcut_shows`) |
+
+지원 한계: iOS Safari는 홈 화면 추가를 JS로 트리거할 수 없음. Android·Desktop도 브라우저·정책에 따라 설치 프롬프트가 안 올 수 있어 **따라 하기 안내가 기본 경로**.
+
+아이콘: `Assets/Icons/icon-192.png` · `icon-512.png` · `apple-touch-icon.png` (춘향 윙크 아트).
+
+로컬 프리뷰: `index.html?shortcutPreview=1` — 스누즈/노출횟수 무시하고 즉시 표시 (텔레메트리 미기록).
 
 ---
 
@@ -258,8 +324,9 @@ Firestore 에는 파라미터가 그대로 남으므로 **필수 아님**. GA4 �
 | 파일 | 내용 |
 |------|------|
 | `lib/firebase-telemetry.mjs` | Analytics + Firestore 동시 기록, Anonymous Auth |
-| `config/firestore.rules` | create-only, 이벤트 화이트리스트 (`survey_enter`/`survey_close` 포함) |
-| `index.html` | `trackEvent` — 설문 진입·닫기 포함 |
+| `config/firestore.rules` | create-only, 이벤트 화이트리스트 (설문·바로가기 포함) |
+| `index.html` | `trackEvent` — 설문·바로가기 제안 |
+| `site.webmanifest` | 홈화면 추가용 최소 manifest |
 
 ---
 

@@ -9,7 +9,8 @@ service cloud.firestore {
         return request.resource.data.event in [
           'session_start', 'session_end', 'run_end',
           'hand_play', 'cards_discard', 'shop_buy', 'shop_reroll', 'settle',
-          'survey_enter', 'survey_close'
+          'survey_enter', 'survey_close',
+          'shortcut_prompt_show', 'shortcut_prompt_click', 'shortcut_prompt_close'
         ];
       }
       function validPayload() {
