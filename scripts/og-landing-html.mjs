@@ -1,4 +1,4 @@
-/** invite · OG 랜딩 정적 HTML 생성 → pages/ (공개 URL은 vercel.json rewrite) */
+/** invite · OG 랜딩 정적 HTML 생성 → pages/ (pages/guide는 수동 관리하므로 건드리지 않음) */
 import { mkdirSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';

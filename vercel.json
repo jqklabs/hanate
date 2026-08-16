@@ -6,6 +6,7 @@
   "outputDirectory": ".",
   "cleanUrls": true,
   "rewrites": [
+    { "source": "/guide", "destination": "/pages/guide" },
     { "source": "/OG1", "destination": "/pages/land/kr/OG1" },
     { "source": "/OG2", "destination": "/pages/land/kr/OG2" },
     { "source": "/OGB1", "destination": "/pages/land/kr/OGB1" },

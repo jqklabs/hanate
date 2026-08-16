@@ -86,7 +86,8 @@ npm run og:gen                # OG / invite 랜딩 → pages/
 
 ```
 index.html          게임 (ENGINE + UI)
-pages/              OG·invite 랜딩
+pages/guide/        게임 규칙·공략 가이드
+pages/              OG·invite 랜딩 생성물
 Assets/             카드 · BGM · SFX · OG · Icons
 config/             firestore.rules 등
 lib/                firebase-telemetry.mjs

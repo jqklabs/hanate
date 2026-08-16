@@ -16,12 +16,14 @@
 - `BGM/`, `SFX/`, `Fonts/`, `Overlay/`, `Spine/`
 - `OG/kr|en|jp/` — SNS OG 이미지 (1200×630 JPG)
 
-## `pages/` — 생성된 정적 랜딩 (수동 편집 금지)
+## `pages/` — 정적 페이지
 
-`node scripts/og-landing-html.mjs` 로 생성. 공개 URL은 `vercel.json` rewrite로 유지.
+`invite/`, `land/`, `locale/`는 `node scripts/og-landing-html.mjs`로 생성하므로 수동 편집 금지. 공개 URL은 `vercel.json` rewrite로 유지.
+`guide/`는 예외로, 직접 관리하는 게임 가이드이며 생성 스크립트가 수정하지 않는다.
 
 ```
 pages/
+  guide/           → /guide (수동 관리)
   invite/          → /invite, /invite/OG1, /invite/en/…
   land/kr/OG1/     → /OG1
   land/en/OG1/     → /en/OG1
