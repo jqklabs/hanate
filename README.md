@@ -37,6 +37,7 @@
 | [docs/기획서.md](docs/기획서.md) | 규칙·밸런스·특수패 |
 | [HANDOFF.md](HANDOFF.md) | 최근 변경·다음 작업 |
 | [docs/analytics.md](docs/analytics.md) | Firebase 이벤트 |
+| [docs/ai-slop-audit.md](docs/ai-slop-audit.md) | UI 슬롭 진단·개선 목록 |
 
 ---
 

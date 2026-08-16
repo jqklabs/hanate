@@ -7,3 +7,8 @@ package-lock.json
 
 # macOS
 .DS_Store
+
+# 로컬 에이전트 스킬 (npx skills add — 프로젝트 의존성 아님)
+.agents/
+.claude/
+skills-lock.json
