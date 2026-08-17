@@ -147,8 +147,10 @@
     height: 100% !important;
     background: transparent !important;
   }
-  /* WebGL엔 CSS drop-shadow 미적용 → 숨기고 2D 미러에 흰 아우라를 픽셀로 그림 */
-  #bg-spine canvas.spine-player-canvas {
+  /* WebGL엔 CSS drop-shadow 미적용 → 2D 미러에 흰 아우라를 픽셀로 그린다.
+     미러가 실제로 그리기 시작한 뒤에만 원본을 숨긴다 — 미러가 늦게 뜨거나
+     실패하면 아우라 없이라도 춘향이 보여야 한다 (안 보이는 것보다 낫다). */
+  #bg-spine.glow-on canvas.spine-player-canvas {
     opacity: 0;
   }
   #bg-spine-glow {
@@ -11561,6 +11563,7 @@ function startBgSpineGlowMirror(host) {
       ctx.shadowBlur = 0;
       ctx.shadowColor = 'transparent';
       ctx.drawImage(mid, PAD, PAD);
+      host.classList.add('glow-on'); // 미러가 실제로 그렸다 → 이제 원본을 숨긴다
     } catch (_) {}
   };
   if (bgSpineGlowRaf) cancelAnimationFrame(bgSpineGlowRaf);
