@@ -4264,7 +4264,6 @@
     <div class="panel" id="previewbox"></div>
     <div class="side-nav">
       <button class="smallbtn side-help" id="side-help" onclick="openHelp()">족보표 / 도움말</button>
-      <a class="smallbtn" id="side-guide" href="/guide">게임 가이드</a>
     </div>
     <div class="panel" id="playlog-panel" style="display:none;">
       <div id="playlog-title" style="font-size:11px; color:var(--gold-soft); font-weight:800; margin-bottom:5px;">이번 판 내기 기록</div>
@@ -4345,9 +4344,6 @@
     </div>
     <div class="set-row">
       <button type="button" class="set-linkbtn" id="set-tutor" onclick="replayTutorialsFromSettings()">튜토리얼 다시 보기</button>
-    </div>
-    <div class="set-row">
-      <a class="set-linkbtn" id="set-guide" href="/guide">게임 가이드</a>
     </div>
     </div>
   </div>
@@ -4945,10 +4941,9 @@ const I18N = {
     settingsBgm: 'BGM', settingsSfx: '효과음',
     settingsLang: '언어', settingsFx: '연출 2배속',
     settingsSort: '손패 정렬', settingsCardDetail: '카드 상세 정보 표시',
-    settingsPlayLog: '내기 기록', settingsTutor: '튜토리얼 다시 보기', settingsGuide: '게임 가이드', settingsClose: '닫기',
+    settingsPlayLog: '내기 기록', settingsTutor: '튜토리얼 다시 보기', settingsClose: '닫기',
     score: '점수', needScore: '남은 점수', achieved: '달성!',
     sideHelp: '족보표 / 도움말',
-    sideGuide: '게임 가이드',
     labelsShow: '월·열끗 보이기', labelsHide: '월·열끗 숨기기',
     playLogTitle: '이번 판 내기 기록',
     emptyJoker: '특수패<br>빈 슬롯', nyang: (n) => `${n}냥`,
@@ -5035,10 +5030,9 @@ const I18N = {
     settingsBgm: 'BGM', settingsSfx: 'SFX',
     settingsLang: 'Language', settingsFx: '2× effects',
     settingsSort: 'Hand sort', settingsCardDetail: 'Show card details',
-    settingsPlayLog: 'Play log', settingsTutor: 'Replay tutorials', settingsGuide: 'Game guide', settingsClose: 'Close',
+    settingsPlayLog: 'Play log', settingsTutor: 'Replay tutorials', settingsClose: 'Close',
     score: 'Score', needScore: 'To go', achieved: 'Clear!',
     sideHelp: 'Hands / Help',
-    sideGuide: 'Game guide',
     labelsShow: 'Show labels', labelsHide: 'Hide labels',
     playLogTitle: 'Plays this round',
     emptyJoker: 'Joker<br>empty', nyang: (n) => `${n} nyang`,
@@ -5125,10 +5119,9 @@ const I18N = {
     settingsBgm: 'BGM', settingsSfx: '効果音',
     settingsLang: '言語', settingsFx: '演出2倍速',
     settingsSort: '手札並べ替え', settingsCardDetail: 'カード詳細表示',
-    settingsPlayLog: '出し記録', settingsTutor: 'チュートリアル', settingsGuide: 'ゲームガイド', settingsClose: '閉じる',
+    settingsPlayLog: '出し記録', settingsTutor: 'チュートリアル', settingsClose: '閉じる',
     score: 'スコア', needScore: '残り', achieved: '達成!',
     sideHelp: '役表 / ヘルプ',
-    sideGuide: 'ゲームガイド',
     labelsShow: 'ラベル表示', labelsHide: 'ラベル非表示',
     playLogTitle: 'この卓の出し記録',
     emptyJoker: '特殊札<br>空き', nyang: (n) => `${n}両`,
@@ -5762,8 +5755,6 @@ function applyLocaleChrome() {
   const ls = $('lbl-score'); if (ls) ls.textContent = p.score;
   const ln = $('lbl-need'); if (ln) ln.textContent = p.needScore;
   const sh = $('side-help'); if (sh) sh.textContent = p.sideHelp;
-  const sg = $('side-guide'); if (sg) sg.textContent = p.sideGuide;
-  const setGuide = $('set-guide'); if (setGuide) setGuide.textContent = p.settingsGuide;
   const plt = $('playlog-title'); if (plt) plt.textContent = p.playLogTitle;
   syncSettingsLocale();
 }
