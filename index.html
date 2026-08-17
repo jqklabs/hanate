@@ -11593,6 +11593,9 @@ function initBgSpine() {
     animation: FIRST_ANIM,
     animations: [FIRST_ANIM],
     showControls: false,
+    // 로딩 스피너 금지 — 배경 장식이 게임 화면 위에 주황색 스피너를 띄우면 안 된다.
+    // file:// 로 열면 skeleton.json fetch가 막혀 로딩이 끝나지 않고 스피너가 남는다.
+    showLoading: false,
     interactive: false,
     alpha: true,
     backgroundColor: '#00000000',
@@ -11616,6 +11619,9 @@ function initBgSpine() {
     },
     error(player, reason) {
       console.warn('[spine]', reason);
+      // 로드 실패 시 빈 캔버스라도 남기지 않는다 (file:// 등)
+      const fig = $('bg-figure');
+      if (fig) fig.style.display = 'none';
     },
   });
 }
