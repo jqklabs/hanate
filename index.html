@@ -929,7 +929,7 @@
     border-radius: 8px; padding: 7px 11px; font-size: 12px; cursor: pointer;
   }
   #coach-root .coach-next {
-    background: linear-gradient(180deg, #d97706, #b45309); color: #fff;
+    background: var(--gold); color: var(--ink-deep);
     border: none;
   }
   #coach-root .coach-skip {
@@ -1126,6 +1126,10 @@
     color: #8a6d3b; align-self: flex-start; margin: 1px 0 0 2px; letter-spacing: -0.5px;
   }
   .card .art { font-size: 30px; line-height: 1; margin-top: 8px; filter: drop-shadow(0 1px 1px rgba(0,0,0,.25)); }
+  .card .art.art-text {
+    font-family: var(--font-overlay); font-size: 17px; font-weight: 400;
+    color: var(--ink-deep); filter: none;
+  }
   .card .tag {
     position: absolute; bottom: 5px; left: 5px; right: 5px;
     font-family: var(--font-overlay); font-size: 12px; font-weight: 400;
@@ -2611,7 +2615,7 @@
   #ch-figure { position: relative; width: 110px; filter: drop-shadow(0 4px 8px rgba(0,0,0,.4)); }
   #ch-face { position: absolute; top: 19px; left: 50%; transform: translateX(-50%); font-size: 23px; }
   #ch-btn {
-    background: linear-gradient(180deg, #d97706, #b45309); color: #fff;
+    background: var(--gold); color: var(--ink-deep);
     font-size: 11px; font-weight: 800; padding: 6px 10px; width: 100%;
   }
   #ch-hint-tabs {
@@ -2623,7 +2627,7 @@
     border-radius: 7px; background: rgba(255,255,255,.12); color: var(--ink-2);
   }
   #ch-hint-tabs button.on {
-    background: linear-gradient(180deg, #d97706, #b45309); color: #fff;
+    background: var(--gold); color: var(--ink-deep);
   }
   @media (min-width: 1400px) {
     #main { padding-right: 200px; }
@@ -2829,7 +2833,7 @@
   }
   .score-fly::after {
     content: ''; position: absolute; inset: -12px -18px; border-radius: 999px;
-    background: radial-gradient(circle, rgba(147,197,253,.35), transparent 70%);
+    background: radial-gradient(circle, rgba(111,179,216,.35), transparent 70%);
     z-index: -1; filter: blur(2px);
   }
   #score-val.score-land {
@@ -4508,18 +4512,18 @@ function shuffle(arr, rng) {
 
 // ── 카드 데이터 (한국식 화투 48장) ─────────────────────────
 const MONTHS = [
-  { n: 1,  name: '송학',   flower: '🌲', yeolArt: null,  gwangArt: '🕊️' },
-  { n: 2,  name: '매조',   flower: '🌸', yeolArt: '🐦', gwangArt: null },
-  { n: 3,  name: '벚꽃',   flower: '🌸', yeolArt: null,  gwangArt: '🏯' },
-  { n: 4,  name: '흑싸리', flower: '🌿', yeolArt: '🐦‍⬛', gwangArt: null },
-  { n: 5,  name: '난초',   flower: '🪻', yeolArt: '🌉', gwangArt: null },
-  { n: 6,  name: '모란',   flower: '🌺', yeolArt: '🦋', gwangArt: null },
-  { n: 7,  name: '홍싸리', flower: '🍀', yeolArt: '🐗', gwangArt: null },
-  { n: 8,  name: '공산',   flower: '🌕', yeolArt: '🪿', gwangArt: '🌕' },
-  { n: 9,  name: '국진',   flower: '🌼', yeolArt: '🍶', gwangArt: null },
-  { n: 10, name: '단풍',   flower: '🍁', yeolArt: '🦌', gwangArt: null },
-  { n: 11, name: '오동',   flower: '🍂', yeolArt: null,  gwangArt: '🐔' },
-  { n: 12, name: '비',     flower: '🌧️', yeolArt: '🐦', gwangArt: '☔' },
+  { n: 1,  name: '송학'   },
+  { n: 2,  name: '매조'   },
+  { n: 3,  name: '벚꽃'   },
+  { n: 4,  name: '흑싸리' },
+  { n: 5,  name: '난초'   },
+  { n: 6,  name: '모란'   },
+  { n: 7,  name: '홍싸리' },
+  { n: 8,  name: '공산'   },
+  { n: 9,  name: '국진'   },
+  { n: 10, name: '단풍'   },
+  { n: 11, name: '오동'   },
+  { n: 12, name: '비'     },
 ];
 function hanjaMonth(n) { return `${n}月`; }
 
@@ -8578,14 +8582,15 @@ function cardHTML(card, opts = {}) {
       body += `<img class="${ovCls}" src="${esc(assetSrc(overlaySrc))}" alt="" draggable="false">`;
     }
   } else if (card.type === 'kwang') {
-    body = `<div class="art">${M.gwangArt}</div><div class="gwangmark">光</div>`;
+    // 이미지 폴백 — 이모지 대신 글자. 48장 전부 art가 있어 평소엔 안 탄다.
+    body = `<div class="gwangmark">光</div>`;
   } else if (card.type === 'yeol') {
-    body = `<div class="art">${M.yeolArt}</div>`;
+    body = `<div class="art art-text">${esc(uiMonthName(card.month))}</div>`;
   } else if (card.type === 'tti') {
     const color = card.tags.find((x) => TTI_LABEL[x]) || 'bi_tti';
     body = `<div class="ribbon">${color === 'chodan' ? '' : uiTtiLabel(color)}</div>`;
   } else {
-    body = `<div class="art">${M.flower}</div>`;
+    body = `<div class="art art-text">${hanjaMonth(card.month)}</div>`;
   }
   if (!opts.noSeason && card.month === state.round) cls += ' season'; // 이달의 패 강조
   const selCls = opts.selectable && state.selected.includes(card.uid) && !discarding ? ' sel' : '';
