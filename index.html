@@ -2421,8 +2421,13 @@
     background: var(--tier-s);
   }
   .hb-vis {
-    text-align: center; font-size: 18px; line-height: 1;
-    filter: drop-shadow(0 1px 0 rgba(0,0,0,.35));
+    display: flex; align-items: center; justify-content: center;
+    height: 39px;
+  }
+  .hb-vis img {
+    width: 26px; height: 39px; object-fit: cover;
+    border-radius: 3px; border: 1px solid rgba(0,0,0,.5);
+    box-shadow: 0 1px 3px rgba(0,0,0,.45);
   }
   .hb-row.t-a .hb-rank { background: var(--tier-a); }
   .hb-row.t-bi .hb-rank { background: var(--tier-bi); }
@@ -9461,18 +9466,30 @@ function deckpeekHTML() {
 }
 
 function helpHTML() {
+  // 족보를 대표하는 실제 카드 — 이모지 대신 이미 있는 카드 아트를 쓴다
   const HAND_VIS = {
-    ogwang: '🕊️', sagwang: '🏯', chongtong: '🎴', godori: '🐦', bigodori: '🌧️🐦',
-    samgwang: '🌕', bisamgwang: '☔', dan: '🎀',
-    byeongpung: '📜', month3: '💥',
-    yeol3: '🂠', tti3: '🎗️', pi5: '🍂', month2: '2️⃣', none: '·',
+    ogwang:     'Assets/01_january/1-gwang.webp',
+    sagwang:    'Assets/03_march/3-gwang.webp',
+    chongtong:  'Assets/11_november/11-gwang.webp',
+    godori:     'Assets/02_february/2-yeolkkeut-warbler.webp',
+    bigodori:   'Assets/12_december/12-yeolkkeut-swallow.webp',
+    samgwang:   'Assets/08_august/8-gwang.webp',
+    bisamgwang: 'Assets/12_december/12-gwang-umbrella.webp',
+    dan:        'Assets/01_january/1-tti-hongdan.webp',
+    byeongpung: 'Assets/05_may/5-yeolkkeut.webp',
+    month3:     'Assets/07_july/7-yeolkkeut.webp',
+    yeol3:      'Assets/06_june/6-yeolkkeut.webp',
+    tti3:       'Assets/06_june/6-tti-cheongdan.webp',
+    pi5:        'Assets/12_december/12-pi-ssangpi.webp',
+    month2:     'Assets/03_march/3-pi-1.webp',
   };
   const rows = HANDS.map((h, i) => {
     const tier = h.id === 'bisamgwang' ? 'bi'
       : i <= 1 ? 's' : i <= 5 ? 'a' : i <= 8 ? 'b' : i <= 12 ? 'c' : 'd';
     return `<div class="hb-row t-${tier}">
       <div class="hb-rank">${i + 1}</div>
-      <div class="hb-vis" aria-hidden="true">${HAND_VIS[h.id] || '🎴'}</div>
+      <div class="hb-vis" aria-hidden="true">${HAND_VIS[h.id]
+        ? `<img src="${esc(assetSrc(HAND_VIS[h.id]))}" alt="" draggable="false">` : ''}</div>
       <div>
         <div class="hb-name">${uiHandName(h.id)}</div>
         <div class="hb-cond">${uiHandCond(h.id)}</div>
