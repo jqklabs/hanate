@@ -2509,11 +2509,6 @@
     font-size: 12px; font-weight: 900; color: #f8fafc;
     margin-bottom: 7px;
   }
-  .help-card .hc-title .ico {
-    width: 20px; height: 20px; border-radius: 7px;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 11px; background: rgba(255,255,255,.1);
-  }
   .help-card .hc-body {
     font-family: var(--font-ui);
     font-size: 11.5px; color: #cbd5e1; line-height: 1.55;
@@ -3549,7 +3544,10 @@
     40% { filter: brightness(1.7); }
   }
   .coin-particle {
-    position: fixed; z-index: 70; font-size: 16px; pointer-events: none;
+    position: fixed; z-index: 70; pointer-events: none;
+    width: 13px; height: 13px; border-radius: 50%;
+    background: var(--gold); border: 1px solid #8a6e3a;
+    box-shadow: inset 0 0 0 2px rgba(255, 250, 220, .35);
     animation: coinFly .85s ease forwards;
   }
   @keyframes coinFly {
@@ -4249,8 +4247,8 @@
   <div id="jokerbar"></div>
   <div id="topbar-right">
     <div id="moneybox"></div>
-    <button type="button" id="top-settings" onclick="openSettings()" title="설정" aria-label="설정">⚙</button>
-    <button type="button" id="top-help" class="smallbtn" onclick="openHelp()" title="족보표 / 도움말">📖</button>
+    <button type="button" id="top-settings" onclick="openSettings()" title="설정" aria-label="설정"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 12h2M10 12h10M4 17h8M16 17h4"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="12" cy="17" r="2"/></svg></button>
+    <button type="button" id="top-help" class="smallbtn" onclick="openHelp()" title="족보표 / 도움말"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><path d="M9 3v18" stroke-opacity=".5"/></svg></button>
   </div>
 </div>
 
@@ -4269,8 +4267,8 @@
     </div>
     <div class="panel" id="previewbox"></div>
     <div class="side-nav">
-      <button class="smallbtn side-help" id="side-help" onclick="openHelp()">📖 족보표 / 도움말</button>
-      <a class="smallbtn" id="side-guide" href="/guide">📚 게임 가이드</a>
+      <button class="smallbtn side-help" id="side-help" onclick="openHelp()">족보표 / 도움말</button>
+      <a class="smallbtn" id="side-guide" href="/guide">게임 가이드</a>
     </div>
     <div class="panel" id="playlog-panel" style="display:none;">
       <div id="playlog-title" style="font-size:11px; color:var(--gold-soft); font-weight:800; margin-bottom:5px;">이번 판 내기 기록</div>
@@ -4350,10 +4348,10 @@
       </button>
     </div>
     <div class="set-row">
-      <button type="button" class="set-linkbtn" id="set-tutor" onclick="replayTutorialsFromSettings()">✨ 튜토리얼 다시 보기</button>
+      <button type="button" class="set-linkbtn" id="set-tutor" onclick="replayTutorialsFromSettings()">튜토리얼 다시 보기</button>
     </div>
     <div class="set-row">
-      <a class="set-linkbtn" id="set-guide" href="/guide">📚 게임 가이드</a>
+      <a class="set-linkbtn" id="set-guide" href="/guide">게임 가이드</a>
     </div>
     </div>
   </div>
@@ -4391,7 +4389,7 @@
     </svg>
     <div id="ch-face">😴</div>
   </div>
-  <button id="ch-btn" onclick="buyChunhyangNext()">🍶 훈수 예약</button>
+  <button id="ch-btn" onclick="buyChunhyangNext()">훈수 예약</button>
 </div>
 
 <div id="modal-overlay"><div id="modal"></div></div>
@@ -4951,28 +4949,28 @@ const I18N = {
     settingsBgm: 'BGM', settingsSfx: '효과음',
     settingsLang: '언어', settingsFx: '연출 2배속',
     settingsSort: '손패 정렬', settingsCardDetail: '카드 상세 정보 표시',
-    settingsPlayLog: '내기 기록', settingsTutor: '✨ 튜토리얼 다시 보기', settingsGuide: '📚 게임 가이드', settingsClose: '닫기',
+    settingsPlayLog: '내기 기록', settingsTutor: '튜토리얼 다시 보기', settingsGuide: '게임 가이드', settingsClose: '닫기',
     score: '점수', needScore: '남은 점수', achieved: '달성!',
-    sideHelp: '📖 족보표 / 도움말',
-    sideGuide: '📚 게임 가이드',
-    labelsShow: '🏷 월·열끗 보이기', labelsHide: '🏷 월·열끗 숨기기',
+    sideHelp: '족보표 / 도움말',
+    sideGuide: '게임 가이드',
+    labelsShow: '월·열끗 보이기', labelsHide: '월·열끗 숨기기',
     playLogTitle: '이번 판 내기 기록',
     emptyJoker: '특수패<br>빈 슬롯', nyang: (n) => `${n}냥`,
     seasonLineDay: (m) => `이달의 패: <b>${m} 카드 칩 ×2</b><br>낮 — 광·열끗 칩 +2`,
     seasonLineNight: (m) => `이달의 패: <b>${m} 카드 칩 ×2</b><br>밤 — 띠·피·쌍피 칩 +2`,
     roundMeta: (r, t) => `(판 ${r}/${t})`, bak: '(박)',
     bossNull: ' → 피박보험으로 무효!',
-    goLevel: (n, mult, bonus) => `🔥 ${n}고! (목표 ×${mult} · 성공 시 +${bonus}냥)`,
+    goLevel: (n, mult, bonus) => `${n}고! (목표 ×${mult} · 성공 시 +${bonus}냥)`,
     pvPick: '패를 선택하세요', pvFacedown: '뒷면 포함 · 미리보기 불가',
     pvBase: '기본합', pvMult: '배수', pvFlat: '+점수', pvTotal: '예상 점수',
     deckShort: '덱',
     deckTitle: '남은 덱 (클릭하여 보기)', deckLow: (n) => `남은 덱 ${n}장 · 부족! (클릭하여 보기)`,
     deckFog: '안개 — 패 보기 불가',
     playHint: '카드를 고르고 <b>내기</b>를 누르세요',
-    auraJunkTutor: '🗑️ 빨간 빛 — 버릴 약한 패 (눌러 고르고 버리기, 최대 5장)',
-    auraJunk: '🗑️ 버리기 추천 · 빨간 패를 누르면 한꺼번에 골라져요 (한 장씩 해제 가능)',
-    auraPlayNone: '✨ 내기 추천 · 빛나는 패를 누르면 칩 최고 패가 골라져요',
-    auraPlay: (name) => `✨ 내기 추천 · 빛나는 패를 누르면 ${name}이 한 번에 골라져요`,
+    auraJunkTutor: '빨간 빛 — 버릴 약한 패 (눌러 고르고 버리기, 최대 5장)',
+    auraJunk: '버리기 추천 · 빨간 패를 누르면 한꺼번에 골라져요 (한 장씩 해제 가능)',
+    auraPlayNone: '내기 추천 · 빛나는 패를 누르면 칩 최고 패가 골라져요',
+    auraPlay: (name) => `내기 추천 · 빛나는 패를 누르면 ${name}이 한 번에 골라져요`,
     gainNone: '아직 이득 없음', gainZero: '이득 0',
     mitjangNow: (n) => ` 지금 누적 ${n}칩입니다.`,
     bestChipHand: '최고 칩 패', discardWord: '버리기',
@@ -5041,28 +5039,28 @@ const I18N = {
     settingsBgm: 'BGM', settingsSfx: 'SFX',
     settingsLang: 'Language', settingsFx: '2× effects',
     settingsSort: 'Hand sort', settingsCardDetail: 'Show card details',
-    settingsPlayLog: 'Play log', settingsTutor: '✨ Replay tutorials', settingsGuide: '📚 Game guide', settingsClose: 'Close',
+    settingsPlayLog: 'Play log', settingsTutor: 'Replay tutorials', settingsGuide: 'Game guide', settingsClose: 'Close',
     score: 'Score', needScore: 'To go', achieved: 'Clear!',
-    sideHelp: '📖 Hands / Help',
-    sideGuide: '📚 Game guide',
-    labelsShow: '🏷 Show labels', labelsHide: '🏷 Hide labels',
+    sideHelp: 'Hands / Help',
+    sideGuide: 'Game guide',
+    labelsShow: 'Show labels', labelsHide: 'Hide labels',
     playLogTitle: 'Plays this round',
     emptyJoker: 'Joker<br>empty', nyang: (n) => `${n} nyang`,
     seasonLineDay: (m) => `Month cards: <b>${m} chips ×2</b><br>Day — Gwang & Yeol +2`,
     seasonLineNight: (m) => `Month cards: <b>${m} chips ×2</b><br>Night — Ribbon & Pi +2`,
     roundMeta: (r, t) => `(Round ${r}/${t})`, bak: '(Bak)',
     bossNull: ' → negated by Pi-Bak Insurance!',
-    goLevel: (n, mult, bonus) => `🔥 Go ${n}! (target ×${mult} · win +${bonus} nyang)`,
+    goLevel: (n, mult, bonus) => `Go ${n}! (target ×${mult} · win +${bonus} nyang)`,
     pvPick: 'Select cards', pvFacedown: 'Face-down included · no preview',
     pvBase: 'Chips', pvMult: 'Mult', pvFlat: '+Flat', pvTotal: 'Est. score',
     deckShort: 'Deck',
     deckTitle: 'Deck left (click to peek)', deckLow: (n) => `Deck ${n} left · low! (click)`,
     deckFog: 'Fog — peek disabled',
     playHint: 'Pick cards and press <b>Play</b>',
-    auraJunkTutor: '🗑️ Red glow — weak discards (tap & discard, max 5)',
-    auraJunk: '🗑️ Discard tip · tap red cards to select (untap one by one)',
-    auraPlayNone: '✨ Play tip · tap glow for highest-chip set',
-    auraPlay: (name) => `✨ Play tip · tap glow to pick ${name}`,
+    auraJunkTutor: 'Red glow — weak discards (tap & discard, max 5)',
+    auraJunk: 'Discard tip · tap red cards to select (untap one by one)',
+    auraPlayNone: 'Play tip · tap glow for highest-chip set',
+    auraPlay: (name) => `Play tip · tap glow to pick ${name}`,
     gainNone: 'No gain yet', gainZero: 'Gain 0',
     mitjangNow: (n) => ` Stacked ${n} chips now.`,
     bestChipHand: 'Best chip set', discardWord: 'Discard',
@@ -5131,28 +5129,28 @@ const I18N = {
     settingsBgm: 'BGM', settingsSfx: '効果音',
     settingsLang: '言語', settingsFx: '演出2倍速',
     settingsSort: '手札並べ替え', settingsCardDetail: 'カード詳細表示',
-    settingsPlayLog: '出し記録', settingsTutor: '✨ チュートリアル', settingsGuide: '📚 ゲームガイド', settingsClose: '閉じる',
+    settingsPlayLog: '出し記録', settingsTutor: 'チュートリアル', settingsGuide: 'ゲームガイド', settingsClose: '閉じる',
     score: 'スコア', needScore: '残り', achieved: '達成!',
-    sideHelp: '📖 役表 / ヘルプ',
-    sideGuide: '📚 ゲームガイド',
-    labelsShow: '🏷 ラベル表示', labelsHide: '🏷 ラベル非表示',
+    sideHelp: '役表 / ヘルプ',
+    sideGuide: 'ゲームガイド',
+    labelsShow: 'ラベル表示', labelsHide: 'ラベル非表示',
     playLogTitle: 'この卓の出し記録',
     emptyJoker: '特殊札<br>空き', nyang: (n) => `${n}両`,
     seasonLineDay: (m) => `今月札: <b>${m} チップ×2</b><br>昼 — 光・十＋2`,
     seasonLineNight: (m) => `今月札: <b>${m} チップ×2</b><br>夜 — 短冊・カス＋2`,
     roundMeta: (r, t) => `(卓 ${r}/${t})`, bak: '(バク)',
     bossNull: ' → 皮バク保険で無効!',
-    goLevel: (n, mult, bonus) => `🔥 ${n}ゴー! (目標×${mult} · 成功+${bonus}両)`,
+    goLevel: (n, mult, bonus) => `${n}ゴー! (目標×${mult} · 成功+${bonus}両)`,
     pvPick: '札を選んでください', pvFacedown: '裏札あり · プレビュー不可',
     pvBase: '基本', pvMult: '倍率', pvFlat: '+加点', pvTotal: '予想スコア',
     deckShort: '山札',
     deckTitle: '山札 (クリックで確認)', deckLow: (n) => `山札 ${n}枚 · 少ない! (クリック)`,
     deckFog: '霧 — 確認不可',
     playHint: '札を選んで <b>出し</b> を押す',
-    auraJunkTutor: '🗑️ 赤光 — 弱い捨て札 (選んで捨て、最大5)',
-    auraJunk: '🗑️ 捨て推奨 · 赤札をタップで一括選択',
-    auraPlayNone: '✨ 出し推奨 · 光る札で最高チップ役',
-    auraPlay: (name) => `✨ 出し推奨 · 光る札で ${name} を一括選択`,
+    auraJunkTutor: '赤光 — 弱い捨て札 (選んで捨て、最大5)',
+    auraJunk: '捨て推奨 · 赤札をタップで一括選択',
+    auraPlayNone: '出し推奨 · 光る札で最高チップ役',
+    auraPlay: (name) => `出し推奨 · 光る札で ${name} を一括選択`,
     gainNone: 'まだ利益なし', gainZero: '利益0',
     mitjangNow: (n) => ` 現在累積 ${n}チップ。`,
     bestChipHand: '最高チップ役', discardWord: '捨て',
@@ -5215,14 +5213,14 @@ const I18N_UI = {
     close: '닫기',
     skip: '건너뛰기',
     gotIt: '알겠어요',
-    helpH2: '📖 족보표',
+    helpH2: '족보표',
     helpIntro: '위에서부터 먼저 성립하는 족보 <b>하나</b>로 판정합니다.<br>점수 = (<b>족보 구성 카드</b> 칩) × 배수 + 나머지 낸 카드 칩',
     legendS: '최고', legendA: '상위', legendB: '중위', legendC: '기본', legendD: '무조합',
     chipKwang: '광', chipYeol: '열끗', chipTti: '띠', chipSsang: '쌍피', chipPi: '피',
     helpTimeTitle: '시간 · 계절',
     helpTimeBody: (m1, m12) => `판은 <b>1월(${m1})→12월(${m12})</b>로 흐릅니다. 이달의 패는 칩 <b>×2</b>.`,
-    helpTimeDay: '☀️ 홀수 달 낮 · 광·열끗 <em>+2</em>',
-    helpTimeNight: '🌙 짝수 달 밤 · 띠·피 <em>+2</em>',
+    helpTimeDay: '홀수 달 낮 · 광·열끗 <em>+2</em>',
+    helpTimeNight: '짝수 달 밤 · 띠·피 <em>+2</em>',
     helpRoundTitle: '한 판 · 고/스톱',
     helpRoundBody: '내기 <b>4회</b> · 버리기 <b>4회</b> · 손패 <b>8장</b>. 목표를 넘기면 <b>고</b> 또는 <b>스톱</b>. 고는 무제한 — n고 문턱 = 목표 ×(1+0.6n), 내기 +1 · 손패 보충, 보너스 n×월 냥. 점수가 이미 넘은 문턱은 고 선언 시 <b>전부 소급 인정(밀치기)</b> — 큰 한 방이면 여러 단계를 한 번에 점프. 실패하면 <b>고박 = 런 종료</b>.',
     helpRuleTitle: '특수 규칙',
@@ -5231,7 +5229,7 @@ const I18N_UI = {
     helpJokerTitle: '특수패 · 주막',
     helpJokerBody: '특수패 <b>22종</b> · 소지 최대 <b>5</b>. 티어는 <b>커먼 / 레어 / 에픽 / 레전더리</b> (출현 약 55·28·13·4%). +점수는 배수 밖, +배수·×배수는 족보 배수에 얹힙니다.',
     helpJokerTags: ['커먼 3–4냥', '레어 6–7냥', '에픽 9–11냥', '레전 13–15냥'],
-    welcomeH2: '🎴 십이화 — 고스톱: 무한의 판',
+    welcomeH2: '십이화 — 고스톱: 무한의 판',
     welcomeSub: '한국 화투 48장으로 족보를 맞춰 목표 점수를 넘기는 <b>1인 런</b>입니다. 1월부터 12월까지 한 해를 버텨보세요.',
     welcomePlayTitle: '기본 플레이',
     welcomePlayBody: '손패 <b>8장</b>에서 1~5장을 고른 뒤 <b>내기</b>로 점수를 쌓습니다. 마음에 안 들면 <b>버리기</b>로 패를 갈아끼울 수 있어요. 판마다 내기·버리기 각 <b>4회</b>.',
@@ -5241,13 +5239,13 @@ const I18N_UI = {
     welcomeGoBody: '목표를 넘기면 <b>스톱</b>(정산) 또는 <b>고</b>(목표↑ · 내기 +1 · 보너스). 한 방이 크면 이미 넘은 고 문턱을 <b>한 번에 밀치며</b> 여러 단계 점프! 고는 무제한이지만, 실패하면 <b>고박 = 런 종료</b>. <b>3·6·9·12월</b>은 박 라운드(디버프)가 붙습니다.',
     welcomeShopTitle: '주막',
     welcomeShopBody: '판을 클리어하면 주막에서 <b>특수패</b>(커먼~레전더리 22종)를 사고팝니다. 소지 최대 5개.',
-    welcomeFoot: '자세한 족보표는 언제든 <b>📖 도움말</b>에서 볼 수 있어요.',
+    welcomeFoot: '자세한 족보표는 언제든 <b>도움말</b>에서 볼 수 있어요.',
     welcomeStart: '알겠어요 — 시작하기',
     welcomeStartSub: '1월 준비 화면으로 이동합니다',
-    prepTitle: (flower, name) => `${flower} 1월 · ${name} 준비`,
+    prepTitle: (name) => `1월 · ${name} 준비`,
     prepTarget: (n) => `목표 : <b class="prep-target" style="color:var(--gold-soft)">${n}점</b>`,
-    prepStart: '▶ 1월 시작',
-    gostopH2: '🎉 목표 달성!',
+    prepStart: '1월 시작',
+    gostopH2: '목표 달성!',
     gostopSub: (score, target, plays, cards) => `${score} / ${target}점 · 내기 ${plays} · 패 ${cards}`,
     gostopNextLabel: (n) => `${n}고 시 새 목표`,
     gostopGoJump: (j) => `${j}단계 밀치기`,
@@ -5275,37 +5273,37 @@ const I18N_UI = {
     shopSold: '판매 완료',
     shopEmpty: '빈 칸',
     shopNext: '다음 판으로',
-    shopNextLabel: (flower, n, name) => `다음 <b>${flower} ${n}월 · ${name}</b>`,
+    shopNextLabel: (n, name) => `다음 <b>${n}월 · ${name}</b>`,
     shopTarget: (n) => `목표 ${n}점`,
-    shopBossPick: (n) => `⚠ ${n}월 대박 — 디버프 선택`,
-    shopBossNext: (n) => `⚠ 다음 ${n}월 박 라운드`,
+    shopBossPick: (n) => `${n}월 대박 — 디버프 선택`,
+    shopBossNext: (n) => `다음 ${n}월 박 라운드`,
     shopNeedBoss: '디버프를 먼저 선택하세요',
-    gameoverH2: (reason) => `☠ 런 종료 — ${reason}`,
+    gameoverH2: (reason) => `런 종료 — ${reason}`,
     gameoverBody: (r, rounds, score, target, best, bestHand, earned, jokers) =>
       `도달: ${r}월 / ${rounds}월 (${score} / ${target}점)<br>최고 한 방: ${best}점${bestHand ? ` (${bestHand})` : ''}<br>총 획득: ${earned}냥 · 특수패 ${jokers}개`,
-    retry: '🔄 다시 도전',
-    victoryH2: '🏆 승리! 12월 대박까지 한 해를 완주했습니다!',
+    retry: '다시 도전',
+    victoryH2: '승리! 12월 대박까지 한 해를 완주했습니다!',
     victoryBody: (score, target, best, bestHand, earned, jokers) =>
       `최종 점수: ${score} / ${target}점<br>최고 한 방: ${best}점${bestHand ? ` (${bestHand})` : ''}<br>총 획득: ${earned}냥 · 최종 특수패 ${jokers}개`,
-    newRun: '🔄 새 런 시작',
+    newRun: '새 런 시작',
     deckPeekTitle: '🂠 패 보기',
     deckLeft: (n) => `남은 덱 <b>${n}</b>장`,
-    coachHandTitle: '✨ 조합 힌트',
+    coachHandTitle: '조합 힌트',
     coachHandNone: (n) => `<b>연두 빛</b>이 도는 패를 눌러 보세요. 조합이 없으면 칩 최고 패가 골라집니다.<br><span class="coach-muted">처음 ${n}회 무료 · 이후 추천 ON/OFF</span>`,
     coachHandNamed: (name, n) => `<b>연두 빛</b>이 도는 패를 눌러 보세요. <b>${name}</b>이 한 번에 골라집니다.<br><span class="coach-muted">처음 ${n}회 무료 · 이후 추천 ON/OFF · 한 장씩 해제 가능</span>`,
     coachHandFallback: '연두 빛 패를 눌러 조합을 골라 보세요. <b>1월 한정</b>이에요.',
-    coachPlayTitle: '🎯 내기',
+    coachPlayTitle: '내기',
     coachPlayBody: '골랐으면 <b>내기</b>를 눌러 점수를 쌓아 보세요.',
-    coachJunkTitle: '🗑️ 버리기',
+    coachJunkTitle: '버리기',
     coachJunkSel: '<b>버리기</b>를 눌러 패를 갈아끼우세요 (한 번에 최대 5장). 버린 만큼 덱에서 보충됩니다.',
     coachJunkPick: '조합이 약할 땐 <b>피</b>처럼 약한 패를 버리세요. <b style="color:#fca5a5">빨간 빛</b> 패를 누르면 추천분이 한 번에 골라져요 (최대 5장).',
-    coachScoredTitle: '✨ 점수 획득!',
+    coachScoredTitle: '점수 획득!',
     coachScoredBody: (hand, score, chips, mult, flat, need) =>
       `방금 <b>${hand}</b>으로 <b>+${score}점</b>!<br>점수 = (<b>족보 칩 ${chips}</b> × <b>${mult}배</b>)${flat ? ` + <b>${flat}</b>` : ''}.<br>목표까지 <b>남은 점수 ${need}</b> · 게이지를 확인하세요.`,
     coachScoredFallback: '점수가 쌓였어요! 점수 = <b>족보 칩</b> × <b>배수</b> + 나머지.',
-    coachGoTitle: '🔥 고 / 스톱',
+    coachGoTitle: '고 / 스톱',
     coachGoBody: '<b>스톱</b>은 지금 정산하고 다음 달로.<br><b>고</b>는 목표를 올리고 더 내지만, 실패하면 <b>고박 = 런 종료</b>!<br><span class="coach-muted">하나를 골라 보세요.</span>',
-    coachShopTitle: '🍶 주막',
+    coachShopTitle: '주막',
     coachShopBody: '특수패를 사고, 마음에 안 들면 <b>리롤</b>하세요. 준비되면 <b>다음 판으로</b>!',
     coachDeckTitle: '🂠 남은 덱',
     coachDeckBody: '오른쪽 <b>🂠</b> 숫자를 눌러 보세요. 아직 안 나온 패를 미리 볼 수 있어요.<br><span class="coach-muted">언제든 다시 열어볼 수 있어요.</span>',
@@ -5331,14 +5329,14 @@ const I18N_UI = {
     close: 'Close',
     skip: 'Skip',
     gotIt: 'Got it',
-    helpH2: '📖 Hands',
+    helpH2: 'Hands',
     helpIntro: 'The first matching hand from the top wins.<br>Score = (hand <b>core</b> chips) × mult + other played chips',
     legendS: 'Top', legendA: 'High', legendB: 'Mid', legendC: 'Basic', legendD: 'None',
     chipKwang: 'Bright', chipYeol: 'Animal', chipTti: 'Ribbon', chipSsang: 'Dbl Pi', chipPi: 'Pi',
     helpTimeTitle: 'Time · Season',
     helpTimeBody: (m1, m12) => `Rounds run <b>Jan (${m1}) → Dec (${m12})</b>. Month cards get chips <b>×2</b>.`,
-    helpTimeDay: '☀️ Odd months · day · Bright/Animal <em>+2</em>',
-    helpTimeNight: '🌙 Even months · night · Ribbon/Pi <em>+2</em>',
+    helpTimeDay: 'Odd months · day · Bright/Animal <em>+2</em>',
+    helpTimeNight: 'Even months · night · Ribbon/Pi <em>+2</em>',
     helpRoundTitle: 'Round · Go/Stop',
     helpRoundBody: '<b>4</b> plays · <b>4</b> discards · hand of <b>8</b>. Beat the target to <b>Go</b> or <b>Stop</b>. Go is unlimited — Go n threshold = target ×(1+0.6n), +1 play · redraw, bonus n×month nyang. Thresholds already cleared are <b>all credited on Go (push)</b> — a big hit can jump several steps. Fail = <b>Go-bak = run over</b>.',
     helpRuleTitle: 'Special rules',
@@ -5347,7 +5345,7 @@ const I18N_UI = {
     helpJokerTitle: 'Jokers · Tavern',
     helpJokerBody: '<b>22</b> jokers · hold up to <b>5</b>. Tiers: <b>Common / Rare / Epic / Legendary</b> (~55·28·13·4%). Flat score is outside mult; +mult / ×mult stack on the hand mult.',
     helpJokerTags: ['Common 3–4', 'Rare 6–7', 'Epic 9–11', 'Legend 13–15'],
-    welcomeH2: '🎴 Sibiwha — Go-Stop: Infinite Table',
+    welcomeH2: 'Sibiwha — Go-Stop: Infinite Table',
     welcomeSub: 'A <b>solo run</b>: make hwatu hands and beat monthly targets with a 48-card Korean deck. Survive January through December.',
     welcomePlayTitle: 'Basics',
     welcomePlayBody: 'From an <b>8-card</b> hand, pick 1–5 and <b>Play</b> to score. Or <b>Discard</b> to redraw. Each round: <b>4</b> plays · <b>4</b> discards.',
@@ -5357,13 +5355,13 @@ const I18N_UI = {
     welcomeGoBody: 'Beat the target to <b>Stop</b> (cash out) or <b>Go</b> (raise target · +1 play · bonus). A huge hit can <b>push through</b> several Go steps at once! Unlimited Go, but fail = <b>Go-bak = run over</b>. <b>3·6·9·12</b> are Bak rounds.',
     welcomeShopTitle: 'Tavern',
     welcomeShopBody: 'Clear a month to shop <b>jokers</b> (Common–Legendary, 22 kinds). Hold up to 5.',
-    welcomeFoot: 'Full hand list is always in <b>📖 Help</b>.',
+    welcomeFoot: 'Full hand list is always in <b>Help</b>.',
     welcomeStart: 'Got it — Start',
     welcomeStartSub: 'Go to January prep',
-    prepTitle: (flower, name) => `${flower} January · ${name} prep`,
+    prepTitle: (name) => `January · ${name} prep`,
     prepTarget: (n) => `Target: <b class="prep-target" style="color:var(--gold-soft)">${n}</b>`,
-    prepStart: '▶ Start January',
-    gostopH2: '🎉 Target cleared!',
+    prepStart: 'Start January',
+    gostopH2: 'Target cleared!',
     gostopSub: (score, target, plays, cards) => `${score} / ${target} · plays ${plays} · cards ${cards}`,
     gostopNextLabel: (n) => `Go ${n} — new target`,
     gostopGoJump: (j) => `+${j} steps`,
@@ -5391,37 +5389,37 @@ const I18N_UI = {
     shopSold: 'Sold',
     shopEmpty: 'Empty',
     shopNext: 'Next round',
-    shopNextLabel: (flower, n, name) => `Next <b>${flower} ${n} · ${name}</b>`,
+    shopNextLabel: (n, name) => `Next <b>${n} · ${name}</b>`,
     shopTarget: (n) => `Target ${n}`,
-    shopBossPick: (n) => `⚠ Month ${n} Bak — pick debuff`,
-    shopBossNext: (n) => `⚠ Next: month ${n} Bak`,
+    shopBossPick: (n) => `Month ${n} Bak — pick debuff`,
+    shopBossNext: (n) => `Next: month ${n} Bak`,
     shopNeedBoss: 'Pick a debuff first',
-    gameoverH2: (reason) => `☠ Run over — ${reason}`,
+    gameoverH2: (reason) => `Run over — ${reason}`,
     gameoverBody: (r, rounds, score, target, best, bestHand, earned, jokers) =>
       `Reached: month ${r} / ${rounds} (${score} / ${target})<br>Best hit: ${best}${bestHand ? ` (${bestHand})` : ''}<br>Earned: ${earned} · jokers ${jokers}`,
-    retry: '🔄 Try again',
-    victoryH2: '🏆 Victory! You finished the year through December Bak!',
+    retry: 'Try again',
+    victoryH2: 'Victory! You finished the year through December Bak!',
     victoryBody: (score, target, best, bestHand, earned, jokers) =>
       `Final: ${score} / ${target}<br>Best hit: ${best}${bestHand ? ` (${bestHand})` : ''}<br>Earned: ${earned} · jokers ${jokers}`,
-    newRun: '🔄 New run',
+    newRun: 'New run',
     deckPeekTitle: '🂠 Deck view',
     deckLeft: (n) => `Deck left <b>${n}</b>`,
-    coachHandTitle: '✨ Hand tip',
+    coachHandTitle: 'Hand tip',
     coachHandNone: (n) => `Tap the <b>green glow</b>. If no combo, highest-chip cards are picked.<br><span class="coach-muted">First ${n} free · then tip ON/OFF</span>`,
     coachHandNamed: (name, n) => `Tap the <b>green glow</b> to pick <b>${name}</b> at once.<br><span class="coach-muted">First ${n} free · then tip ON/OFF · untap one by one</span>`,
     coachHandFallback: 'Tap the green glow to build a hand. <b>January only</b>.',
-    coachPlayTitle: '🎯 Play',
+    coachPlayTitle: 'Play',
     coachPlayBody: 'When ready, press <b>Play</b> to score.',
-    coachJunkTitle: '🗑️ Discard',
+    coachJunkTitle: 'Discard',
     coachJunkSel: 'Press <b>Discard</b> to redraw (up to 5). Replaced from the deck.',
     coachJunkPick: 'When weak, discard junk like <b>Pi</b>. Tap <b style="color:#fca5a5">red glow</b> to select the tip set (max 5).',
-    coachScoredTitle: '✨ Score!',
+    coachScoredTitle: 'Score!',
     coachScoredBody: (hand, score, chips, mult, flat, need) =>
       `Just scored <b>${hand}</b> for <b>+${score}</b>!<br>Score = (<b>hand chips ${chips}</b> × <b>${mult}</b>)${flat ? ` + <b>${flat}</b>` : ''}.<br><b>${need}</b> left to target — check the gauge.`,
     coachScoredFallback: 'Points in! Score = <b>hand chips</b> × <b>mult</b> + flat.',
-    coachGoTitle: '🔥 Go / Stop',
+    coachGoTitle: 'Go / Stop',
     coachGoBody: '<b>Stop</b> cashes out to next month.<br><b>Go</b> raises the target for more plays — fail = <b>Go-bak = run over</b>!<br><span class="coach-muted">Pick one.</span>',
-    coachShopTitle: '🍶 Tavern',
+    coachShopTitle: 'Tavern',
     coachShopBody: 'Buy jokers, <b>reroll</b> if needed, then <b>Next round</b>!',
     coachDeckTitle: '🂠 Deck left',
     coachDeckBody: 'Tap the <b>🂠</b> count on the right to peek at remaining cards.<br><span class="coach-muted">You can open it anytime.</span>',
@@ -5447,14 +5445,14 @@ const I18N_UI = {
     close: '閉じる',
     skip: 'スキップ',
     gotIt: 'わかった',
-    helpH2: '📖 役表',
+    helpH2: '役表',
     helpIntro: '上から最初に成立した役<b>ひとつ</b>で判定します。<br>スコア = (役の<b>コア</b>チップ) × 倍率 + それ以外のチップ',
     legendS: '最高', legendA: '上位', legendB: '中位', legendC: '基本', legendD: '役なし',
     chipKwang: '光', chipYeol: '十', chipTti: '短冊', chipSsang: 'カス×2', chipPi: 'カス',
     helpTimeTitle: '時間 · 季節',
     helpTimeBody: (m1, m12) => `卓は <b>1月(${m1})→12月(${m12})</b>。今月札はチップ <b>×2</b>。`,
-    helpTimeDay: '☀️ 奇数月・昼 · 光・十 <em>+2</em>',
-    helpTimeNight: '🌙 偶数月・夜 · 短冊・カス <em>+2</em>',
+    helpTimeDay: '奇数月・昼 · 光・十 <em>+2</em>',
+    helpTimeNight: '偶数月・夜 · 短冊・カス <em>+2</em>',
     helpRoundTitle: '一卓 · ゴー/ストップ',
     helpRoundBody: '出し <b>4回</b> · 捨て <b>4回</b> · 手札 <b>8枚</b>。目標超えで <b>ゴー</b> か <b>ストップ</b>。ゴーは無制限 — nゴー閾値 = 目標×(1+0.6n)、出し+1・補充、ボーナス n×月の両。すでに超えた閾値はゴー宣言時に <b>すべて遡及(押し)</b> — 大物なら複数段ジャンプ。失敗は <b>ゴーバク = ラン終了</b>。',
     helpRuleTitle: '特殊ルール',
@@ -5463,7 +5461,7 @@ const I18N_UI = {
     helpJokerTitle: '特殊札 · 酒屋',
     helpJokerBody: '特殊札 <b>22種</b> · 所持最大 <b>5</b>。ティアは <b>コモン / レア / エピック / レジェンド</b> (出現 約55·28·13·4%)。+点は倍率外、+倍率・×倍率は役倍率に乗ります。',
     helpJokerTags: ['コモン 3–4両', 'レア 6–7両', 'エピック 9–11両', 'レジェ 13–15両'],
-    welcomeH2: '🎴 十二花 — ゴストップ: 無限の卓',
+    welcomeH2: '十二花 — ゴストップ: 無限の卓',
     welcomeSub: '韓国花札48枚で役を揃え目標を超える <b>1人ラン</b>。1月から12月まで一年を耐え抜け。',
     welcomePlayTitle: '基本プレイ',
     welcomePlayBody: '手札 <b>8枚</b>から1〜5枚選び <b>出し</b>でスコア。合わなければ <b>捨て</b>で入れ替え。各卓 出し·捨て 各 <b>4回</b>。',
@@ -5473,13 +5471,13 @@ const I18N_UI = {
     welcomeGoBody: '目標超えで <b>ストップ</b>(清算) か <b>ゴー</b>(目標↑ · 出し+1 · ボーナス)。大物なら閾値を <b>一気に押し</b>複数段ジャンプ! ゴー無制限だが失敗は <b>ゴーバク = ラン終了</b>。<b>3·6·9·12月</b>はバク卓。',
     welcomeShopTitle: '酒屋',
     welcomeShopBody: 'クリア後、酒屋で <b>特殊札</b>(コモン〜レジェンド22種)を売買。所持最大5。',
-    welcomeFoot: '詳しい役表はいつでも <b>📖 ヘルプ</b>で。',
+    welcomeFoot: '詳しい役表はいつでも <b>ヘルプ</b>で。',
     welcomeStart: 'わかった — はじめる',
     welcomeStartSub: '1月の準備へ',
-    prepTitle: (flower, name) => `${flower} 1月 · ${name} 準備`,
+    prepTitle: (name) => `1月 · ${name} 準備`,
     prepTarget: (n) => `目標 : <b class="prep-target" style="color:var(--gold-soft)">${n}点</b>`,
-    prepStart: '▶ 1月スタート',
-    gostopH2: '🎉 目標達成!',
+    prepStart: '1月スタート',
+    gostopH2: '目標達成!',
     gostopSub: (score, target, plays, cards) => `${score} / ${target}点 · 出し ${plays} · 札 ${cards}`,
     gostopNextLabel: (n) => `${n}ゴー時の新目標`,
     gostopGoJump: (j) => `${j}段押し`,
@@ -5507,37 +5505,37 @@ const I18N_UI = {
     shopSold: '売却済',
     shopEmpty: '空き',
     shopNext: '次の卓へ',
-    shopNextLabel: (flower, n, name) => `次 <b>${flower} ${n}月 · ${name}</b>`,
+    shopNextLabel: (n, name) => `次 <b>${n}月 · ${name}</b>`,
     shopTarget: (n) => `目標 ${n}点`,
-    shopBossPick: (n) => `⚠ ${n}月大バク — デバフ選択`,
-    shopBossNext: (n) => `⚠ 次 ${n}月バク卓`,
+    shopBossPick: (n) => `${n}月大バク — デバフ選択`,
+    shopBossNext: (n) => `次 ${n}月バク卓`,
     shopNeedBoss: '先にデバフを選んでください',
-    gameoverH2: (reason) => `☠ ラン終了 — ${reason}`,
+    gameoverH2: (reason) => `ラン終了 — ${reason}`,
     gameoverBody: (r, rounds, score, target, best, bestHand, earned, jokers) =>
       `到達: ${r}月 / ${rounds}月 (${score} / ${target}点)<br>最高一撃: ${best}点${bestHand ? ` (${bestHand})` : ''}<br>総獲得: ${earned}両 · 特殊札 ${jokers}`,
-    retry: '🔄 再挑戦',
-    victoryH2: '🏆 勝利! 12月大バクまで一年を完走!',
+    retry: '再挑戦',
+    victoryH2: '勝利! 12月大バクまで一年を完走!',
     victoryBody: (score, target, best, bestHand, earned, jokers) =>
       `最終: ${score} / ${target}点<br>最高一撃: ${best}点${bestHand ? ` (${bestHand})` : ''}<br>総獲得: ${earned}両 · 特殊札 ${jokers}`,
-    newRun: '🔄 新しいラン',
+    newRun: '新しいラン',
     deckPeekTitle: '🂠 札を見る',
     deckLeft: (n) => `山札 <b>${n}</b>枚`,
-    coachHandTitle: '✨ 役ヒント',
+    coachHandTitle: '役ヒント',
     coachHandNone: (n) => `<b>緑の光</b>の札をタップ。役がなければ最高チップを選びます。<br><span class="coach-muted">最初 ${n}回無料 · 以降 ON/OFF</span>`,
     coachHandNamed: (name, n) => `<b>緑の光</b>をタップで <b>${name}</b> を一括選択。<br><span class="coach-muted">最初 ${n}回無料 · 以降 ON/OFF · 1枚ずつ解除可</span>`,
     coachHandFallback: '緑の光で役を選んで。<b>1月限定</b>です。',
-    coachPlayTitle: '🎯 出し',
+    coachPlayTitle: '出し',
     coachPlayBody: '選んだら <b>出し</b> でスコアを積みましょう。',
-    coachJunkTitle: '🗑️ 捨て',
+    coachJunkTitle: '捨て',
     coachJunkSel: '<b>捨て</b>で入れ替え (一度に最大5)。山札から補充されます。',
     coachJunkPick: '弱いときは <b>カス</b>などを捨てて。<b style="color:#fca5a5">赤光</b>をタップで推奨を一括選択 (最大5)。',
-    coachScoredTitle: '✨ スコア獲得!',
+    coachScoredTitle: 'スコア獲得!',
     coachScoredBody: (hand, score, chips, mult, flat, need) =>
       `さっき <b>${hand}</b> で <b>+${score}点</b>!<br>スコア = (<b>役チップ ${chips}</b> × <b>${mult}倍</b>)${flat ? ` + <b>${flat}</b>` : ''}。<br>目標まで <b>残り ${need}</b> · ゲージを確認。`,
     coachScoredFallback: '点が入りました! スコア = <b>役チップ</b> × <b>倍率</b> + 加点。',
-    coachGoTitle: '🔥 ゴー / ストップ',
+    coachGoTitle: 'ゴー / ストップ',
     coachGoBody: '<b>ストップ</b>は今清算して次月へ。<br><b>ゴー</b>は目標を上げて続けるが、失敗は <b>ゴーバク = ラン終了</b>!<br><span class="coach-muted">どちらか選んで。</span>',
-    coachShopTitle: '🍶 酒屋',
+    coachShopTitle: '酒屋',
     coachShopBody: '特殊札を買い、合わなければ <b>リロール</b>。準備できたら <b>次の卓へ</b>!',
     coachDeckTitle: '🂠 山札',
     coachDeckBody: '右の <b>🂠</b> 数字をタップすると残り札を先に見られます。<br><span class="coach-muted">いつでも開けます。</span>',
@@ -7346,7 +7344,7 @@ function surveyPromptHTML() {
   return `
     <div class="survey-prompt">
       <div class="survey-corners" aria-hidden="true"></div>
-      <div class="survey-badge" aria-hidden="true">🎴</div>
+      <div class="survey-badge" aria-hidden="true"><img src="Assets/Icons/icon-192.png" alt=""></div>
       <div class="survey-title">${tu('surveyTitle')}</div>
       <div class="survey-rule" aria-hidden="true"></div>
       <div class="survey-body">${tu('surveyBody')}</div>
@@ -8709,16 +8707,16 @@ function renderChunhyang() {
       btn.textContent = '✓ 다음 달 훈수 예약됨';
       btn.disabled = true;
     } else {
-      btn.textContent = `🍶 다음 달 훈수 예약 (3냥)`;
+      btn.textContent = `다음 달 훈수 예약 (3냥)`;
       btn.disabled = state.money < 3;
     }
   } else if (state.drunk) {
     btn.style.display = '';
-    btn.textContent = `🍶 ${state.round}월 훈수 중`;
+    btn.textContent = `${state.round}월 훈수 중`;
     btn.disabled = true;
   } else {
     btn.style.display = '';
-    btn.textContent = '🍶 훈수 없음';
+    btn.textContent = '훈수 없음';
     btn.disabled = true;
   }
 }
@@ -8743,7 +8741,7 @@ function renderTopbar() {
     }
   }
   $('jokerbar').innerHTML = slots;
-  $('moneybox').textContent = `💰 ${t('nyang')(state.money)}`;
+  $('moneybox').textContent = t('nyang')(state.money);
 }
 
 function showJokerPop(idx) {
@@ -8787,7 +8785,7 @@ function renderSide() {
     rp.classList.toggle('day', !night);
     rp.classList.toggle('night', night);
   }
-  $('roundlabel').innerHTML = `${M.flower} ${hanjaMonth(state.round)} · ${uiMonthName(state.round)} ${night ? '🌙' : '☀️'}` +
+  $('roundlabel').innerHTML = `${hanjaMonth(state.round)} · ${uiMonthName(state.round)}` +
     ` <span class="round-meta">${t('roundMeta')(state.round, ROUNDS)}</span>${bossTag}`;
   $('seasonline').innerHTML = (night ? t('seasonLineNight') : t('seasonLineDay'))(hanjaMonth(state.round));
 
@@ -8796,7 +8794,7 @@ function renderSide() {
     const b = uiBoss(BOSS_BY_ID[state.boss]);
     const nullified = hasJoker('pibak_boheom') && MILD_BOSSES.includes(state.boss);
     bb.style.display = 'block';
-    bb.innerHTML = `⚠ <b>${esc(b.name)}</b> — ${esc(b.desc)}${nullified ? ` <span class="nullified">${t('bossNull')}</span>` : ''}`;
+    bb.innerHTML = `<b>${esc(b.name)}</b> — ${esc(b.desc)}${nullified ? ` <span class="nullified">${t('bossNull')}</span>` : ''}`;
   } else bb.style.display = 'none';
 
   $('target-val').textContent = fmt(state.target);
@@ -9184,19 +9182,19 @@ function welcomeHTML() {
     <div class="sub" style="margin-bottom:10px">${tu('welcomeSub')}</div>
     <div class="help-sections">
       <div class="help-card hc-round">
-        <div class="hc-title"><span class="ico">🃏</span>${tu('welcomePlayTitle')}</div>
+        <div class="hc-title">${tu('welcomePlayTitle')}</div>
         <div class="hc-body">${tu('welcomePlayBody')}</div>
       </div>
       <div class="help-card hc-time">
-        <div class="hc-title"><span class="ico">✨</span>${tu('welcomeScoreTitle')}</div>
+        <div class="hc-title">${tu('welcomeScoreTitle')}</div>
         <div class="hc-body">${tu('welcomeScoreBody')}</div>
       </div>
       <div class="help-card hc-rule">
-        <div class="hc-title"><span class="ico">🔥</span>${tu('welcomeGoTitle')}</div>
+        <div class="hc-title">${tu('welcomeGoTitle')}</div>
         <div class="hc-body">${tu('welcomeGoBody')}</div>
       </div>
       <div class="help-card hc-helper">
-        <div class="hc-title"><span class="ico">🍶</span>${tu('welcomeShopTitle')}</div>
+        <div class="hc-title">${tu('welcomeShopTitle')}</div>
         <div class="hc-body">${tu('welcomeShopBody')}</div>
       </div>
     </div>
@@ -9212,7 +9210,7 @@ function welcomeHTML() {
 function prepHTML() {
   const M = MONTHS[0];
   return `
-    <h2>${tu('prepTitle')(M.flower, uiMonthName(1))}</h2>
+    <h2>${tu('prepTitle')(uiMonthName(1))}</h2>
     <div class="sub prep-stats">${tu('prepTarget')(fmt(TARGETS[0]))}</div>
     <div class="modal-actions">
       <button class="choicebtn btn-stop prep-start" onclick="beginFromPrep()">
@@ -9358,7 +9356,7 @@ function shopHTML() {
   const nextMonth = state.round + 1;
   const makDisabled = state.chunhyangNext || state.money < 3;
   const makBlock = CHUNHYANG_ENABLED ? `<div class="shop-util su-mak">
-    <div class="su-title">🍶 춘향 훈수 · 3냥</div>
+    <div class="su-title">춘향 훈수 · 3냥</div>
     ${nextMonth}월 동안 패를 봐주고, 내기/버리기에 올리면 다음 패를 예측해요.
     <div style="margin-top:8px">
       <button class="smallbtn" onclick="buyChunhyangNext()" ${makDisabled ? 'disabled' : ''}>${state.chunhyangNext ? '✓ 예약됨' : '다음 달 예약'}</button>
@@ -9397,7 +9395,7 @@ function shopHTML() {
         </section>` : ''}
       </div>
       <footer class="shop-footer" id="shop-footer">
-        <div class="sf-next">${tu('shopNextLabel')(nm.flower, next, uiMonthName(next))}
+        <div class="sf-next">${tu('shopNextLabel')(next, uiMonthName(next))}
           <div class="sf-target">${tu('shopTarget')(fmt(TARGETS[next - 1]))}</div></div>
         <button id="btn-nextround" onclick="nextRound()" ${needPick ? `disabled title="${tu('shopNeedBoss')}"` : ''}>${tu('shopNext')}</button>
       </footer>
@@ -9526,7 +9524,7 @@ function helpHTML() {
     </div>
     <div class="help-sections">
       <div class="help-card hc-time">
-        <div class="hc-title"><span class="ico">🌓</span>${tu('helpTimeTitle')}</div>
+        <div class="hc-title">${tu('helpTimeTitle')}</div>
         <div class="hc-body">${tu('helpTimeBody')(uiMonthName(1), uiMonthName(12))}</div>
         <div class="help-tags">
           <span>${tu('helpTimeDay')}</span>
@@ -9534,16 +9532,16 @@ function helpHTML() {
         </div>
       </div>
       <div class="help-card hc-round">
-        <div class="hc-title"><span class="ico">🎯</span>${tu('helpRoundTitle')}</div>
+        <div class="hc-title">${tu('helpRoundTitle')}</div>
         <div class="hc-body">${tu('helpRoundBody')}</div>
       </div>
       <div class="help-card hc-rule">
-        <div class="hc-title"><span class="ico">🃏</span>${tu('helpRuleTitle')}</div>
+        <div class="hc-title">${tu('helpRuleTitle')}</div>
         <div class="hc-body">${tu('helpRuleBody')}</div>
         <div class="help-tags"><span>${tu('helpRuleTag')}</span></div>
       </div>
       <div class="help-card hc-helper">
-        <div class="hc-title"><span class="ico">🍶</span>${tu('helpJokerTitle')}</div>
+        <div class="hc-title">${tu('helpJokerTitle')}</div>
         <div class="hc-body">${tu('helpJokerBody')}</div>
         <div class="help-tags">${tags}</div>
       </div>
@@ -9728,7 +9726,7 @@ function applyJokerEconomy(snap) {
   }
   snap._scoreBumped = bumped;
   const mb = $('moneybox');
-  if (mb) mb.textContent = `💰 ${state.money}냥`;
+  if (mb) mb.textContent = `${state.money}냥`;
 }
 
 function juiceBreakdown(snap) {
@@ -10849,7 +10847,6 @@ function spawnCoinParticles(n) {
   for (let i = 0; i < count; i++) {
     const el = document.createElement('div');
     el.className = 'coin-particle';
-    el.textContent = '💰';
     const dx = (Math.random() - 0.5) * 80;
     const dy = -40 - Math.random() * 70;
     el.style.left = (r.left + r.width / 2 + (Math.random() - 0.5) * 20) + 'px';
@@ -11298,7 +11295,7 @@ async function playJuiceSequence(snap, fromRects = null) {
             bumpJokerGain(step.id, { money: step.money });
             snap._moneyPaid = true;
             const mb = $('moneybox');
-            if (mb) mb.textContent = `💰 ${state.money}냥`;
+            if (mb) mb.textContent = `${state.money}냥`;
             sfxCoin();
             await juiceWait(200);
           }
@@ -11339,7 +11336,7 @@ async function playJuiceSequence(snap, fromRects = null) {
           bumpJokerGain(step.id, { money: step.money });
           snap._moneyPaid = true;
           const mb = $('moneybox');
-          if (mb) mb.textContent = `💰 ${state.money}냥`;
+          if (mb) mb.textContent = `${state.money}냥`;
           sfxCoin();
         }
         const sg = (snap.jokerScoreGains || []).find((e) => e.id === step.id);
