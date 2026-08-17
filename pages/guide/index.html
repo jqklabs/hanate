@@ -16,25 +16,31 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/Assets/Icons/icon-192.png">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1930460760996573" crossorigin="anonymous"></script>
   <style>
+    /* 본편(index.html)의 표시용 글꼴 — 게임과 같은 목소리로 말한다 */
+    @font-face {
+      font-family: 'SSRock';
+      src: url('/Assets/Fonts/SSRockRegular.woff2?v=2') format('woff2');
+      font-weight: normal; font-style: normal; font-display: swap;
+    }
     :root {
       color-scheme: dark;
-      --ink: #f7eed2;
-      --muted: #c8bfa8;
+      /* 값은 본편 :root와 같다 */
+      --felt: #12251a;
+      --ink: #f7f2e6;
+      --muted: #c6bda4;
+      --dim: #9a917b;
       --gold: #e8cd7a;
-      --gold-dark: #9d7731;
-      --red: #d65454;
-      --panel: rgba(22, 31, 24, .9);
-      --line: rgba(232, 205, 122, .22);
+      --gold-dark: #c4a25a;
+      --red: #c0392b;
+      --panel: rgba(0, 0, 0, .28);
+      --line: rgba(196, 162, 90, .28);
     }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
       margin: 0;
       color: var(--ink);
-      background:
-        radial-gradient(circle at 15% 0%, rgba(135, 38, 38, .32), transparent 34rem),
-        radial-gradient(circle at 90% 18%, rgba(157, 119, 49, .18), transparent 28rem),
-        #0a120d;
+      background: var(--felt);
       font-family: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
       line-height: 1.72;
     }
@@ -50,16 +56,15 @@
       gap: 18px;
       padding: 12px max(20px, calc((100vw - 1080px) / 2));
       border-bottom: 1px solid var(--line);
-      background: rgba(8, 15, 10, .9);
-      backdrop-filter: blur(14px);
+      background: rgba(10, 22, 14, .94);
     }
     .brand {
-      color: var(--ink);
-      font-family: Georgia, "Nanum Myeongjo", serif;
-      font-size: 20px;
-      font-weight: 800;
+      color: var(--gold);
+      font-family: 'SSRock', "Apple SD Gothic Neo", sans-serif;
+      font-size: 22px;
+      font-weight: 400;
       text-decoration: none;
-      letter-spacing: .08em;
+      letter-spacing: .04em;
     }
     nav { display: flex; align-items: center; gap: 16px; font-size: 14px; }
     nav a { color: var(--muted); text-decoration: none; }
@@ -69,13 +74,12 @@
       justify-content: center;
       min-height: 44px;
       padding: 0 20px;
-      border: 1px solid #f3d67c;
-      border-radius: 999px;
-      color: #171108;
-      background: linear-gradient(180deg, #f8e49b, #c79b42);
+      border: 1px solid var(--gold);
+      border-radius: 6px;
+      color: #191307;
+      background: var(--gold);
       font-weight: 900;
       text-decoration: none;
-      box-shadow: 0 8px 28px rgba(0, 0, 0, .28);
     }
     main { width: min(1080px, calc(100% - 36px)); margin: 0 auto; }
     .hero {
@@ -86,35 +90,26 @@
       min-height: 560px;
       padding: 72px 0 58px;
     }
-    .eyebrow {
-      margin: 0 0 12px;
-      color: var(--gold);
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: .16em;
-      text-transform: uppercase;
+    /* 위계는 크기와 여백에서 나온다 — 글꼴을 바꿔서 만들지 않는다 */
+    h1, h2, h3 { line-height: 1.25; }
+    h1 {
+      margin: 0; font-family: 'SSRock', "Apple SD Gothic Neo", sans-serif;
+      font-weight: 400; font-size: clamp(38px, 6.5vw, 68px); letter-spacing: 0;
     }
-    h1, h2, h3 { font-family: Georgia, "Nanum Myeongjo", serif; line-height: 1.25; }
-    h1 { margin: 0; font-size: clamp(40px, 7vw, 76px); letter-spacing: -.045em; }
     .hero-copy { max-width: 650px; margin: 22px 0 30px; color: var(--muted); font-size: 18px; }
     .hero-art {
       width: 100%;
       border: 1px solid var(--line);
-      border-radius: 24px;
-      box-shadow: 0 26px 70px rgba(0, 0, 0, .45);
+      border-radius: 8px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, .45);
     }
-    .toc, section {
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      background: linear-gradient(145deg, rgba(28, 42, 31, .93), rgba(13, 22, 16, .94));
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .035);
-    }
-    .toc { padding: 24px 28px; margin-bottom: 24px; }
+    /* 구획은 테두리 상자가 아니라 실선 하나로 나눈다 */
+    .toc { padding: 20px 0 24px; border-top: 1px solid var(--line); }
     .toc strong { color: var(--gold); }
     .toc-links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 8px; }
     .toc a { color: var(--muted); font-size: 14px; text-decoration: none; }
-    section { margin: 24px 0; padding: clamp(24px, 5vw, 52px); }
-    section h2 { margin: 0 0 14px; font-size: clamp(28px, 4vw, 42px); }
+    section { padding: clamp(32px, 5vw, 56px) 0; border-top: 1px solid var(--line); }
+    section h2 { margin: 0 0 14px; font-size: clamp(26px, 3.4vw, 38px); }
     section h3 { margin: 28px 0 8px; color: var(--gold); font-size: 22px; }
     section > p:first-of-type { color: var(--muted); }
     .steps, .cards {
@@ -124,10 +119,10 @@
       margin-top: 24px;
     }
     .step, .info-card {
-      padding: 20px;
-      border: 1px solid rgba(232, 205, 122, .16);
-      border-radius: 14px;
-      background: rgba(0, 0, 0, .2);
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
     }
     .step b, .info-card b { color: var(--gold); }
     .step span {
@@ -143,14 +138,14 @@
       font-weight: 900;
     }
     .formula {
-      margin: 22px 0;
-      padding: 20px;
-      border-left: 4px solid var(--gold);
-      border-radius: 8px;
-      background: rgba(0, 0, 0, .28);
-      color: #fff5cb;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 15px;
+      margin: 24px 0;
+      padding: 22px 20px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+      color: var(--gold);
+      font-size: clamp(15px, 2.2vw, 19px);
+      text-align: center;
     }
     .table-wrap { overflow-x: auto; margin-top: 20px; }
     table { width: 100%; min-width: 620px; border-collapse: collapse; font-size: 14px; }
@@ -160,8 +155,8 @@
     .callout {
       margin-top: 22px;
       padding: 18px 20px;
-      border: 1px solid rgba(214, 84, 84, .38);
-      border-radius: 12px;
+      border: 1px solid rgba(192, 57, 43, .45);
+      border-radius: 6px;
       background: rgba(105, 25, 25, .22);
     }
     .faq details { padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,.09); }
@@ -182,9 +177,8 @@
       .site-header { padding: 10px 16px; }
       nav a:not(.play-button) { display: none; }
       .hero { grid-template-columns: 1fr; min-height: 0; padding: 54px 0 38px; }
-      .hero-art { order: -1; border-radius: 16px; }
+      .hero-art { order: -1; border-radius: 6px; }
       .steps, .cards { grid-template-columns: 1fr; }
-      section { border-radius: 16px; }
     }
   </style>
 </head>
@@ -202,7 +196,6 @@
   <main>
     <div class="hero">
       <div>
-        <p class="eyebrow">Official game guide</p>
         <h1>한 해를 버티는<br>화투 로그라이크</h1>
         <p class="hero-copy">십이화는 한국 화투 48장으로 족보를 만들고, 점수와 배수를 키워 1월부터 12월까지 완주하는 1인용 웹 카드 게임입니다. 안전하게 스톱할지, 더 큰 보상을 위해 고를 외칠지 매달 선택하세요.</p>
         <a class="play-button" href="/">무료로 플레이하기</a>
@@ -225,7 +218,6 @@
     </aside>
 
     <section id="start">
-      <p class="eyebrow">01 · 기본 규칙</p>
       <h2>처음 시작하기</h2>
       <p>한 런은 1월 송학에서 시작해 12월 비까지 이어집니다. 매달 정해진 목표 점수를 넘기면 다음 달로 진행하며, 목표에 실패하거나 고박을 당하면 그 런은 끝납니다.</p>
       <div class="steps">
@@ -237,7 +229,6 @@
     </section>
 
     <section id="score">
-      <p class="eyebrow">02 · 점수</p>
       <h2>칩과 배수 계산법</h2>
       <p>족보를 만든 핵심 카드만 배수를 받고, 같이 낸 나머지 카드는 배수 밖에서 더해집니다. 좋은 족보뿐 아니라 어떤 카드를 족보의 코어로 묶는지도 중요합니다.</p>
       <div class="formula">점수 = (족보 코어 카드 칩 합 × 족보 배수 × 특수패 배수) + 나머지 카드 칩 + 추가 점수</div>
@@ -250,7 +241,6 @@
     </section>
 
     <section id="hands">
-      <p class="eyebrow">03 · 족보</p>
       <h2>십이화 족보표</h2>
       <p>여러 족보가 동시에 가능하면 아래 표에서 더 위에 있는 족보 하나가 적용됩니다. 강한 족보는 높은 배수를 주지만 필요한 카드를 모으기 어렵습니다.</p>
       <div class="table-wrap">
@@ -279,7 +269,6 @@
     </section>
 
     <section id="go-stop">
-      <p class="eyebrow">04 · 위험과 보상</p>
       <h2>고와 스톱</h2>
       <p>목표 점수를 달성하면 스톱으로 냥을 정산하거나, 고를 선언하고 더 높은 목표에 도전할 수 있습니다. 고는 횟수 제한이 없지만 다음 문턱을 넘지 못하면 고박으로 즉시 런이 종료됩니다.</p>
       <div class="cards">
@@ -290,7 +279,6 @@
     </section>
 
     <section id="shop">
-      <p class="eyebrow">05 · 덱빌딩</p>
       <h2>특수패와 주막</h2>
       <p>매달 정산을 마치면 주막에서 특수패를 사고팔거나 상품을 새로고침할 수 있습니다. 특수패는 최대 5개까지 보유하며, 서로 맞물리는 효과를 모아 후반의 높은 목표를 돌파합니다.</p>
       <div class="cards">
@@ -302,7 +290,6 @@
     </section>
 
     <section id="bak">
-      <p class="eyebrow">06 · 보스 라운드</p>
       <h2>3·6·9·12월의 박</h2>
       <p>세 달마다 특수 디버프가 붙는 박 라운드가 등장합니다. 주막에서 다음 박의 종류를 확인하고, 영향을 덜 받는 족보와 특수패를 준비하세요.</p>
       <div class="table-wrap">
@@ -321,7 +308,6 @@
     </section>
 
     <section id="strategy">
-      <p class="eyebrow">07 · 초보 공략</p>
       <h2>12월까지 살아남는 법</h2>
       <div class="cards">
         <div class="info-card"><b>이달의 패부터 확인</b><br>현재 월 카드는 칩이 2배입니다. 같은 족보라도 코어에 이달의 패가 들어가면 점수가 크게 달라집니다.</div>
@@ -334,17 +320,15 @@
     </section>
 
     <section id="faq" class="faq">
-      <p class="eyebrow">08 · FAQ</p>
       <h2>자주 묻는 질문</h2>
       <details open><summary>십이화는 일반 고스톱과 같은 게임인가요?</summary><p>화투의 월과 일부 족보, 고·스톱의 긴장감을 가져왔지만 1인용 로그라이크에 맞춰 규칙을 새로 구성했습니다. 상대의 패를 따먹는 대신 손패에서 족보를 만들어 목표 점수를 넘깁니다.</p></details>
       <details><summary>로그인이나 설치가 필요한가요?</summary><p>아니요. 최신 웹 브라우저에서 바로 플레이할 수 있습니다. 모바일에서는 홈 화면에 추가해 앱처럼 실행할 수도 있습니다.</p></details>
       <details><summary>실제 돈을 걸거나 상품을 받을 수 있나요?</summary><p>아니요. 게임 안의 냥은 진행을 위한 가상 자원이며 현금, 상품 또는 다른 재화로 교환되지 않습니다.</p></details>
       <details><summary>여러 족보가 동시에 만들어지면 어떻게 되나요?</summary><p>족보표에서 가장 높은 족보 하나만 적용됩니다. 화면의 예상 점수에서 선택한 카드의 족보와 코어 카드, 배수를 미리 확인할 수 있습니다.</p></details>
-      <details><summary>게임 중 규칙을 다시 볼 수 있나요?</summary><p>게임 화면의 📖 도움말에서 족보와 핵심 규칙을 빠르게 확인할 수 있고, 설정 메뉴의 게임 가이드 링크로 이 페이지에 다시 올 수 있습니다.</p></details>
+      <details><summary>게임 중 규칙을 다시 볼 수 있나요?</summary><p>게임 화면의 도움말에서 족보와 핵심 규칙을 빠르게 확인할 수 있고, 설정 메뉴의 게임 가이드 링크로 이 페이지에 다시 올 수 있습니다.</p></details>
     </section>
 
     <section id="privacy">
-      <p class="eyebrow">운영 정보</p>
       <h2>광고 및 개인정보 안내</h2>
       <p>십이화는 JQK Labs Inc.가 제작·운영합니다. 서비스 개선을 위해 접속 환경과 게임 진행에 관한 익명화된 분석 정보를 사용할 수 있습니다. Google을 포함한 제3자 광고 사업자는 쿠키를 사용해 이전 방문 기록을 바탕으로 광고를 제공할 수 있으며, 사용자는 Google의 광고 설정에서 개인 맞춤 광고를 관리할 수 있습니다.</p>
       <p>개인정보 또는 서비스 관련 문의: <a href="mailto:jun@jqklabs.com">jun@jqklabs.com</a></p>

@@ -67,7 +67,22 @@
     --panel: rgba(10, 22, 14, .78); --panel-line: rgba(196, 162, 90, .42);
     --frame: #c4a25a; --frame-dim: rgba(196, 162, 90, .28); --frame-deep: #8a6e3a;
     --ink: #1f2937; --red: #c0392b; --gold: #d4af37; --gold-soft: #e8cd7a;
-    --chip-blue: #60a5fa; --mult-red: #f87171;
+    /* 중립 램프 — 밝은 쪽부터. 본문·보조 텍스트는 전부 여기서 가져온다 */
+    --ink-1: #f7f2e6; --ink-2: #e4dcc8; --ink-3: #c6bda4;
+    --ink-4: #9a917b; --ink-5: #6e6857; --ink-deep: #191307;
+    /* 등급·서열 — 색이 아니라 금색의 농도와 두께로 순위를 만든다.
+       색을 4~6개 쓰면 순위가 아니라 카테고리로 읽힌다. */
+    --rank-1: rgba(206,196,170,.34); --rank-1-glow: rgba(206,196,170,.10);
+    --rank-2: rgba(196,162,90,.62);  --rank-2-glow: rgba(196,162,90,.20);
+    --rank-3: rgba(212,175,55,.9);   --rank-3-glow: rgba(212,175,55,.32);
+    --rank-4: #e8cd7a;               --rank-4-glow: rgba(232,205,122,.5);
+    --tier-s: #f0dda0; --tier-a: #d4af37; --tier-bi: #b08d3f;
+    --tier-b: #9a8352; --tier-c: #7a705c; --tier-d: #6e6857;
+    /* 칩·배수는 이 게임의 핵심 지표다. 역할은 그대로 두고, 색만
+       Tailwind 기본값(blue-400 / red-400)에서 이 팔레트로 옮긴다 */
+    --chip-blue: #6fb3d8; --mult-red: #e5705f;
+    --cheong-lit: #9cc9de; --cheong-deep: #2b4f6b;
+    --gold-lit: #f0c766; --gold-pale: #f6e6b4; --paper: #fffbef;
     --font-num: 'SSRockNum', 'SSRock', 'BaigeTianxing', 'Malgun Gothic', sans-serif;
     --font-overlay: 'SSRockNum', 'SSRock', 'BaigeTianxing', 'Malgun Gothic', sans-serif;
     --font-overlay-num: 'SSRockNum', 'SSRock', 'BaigeTianxing', 'Malgun Gothic', sans-serif;
@@ -91,7 +106,7 @@
     font-family: var(--font-overlay);
     font-weight: 400;
     font-synthesis: none;
-    color: #f1f5f9; overflow-x: hidden;
+    color: var(--ink-1); overflow-x: hidden;
     position: relative;
     -webkit-user-select: none;
     user-select: none;
@@ -132,8 +147,10 @@
     height: 100% !important;
     background: transparent !important;
   }
-  /* WebGL엔 CSS drop-shadow 미적용 → 숨기고 2D 미러에 흰 아우라를 픽셀로 그림 */
-  #bg-spine canvas.spine-player-canvas {
+  /* WebGL엔 CSS drop-shadow 미적용 → 2D 미러에 흰 아우라를 픽셀로 그린다.
+     미러가 실제로 그리기 시작한 뒤에만 원본을 숨긴다 — 미러가 늦게 뜨거나
+     실패하면 아우라 없이라도 춘향이 보여야 한다 (안 보이는 것보다 낫다). */
+  #bg-spine.glow-on canvas.spine-player-canvas {
     opacity: 0;
   }
   #bg-spine-glow {
@@ -201,21 +218,21 @@
   }
   #logo small {
     display: block; font-family: var(--font-overlay); font-size: 11px; font-weight: 400;
-    color: #e2e8f0; letter-spacing: 2px; margin-top: 2px;
+    color: var(--ink-2); letter-spacing: 2px; margin-top: 2px;
   }
   #jokerbar { display: flex; gap: 8px; flex: 1; flex-wrap: wrap; }
   .jokerslot {
     width: 140px; min-height: 52px; border-radius: 8px; padding: 10px 8px;
     background: rgba(8, 16, 12, .35);
     border: 1px dashed rgba(226, 232, 240, .38);
-    font-size: 12px; color: #94a3b8; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: var(--ink-4); display: flex; align-items: center; justify-content: center;
     text-align: center;
   }
   .jokerslot.filled {
     position: relative;
     border: 1.5px solid rgba(148, 163, 184, .4);
     background: linear-gradient(160deg, rgba(22, 36, 28, .92), rgba(12, 22, 16, .95));
-    color: #e2e8f0;
+    color: var(--ink-2);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 4px; cursor: help;
     box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
@@ -223,55 +240,44 @@
   .jokerslot .jname {
     font-family: var(--font-overlay); font-weight: 400;
     font-size: 17px; letter-spacing: .04em; line-height: 1.15;
-    color: #f1f5f9;
+    color: var(--ink-1);
   }
   .jokerslot .jkind {
     font-family: var(--font-ui); font-size: 10px; font-weight: 700;
     padding: 1px 7px; border-radius: 3px;
-    background: rgba(255,255,255,.08); color: #94a3b8;
+    background: rgba(255,255,255,.08); color: var(--ink-4);
     border: 1px solid rgba(255,255,255,.1);
     letter-spacing: .02em; line-height: 1.3; white-space: nowrap;
   }
   .jokerslot.filled.aura-common {
-    border-color: rgba(200,210,220,.5);
-    box-shadow: 0 0 0 1px rgba(180,190,200,.18), 0 0 12px rgba(180,190,200,.28);
+    border-color: var(--rank-1);
+    box-shadow: 0 0 8px var(--rank-1-glow);
   }
   .jokerslot.filled.aura-rare {
-    border-color: rgba(110,200,140,.6);
-    box-shadow: 0 0 0 1px rgba(80,180,110,.28), 0 0 16px rgba(70,190,120,.45);
+    border-color: var(--rank-2);
+    box-shadow: 0 0 12px var(--rank-2-glow);
   }
   .jokerslot.filled.aura-epic {
-    border-color: rgba(230,120,150,.6);
-    box-shadow: 0 0 0 1px rgba(200,80,120,.3), 0 0 18px rgba(210,70,120,.5);
+    border-width: 1.5px; border-color: var(--rank-3);
+    box-shadow: 0 0 16px var(--rank-3-glow);
   }
   .jokerslot.filled.aura-legendary {
-    border-color: rgba(240,193,74,.8);
-    box-shadow: 0 0 0 1px rgba(240,193,74,.45), 0 0 22px rgba(232,160,60,.55);
+    border-width: 2px; border-color: var(--rank-4);
+    box-shadow: 0 0 20px var(--rank-4-glow);
   }
   .jokerslot.filled.aura-legendary .jname {
-    color: #ffe08a;
-    text-shadow: 0 0 10px rgba(255,200,80,.35);
+    color: var(--gold-soft);
   }
   /* 효과 발동 — 살짝 뽀용 */
   .jokerslot.filled.trig {
     z-index: 6;
     animation: jokerTrigPop .42s cubic-bezier(.2,1.35,.4,1) !important;
   }
-  .jokerslot.filled.aura-common.trig {
-    border-color: rgba(220,230,240,.8) !important;
-    box-shadow: 0 0 0 1px rgba(200,210,220,.45), 0 0 16px rgba(180,190,200,.45) !important;
-  }
-  .jokerslot.filled.aura-rare.trig {
-    border-color: rgba(120,230,160,.75) !important;
-    box-shadow: 0 0 0 1px rgba(90,210,130,.45), 0 0 18px rgba(70,200,120,.5) !important;
-  }
-  .jokerslot.filled.aura-epic.trig {
-    border-color: rgba(245,140,180,.75) !important;
-    box-shadow: 0 0 0 1px rgba(230,100,150,.45), 0 0 18px rgba(220,90,140,.5) !important;
-  }
-  .jokerslot.filled.aura-legendary.trig {
-    border-color: rgba(255,220,120,.85) !important;
-    box-shadow: 0 0 0 1px rgba(240,193,74,.5), 0 0 20px rgba(232,170,60,.55) !important;
+  /* 발동 — 등급과 무관하게 같은 금빛으로 번쩍인다 (발동 여부가 신호,
+     등급은 이미 테두리가 말하고 있다) */
+  .jokerslot.filled.trig {
+    border-color: var(--gold-soft) !important;
+    box-shadow: 0 0 20px rgba(232,205,122,.55) !important;
   }
   @keyframes jokerTrigPop {
     0%   { transform: scale(1);    filter: brightness(1); }
@@ -298,9 +304,9 @@
   .jokerslot.filled .jtip-gain {
     margin-top: 8px; padding-top: 7px;
     border-top: 1px solid rgba(212,175,55,.28);
-    font-size: 12px; font-weight: 700; color: #fde68a; letter-spacing: -0.01em;
+    font-size: 12px; font-weight: 700; color: var(--gold-lit); letter-spacing: -0.01em;
   }
-  .jokerslot.filled .jtip-gain.empty { color: #94a3b8; font-weight: 600; }
+  .jokerslot.filled .jtip-gain.empty { color: var(--ink-4); font-weight: 600; }
   .jokerslot.filled .jtip::after {
     content: ''; position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%);
     border: 6px solid transparent; border-bottom-color: rgba(212,175,55,.55);
@@ -320,11 +326,11 @@
     width: min(320px, 92vw); border-radius: 16px; padding: 20px 18px 16px;
     background: linear-gradient(170deg, #2a2410, #1a1508);
     border: 1.5px solid rgba(212,175,55,.55);
-    box-shadow: 0 18px 48px rgba(0,0,0,.55);
+    box-shadow: 0 12px 26px rgba(0,0,0,.55);
     text-align: center;
   }
   .joker-pop-card .jp-icon { font-size: 40px; line-height: 1; margin-bottom: 8px; }
-  .joker-pop-card .jp-name { font-size: 18px; font-weight: 900; color: #fde68a; margin-bottom: 8px; }
+  .joker-pop-card .jp-name { font-size: 18px; font-weight: 900; color: var(--gold-lit); margin-bottom: 8px; }
   .joker-pop-card .jp-meta {
     display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;
   }
@@ -338,14 +344,14 @@
   .joker-pop-card .jp-gain {
     margin-top: 10px;
     font-family: var(--font-ui);
-    font-size: 13px; font-weight: 700; color: #fde68a; letter-spacing: -0.01em;
+    font-size: 13px; font-weight: 700; color: var(--gold-lit); letter-spacing: -0.01em;
     padding: 8px 12px; border-radius: 8px;
     background: rgba(253,230,138,.08); border: 1px solid rgba(253,230,138,.22);
   }
-  .joker-pop-card .jp-gain.empty { color: #94a3b8; font-weight: 600; }
+  .joker-pop-card .jp-gain.empty { color: var(--ink-4); font-weight: 600; }
   .joker-pop-card .jp-close {
     margin-top: 14px; width: 100%; padding: 11px;
-    background: rgba(255,255,255,.12); color: #f8fafc;
+    background: rgba(255,255,255,.12); color: var(--ink-1);
     font-size: 14px; font-weight: 800; border-radius: 10px; border: 1px solid rgba(255,255,255,.18);
   }
   #topbar-right {
@@ -353,14 +359,14 @@
   }
   #moneybox {
     font-family: var(--font-overlay); font-weight: 400; font-synthesis: none;
-    font-size: 20px; color: #fbbf24; white-space: nowrap;
+    font-size: 20px; color: var(--gold-lit); white-space: nowrap;
     letter-spacing: 0.04em;
     padding: 6px 12px; border-radius: 8px;
     background: rgba(8, 16, 12, .45);
     border: 1px solid rgba(196, 162, 90, .4);
     box-shadow: inset 0 0 0 1px rgba(196, 162, 90, .12);
   }
-  #moneybox .delta { font-size: 13px; color: #a3e635; }
+  #moneybox .delta { font-size: 13px; color: var(--gold-lit); }
   #top-settings {
     flex-shrink: 0;
     width: 40px; height: 40px; padding: 0;
@@ -376,11 +382,11 @@
   #top-settings:hover, #top-settings:focus-visible {
     background: rgba(20, 32, 22, .7);
     border-color: rgba(232, 205, 122, .55);
-    color: #fde68a;
+    color: var(--gold-lit);
   }
   #top-help {
     display: none; flex-shrink: 0;
-    background: rgba(255,255,255,.14); color: #e2e8f0;
+    background: rgba(255,255,255,.14); color: var(--ink-2);
     padding: 7px 10px; font-size: 13px; font-weight: 800; border-radius: 8px;
   }
   /* ── 설정 팝업 ───────────────────────── */
@@ -409,7 +415,7 @@
       linear-gradient(165deg, #2a4030 0%, #152418 100%);
     border: 1px solid rgba(212, 175, 55, .42);
     box-shadow:
-      0 24px 64px rgba(0,0,0,.55),
+      0 12px 28px rgba(0,0,0,.55),
       inset 0 1px 0 rgba(255,255,255,.07);
   }
   #settings-panel .set-scroll {
@@ -439,7 +445,7 @@
     width: 30px; height: 30px; padding: 0; border-radius: 999px;
     border: 1px solid rgba(255,255,255,.14);
     background: rgba(0,0,0,.28);
-    color: #cbd5e1; font-size: 18px; line-height: 1; cursor: pointer;
+    color: var(--ink-3); font-size: 18px; line-height: 1; cursor: pointer;
     font-family: var(--font-set);
   }
   #settings-panel .set-close:hover {
@@ -462,7 +468,7 @@
   }
   #settings-panel .set-label .set-val {
     font-variant-numeric: tabular-nums;
-    color: #fde68a; font-weight: 800; font-size: 12px;
+    color: var(--gold-lit); font-weight: 800; font-size: 12px;
   }
   #settings-panel .set-row-vol .set-label { margin-bottom: -2px; }
   #settings-panel .set-slider-row {
@@ -472,7 +478,7 @@
     flex-shrink: 0; min-width: 2.6em;
     text-align: right;
     font-variant-numeric: tabular-nums;
-    color: #fde68a; font-weight: 800; font-size: 12px;
+    color: var(--gold-lit); font-weight: 800; font-size: 12px;
   }
   #settings-panel input[type="range"] {
     flex: 1; min-width: 0;
@@ -486,7 +492,7 @@
     height: 8px; border-radius: 999px;
     border: 1px solid rgba(255,255,255,.06);
     background-color: rgba(255,255,255,.14);
-    background-image: linear-gradient(to right, #c9a25a, #e8cd7a);
+    background-image: linear-gradient(to right, var(--frame), #e8cd7a);
     background-size: var(--vol-fill) 100%;
     background-repeat: no-repeat;
   }
@@ -494,7 +500,7 @@
     -webkit-appearance: none;
     width: 20px; height: 20px; margin-top: -7px;
     border-radius: 50%;
-    background: linear-gradient(180deg, #efe0a8, #c9a25a);
+    background: linear-gradient(180deg, #efe0a8, var(--frame));
     border: 2px solid rgba(253, 230, 138, .45);
     box-shadow: 0 1px 4px rgba(0,0,0,.35);
     cursor: pointer;
@@ -506,13 +512,13 @@
   }
   #settings-panel input[type="range"]::-moz-range-progress {
     height: 8px; border-radius: 999px 0 0 999px;
-    background: linear-gradient(90deg, #c9a25a, #e8cd7a);
+    background: linear-gradient(90deg, var(--frame), #e8cd7a);
     border: none;
   }
   #settings-panel input[type="range"]::-moz-range-thumb {
     width: 20px; height: 20px;
     border-radius: 50%; border: none;
-    background: linear-gradient(180deg, #efe0a8, #c9a25a);
+    background: linear-gradient(180deg, #efe0a8, var(--frame));
     border: 2px solid rgba(253, 230, 138, .45);
     box-shadow: 0 1px 4px rgba(0,0,0,.35);
     cursor: pointer;
@@ -539,19 +545,19 @@
     padding: 9px 8px; border-radius: 8px;
     font-family: var(--font-set);
     font-size: 13px; font-weight: 700;
-    color: #94a3b8;
+    color: var(--ink-4);
     background: transparent;
     border: 1px solid transparent;
     cursor: pointer;
     transition: background .15s ease, color .15s ease, border-color .15s ease;
   }
   #settings-panel .set-seg button:hover {
-    color: #e2e8f0;
+    color: var(--ink-2);
     background: rgba(255,255,255,.05);
   }
   #settings-panel .set-seg button.on {
     color: #1a160e;
-    background: linear-gradient(180deg, #efe0a8, #c9a84e);
+    background: linear-gradient(180deg, #efe0a8, var(--frame));
     border-color: rgba(253, 230, 138, .35);
     box-shadow: 0 1px 0 rgba(255,255,255,.2) inset;
   }
@@ -562,7 +568,7 @@
     color: #e8e0cc;
     font-size: 13.5px; font-weight: 700;
   }
-  #settings-panel .set-toggle:hover { color: #f8fafc; }
+  #settings-panel .set-toggle:hover { color: var(--ink-1); }
   #settings-panel .set-toggle .set-sw {
     position: relative;
     width: 42px; height: 24px; min-width: 42px; padding: 0;
@@ -575,11 +581,11 @@
     content: '';
     position: absolute; top: 2px; left: 2px;
     width: 18px; height: 18px; border-radius: 50%;
-    background: #94a3b8;
+    background: var(--ink-4);
     transition: transform .18s ease, background .15s ease;
   }
   #settings-panel .set-toggle.on .set-sw {
-    background: linear-gradient(180deg, #efe0a8, #c9a84e);
+    background: linear-gradient(180deg, #efe0a8, var(--frame));
     border-color: rgba(253, 230, 138, .45);
   }
   #settings-panel .set-toggle.on .set-sw::after {
@@ -594,7 +600,7 @@
     border-radius: 10px;
     border: 1px solid rgba(196, 162, 90, .32);
     background: rgba(0, 0, 0, .22);
-    color: #f1e4b8;
+    color: var(--gold-pale);
     font-family: var(--font-set);
     font-size: 14px;
     font-weight: 700;
@@ -606,7 +612,7 @@
   #settings-panel .set-linkbtn:hover {
     border-color: rgba(232, 205, 122, .48);
     background: rgba(0, 0, 0, .32);
-    color: #fde68a;
+    color: var(--gold-lit);
   }
   /* 옵션 오버레이(월·열끗) 숨김 — 광은 항상, 쌍피는 이중 점, 띠·피·점수는 미표시 */
   body.hide-card-labels .card .month-badge,
@@ -675,16 +681,16 @@
   }
   #roundlabel {
     font-family: var(--font-overlay); font-size: 26px; font-weight: 400;
-    color: #f8fafc; letter-spacing: -0.06em;
+    color: var(--ink-1); letter-spacing: -0.06em;
     line-height: 1.08;
   }
   #roundlabel .bak { color: #fca5a5; }
   #roundlabel .round-meta {
     font-family: var(--font-overlay);
-    color: #94a3b8; font-size: 12px; font-weight: 400; margin-left: 4px; letter-spacing: 0;
+    color: var(--ink-4); font-size: 12px; font-weight: 400; margin-left: 4px; letter-spacing: 0;
   }
-  #seasonline { font-size: 12.5px; color: #cbd5e1; margin-top: 6px; line-height: 1.55; }
-  #seasonline b { color: #fde68a; }
+  #seasonline { font-size: 12.5px; color: var(--ink-3); margin-top: 6px; line-height: 1.55; }
+  #seasonline b { color: var(--gold-lit); }
   #bossbanner {
     border: 1px solid rgba(252,165,165,.45); background: rgba(127,29,29,.42);
     border-radius: 6px; padding: 8px 10px; font-size: 11.5px; line-height: 1.45; color: #fecaca;
@@ -692,12 +698,12 @@
   #bossbanner b { color: #fee2e2; }
   #bossbanner .nullified { color: #86efac; font-weight: 700; }
 
-  .statline { display: flex; justify-content: space-between; font-size: 13px; margin: 3px 0; color: #cbd5e1; }
+  .statline { display: flex; justify-content: space-between; font-size: 13px; margin: 3px 0; color: var(--ink-3); }
   .statline b { color: #fff; font-size: 16px; }
-  #target-val { color: #e2e8f0; font-size: 18px; }
-  #score-val { color: #e2e8f0; font-size: 18px; }
+  #target-val { color: var(--ink-2); font-size: 18px; }
+  #score-val { color: var(--ink-2); font-size: 18px; }
   .score-frac { font-variant-numeric: tabular-nums; }
-  .score-slash { color: #64748b; font-weight: 800; }
+  .score-slash { color: var(--ink-5); font-weight: 800; }
   #need-val { color: #f0a8a8; font-size: 16px; }
   #need-val.done { color: #86efac; }
   #gauge {
@@ -708,10 +714,10 @@
   }
   #gauge > div {
     height: 100%;
-    background: linear-gradient(90deg, #38bdf8, #7dd3fc);
+    background: linear-gradient(90deg, var(--chip-blue), var(--cheong-lit));
     transition: width .35s ease;
   }
-  .golevel { font-size: 11.5px; color: #fbbf24; margin-top: 4px; font-weight: 700; }
+  .golevel { font-size: 11.5px; color: var(--gold-lit); margin-top: 4px; font-weight: 700; }
 
   #previewbox { min-height: 110px; }
   #previewbox .pv-hand {
@@ -731,7 +737,7 @@
     min-width: 0;
   }
   #previewbox .pv-box .lbl {
-    display: block; font-size: 9px; font-weight: 700; color: #94a3b8;
+    display: block; font-size: 9px; font-weight: 700; color: var(--ink-4);
     letter-spacing: 0.02em; margin-bottom: 2px;
   }
   #previewbox .pv-box .val {
@@ -740,11 +746,11 @@
   }
   #previewbox .pv-box.chips .val { color: var(--chip-blue); }
   #previewbox .pv-box.mult .val { color: var(--mult-red); }
-  #previewbox .pv-box.flat .val { color: #cbd5e1; }
+  #previewbox .pv-box.flat .val { color: var(--ink-3); }
   #previewbox .pv-box.flat.off { opacity: .45; }
   #previewbox .pv-op {
     display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 900; color: #64748b; padding: 0 1px;
+    font-size: 13px; font-weight: 900; color: var(--ink-5); padding: 0 1px;
   }
   #previewbox .pv-total {
     display: flex; align-items: baseline; justify-content: space-between;
@@ -752,13 +758,13 @@
     background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(147,197,253,.1));
     border: 1px solid rgba(147,197,253,.25);
   }
-  #previewbox .pv-total .tl { font-size: 11px; font-weight: 700; color: #94a3b8; }
+  #previewbox .pv-total .tl { font-size: 11px; font-weight: 700; color: var(--ink-4); }
   #previewbox .pv-total .tv { font-size: 24px; font-weight: 900; color: #fff; }
-  #previewbox .pv-empty { font-size: 11.5px; color: #94a3b8; line-height: 1.5; }
+  #previewbox .pv-empty { font-size: 11.5px; color: var(--ink-4); line-height: 1.5; }
 
-  #playlog { font-size: 11px; color: #cbd5e1; }
+  #playlog { font-size: 11px; color: var(--ink-3); }
   #playlog div { display: flex; justify-content: space-between; padding: 1.5px 0; }
-  #playlog .lognum { color: #64748b; }
+  #playlog .lognum { color: var(--ink-5); }
 
   /* ── 낸 패 / 손패 ────────────────────── */
   #playedarea {
@@ -773,7 +779,7 @@
   #playedarea .hint { color: rgba(255,255,255,.35); font-size: 14px; }
   #playresult { text-align: center; width: 100%; }
   #playresult .r-hand { font-size: 26px; font-weight: 400; color: var(--gold-soft); font-synthesis: none; }
-  #playresult .r-formula { font-size: 15px; color: #e2e8f0; font-weight: 400; font-synthesis: none; }
+  #playresult .r-formula { font-size: 15px; color: var(--ink-2); font-weight: 400; font-synthesis: none; }
   #playresult .r-formula .c { color: var(--chip-blue); font-weight: 400; }
   #playresult .r-formula .m { color: var(--mult-red); font-weight: 400; }
   #playresult .r-score { font-size: 30px; font-weight: 400; color: #fff; font-synthesis: none; }
@@ -795,11 +801,11 @@
   }
   #jan-aura-hint.junk { color: #fca5a5; }
   #jan-aura-hint[hidden] { display: none !important; }
-  /* 내기 추천 — 연두 글로우 + 우상단 ✦ */
+  /* 내기 추천 — 금빛 테두리 + 우상단 ✦ */
   #handarea .card.coach-aura:not(.sel) {
     box-shadow:
       0 3px 8px rgba(0,0,0,.45),
-      0 0 12px rgba(163, 230, 53, .7),
+      0 0 12px rgba(232, 205, 122, .6),
       inset 0 0 0 2.5px rgba(192,57,43,.85),
       inset 0 0 0 4px rgba(255,255,255,.6);
     animation: coachAuraPulse 1.5s ease-in-out infinite;
@@ -808,7 +814,7 @@
   #handarea .card.kwang.coach-aura:not(.sel) {
     box-shadow:
       0 3px 8px rgba(0,0,0,.45),
-      0 0 12px rgba(163, 230, 53, .7),
+      0 0 12px rgba(232, 205, 122, .6),
       inset 0 0 0 2.5px var(--gold),
       inset 0 0 0 4px rgba(255,255,255,.6);
   }
@@ -816,8 +822,8 @@
   #handarea .card.has-art.kwang.coach-aura:not(.sel) {
     box-shadow:
       0 3px 8px rgba(0,0,0,.45),
-      0 0 0 2px #a3e635,
-      0 0 14px rgba(163, 230, 53, .85);
+      0 0 0 2px var(--gold-soft),
+      0 0 14px rgba(232, 205, 122, .7);
   }
   #handarea .card.coach-aura:not(.sel)::before {
     content: '✦';
@@ -828,10 +834,10 @@
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 11px; font-weight: 900; line-height: 1;
-    color: #14532d;
-    background: radial-gradient(circle at 40% 35%, #ecfccb, #a3e635);
-    border: 1.5px solid #65a30d;
-    box-shadow: 0 0 8px rgba(163, 230, 53, .85);
+    color: var(--ink-deep);
+    background: var(--gold-soft);
+    border: 1.5px solid var(--frame-deep);
+    box-shadow: 0 0 8px rgba(232, 205, 122, .7);
     pointer-events: none;
     animation: coachSpark 1.5s ease-in-out infinite;
   }
@@ -868,10 +874,10 @@
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 900; line-height: 1;
-    color: #fff;
-    background: radial-gradient(circle at 40% 35%, #fecaca, #ef4444);
-    border: 1.5px solid #b91c1c;
-    box-shadow: 0 0 8px rgba(248, 113, 113, .9);
+    color: var(--paper);
+    background: var(--red);
+    border: 1.5px solid #7f1d1d;
+    box-shadow: 0 0 8px rgba(229, 112, 95, .8);
     pointer-events: none;
     animation: coachSpark 1.5s ease-in-out infinite;
   }
@@ -904,19 +910,19 @@
     background: linear-gradient(165deg, #1e3a2a, #122018);
     border: 1.5px solid var(--gold);
     border-radius: 14px; padding: 12px 14px 10px;
-    box-shadow: 0 16px 40px rgba(0,0,0,.55);
+    box-shadow: 0 10px 24px rgba(0,0,0,.55);
     font-family: var(--font-ui); font-weight: 600;
-    color: #e2e8f0; font-size: 14px; line-height: 1.5;
+    color: var(--ink-2); font-size: 14px; line-height: 1.5;
   }
-  #coach-root .coach-panel b { color: #fde68a; font-weight: 800; }
+  #coach-root .coach-panel b { color: var(--gold-lit); font-weight: 800; }
   #coach-root .coach-panel .coach-title {
     font-family: var(--font-ui); font-size: 15px; font-weight: 800;
-    color: #fef3c7; margin-bottom: 5px;
+    color: var(--gold-pale); margin-bottom: 5px;
     letter-spacing: 0.02em;
   }
   #coach-root .coach-panel .coach-muted {
     font-family: var(--font-ui); font-size: 12px; font-weight: 600;
-    color: #94a3b8; line-height: 1.4;
+    color: var(--ink-4); line-height: 1.4;
   }
   #coach-root .coach-actions {
     display: flex; gap: 8px; margin-top: 10px; justify-content: flex-end;
@@ -926,11 +932,11 @@
     border-radius: 8px; padding: 7px 11px; font-size: 12px; cursor: pointer;
   }
   #coach-root .coach-next {
-    background: linear-gradient(180deg, #d97706, #b45309); color: #fff;
+    background: var(--gold); color: var(--ink-deep);
     border: none;
   }
   #coach-root .coach-skip {
-    background: rgba(255,255,255,.08); color: #cbd5e1;
+    background: rgba(255,255,255,.08); color: var(--ink-3);
     border: 1px solid rgba(255,255,255,.18);
   }
 
@@ -954,19 +960,19 @@
   #hand-sort button {
     position: relative; z-index: 1;
     padding: 9px 11px; border: none; border-radius: 999px;
-    background: transparent; color: #94a3b8;
+    background: transparent; color: var(--ink-4);
     font-family: var(--font-set);
     font-size: 12px; font-weight: 800; cursor: pointer;
     transition: color .2s ease;
   }
-  #hand-sort button.on { color: #fde68a; }
-  #hand-sort button:hover:not(:disabled):not(.on) { color: #e2e8f0; }
+  #hand-sort button.on { color: var(--gold-lit); }
+  #hand-sort button:hover:not(:disabled):not(.on) { color: var(--ink-2); }
   #hand-sort.sort-blocked { opacity: .45; pointer-events: none; }
   #deckbox, .deck-pill {
     display: inline-flex; align-items: center; gap: 5px;
     padding: 11px 12px; border-radius: 999px;
     background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.14);
-    font-size: 14px; font-weight: 800; color: #e2e8f0;
+    font-size: 14px; font-weight: 800; color: var(--ink-2);
     white-space: nowrap; user-select: none;
     cursor: pointer;
   }
@@ -982,7 +988,7 @@
     outline-offset: 2px;
   }
   #deckbox .deck-ico, .deck-pill .deck-ico { font-size: 15px; opacity: .9; }
-  #deckbox b, .deck-pill b { color: #fde68a; font-variant-numeric: tabular-nums; }
+  #deckbox b, .deck-pill b { color: var(--gold-lit); font-variant-numeric: tabular-nums; }
   /* 덱 5장 미만 — 바깥 은은한 빨간 호흡 글로우 */
   #deckbox.deck-low, .deck-pill.deck-low {
     border-color: rgba(248, 113, 113, .42);
@@ -1045,8 +1051,8 @@
     flex-shrink: 0;
     transform-origin: center center;
     transition:
-      width .18s cubic-bezier(.22, 1.2, .36, 1),
-      margin .18s cubic-bezier(.22, 1.2, .36, 1),
+      width .18s ease,
+      margin .18s ease,
       opacity .12s ease;
   }
   .bigbtn .act-pips i.pip-in {
@@ -1074,17 +1080,18 @@
     .bigbtn .act-pips i.pip-in,
     .bigbtn .act-pips i.pip-out { animation: none; }
   }
-  #btn-play { background: linear-gradient(180deg, #dc2626, #991b1b); color: #fff; }
-  #btn-play .act-pips i { background: #fecaca; border-color: rgba(255, 248, 235, .95); }
-  #btn-discard { background: linear-gradient(180deg, #2563eb, #1e40af); color: #fff; }
-  #btn-discard .act-pips i { background: #bfdbfe; border-color: rgba(255, 248, 235, .95); }
+  /* 내기 = 주(朱) · 버리기 = 청(靑). 역할은 그대로, 색은 이 팔레트에서 */
+  #btn-play { background: linear-gradient(180deg, #c0392b, #8c2418); color: var(--paper); }
+  #btn-discard { background: linear-gradient(180deg, #35657f, #1e3f55); color: var(--paper); }
+  #btn-play .act-pips i,
+  #btn-discard .act-pips i { background: var(--paper); border-color: rgba(255, 248, 235, .95); }
   @media (min-width: 721px) {
     #btn-play, #btn-discard { width: 210px; box-sizing: border-box; }
   }
   /* 언어는 설정 패널로 이동 — 구석 토글 비표시 */
   #locale-toggle { display: none !important; }
   .smallbtn {
-    background: rgba(12, 24, 18, .92); color: #e2e8f0;
+    background: rgba(12, 24, 18, .92); color: var(--ink-2);
     border: 1px solid rgba(255,255,255,.14);
     padding: 7px 12px; font-size: 12px; font-weight: 700;
   }
@@ -1092,7 +1099,7 @@
   /* ── 카드 ────────────────────────────── */
   .card {
     width: 80px; height: 122px;
-    background: linear-gradient(160deg, #fffbef, #f5ecd4);
+    background: linear-gradient(160deg, var(--paper), var(--gold-pale));
     border-radius: 8px; border: 1.5px solid rgba(0,0,0,.55);
     box-shadow: 0 3px 8px rgba(0,0,0,.45), inset 0 0 0 2.5px rgba(192,57,43,.85), inset 0 0 0 4px rgba(255,255,255,.6);
     position: relative; display: flex; flex-direction: column; align-items: center;
@@ -1107,7 +1114,7 @@
     transform: translateY(-18px) scale(1.03);
     box-shadow:
       0 14px 18px rgba(0,0,0,.42),
-      0 0 0 2px #38bdf8,
+      0 0 0 2px var(--chip-blue),
       inset 0 0 0 2.5px rgba(192,57,43,.85),
       inset 0 0 0 4px rgba(255,255,255,.55);
   }
@@ -1123,52 +1130,56 @@
     color: #8a6d3b; align-self: flex-start; margin: 1px 0 0 2px; letter-spacing: -0.5px;
   }
   .card .art { font-size: 30px; line-height: 1; margin-top: 8px; filter: drop-shadow(0 1px 1px rgba(0,0,0,.25)); }
+  .card .art.art-text {
+    font-family: var(--font-overlay); font-size: 17px; font-weight: 400;
+    color: var(--ink-deep); filter: none;
+  }
   .card .tag {
     position: absolute; bottom: 5px; left: 5px; right: 5px;
     font-family: var(--font-overlay); font-size: 12px; font-weight: 400;
     text-align: center; border-radius: 4px; padding: 2px 0; letter-spacing: .5px; z-index: 2;
   }
-  .card.kwang { background: linear-gradient(160deg, #fff8dc, #f3e5ab); box-shadow: 0 3px 8px rgba(0,0,0,.45), inset 0 0 0 2.5px var(--gold), inset 0 0 0 4px rgba(255,255,255,.6); }
+  .card.kwang { background: linear-gradient(160deg, var(--paper), var(--gold-pale)); box-shadow: 0 3px 8px rgba(0,0,0,.45), inset 0 0 0 2.5px var(--gold), inset 0 0 0 4px rgba(255,255,255,.6); }
   .card.kwang.sel {
     box-shadow:
       0 14px 18px rgba(0,0,0,.42),
-      0 0 0 2px #7dd3fc,
+      0 0 0 2px var(--cheong-lit),
       inset 0 0 0 2.5px var(--gold),
       inset 0 0 0 4px rgba(255,255,255,.55);
   }
   .card.kwang .gwangmark {
     margin-top: 3px; width: 32px; height: 32px; border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #ffe98a, var(--gold));
+    background: radial-gradient(circle at 35% 30%, var(--gold-lit), var(--gold));
     display: flex; align-items: center; justify-content: center;
     font-size: 17px; font-weight: 900; color: #7c2d12; box-shadow: 0 1px 3px rgba(0,0,0,.4);
   }
   .card.kwang .art { font-size: 25px; }
   .card.kwang .tag { background: var(--gold); color: #5c3a00; }
   .card.kwang.rain .tag { background: var(--gold); color: #5c3a00; }
-  .card.yeol .tag { background: #b45309; color: #fef3c7; }
+  .card.yeol .tag { background: #b45309; color: var(--gold-pale); }
   .card.tti .ribbon {
     margin-top: 5px; width: 17px; height: 50px; border-radius: 2px;
     display: flex; align-items: center; justify-content: center;
     writing-mode: vertical-rl; font-size: 10px; font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,.35);
   }
   .card.tti.hongdan .ribbon { background: #c0392b; color: #fff; }
-  .card.tti.cheongdan .ribbon { background: #1e40af; color: #fff; }
+  .card.tti.cheongdan .ribbon { background: var(--cheong-deep); color: #fff; }
   .card.tti.chodan .ribbon { background: #c0392b; color: #c0392b; }
   .card.tti.bi_tti .ribbon { background: #6b21a8; color: #fff; }
   .card.tti .tag { background: #7f1d1d; color: #fecaca; }
-  .card.tti.cheongdan .tag { background: #1e3a8a; color: #bfdbfe; }
-  .card.pi .tag { background: #e5e7eb; color: #4b5563; }
+  .card.tti.cheongdan .tag { background: var(--cheong-deep); color: var(--cheong-lit); }
+  .card.pi .tag { background: var(--ink-2); color: var(--ink-5); }
   .card.ssangpi .tag { background: #7c3aed; color: #ede9fe; }
   .card .chipbadge {
     position: absolute; top: 3px; right: 3px;
     font-family: var(--font-overlay-num); font-size: 12px; font-weight: 400;
-    background: rgba(37,99,235,.14); color: #1d4ed8; border-radius: 4px; padding: 1px 3px;
+    background: rgba(37,99,235,.14); color: var(--cheong-deep); border-radius: 4px; padding: 1px 3px;
     z-index: 2;
   }
   /* 에셋 일러스트 카드 — 화투 붉은 테두리, 여백 없이 꽉 채움 */
   .card.has-art {
     padding: 0;
-    background: #fff8f0;
+    background: var(--paper);
     border: 3.5px solid var(--red);
     box-shadow: 0 3px 8px rgba(0,0,0,.45);
   }
@@ -1179,12 +1190,12 @@
   .card.has-art.sel {
     box-shadow:
       0 14px 18px rgba(0,0,0,.42),
-      0 0 0 2px #38bdf8;
+      0 0 0 2px var(--chip-blue);
   }
   .card.has-art.kwang.sel {
     box-shadow:
       0 14px 18px rgba(0,0,0,.42),
-      0 0 0 2px #7dd3fc;
+      0 0 0 2px var(--cheong-lit);
   }
   .card.has-art .face-img {
     position: absolute;
@@ -1222,9 +1233,8 @@
     top: 3px; right: 3px;
     font-family: var(--font-overlay-num);
     font-size: 13px;
-    background: rgba(15, 23, 42, .72); color: #f8fafc;
+    background: rgba(15, 23, 42, .72); color: var(--ink-1);
     border: 1px solid rgba(255,255,255,.35);
-    backdrop-filter: blur(2px);
   }
   .card.has-art .tag { display: none; }
   .card.has-art .month-badge {
@@ -1272,7 +1282,7 @@
   #modal {
     background: linear-gradient(170deg, #1f3d2b, #142a1d);
     border: 1.5px solid var(--gold); border-radius: 16px; padding: 22px 26px;
-    max-width: 720px; width: 100%; box-shadow: 0 18px 60px rgba(0,0,0,.6);
+    max-width: 720px; width: 100%; box-shadow: 0 12px 28px rgba(0,0,0,.6);
     max-height: 92vh; overflow-y: auto;
   }
   #modal.gostop-modal {
@@ -1302,7 +1312,7 @@
   #modal.gostop-modal .gs-next-label {
     font-family: var(--font-ui);
     font-size: 12px; font-weight: 800;
-    color: #94a3b8; letter-spacing: 0.04em;
+    color: var(--ink-4); letter-spacing: 0.04em;
   }
   #modal.gostop-modal .gs-next-score {
     margin-top: 6px;
@@ -1321,7 +1331,7 @@
     padding: 3px 8px; border-radius: 999px; pointer-events: none;
     font-family: var(--font-ui);
     font-size: 10px; font-weight: 800; line-height: 1.2; letter-spacing: 0.02em;
-    color: #fef3c7;
+    color: var(--gold-pale);
     background: rgba(0,0,0,.32);
     border: 1px solid rgba(253,230,138,.32);
     box-shadow: 0 2px 8px rgba(0,0,0,.25);
@@ -1335,12 +1345,17 @@
   .modal-close {
     flex-shrink: 0; width: 32px; height: 32px; padding: 0;
     border: 1px solid rgba(255,255,255,.22); border-radius: 8px;
-    background: rgba(0,0,0,.35); color: #e2e8f0;
+    background: rgba(0,0,0,.35); color: var(--ink-2);
     font-size: 22px; line-height: 1; cursor: pointer;
   }
   .modal-close:hover { background: rgba(255,255,255,.14); color: #fff; }
-  #modal .sub { color: #cbd5e1; font-size: 13px; line-height: 1.55; }
+  #modal .sub { color: var(--ink-3); font-size: 13px; line-height: 1.55; }
   .modal-actions { display: flex; gap: 10px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+  /* 한국어는 어절 단위로 끊는다 — 기본값은 글자 아무 데서나 끊어 "판으/로"가 된다 */
+  #modal, #coach-root .coach-panel, .help-card .hc-body, .choicebtn .d, .gs-tip {
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
   .choicebtn { flex: 1; min-width: 190px; padding: 14px; border-radius: 12px; text-align: left; position: relative; }
   .choicebtn .t {
     font-family: var(--font-overlay); font-weight: 400; font-synthesis: none;
@@ -1360,10 +1375,10 @@
     transform: translateX(-50%); z-index: 30; pointer-events: none;
     width: max-content; max-width: 260px; margin: 0; text-align: left;
     padding: 10px 12px; border-radius: 10px;
-    background: #0f172a; border: 1px solid rgba(255,255,255,.2);
+    background: var(--ink-deep); border: 1px solid rgba(255,255,255,.2);
     box-shadow: 0 12px 28px rgba(0,0,0,.5);
     font-family: var(--font-ui); font-size: 12px; font-weight: 600;
-    color: #e2e8f0; line-height: 1.45;
+    color: var(--ink-2); line-height: 1.45;
   }
   .choicebtn.gs-simple .gs-tip::after {
     display: block; content: ''; position: absolute; left: 50%; top: 100%;
@@ -1373,9 +1388,11 @@
   @media (hover: hover) {
     .choicebtn.gs-simple:hover .gs-tip { display: block; }
   }
-  .choicebtn .gs-tip b { color: #fde68a; }
-  .btn-stop { background: linear-gradient(180deg, #16a34a, #15803d); color: #fff; }
-  .btn-go { background: linear-gradient(180deg, #dc2626, #991b1b); color: #fff; }
+  .choicebtn .gs-tip b { color: var(--gold-lit); }
+  /* 확정·진행 = 금(이 게임의 1차 버튼) · 위험 = 주(朱).
+     초록/빨강은 어느 제품에나 있는 색이고 화투 판에서 겉돈다. */
+  .btn-stop { background: var(--gold); color: var(--ink-deep); }
+  .btn-go { background: linear-gradient(180deg, #c0392b, #8c2418); color: var(--paper); }
 
   #modal.end-modal .sub {
     font-family: var(--font-ui); font-weight: 600;
@@ -1457,7 +1474,7 @@
     border-radius: 12px;
     background: linear-gradient(180deg, rgba(30, 50, 38, .95), rgba(16, 32, 24, .98));
     border: 1px solid rgba(196, 162, 90, .45);
-    color: #f8fafc;
+    color: var(--ink-1);
     cursor: pointer;
     transition: border-color .15s ease, transform .12s ease, background .15s ease;
   }
@@ -1510,7 +1527,7 @@
       linear-gradient(170deg, #254a34 0%, #163024 48%, #0f1f16 100%);
     box-shadow:
       0 0 0 1px rgba(255,255,255,.06) inset,
-      0 22px 70px rgba(0,0,0,.72),
+      0 14px 32px rgba(0,0,0,.72),
       0 0 40px rgba(212,175,55,.12);
     text-align: center;
     font-family: var(--font-ui);
@@ -1557,7 +1574,7 @@
     display: inline-flex; align-items: center; justify-content: center;
     width: 54px; height: 54px; margin-bottom: 14px;
     border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #ffe98a, var(--gold) 55%, #8a6e3a);
+    background: radial-gradient(circle at 35% 30%, var(--gold-lit), var(--gold) 55%, #8a6e3a);
     box-shadow: 0 6px 18px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.45);
     font-size: 26px; line-height: 1;
   }
@@ -1582,23 +1599,23 @@
   }
   #survey-overlay .survey-body,
   #shortcut-overlay .survey-body {
-    color: #e2e8f0; font-family: var(--font-ui);
+    color: var(--ink-2); font-family: var(--font-ui);
     font-size: 16px; font-weight: 600; line-height: 1.55; margin-bottom: 28px;
   }
   #survey-overlay .survey-body b,
-  #shortcut-overlay .survey-body b { color: #fde68a; font-weight: 800; }
+  #shortcut-overlay .survey-body b { color: var(--gold-lit); font-weight: 800; }
   #shortcut-overlay .shortcut-steps {
     text-align: left; margin: 0 0 24px; padding: 14px 16px;
     border-radius: 12px; background: rgba(0,0,0,.28);
     border: 1px solid rgba(255,255,255,.1);
-    color: #e2e8f0; font-family: var(--font-ui);
+    color: var(--ink-2); font-family: var(--font-ui);
     font-size: 15px; font-weight: 600; line-height: 1.55;
   }
   #shortcut-overlay .shortcut-steps ol {
     margin: 0; padding-left: 1.25em;
   }
   #shortcut-overlay .shortcut-steps li { margin: 0.35em 0; }
-  #shortcut-overlay .shortcut-steps b { color: #fde68a; font-weight: 800; }
+  #shortcut-overlay .shortcut-steps b { color: var(--gold-lit); font-weight: 800; }
   #survey-overlay .survey-actions,
   #shortcut-overlay .survey-actions {
     display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
@@ -1616,7 +1633,7 @@
   #survey-overlay .survey-yes,
   #shortcut-overlay .survey-yes {
     border: none;
-    background: linear-gradient(180deg, #fbbf24, #f59e0b 45%, #d97706);
+    background: linear-gradient(180deg, var(--gold-lit), #f59e0b 45%, #d97706);
     color: #1a1205;
     box-shadow: 0 8px 20px rgba(217,119,6,.35), inset 0 1px 0 rgba(255,255,255,.35);
   }
@@ -1626,7 +1643,7 @@
   #shortcut-overlay .survey-no {
     border: 1.5px solid rgba(255,255,255,.28);
     background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.35));
-    color: #f1f5f9;
+    color: var(--ink-1);
     box-shadow: 0 6px 16px rgba(0,0,0,.25);
   }
   #survey-overlay .survey-no:hover,
@@ -1634,12 +1651,12 @@
   #survey-overlay .survey-done-link,
   #shortcut-overlay .survey-done-link {
     display: inline-block; margin-top: 20px; padding: 0;
-    border: none; background: none; color: #94a3b8;
+    border: none; background: none; color: var(--ink-4);
     font-family: var(--font-ui); font-size: 14px; font-weight: 600;
     text-decoration: underline; cursor: pointer;
   }
   #survey-overlay .survey-done-link:hover,
-  #shortcut-overlay .survey-done-link:hover { color: #e2e8f0; }
+  #shortcut-overlay .survey-done-link:hover { color: var(--ink-2); }
   /* 본문·버튼: UI 폰트(SSRock 일부 한글 글리프 누락) / 제목: 오버레이 붓글씨 */
   #shortcut-overlay .survey-body,
   #shortcut-overlay .shortcut-steps,
@@ -1666,7 +1683,7 @@
     border: 1px solid rgba(255,255,255,.22);
     border-radius: 10px;
     background: rgba(0,0,0,.35);
-    color: #e2e8f0;
+    color: var(--ink-2);
     font-family: var(--font-ui);
     font-size: 22px; font-weight: 700; line-height: 1;
     cursor: pointer;
@@ -1699,7 +1716,7 @@
     border: 2px solid var(--frame);
     box-shadow:
       0 0 0 1px rgba(0,0,0,.55),
-      0 22px 64px rgba(0,0,0,.62),
+      0 14px 32px rgba(0,0,0,.62),
       inset 0 1px 0 rgba(255,255,255,.08);
   }
   #modal.settle-modal .settle-title {
@@ -1740,9 +1757,9 @@
   .settle-table tr.total td {
     border-bottom: none; border-top: 1.5px solid rgba(212,175,55,.45);
     padding-top: 14px; margin-top: 2px;
-    font-size: 17px; font-weight: 900; color: #fff8e7;
+    font-size: 17px; font-weight: 900; color: var(--paper);
   }
-  .settle-table tr.total .settle-amt { color: #ffe08a; }
+  .settle-table tr.total .settle-amt { color: var(--gold-lit); }
   .settle-table tr.settle-row {
     opacity: 0;
     transform: translateY(12px) scale(.97);
@@ -1750,7 +1767,7 @@
   .settle-table tr.settle-row.on {
     opacity: 1;
     transform: none;
-    transition: opacity .22s ease, transform .28s cubic-bezier(.2,1.35,.4,1);
+    transition: opacity .22s ease, transform .18s ease;
   }
   .settle-table tr.settle-row.on .settle-amt {
     display: inline-block;
@@ -1787,7 +1804,7 @@
     box-shadow:
       inset 0 0 0 3px rgba(8, 16, 12, .92),
       inset 0 0 0 4px var(--frame-dim),
-      0 12px 40px rgba(0, 0, 0, .55);
+      0 10px 24px rgba(0, 0, 0, .55);
   }
   #modal.shop-modal::before {
     content: '';
@@ -1851,12 +1868,12 @@
     background: rgba(0,0,0,.35);
     border: 1px solid rgba(255,255,255,.18);
     font-family: var(--font-overlay);
-    font-size: 14px; font-weight: 400; color: #e2e8f0;
+    font-size: 14px; font-weight: 400; color: var(--ink-2);
     letter-spacing: 0; line-height: 1;
     box-shadow: 0 2px 0 rgba(0,0,0,.25);
   }
   .deck-peek-count b {
-    color: #fde68a; font-variant-numeric: tabular-nums;
+    color: var(--gold-lit); font-variant-numeric: tabular-nums;
   }
   .deck-peek-count.deck-low {
     border-color: rgba(248, 113, 113, .42);
@@ -1887,7 +1904,7 @@
     font-family: var(--font-overlay);
     font-weight: 400;
     font-size: 28px;
-    color: #fde68a;
+    color: var(--gold-lit);
     line-height: 1.1;
     letter-spacing: -0.06em;
     padding-left: 10px;
@@ -1899,7 +1916,7 @@
     font-family: var(--font-overlay);
     font-size: 11px;
     font-weight: 400;
-    color: #94a3b8;
+    color: var(--ink-4);
     letter-spacing: 0;
     margin-top: 3px;
   }
@@ -1970,12 +1987,12 @@
   .shop-sign h2 {
     margin: 0;
     font-family: var(--font-overlay); font-weight: 400;
-    font-size: 30px; letter-spacing: -0.04em; color: #f8fafc;
+    font-size: 30px; letter-spacing: -0.04em; color: var(--ink-1);
   }
   .shop-sign .shop-sub {
     margin-top: 3px;
     font-family: var(--font-ui); font-size: 12px; font-weight: 600;
-    color: #94a3b8; line-height: 1.4;
+    color: var(--ink-4); line-height: 1.4;
   }
   .shop-wallet {
     display: flex; align-items: center; justify-content: center;
@@ -1993,11 +2010,11 @@
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
     margin-bottom: 8px;
     font-family: var(--font-ui); font-size: 12px; font-weight: 800;
-    color: #cbd5e1; letter-spacing: .02em;
+    color: var(--ink-3); letter-spacing: .02em;
   }
   .shop-sec-h span {
     font-family: var(--font-ui); font-size: 11px; font-weight: 700;
-    color: #94a3b8; letter-spacing: 0;
+    color: var(--ink-4); letter-spacing: 0;
   }
   .shop-offers {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
@@ -2014,42 +2031,24 @@
     height: 100%;
     transition: border-color .15s, background .15s, box-shadow .15s;
   }
-  .offer.aura-common {
-    border-color: rgba(148,163,184,.55);
-    box-shadow: 0 0 12px rgba(148,163,184,.22);
-  }
+  .offer.aura-common { border-color: var(--rank-1); }
   .offer.aura-rare {
-    border-color: rgba(74,222,128,.4);
-    box-shadow: 0 0 12px rgba(34,197,94,.22);
+    border-color: var(--rank-2);
+    box-shadow: 0 0 12px var(--rank-2-glow);
   }
   .offer.aura-epic {
-    border-color: rgba(244,114,182,.4);
-    box-shadow: 0 0 12px rgba(236,72,153,.22);
+    border-width: 1.5px; border-color: var(--rank-3);
+    box-shadow: 0 0 14px var(--rank-3-glow);
   }
   .offer.aura-legendary {
-    border-color: rgba(251,191,36,.5);
-    box-shadow: 0 0 14px rgba(245,158,11,.28);
+    border-width: 2px; border-color: var(--rank-4);
+    box-shadow: 0 0 18px var(--rank-4-glow);
   }
   .offer:not(.sold):hover {
     background: rgba(0,0,0,.62);
     transform: none;
   }
-  .offer.aura-common:not(.sold):hover {
-    border-color: rgba(148,163,184,.6);
-    box-shadow: 0 0 14px rgba(148,163,184,.22);
-  }
-  .offer.aura-rare:not(.sold):hover {
-    border-color: rgba(74,222,128,.55);
-    box-shadow: 0 0 16px rgba(34,197,94,.3);
-  }
-  .offer.aura-epic:not(.sold):hover {
-    border-color: rgba(244,114,182,.55);
-    box-shadow: 0 0 16px rgba(236,72,153,.3);
-  }
-  .offer.aura-legendary:not(.sold):hover {
-    border-color: rgba(251,191,36,.65);
-    box-shadow: 0 0 18px rgba(245,158,11,.36);
-  }
+  .offer:not(.sold):hover { border-color: var(--gold-soft); }
   .offer.sold { opacity: .45; filter: grayscale(.3); }
   .offer .o-icon {
     font-size: 28px; line-height: 1; text-align: center;
@@ -2058,7 +2057,7 @@
   }
   .offer .o-name {
     font-family: var(--font-overlay); font-weight: 400; font-size: 20px;
-    color: #f8fafc; text-align: center; letter-spacing: -0.03em;
+    color: var(--ink-1); text-align: center; letter-spacing: -0.03em;
     line-height: 1.2; margin-bottom: 8px;
   }
   .offer .o-meta {
@@ -2074,14 +2073,14 @@
   .o-kind {
     font-family: var(--font-ui); font-size: 11px; font-weight: 700;
     padding: 3px 8px; border-radius: 4px;
-    background: rgba(255,255,255,.08); color: #cbd5e1; border: none;
+    background: rgba(255,255,255,.08); color: var(--ink-3); border: none;
     white-space: nowrap; flex-shrink: 0;
     display: inline-block;
   }
-  .r-common { background: rgba(51,65,85,.9); color: #e2e8f0; }
-  .r-rare { background: rgba(20,83,45,.85); color: #bbf7d0; }
-  .r-epic { background: rgba(74,32,48,.85); color: #fbcfe8; }
-  .r-legendary { background: rgba(120,53,15,.9); color: #fde68a; }
+  .r-common { background: rgba(0,0,0,.42); color: var(--ink-4); }
+  .r-rare { background: rgba(0,0,0,.42); color: var(--frame); }
+  .r-epic { background: rgba(0,0,0,.42); color: var(--gold-soft); }
+  .r-legendary { background: var(--gold); color: var(--ink-deep); }
   .offer .o-desc {
     font-family: var(--font-ui); font-size: 13px; font-weight: 500;
     color: #e8eef5; line-height: 1.6;
@@ -2098,7 +2097,7 @@
   .offer .o-buy {
     font-family: var(--font-ui);
     background: linear-gradient(180deg, rgba(196,162,90,.38), rgba(120,90,40,.55));
-    color: #fff8e7; padding: 10px; font-weight: 800; font-size: 14px;
+    color: var(--paper); padding: 10px; font-weight: 800; font-size: 14px;
     border-radius: 6px;
     border: 1px solid rgba(232,205,122,.7);
     width: 100%; margin-top: auto;
@@ -2107,7 +2106,7 @@
   }
   .offer .o-buy:hover:not(:disabled) {
     border-color: rgba(253,230,138,.9);
-    color: #fffbeb;
+    color: var(--paper);
     background: linear-gradient(180deg, rgba(212,175,55,.5), rgba(150,110,35,.65));
     filter: brightness(1.05);
   }
@@ -2115,7 +2114,7 @@
   .offer .o-buy:disabled {
     opacity: 1;
     cursor: not-allowed;
-    color: #94a3b8;
+    color: var(--ink-4);
     background: rgba(0,0,0,.35);
     border-color: rgba(148,163,184,.35);
     box-shadow: none;
@@ -2128,7 +2127,7 @@
     border: 1px solid rgba(252,165,165,.28);
   }
   .offer .o-sold-tag {
-    text-align: center; font-weight: 800; color: #94a3b8; font-size: 13px; padding: 10px 0;
+    text-align: center; font-weight: 800; color: var(--ink-4); font-size: 13px; padding: 10px 0;
     margin-top: auto; font-family: var(--font-ui);
     border: 1px solid rgba(148,163,184,.25); border-radius: 6px;
     background: rgba(0,0,0,.22);
@@ -2148,8 +2147,8 @@
     display: flex; flex-direction: column; align-items: stretch; gap: 0;
     background: rgba(0,0,0,.42);
     border: 1px dashed rgba(196,162,90,.22);
-    color: #64748b;
-    transition: border-color .2s, background .2s, transform .25s cubic-bezier(.2,1.4,.4,1);
+    color: var(--ink-5);
+    transition: border-color .2s, background .2s, transform .18s ease;
   }
   @media (prefers-reduced-motion: reduce) {
     .owned-slot.filled.aura-rare,
@@ -2167,7 +2166,7 @@
     border-style: solid;
     border-color: rgba(196,162,90,.28);
     background: rgba(0,0,0,.55);
-    color: #e2e8f0;
+    color: var(--ink-2);
     justify-content: flex-start;
     overflow: visible;
   }
@@ -2180,21 +2179,18 @@
     100% { transform: scale(1); }
   }
   /* 등급별 오라 — 은은한 테두리·글로우만 */
-  .owned-slot.filled.aura-common {
-    border-color: rgba(148,163,184,.45);
-    box-shadow: 0 0 10px rgba(148,163,184,.15);
-  }
+  .owned-slot.filled.aura-common { border-color: var(--rank-1); }
   .owned-slot.filled.aura-rare {
-    border-color: rgba(74,222,128,.4);
-    box-shadow: 0 0 12px rgba(34,197,94,.22);
+    border-color: var(--rank-2);
+    box-shadow: 0 0 10px var(--rank-2-glow);
   }
   .owned-slot.filled.aura-epic {
-    border-color: rgba(244,114,182,.4);
-    box-shadow: 0 0 12px rgba(236,72,153,.22);
+    border-width: 1.5px; border-color: var(--rank-3);
+    box-shadow: 0 0 12px var(--rank-3-glow);
   }
   .owned-slot.filled.aura-legendary {
-    border-color: rgba(251,191,36,.5);
-    box-shadow: 0 0 14px rgba(245,158,11,.28);
+    border-width: 2px; border-color: var(--rank-4);
+    box-shadow: 0 0 16px var(--rank-4-glow);
   }
   .owned-slot .os-head {
     display: flex; flex-direction: column; align-items: center; gap: 7px;
@@ -2204,18 +2200,18 @@
   }
   .owned-slot .os-name {
     font-family: var(--font-overlay); font-weight: 400;
-    font-size: 18px; color: #f8fafc; text-align: center;
+    font-size: 18px; color: var(--ink-1); text-align: center;
     line-height: 1.25; max-width: 100%; letter-spacing: -0.02em;
     display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
     overflow: hidden; margin: 0;
   }
   .owned-slot.filled.aura-legendary .os-name {
-    color: #fde68a;
+    color: var(--gold-soft);
     text-shadow: none;
   }
   .owned-slot .os-meta {
     font-family: var(--font-ui);
-    font-size: 10px; font-weight: 700; color: #94a3b8; text-align: center;
+    font-size: 10px; font-weight: 700; color: var(--ink-4); text-align: center;
     display: flex; justify-content: center; align-items: center;
     gap: 4px; flex-wrap: wrap;
   }
@@ -2230,34 +2226,34 @@
   }
   .owned-slot .os-gain {
     font-family: var(--font-ui);
-    font-size: 12px; font-weight: 700; color: #fde68a;
+    font-size: 12px; font-weight: 700; color: var(--gold-lit);
     text-align: center; letter-spacing: -0.01em;
     margin: 0; padding: 0;
     border: none; width: 100%;
   }
-  .owned-slot .os-gain.empty { color: #64748b; font-weight: 600; }
+  .owned-slot .os-gain.empty { color: var(--ink-5); font-weight: 600; }
   .owned-slot .os-tip {
     display: none; position: absolute; left: 50%; top: calc(100% + 8px);
     bottom: auto;
     transform: translateX(-50%); z-index: 20;
     width: max(180px, 100%); max-width: min(260px, calc(100vw - 24px));
     padding: 12px 14px; border-radius: 8px;
-    background: #0f172a; border: 1px solid rgba(212,175,55,.4);
+    background: var(--ink-deep); border: 1px solid rgba(212,175,55,.4);
     box-shadow: 0 10px 28px rgba(0,0,0,.5);
     font-family: var(--font-ui);
-    font-size: 13px; font-weight: 500; color: #e2e8f0; line-height: 1.6;
+    font-size: 13px; font-weight: 500; color: var(--ink-2); line-height: 1.6;
     letter-spacing: -0.01em; text-align: left; pointer-events: none;
   }
   .owned-slot .os-tip-gain {
     margin-top: 10px; padding-top: 9px;
     border-top: 1px solid rgba(212,175,55,.28);
-    font-size: 12px; font-weight: 700; color: #fde68a;
+    font-size: 12px; font-weight: 700; color: var(--gold-lit);
   }
-  .owned-slot .os-tip-gain.empty { color: #94a3b8; font-weight: 600; }
+  .owned-slot .os-tip-gain.empty { color: var(--ink-4); font-weight: 600; }
   .owned-slot .os-tip::after {
     content: ''; position: absolute; left: var(--tip-arrow-left, 50%); bottom: 100%;
     transform: translateX(-50%);
-    border: 6px solid transparent; border-bottom-color: #0f172a;
+    border: 6px solid transparent; border-bottom-color: var(--ink-deep);
   }
   .owned-slot.filled:hover .os-tip,
   .owned-slot.filled:focus-within .os-tip,
@@ -2284,11 +2280,11 @@
     border-radius: 6px; padding: 12px 14px;
     font-family: var(--font-ui); font-size: 12px; font-weight: 600; line-height: 1.5;
     border: 1px solid rgba(196,162,90,.22); background: rgba(0,0,0,.32);
-    color: #cbd5e1;
+    color: var(--ink-3);
   }
   .shop-util .su-title {
     font-family: var(--font-ui); font-weight: 900;
-    font-size: 13px; color: #f8fafc; margin-bottom: 6px; letter-spacing: 0;
+    font-size: 13px; color: var(--ink-1); margin-bottom: 6px; letter-spacing: 0;
   }
   .shop-util.su-mak {
     border-color: rgba(196,162,90,.35);
@@ -2307,7 +2303,7 @@
     border: 1px solid rgba(252,165,165,.28); color: #fecaca;
     font-family: var(--font-ui); font-size: 12px; font-weight: 700;
   }
-  .boss-candidate.selected { border-color: var(--frame); background: rgba(196,162,90,.16); color: #fde68a; }
+  .boss-candidate.selected { border-color: var(--frame); background: rgba(196,162,90,.16); color: var(--gold-lit); }
   .shop-footer {
     display: flex; justify-content: space-between; align-items: center;
     margin: 0; gap: 12px; flex-wrap: wrap;
@@ -2329,7 +2325,7 @@
     overscroll-behavior: contain;
   }
   .shop-footer .sf-next {
-    font-family: var(--font-ui); font-size: 13px; color: #cbd5e1;
+    font-family: var(--font-ui); font-size: 13px; color: var(--ink-3);
     line-height: 1.4; font-weight: 600;
   }
   .shop-footer .sf-next b {
@@ -2338,7 +2334,7 @@
   }
   .shop-footer .sf-target {
     font-family: var(--font-overlay-num); font-weight: 400;
-    font-size: 24px; color: #e2e8f0;
+    font-size: 24px; color: var(--ink-2);
     margin-top: 3px; letter-spacing: .02em; font-variant-numeric: tabular-nums;
     line-height: 1.15;
     text-shadow: none;
@@ -2361,7 +2357,7 @@
     font-family: var(--font-ui);
     font-size: 13px; font-weight: 800; padding: 8px 16px; border-radius: 6px;
     background: linear-gradient(180deg, rgba(196,162,90,.42), rgba(138,110,58,.55));
-    color: #fff8e7;
+    color: var(--paper);
     border: 1px solid rgba(232,205,122,.65);
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.18),
@@ -2371,7 +2367,7 @@
   }
   .shop-reroll:hover:not(:disabled) {
     border-color: rgba(253,230,138,.85);
-    color: #fffbeb;
+    color: var(--paper);
     background: linear-gradient(180deg, rgba(212,175,55,.55), rgba(160,120,40,.65));
     filter: brightness(1.06);
   }
@@ -2392,7 +2388,7 @@
     font-weight: 700;
     letter-spacing: 0.01em;
     background: linear-gradient(180deg, rgba(28, 42, 32, .92), rgba(14, 24, 18, .95));
-    color: #e2e8f0;
+    color: var(--ink-2);
     border: 1px solid rgba(196, 162, 90, .38);
     box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 2px 6px rgba(0,0,0,.2);
     text-align: center;
@@ -2400,7 +2396,7 @@
   }
   .side-nav .smallbtn:hover {
     border-color: rgba(196, 162, 90, .58);
-    color: #f8fafc;
+    color: var(--ink-1);
   }
 
   .handbook {
@@ -2409,7 +2405,7 @@
   }
   .handbook-legend {
     display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center;
-    font-size: 11px; color: #94a3b8; margin-bottom: 8px;
+    font-size: 11px; color: var(--ink-4); margin-bottom: 8px;
   }
   .handbook-legend .lg {
     display: inline-flex; align-items: center; gap: 5px;
@@ -2427,37 +2423,40 @@
     border: 1px solid rgba(255,255,255,.08);
     border-left: 3px solid rgba(148,163,184,.45);
   }
-  .hb-row.t-s { border-left-color: #fbbf24; background: linear-gradient(90deg, rgba(251,191,36,.12), rgba(0,0,0,.18)); }
-  .hb-row.t-a { border-left-color: #f87171; background: linear-gradient(90deg, rgba(248,113,113,.1), rgba(0,0,0,.18)); }
-  /* 비삼광 — 광(골드)보다 한 톤 어두운 호박색 */
-  .hb-row.t-bi {
-    border-left-color: #b45309;
-    background: linear-gradient(90deg, rgba(146, 64, 14, .22), rgba(0,0,0,.22));
-  }
-  .hb-row.t-b { border-left-color: #60a5fa; background: linear-gradient(90deg, rgba(96,165,250,.1), rgba(0,0,0,.18)); }
-  .hb-row.t-c { border-left-color: #86efac; background: linear-gradient(90deg, rgba(134,239,172,.08), rgba(0,0,0,.18)); }
-  .hb-row.t-d { border-left-color: #64748b; opacity: .85; }
+  /* 서열은 금색 하나의 밝기로만 내려간다 — 무지개는 순위로 안 읽힌다 */
+  .hb-row.t-s { border-left-color: var(--tier-s); background: rgba(232,205,122,.10); }
+  .hb-row.t-a { border-left-color: var(--tier-a); background: rgba(212,175,55,.07); }
+  /* 비삼광 — 삼광보다 한 톤 어둡게 (원래 의도 유지, 색상만 금색 계열로) */
+  .hb-row.t-bi { border-left-color: var(--tier-bi); background: rgba(176,141,63,.07); }
+  .hb-row.t-b { border-left-color: var(--tier-b); background: rgba(154,131,82,.05); }
+  .hb-row.t-c { border-left-color: var(--tier-c); background: rgba(0,0,0,.18); }
+  .hb-row.t-d { border-left-color: var(--tier-d); background: rgba(0,0,0,.18); opacity: .85; }
   .hb-rank {
     width: 26px; height: 26px; border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 900; color: #0f172a;
-    background: rgba(232,205,122,.9);
+    font-size: 11px; font-weight: 900; color: var(--ink-deep);
+    background: var(--tier-s);
   }
   .hb-vis {
-    text-align: center; font-size: 18px; line-height: 1;
-    filter: drop-shadow(0 1px 0 rgba(0,0,0,.35));
+    display: flex; align-items: center; justify-content: center;
+    height: 39px;
   }
-  .hb-row.t-a .hb-rank { background: #fca5a5; }
-  .hb-row.t-bi .hb-rank { background: #d97706; color: #fffbeb; }
-  .hb-row.t-b .hb-rank { background: #93c5fd; }
-  .hb-row.t-c .hb-rank { background: #86efac; }
-  .hb-row.t-d .hb-rank { background: #94a3b8; }
+  .hb-vis img {
+    width: 26px; height: 39px; object-fit: cover;
+    border-radius: 3px; border: 1px solid rgba(0,0,0,.5);
+    box-shadow: 0 1px 3px rgba(0,0,0,.45);
+  }
+  .hb-row.t-a .hb-rank { background: var(--tier-a); }
+  .hb-row.t-bi .hb-rank { background: var(--tier-bi); }
+  .hb-row.t-b .hb-rank { background: var(--tier-b); color: var(--ink-1); }
+  .hb-row.t-c .hb-rank { background: var(--tier-c); color: var(--ink-1); }
+  .hb-row.t-d .hb-rank { background: var(--tier-d); color: var(--ink-1); }
   .hb-name {
-    font-size: 15.5px; font-weight: 900; color: #f8fafc;
+    font-size: 15.5px; font-weight: 900; color: var(--ink-1);
     letter-spacing: -0.2px;
   }
   .hb-cond {
-    font-size: 11px; color: #94a3b8; margin-top: 2px; line-height: 1.4;
+    font-size: 11px; color: var(--ink-4); margin-top: 2px; line-height: 1.4;
   }
   .hb-mult {
     font-size: 14px; font-weight: 900; color: var(--mult-red);
@@ -2465,14 +2464,14 @@
     min-width: 3.2ch; text-align: right;
     text-shadow: 0 1px 0 rgba(0,0,0,.35);
   }
-  .hb-row.t-s .hb-mult { color: #fbbf24; }
+  .hb-row.t-s .hb-mult { color: var(--gold-lit); }
   .hb-row.t-bi .hb-mult { color: #f59e0b; }
   .chip-legend {
     display: flex; flex-wrap: wrap; gap: 6px;
     margin: 12px 0 4px;
   }
   .chip-legend span {
-    font-size: 11px; font-weight: 700; color: #e2e8f0;
+    font-size: 11px; font-weight: 700; color: var(--ink-2);
     background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.1);
     border-radius: 999px; padding: 4px 9px;
   }
@@ -2506,31 +2505,26 @@
   .help-card .hc-title {
     display: flex; align-items: center; gap: 7px;
     font-family: var(--font-ui);
-    font-size: 12px; font-weight: 900; color: #f8fafc;
+    font-size: 12px; font-weight: 900; color: var(--ink-1);
     margin-bottom: 7px;
-  }
-  .help-card .hc-title .ico {
-    width: 20px; height: 20px; border-radius: 7px;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 11px; background: rgba(255,255,255,.1);
   }
   .help-card .hc-body {
     font-family: var(--font-ui);
-    font-size: 11.5px; color: #cbd5e1; line-height: 1.55;
+    font-size: 11.5px; color: var(--ink-3); line-height: 1.55;
   }
-  .help-card .hc-body b { color: #fde68a; font-weight: 800; }
+  .help-card .hc-body b { color: var(--gold-lit); font-weight: 800; }
   .help-tags {
     display: flex; flex-wrap: wrap; gap: 6px;
     margin-top: 8px;
   }
   .help-tags span {
     font-family: var(--font-ui);
-    font-size: 10.5px; font-weight: 700; color: #e2e8f0;
+    font-size: 10.5px; font-weight: 700; color: var(--ink-2);
     background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.12);
     border-radius: 8px; padding: 4px 8px;
   }
   .help-tags span em {
-    font-style: normal; color: #93c5fd; font-weight: 800;
+    font-style: normal; color: var(--cheong-lit); font-weight: 800;
   }
 
   /* 도움말·웰컴: 제목/버튼은 오버레이, 안내 카드·작은 설명은 UI 고딕 */
@@ -2565,7 +2559,7 @@
     font-weight: 600;
   }
   #modal.howto-modal .help-muted {
-    font-size: 11px; color: #94a3b8; line-height: 1.4;
+    font-size: 11px; color: var(--ink-4); line-height: 1.4;
   }
 
   /* PC: 화면 하단 원래 자리 / 모바일: 액션 버튼 위에 띄움 */
@@ -2577,15 +2571,15 @@
     z-index: 20;
     width: min(92vw, 420px);
     font-family: var(--font-ui);
-    font-size: 10.5px; font-weight: 600; color: #94a3b8;
+    font-size: 10.5px; font-weight: 600; color: var(--ink-4);
     text-align: center; line-height: 1.35;
     opacity: .85; letter-spacing: -0.02em;
     pointer-events: none;
   }
-  #seedinfo { font-size: 10px; color: #64748b; text-align: left; padding: 0 4px 2px; opacity: .75; }
+  #seedinfo { font-size: 10px; color: var(--ink-5); text-align: left; padding: 0 4px 2px; opacity: .75; }
   /* 이달의 패 ×2 — 따뜻한 바탕 + 좌하단 뱃지 (테두리 채널 안 씀) */
   .card.season:not(.kwang):not(.has-art) {
-    background: linear-gradient(165deg, #fff7ed, #f5e6c8 55%, #ffedd5);
+    background: linear-gradient(165deg, var(--paper), var(--gold-pale) 55%, #ffedd5);
   }
   .card.season.has-art {
     box-shadow:
@@ -2595,7 +2589,7 @@
   .card.season.has-art.sel {
     box-shadow:
       0 14px 18px rgba(0,0,0,.42),
-      0 0 0 2px #38bdf8,
+      0 0 0 2px var(--chip-blue),
       0 0 0 4px #f59e0b;
   }
   .card.season::after {
@@ -2606,7 +2600,7 @@
     font-family: var(--font-overlay-num);
     font-size: 12px; font-weight: 400; line-height: 1;
     color: #7c2d12;
-    background: linear-gradient(180deg, #fef3c7, #f59e0b);
+    background: linear-gradient(180deg, var(--gold-pale), #f59e0b);
     border: 1.5px solid #c2410c;
     border-radius: 6px;
     padding: 3px 6px;
@@ -2621,18 +2615,18 @@
     display: flex; flex-direction: column; align-items: center; gap: 6px;
   }
   #ch-bubble {
-    background: #fffbef; color: #3f3120; border-radius: 10px; padding: 7px 9px;
+    background: var(--paper); color: #3f3120; border-radius: 10px; padding: 7px 9px;
     font-size: 11px; line-height: 1.45; box-shadow: 0 3px 10px rgba(0,0,0,.35);
     position: relative; width: 100%; text-align: center; min-height: 32px;
   }
   #ch-bubble::after {
     content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
-    border: 6px solid transparent; border-top-color: #fffbef; border-bottom: none;
+    border: 6px solid transparent; border-top-color: var(--paper); border-bottom: none;
   }
   #ch-figure { position: relative; width: 110px; filter: drop-shadow(0 4px 8px rgba(0,0,0,.4)); }
   #ch-face { position: absolute; top: 19px; left: 50%; transform: translateX(-50%); font-size: 23px; }
   #ch-btn {
-    background: linear-gradient(180deg, #d97706, #b45309); color: #fff;
+    background: var(--gold); color: var(--ink-deep);
     font-size: 11px; font-weight: 800; padding: 6px 10px; width: 100%;
   }
   #ch-hint-tabs {
@@ -2641,10 +2635,10 @@
   #ch-hint-tabs:not([hidden]) { display: flex; }
   #ch-hint-tabs button {
     flex: 1; padding: 5px 6px; font-size: 10px; font-weight: 800;
-    border-radius: 7px; background: rgba(255,255,255,.12); color: #e2e8f0;
+    border-radius: 7px; background: rgba(255,255,255,.12); color: var(--ink-2);
   }
   #ch-hint-tabs button.on {
-    background: linear-gradient(180deg, #d97706, #b45309); color: #fff;
+    background: var(--gold); color: var(--ink-deep);
   }
   @media (min-width: 1400px) {
     #main { padding-right: 200px; }
@@ -2704,7 +2698,7 @@
     100% { transform: scale(1); filter: brightness(1); }
   }
   #juice-cards .chip-float.joker-fx {
-    color: #fde68a;
+    color: var(--gold-lit);
     text-shadow: 0 2px 8px rgba(0,0,0,.65), 0 0 12px rgba(251,191,36,.5);
   }
   .play-fly-card {
@@ -2723,7 +2717,7 @@
   #juice-cards .chip-float.go {
     animation: chipFloat .82s ease forwards;
   }
-  #juice-cards .chip-float.flat { color: #94a3b8; text-shadow: 0 2px 6px rgba(0,0,0,.5); }
+  #juice-cards .chip-float.flat { color: var(--ink-4); text-shadow: 0 2px 6px rgba(0,0,0,.5); }
   @keyframes chipFloat {
     0% { opacity: 0; transform: translate(-50%,-70%) scale(.6); }
     25% { opacity: 1; transform: translate(-50%,-110%) scale(1.25); }
@@ -2743,13 +2737,13 @@
   #jsp-tally .jt-chips { font-size: 34px; color: var(--chip-blue); }
   #juice-tally .jt-times,
   #jsp-tally .jt-times {
-    font-size: 26px; color: #94a3b8; display: none;
+    font-size: 26px; color: var(--ink-4); display: none;
     transform: scale(.5);
   }
   #juice-tally .jt-times.on,
   #jsp-tally .jt-times.on {
     display: inline; opacity: 1; transform: scale(1);
-    transition: transform .25s cubic-bezier(.2,1.6,.4,1), opacity .15s;
+    transition: transform .18s ease, opacity .15s;
   }
   #juice-tally .jt-mult,
   #jsp-tally .jt-mult {
@@ -2800,13 +2794,13 @@
       filter: drop-shadow(0 0 16px rgba(251,113,133,.9)) brightness(1.18);
     }
   }
-  #juice-tally .jt-plus { font-size: 26px; color: #94a3b8; }
+  #juice-tally .jt-plus { font-size: 26px; color: var(--ink-4); }
   #juice-tally .jt-flat {
-    font-size: 30px; color: #94a3b8;
+    font-size: 30px; color: var(--ink-4);
     transition: transform .12s ease;
   }
   #juice-tally .jt-eq,
-  #jsp-tally .jt-eq { font-size: 26px; color: #94a3b8; display: none; }
+  #jsp-tally .jt-eq { font-size: 26px; color: var(--ink-4); display: none; }
   #juice-tally .jt-eq.on,
   #jsp-tally .jt-eq.on { display: inline; opacity: 1; }
   #juice-tally .jt-score,
@@ -2850,7 +2844,7 @@
   }
   .score-fly::after {
     content: ''; position: absolute; inset: -12px -18px; border-radius: 999px;
-    background: radial-gradient(circle, rgba(147,197,253,.35), transparent 70%);
+    background: radial-gradient(circle, rgba(111,179,216,.35), transparent 70%);
     z-index: -1; filter: blur(2px);
   }
   #score-val.score-land {
@@ -2900,7 +2894,7 @@
     to { opacity: 0; transform: translate(-50%, -70%) scale(1.1); }
   }
   #hand-banner.tier-S {
-    color: #fde68a;
+    color: var(--gold-lit);
     -webkit-text-stroke-color: #3b2206;
     text-shadow: 0 0 2px #3b2206, 0 3px 0 #3b2206, 0 0 26px rgba(251,191,36,.65);
   }
@@ -2915,14 +2909,14 @@
     text-shadow: 0 0 2px #431407, 0 3px 0 #431407, 0 0 20px rgba(251,146,60,.5);
   }
   #hand-banner.tier-C {
-    color: #bfdbfe;
-    -webkit-text-stroke-color: #0f172a;
-    text-shadow: 0 0 2px #0f172a, 0 3px 0 #0f172a, 0 0 18px rgba(96,165,250,.45);
+    color: var(--cheong-lit);
+    -webkit-text-stroke-color: var(--ink-deep);
+    text-shadow: 0 0 2px var(--ink-deep), 0 3px 0 var(--ink-deep), 0 0 18px rgba(96,165,250,.45);
   }
   #hand-banner.tier-D {
-    color: #f1f5f9;
-    -webkit-text-stroke-color: #0f172a;
-    text-shadow: 0 0 2px #0f172a, 0 2px 0 #0f172a, 0 0 14px rgba(0,0,0,.45);
+    color: var(--ink-1);
+    -webkit-text-stroke-color: var(--ink-deep);
+    text-shadow: 0 0 2px var(--ink-deep), 0 2px 0 var(--ink-deep), 0 0 14px rgba(0,0,0,.45);
   }
 
   /* ── 밀치기 고 하이퍼버닝 연출 ─────────── */
@@ -2950,7 +2944,7 @@
     font-variant-numeric: tabular-nums;
     font-size: clamp(68px, 14vw, 148px);
     line-height: 1;
-    color: #fff7ed; letter-spacing: -0.04em; white-space: nowrap;
+    color: var(--paper); letter-spacing: -0.04em; white-space: nowrap;
     text-shadow:
       0 0 24px rgba(251,191,36,.85),
       0 0 48px rgba(239,68,68,.55),
@@ -2962,7 +2956,7 @@
   #go-cascade .go-num.push-out { animation: goPushOut .32s ease-in forwards; }
   #go-cascade .go-shard {
     position: absolute; left: 50%; top: 50%;
-    font-family: var(--font-overlay); font-weight: 400; color: #fde68a; pointer-events: none;
+    font-family: var(--font-overlay); font-weight: 400; color: var(--gold-lit); pointer-events: none;
     text-shadow: 0 0 12px rgba(251,191,36,.8);
     animation: goShardFly .55s cubic-bezier(.2,.7,.3,1) forwards;
   }
@@ -3064,7 +3058,7 @@
     font-family: var(--font-overlay); font-weight: 400;
     font-size: clamp(34px, 8vw, 56px);
     line-height: 1.15; letter-spacing: .02em;
-    color: #fff7ed; white-space: nowrap; text-align: center;
+    color: var(--paper); white-space: nowrap; text-align: center;
     text-shadow:
       0 0 18px rgba(251,191,36,.75),
       0 0 36px rgba(180,83,9,.45),
@@ -3117,7 +3111,7 @@
     transform-origin: center center;
     font-family: var(--font-overlay-num); font-weight: 400; font-synthesis: none;
     font-size: 1.7em; letter-spacing: 0.02em;
-    color: #fffef5; white-space: nowrap; line-height: 1;
+    color: var(--paper); white-space: nowrap; line-height: 1;
     text-align: center;
     text-shadow: 0 1px 0 rgba(127,29,29,.65), 0 0 12px rgba(254,240,138,.5);
     will-change: transform, opacity, filter;
@@ -3137,8 +3131,8 @@
   .choicebtn.btn-go .go-spark {
     position: absolute; left: 50%; top: 50%;
     width: 4px; height: 4px; border-radius: 50%;
-    background: #fef08a; pointer-events: none; z-index: 3;
-    box-shadow: 0 0 6px #fbbf24;
+    background: var(--gold-lit); pointer-events: none; z-index: 3;
+    box-shadow: 0 0 6px var(--gold-lit);
     animation: goSparkFly .48s cubic-bezier(.16,1,.3,1) forwards;
   }
   @keyframes goSparkFly {
@@ -3154,7 +3148,7 @@
     transform-origin: center center;
     font-family: var(--font-overlay-num); font-weight: 400; font-synthesis: none;
     font-size: 1.7em; letter-spacing: 0.02em;
-    color: #fffef5; line-height: 1;
+    color: var(--paper); line-height: 1;
     text-shadow: 0 1px 0 rgba(127,29,29,.65), 0 0 12px rgba(254,240,138,.5);
     pointer-events: none;
   }
@@ -3188,7 +3182,7 @@
   }
   .choicebtn.btn-go .go-num.punch-final {
     animation: goBtnPunchFinal .45s cubic-bezier(.16,1,.3,1) forwards;
-    color: #fef08a;
+    color: var(--gold-lit);
   }
   @keyframes goBtnPunch {
     0% { transform: translate(-50%, -50%) scale(.4); opacity: .25; filter: brightness(2); }
@@ -3223,11 +3217,11 @@
   }
   .choicebtn.btn-go .go-num.slide-in-epic {
     animation: goBtnSlideInEpic .72s cubic-bezier(.65,0,.35,1) forwards;
-    color: #fef08a;
+    color: var(--gold-lit);
   }
   .choicebtn.btn-go .go-num.slide-fake {
     animation: goBtnSlideFake .55s cubic-bezier(.65,0,.35,1) forwards;
-    color: #fef08a;
+    color: var(--gold-lit);
   }
   .choicebtn.btn-go .go-num.slide-doubt {
     animation: goBtnSlideDoubt .5s cubic-bezier(.65,0,.35,1) forwards;
@@ -3298,7 +3292,7 @@
   }
   .choicebtn.btn-go .go-num.hyper-final {
     animation: goBtnHyperFinal .48s cubic-bezier(.16,1,.3,1) forwards;
-    color: #fef08a;
+    color: var(--gold-lit);
   }
   @keyframes goBtnHyper {
     0% { opacity: 0; transform: translate(-50%, -50%) scale(1.65); filter: brightness(2) contrast(1.3); }
@@ -3345,7 +3339,7 @@
     position: absolute; left: 50%; top: 50%;
     transform: translate(-50%, -50%);
     transform-origin: center center;
-    font-weight: 900; font-size: 1.05em; color: #fde68a;
+    font-weight: 900; font-size: 1.05em; color: var(--gold-lit);
     letter-spacing: -0.03em; white-space: nowrap; line-height: 1;
     text-align: center;
     text-shadow: 0 0 8px rgba(251,191,36,.8);
@@ -3382,11 +3376,11 @@
   }
   .choicebtn.btn-go .go-num.glitch-lock {
     animation: goBtnGlitchLock .42s cubic-bezier(.16,1,.3,1) forwards;
-    color: #fef08a;
+    color: var(--gold-lit);
   }
   @keyframes goBtnGlitch {
-    0% { transform: translate(-52%, -48%); text-shadow: 2px 0 #f43f5e, -2px 0 #38bdf8; }
-    50% { transform: translate(-48%, -52%); text-shadow: -2px 0 #f43f5e, 2px 0 #38bdf8; }
+    0% { transform: translate(-52%, -48%); text-shadow: 2px 0 #f43f5e, -2px 0 var(--chip-blue); }
+    50% { transform: translate(-48%, -52%); text-shadow: -2px 0 #f43f5e, 2px 0 var(--chip-blue); }
     100% { transform: translate(-50%, -50%); text-shadow: 0 0 12px rgba(254,240,138,.5); }
   }
   @keyframes goBtnGlitchLock {
@@ -3424,19 +3418,19 @@
   #juice-score-preview .gap-inner { width: min(1100px, 100%); margin: 0 auto; }
   #go-anim-preview h1,
   #juice-score-preview h1 {
-    margin: 0 0 6px; color: #fde68a; font-size: 22px; font-weight: 900;
+    margin: 0 0 6px; color: var(--gold-lit); font-size: 22px; font-weight: 900;
   }
   #go-anim-preview .gap-sub,
   #juice-score-preview .gap-sub {
-    color: #94a3b8; font-size: 13px; margin-bottom: 14px; line-height: 1.5;
+    color: var(--ink-4); font-size: 13px; margin-bottom: 14px; line-height: 1.5;
   }
   #go-anim-preview .gap-sub code,
   #juice-score-preview .gap-sub code {
-    background: rgba(0,0,0,.35); padding: 1px 6px; border-radius: 4px; color: #cbd5e1;
+    background: rgba(0,0,0,.35); padding: 1px 6px; border-radius: 4px; color: var(--ink-3);
   }
   #go-anim-preview .gap-section-title,
   #juice-score-preview .gap-section-title {
-    margin: 18px 0 10px; color: #fde68a; font-size: 15px; font-weight: 900;
+    margin: 18px 0 10px; color: var(--gold-lit); font-size: 15px; font-weight: 900;
   }
   #go-anim-preview .gap-section-title:first-of-type,
   #juice-score-preview .gap-section-title:first-of-type { margin-top: 4px; }
@@ -3446,7 +3440,7 @@
   }
   #go-anim-preview .gap-toolbar button,
   #juice-score-preview .gap-toolbar button {
-    background: rgba(255,255,255,.1); color: #f1f5f9;
+    background: rgba(255,255,255,.1); color: var(--ink-1);
     border: 1px solid rgba(255,255,255,.18); border-radius: 8px;
     padding: 8px 12px; font-size: 12px; font-weight: 800; cursor: pointer;
   }
@@ -3467,14 +3461,14 @@
     border-radius: 12px; padding: 12px 10px; text-align: center;
   }
   #juice-score-preview .jsp-card h3 {
-    margin: 0 0 4px; color: #fef3c7; font-size: 13px; font-weight: 900;
+    margin: 0 0 4px; color: var(--gold-pale); font-size: 13px; font-weight: 900;
   }
   #juice-score-preview .jsp-card .jsp-meta {
-    font-size: 11px; color: #94a3b8; margin-bottom: 10px; min-height: 2.4em; line-height: 1.35;
+    font-size: 11px; color: var(--ink-4); margin-bottom: 10px; min-height: 2.4em; line-height: 1.35;
   }
   #juice-score-preview .jsp-card button {
     width: 100%;
-    background: rgba(255,255,255,.08); color: #e2e8f0;
+    background: rgba(255,255,255,.08); color: var(--ink-2);
     border: 1px solid rgba(255,255,255,.15); border-radius: 8px;
     padding: 8px; font-size: 12px; font-weight: 700; cursor: pointer;
   }
@@ -3495,14 +3489,14 @@
     border-radius: 12px; padding: 12px 10px 12px;
   }
   #go-anim-preview .gap-live-card h3 {
-    margin: 0 0 2px; color: #fef3c7; font-size: 13px; font-weight: 900;
+    margin: 0 0 2px; color: var(--gold-pale); font-size: 13px; font-weight: 900;
   }
   #go-anim-preview .gap-live-card .gap-tag {
     display: inline-block; margin-bottom: 8px;
-    font-size: 10px; font-weight: 800; color: #94a3b8;
+    font-size: 10px; font-weight: 800; color: var(--ink-4);
   }
   #go-anim-preview .gap-live-card .gap-tag.d { color: #fca5a5; }
-  #go-anim-preview .gap-live-card .gap-tag.c { color: #93c5fd; }
+  #go-anim-preview .gap-live-card .gap-tag.c { color: var(--cheong-lit); }
   #go-anim-preview .gap-live-card .choicebtn {
     width: 100%; min-width: 0; cursor: pointer; min-height: 64px;
   }
@@ -3520,17 +3514,17 @@
     border-radius: 14px; padding: 14px 12px 14px;
   }
   #go-anim-preview .gap-card h3 {
-    margin: 0 0 4px; color: #fef3c7; font-size: 14px; font-weight: 900;
+    margin: 0 0 4px; color: var(--gold-pale); font-size: 14px; font-weight: 900;
   }
   #go-anim-preview .gap-card p {
-    margin: 0 0 12px; color: #94a3b8; font-size: 11.5px; line-height: 1.4; min-height: 2.6em;
+    margin: 0 0 12px; color: var(--ink-4); font-size: 11.5px; line-height: 1.4; min-height: 2.6em;
   }
   #go-anim-preview .gap-card .choicebtn {
     width: 100%; min-width: 0; cursor: pointer; min-height: 72px;
   }
   #go-anim-preview .gap-replay {
     margin-top: 8px; width: 100%;
-    background: rgba(255,255,255,.08); color: #e2e8f0;
+    background: rgba(255,255,255,.08); color: var(--ink-2);
     border: 1px solid rgba(255,255,255,.15); border-radius: 8px;
     padding: 7px; font-size: 12px; font-weight: 700; cursor: pointer;
   }
@@ -3539,9 +3533,9 @@
     margin-top: 18px; display: inline-block;
     color: #86efac; font-size: 13px; font-weight: 700;
   }
-  #gauge.overflow { box-shadow: 0 0 0 2px #fde68a, 0 0 18px rgba(250,204,21,.75); }
+  #gauge.overflow { box-shadow: 0 0 0 2px var(--gold-lit), 0 0 18px rgba(232,205,122,.7); }
   #gauge-fill.overflow {
-    background: linear-gradient(90deg, #fbbf24, #f472b6, #a3e635) !important;
+    background: linear-gradient(90deg, var(--gold), var(--gold-lit) 50%, var(--paper)) !important;
     animation: gaugeFlash .55s ease;
   }
   @keyframes gaugeFlash {
@@ -3549,7 +3543,10 @@
     40% { filter: brightness(1.7); }
   }
   .coin-particle {
-    position: fixed; z-index: 70; font-size: 16px; pointer-events: none;
+    position: fixed; z-index: 70; pointer-events: none;
+    width: 13px; height: 13px; border-radius: 50%;
+    background: var(--gold); border: 1px solid #8a6e3a;
+    box-shadow: inset 0 0 0 2px rgba(255, 250, 220, .35);
     animation: coinFly .85s ease forwards;
   }
   @keyframes coinFly {
@@ -3597,7 +3594,6 @@
       padding: max(5px, env(safe-area-inset-top, 0px)) 8px 5px;
       position: sticky; top: 0; z-index: 42;
       background: rgba(10, 28, 18, .96);
-      backdrop-filter: blur(8px);
       border-bottom: 1px solid rgba(196,162,90,.16);
     }
     #logo { display: none; }
@@ -3618,7 +3614,7 @@
       display: flex; align-items: center; justify-content: center;
     }
     .jokerslot:not(.filled)::before {
-      content: '＋'; font-size: 14px; color: #64748b; font-weight: 700;
+      content: '＋'; font-size: 14px; color: var(--ink-5); font-weight: 700;
     }
     .jokerslot.filled {
       width: auto; min-width: 0; max-width: none; padding: 3px 2px 4px;
@@ -3831,7 +3827,7 @@
       bottom: calc(78px + env(safe-area-inset-bottom, 0px));
       z-index: 106;
       font-size: 9.5px;
-      color: #64748b;
+      color: var(--ink-5);
       opacity: .72;
       text-shadow: 0 1px 2px rgba(0,0,0,.55);
       width: max-content;
@@ -3850,12 +3846,12 @@
       filter: none !important;
     }
     #btn-play {
-      background: linear-gradient(180deg, #ef4444, #b91c1c) !important;
-      color: #fff !important;
+      background: linear-gradient(180deg, #cf4132, #8c2418) !important;
+      color: var(--paper) !important;
     }
     #btn-discard {
-      background: linear-gradient(180deg, #3b82f6, #1d4ed8) !important;
-      color: #fff !important;
+      background: linear-gradient(180deg, #3b708c, #1e3f55) !important;
+      color: var(--paper) !important;
     }
     .bigbtn .act-pips { gap: 4px; min-height: 7px; }
     .bigbtn .act-pips i { width: 7px; height: 7px; }
@@ -3904,7 +3900,7 @@
       border-radius: 16px;
       padding: 22px 18px calc(18px + env(safe-area-inset-bottom, 0px));
       margin: 0 auto;
-      box-shadow: 0 22px 64px rgba(0,0,0,.55);
+      box-shadow: 0 14px 32px rgba(0,0,0,.55);
     }
     #modal.prep-modal h2 {
       font-size: 22px;
@@ -3956,7 +3952,7 @@
       color: rgba(255,255,255,.88); text-align: center; line-height: 1.4;
     }
     .choicebtn.gs-simple .gs-tip::after { display: none; }
-    .choicebtn .gs-tip b { color: #fef3c7; }
+    .choicebtn .gs-tip b { color: var(--gold-pale); }
     /* 주막 모바일: 세로 거대 카드 → 가로형 컴팩트 리스트 */
     #modal.shop-modal {
       padding: 0;
@@ -4073,7 +4069,7 @@
     .owned-slot .os-tip::after {
       top: auto; bottom: 100%;
       border-top-color: transparent;
-      border-bottom-color: #0f172a;
+      border-bottom-color: var(--ink-deep);
     }
     .owned-slot.filled { cursor: pointer; }
     .shop-utils { grid-template-columns: 1fr; }
@@ -4164,11 +4160,11 @@
   }
   #boot-load .bl-sub {
     font-family: var(--font-overlay); font-size: 13px; font-weight: 400;
-    color: #94a3b8; letter-spacing: 0.28em;
+    color: var(--ink-4); letter-spacing: 0.28em;
     margin-top: -8px;
   }
   #boot-load .bl-msg {
-    margin-top: 10px; font-size: 14px; font-weight: 700; color: #cbd5e1;
+    margin-top: 10px; font-size: 14px; font-weight: 700; color: var(--ink-3);
   }
   #boot-load .bl-bar {
     width: min(280px, 70vw); height: 8px; border-radius: 999px;
@@ -4177,11 +4173,11 @@
   }
   #boot-load .bl-fill {
     height: 100%; width: 0%;
-    background: linear-gradient(90deg, #b45309, #fbbf24 55%, #fde68a);
+    background: linear-gradient(90deg, #b45309, var(--gold-lit) 55%, var(--gold-lit));
     transition: width .12s ease-out;
   }
   #boot-load .bl-pct {
-    font-size: 12px; font-weight: 800; color: #fde68a;
+    font-size: 12px; font-weight: 800; color: var(--gold-lit);
     font-variant-numeric: tabular-nums; letter-spacing: 0.04em;
   }
 
@@ -4194,36 +4190,36 @@
     background: rgba(10, 18, 14, .94);
     border: 1px solid rgba(196, 162, 90, .5);
     box-shadow: 0 12px 36px rgba(0,0,0,.5);
-    font-size: 12px; color: #e2e8f0;
+    font-size: 12px; color: var(--ink-2);
   }
   #card-tune.on { display: block; }
   #card-tune .ct-title {
-    font-weight: 900; color: #fde68a; margin-bottom: 4px; font-size: 13px;
+    font-weight: 900; color: var(--gold-lit); margin-bottom: 4px; font-size: 13px;
   }
   #card-tune .ct-sub {
-    color: #94a3b8; font-size: 11px; line-height: 1.4; margin-bottom: 10px;
+    color: var(--ink-4); font-size: 11px; line-height: 1.4; margin-bottom: 10px;
   }
   #card-tune .ct-row {
     display: grid; grid-template-columns: 52px 1fr 42px;
     gap: 8px; align-items: center; margin: 7px 0;
   }
-  #card-tune .ct-row label { color: #cbd5e1; font-weight: 700; }
+  #card-tune .ct-row label { color: var(--ink-3); font-weight: 700; }
   #card-tune .ct-row output {
-    font-variant-numeric: tabular-nums; text-align: right; color: #f8fafc; font-weight: 800;
+    font-variant-numeric: tabular-nums; text-align: right; color: var(--ink-1); font-weight: 800;
   }
   #card-tune input[type="range"] { width: 100%; accent-color: #c4a25a; }
   #card-tune .ct-css {
     margin-top: 10px; padding: 8px 9px; border-radius: 8px;
     background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.1);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 10.5px; color: #a5f3fc; word-break: break-all; line-height: 1.4;
+    font-size: 10.5px; color: var(--cheong-lit); word-break: break-all; line-height: 1.4;
   }
   #card-tune .ct-actions {
     display: flex; gap: 6px; margin-top: 10px;
   }
   #card-tune .ct-actions button {
     flex: 1; padding: 8px 6px; border-radius: 8px; font-size: 11px; font-weight: 800;
-    background: rgba(255,255,255,.1); color: #f1f5f9;
+    background: rgba(255,255,255,.1); color: var(--ink-1);
     border: 1px solid rgba(255,255,255,.16);
   }
   #card-tune .ct-actions button.primary {
@@ -4249,8 +4245,8 @@
   <div id="jokerbar"></div>
   <div id="topbar-right">
     <div id="moneybox"></div>
-    <button type="button" id="top-settings" onclick="openSettings()" title="설정" aria-label="설정">⚙</button>
-    <button type="button" id="top-help" class="smallbtn" onclick="openHelp()" title="족보표 / 도움말">📖</button>
+    <button type="button" id="top-settings" onclick="openSettings()" title="설정" aria-label="설정"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 12h2M10 12h10M4 17h8M16 17h4"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="12" cy="17" r="2"/></svg></button>
+    <button type="button" id="top-help" class="smallbtn" onclick="openHelp()" title="족보표 / 도움말"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><path d="M9 3v18" stroke-opacity=".5"/></svg></button>
   </div>
 </div>
 
@@ -4269,8 +4265,8 @@
     </div>
     <div class="panel" id="previewbox"></div>
     <div class="side-nav">
-      <button class="smallbtn side-help" id="side-help" onclick="openHelp()">📖 족보표 / 도움말</button>
-      <a class="smallbtn" id="side-guide" href="/guide">📚 게임 가이드</a>
+      <button class="smallbtn side-help" id="side-help" onclick="openHelp()">족보표 / 도움말</button>
+      <a class="smallbtn" id="side-guide" href="/guide">게임 가이드</a>
     </div>
     <div class="panel" id="playlog-panel" style="display:none;">
       <div id="playlog-title" style="font-size:11px; color:var(--gold-soft); font-weight:800; margin-bottom:5px;">이번 판 내기 기록</div>
@@ -4350,10 +4346,10 @@
       </button>
     </div>
     <div class="set-row">
-      <button type="button" class="set-linkbtn" id="set-tutor" onclick="replayTutorialsFromSettings()">✨ 튜토리얼 다시 보기</button>
+      <button type="button" class="set-linkbtn" id="set-tutor" onclick="replayTutorialsFromSettings()">튜토리얼 다시 보기</button>
     </div>
     <div class="set-row">
-      <a class="set-linkbtn" id="set-guide" href="/guide">📚 게임 가이드</a>
+      <a class="set-linkbtn" id="set-guide" href="/guide">게임 가이드</a>
     </div>
     </div>
   </div>
@@ -4391,7 +4387,7 @@
     </svg>
     <div id="ch-face">😴</div>
   </div>
-  <button id="ch-btn" onclick="buyChunhyangNext()">🍶 훈수 예약</button>
+  <button id="ch-btn" onclick="buyChunhyangNext()">훈수 예약</button>
 </div>
 
 <div id="modal-overlay"><div id="modal"></div></div>
@@ -4450,9 +4446,9 @@
   <div class="gap-inner">
     <h1>고 버튼 연출 프리뷰</h1>
     <div class="gap-sub">
-      <code>?goPreview=1</code> · 본게임 룰: <b style="color:#e2e8f0">1고 = 기본</b> /
+      <code>?goPreview=1</code> · 본게임 룰: <b style="color:var(--ink-2)">1고 = 기본</b> /
       <b style="color:#fca5a5">2~3고 = D</b> /
-      <b style="color:#93c5fd">4고+ = C</b> (0 → N 밀치기)<br>
+      <b style="color:var(--cheong-lit)">4고+ = C</b> (0 → N 밀치기)<br>
       아래는 스타일별 비교용(0→6). 확정 후 풀스크린 두두둥은 별도.
     </div>
     <div class="gap-section-title">본게임 · 1고 ~ 10고</div>
@@ -4527,18 +4523,18 @@ function shuffle(arr, rng) {
 
 // ── 카드 데이터 (한국식 화투 48장) ─────────────────────────
 const MONTHS = [
-  { n: 1,  name: '송학',   flower: '🌲', yeolArt: null,  gwangArt: '🕊️' },
-  { n: 2,  name: '매조',   flower: '🌸', yeolArt: '🐦', gwangArt: null },
-  { n: 3,  name: '벚꽃',   flower: '🌸', yeolArt: null,  gwangArt: '🏯' },
-  { n: 4,  name: '흑싸리', flower: '🌿', yeolArt: '🐦‍⬛', gwangArt: null },
-  { n: 5,  name: '난초',   flower: '🪻', yeolArt: '🌉', gwangArt: null },
-  { n: 6,  name: '모란',   flower: '🌺', yeolArt: '🦋', gwangArt: null },
-  { n: 7,  name: '홍싸리', flower: '🍀', yeolArt: '🐗', gwangArt: null },
-  { n: 8,  name: '공산',   flower: '🌕', yeolArt: '🪿', gwangArt: '🌕' },
-  { n: 9,  name: '국진',   flower: '🌼', yeolArt: '🍶', gwangArt: null },
-  { n: 10, name: '단풍',   flower: '🍁', yeolArt: '🦌', gwangArt: null },
-  { n: 11, name: '오동',   flower: '🍂', yeolArt: null,  gwangArt: '🐔' },
-  { n: 12, name: '비',     flower: '🌧️', yeolArt: '🐦', gwangArt: '☔' },
+  { n: 1,  name: '송학'   },
+  { n: 2,  name: '매조'   },
+  { n: 3,  name: '벚꽃'   },
+  { n: 4,  name: '흑싸리' },
+  { n: 5,  name: '난초'   },
+  { n: 6,  name: '모란'   },
+  { n: 7,  name: '홍싸리' },
+  { n: 8,  name: '공산'   },
+  { n: 9,  name: '국진'   },
+  { n: 10, name: '단풍'   },
+  { n: 11, name: '오동'   },
+  { n: 12, name: '비'     },
 ];
 function hanjaMonth(n) { return `${n}月`; }
 
@@ -4951,28 +4947,28 @@ const I18N = {
     settingsBgm: 'BGM', settingsSfx: '효과음',
     settingsLang: '언어', settingsFx: '연출 2배속',
     settingsSort: '손패 정렬', settingsCardDetail: '카드 상세 정보 표시',
-    settingsPlayLog: '내기 기록', settingsTutor: '✨ 튜토리얼 다시 보기', settingsGuide: '📚 게임 가이드', settingsClose: '닫기',
+    settingsPlayLog: '내기 기록', settingsTutor: '튜토리얼 다시 보기', settingsGuide: '게임 가이드', settingsClose: '닫기',
     score: '점수', needScore: '남은 점수', achieved: '달성!',
-    sideHelp: '📖 족보표 / 도움말',
-    sideGuide: '📚 게임 가이드',
-    labelsShow: '🏷 월·열끗 보이기', labelsHide: '🏷 월·열끗 숨기기',
+    sideHelp: '족보표 / 도움말',
+    sideGuide: '게임 가이드',
+    labelsShow: '월·열끗 보이기', labelsHide: '월·열끗 숨기기',
     playLogTitle: '이번 판 내기 기록',
     emptyJoker: '특수패<br>빈 슬롯', nyang: (n) => `${n}냥`,
     seasonLineDay: (m) => `이달의 패: <b>${m} 카드 칩 ×2</b><br>낮 — 광·열끗 칩 +2`,
     seasonLineNight: (m) => `이달의 패: <b>${m} 카드 칩 ×2</b><br>밤 — 띠·피·쌍피 칩 +2`,
     roundMeta: (r, t) => `(판 ${r}/${t})`, bak: '(박)',
     bossNull: ' → 피박보험으로 무효!',
-    goLevel: (n, mult, bonus) => `🔥 ${n}고! (목표 ×${mult} · 성공 시 +${bonus}냥)`,
+    goLevel: (n, mult, bonus) => `${n}고! (목표 ×${mult} · 성공 시 +${bonus}냥)`,
     pvPick: '패를 선택하세요', pvFacedown: '뒷면 포함 · 미리보기 불가',
     pvBase: '기본합', pvMult: '배수', pvFlat: '+점수', pvTotal: '예상 점수',
     deckShort: '덱',
     deckTitle: '남은 덱 (클릭하여 보기)', deckLow: (n) => `남은 덱 ${n}장 · 부족! (클릭하여 보기)`,
     deckFog: '안개 — 패 보기 불가',
     playHint: '카드를 고르고 <b>내기</b>를 누르세요',
-    auraJunkTutor: '🗑️ 빨간 빛 — 버릴 약한 패 (눌러 고르고 버리기, 최대 5장)',
-    auraJunk: '🗑️ 버리기 추천 · 빨간 패를 누르면 한꺼번에 골라져요 (한 장씩 해제 가능)',
-    auraPlayNone: '✨ 내기 추천 · 빛나는 패를 누르면 칩 최고 패가 골라져요',
-    auraPlay: (name) => `✨ 내기 추천 · 빛나는 패를 누르면 ${name}이 한 번에 골라져요`,
+    auraJunkTutor: '빨간 빛 — 버릴 약한 패 (눌러 고르고 버리기, 최대 5장)',
+    auraJunk: '버리기 추천 · 빨간 패를 누르면 한꺼번에 골라져요 (한 장씩 해제 가능)',
+    auraPlayNone: '내기 추천 · 빛나는 패를 누르면 칩 최고 패가 골라져요',
+    auraPlay: (name) => `내기 추천 · 빛나는 패를 누르면 ${name}이 한 번에 골라져요`,
     gainNone: '아직 이득 없음', gainZero: '이득 0',
     mitjangNow: (n) => ` 지금 누적 ${n}칩입니다.`,
     bestChipHand: '최고 칩 패', discardWord: '버리기',
@@ -5041,28 +5037,28 @@ const I18N = {
     settingsBgm: 'BGM', settingsSfx: 'SFX',
     settingsLang: 'Language', settingsFx: '2× effects',
     settingsSort: 'Hand sort', settingsCardDetail: 'Show card details',
-    settingsPlayLog: 'Play log', settingsTutor: '✨ Replay tutorials', settingsGuide: '📚 Game guide', settingsClose: 'Close',
+    settingsPlayLog: 'Play log', settingsTutor: 'Replay tutorials', settingsGuide: 'Game guide', settingsClose: 'Close',
     score: 'Score', needScore: 'To go', achieved: 'Clear!',
-    sideHelp: '📖 Hands / Help',
-    sideGuide: '📚 Game guide',
-    labelsShow: '🏷 Show labels', labelsHide: '🏷 Hide labels',
+    sideHelp: 'Hands / Help',
+    sideGuide: 'Game guide',
+    labelsShow: 'Show labels', labelsHide: 'Hide labels',
     playLogTitle: 'Plays this round',
     emptyJoker: 'Joker<br>empty', nyang: (n) => `${n} nyang`,
     seasonLineDay: (m) => `Month cards: <b>${m} chips ×2</b><br>Day — Gwang & Yeol +2`,
     seasonLineNight: (m) => `Month cards: <b>${m} chips ×2</b><br>Night — Ribbon & Pi +2`,
     roundMeta: (r, t) => `(Round ${r}/${t})`, bak: '(Bak)',
     bossNull: ' → negated by Pi-Bak Insurance!',
-    goLevel: (n, mult, bonus) => `🔥 Go ${n}! (target ×${mult} · win +${bonus} nyang)`,
+    goLevel: (n, mult, bonus) => `Go ${n}! (target ×${mult} · win +${bonus} nyang)`,
     pvPick: 'Select cards', pvFacedown: 'Face-down included · no preview',
     pvBase: 'Chips', pvMult: 'Mult', pvFlat: '+Flat', pvTotal: 'Est. score',
     deckShort: 'Deck',
     deckTitle: 'Deck left (click to peek)', deckLow: (n) => `Deck ${n} left · low! (click)`,
     deckFog: 'Fog — peek disabled',
     playHint: 'Pick cards and press <b>Play</b>',
-    auraJunkTutor: '🗑️ Red glow — weak discards (tap & discard, max 5)',
-    auraJunk: '🗑️ Discard tip · tap red cards to select (untap one by one)',
-    auraPlayNone: '✨ Play tip · tap glow for highest-chip set',
-    auraPlay: (name) => `✨ Play tip · tap glow to pick ${name}`,
+    auraJunkTutor: 'Red glow — weak discards (tap & discard, max 5)',
+    auraJunk: 'Discard tip · tap red cards to select (untap one by one)',
+    auraPlayNone: 'Play tip · tap glow for highest-chip set',
+    auraPlay: (name) => `Play tip · tap glow to pick ${name}`,
     gainNone: 'No gain yet', gainZero: 'Gain 0',
     mitjangNow: (n) => ` Stacked ${n} chips now.`,
     bestChipHand: 'Best chip set', discardWord: 'Discard',
@@ -5131,28 +5127,28 @@ const I18N = {
     settingsBgm: 'BGM', settingsSfx: '効果音',
     settingsLang: '言語', settingsFx: '演出2倍速',
     settingsSort: '手札並べ替え', settingsCardDetail: 'カード詳細表示',
-    settingsPlayLog: '出し記録', settingsTutor: '✨ チュートリアル', settingsGuide: '📚 ゲームガイド', settingsClose: '閉じる',
+    settingsPlayLog: '出し記録', settingsTutor: 'チュートリアル', settingsGuide: 'ゲームガイド', settingsClose: '閉じる',
     score: 'スコア', needScore: '残り', achieved: '達成!',
-    sideHelp: '📖 役表 / ヘルプ',
-    sideGuide: '📚 ゲームガイド',
-    labelsShow: '🏷 ラベル表示', labelsHide: '🏷 ラベル非表示',
+    sideHelp: '役表 / ヘルプ',
+    sideGuide: 'ゲームガイド',
+    labelsShow: 'ラベル表示', labelsHide: 'ラベル非表示',
     playLogTitle: 'この卓の出し記録',
     emptyJoker: '特殊札<br>空き', nyang: (n) => `${n}両`,
     seasonLineDay: (m) => `今月札: <b>${m} チップ×2</b><br>昼 — 光・十＋2`,
     seasonLineNight: (m) => `今月札: <b>${m} チップ×2</b><br>夜 — 短冊・カス＋2`,
     roundMeta: (r, t) => `(卓 ${r}/${t})`, bak: '(バク)',
     bossNull: ' → 皮バク保険で無効!',
-    goLevel: (n, mult, bonus) => `🔥 ${n}ゴー! (目標×${mult} · 成功+${bonus}両)`,
+    goLevel: (n, mult, bonus) => `${n}ゴー! (目標×${mult} · 成功+${bonus}両)`,
     pvPick: '札を選んでください', pvFacedown: '裏札あり · プレビュー不可',
     pvBase: '基本', pvMult: '倍率', pvFlat: '+加点', pvTotal: '予想スコア',
     deckShort: '山札',
     deckTitle: '山札 (クリックで確認)', deckLow: (n) => `山札 ${n}枚 · 少ない! (クリック)`,
     deckFog: '霧 — 確認不可',
     playHint: '札を選んで <b>出し</b> を押す',
-    auraJunkTutor: '🗑️ 赤光 — 弱い捨て札 (選んで捨て、最大5)',
-    auraJunk: '🗑️ 捨て推奨 · 赤札をタップで一括選択',
-    auraPlayNone: '✨ 出し推奨 · 光る札で最高チップ役',
-    auraPlay: (name) => `✨ 出し推奨 · 光る札で ${name} を一括選択`,
+    auraJunkTutor: '赤光 — 弱い捨て札 (選んで捨て、最大5)',
+    auraJunk: '捨て推奨 · 赤札をタップで一括選択',
+    auraPlayNone: '出し推奨 · 光る札で最高チップ役',
+    auraPlay: (name) => `出し推奨 · 光る札で ${name} を一括選択`,
     gainNone: 'まだ利益なし', gainZero: '利益0',
     mitjangNow: (n) => ` 現在累積 ${n}チップ。`,
     bestChipHand: '最高チップ役', discardWord: '捨て',
@@ -5215,39 +5211,39 @@ const I18N_UI = {
     close: '닫기',
     skip: '건너뛰기',
     gotIt: '알겠어요',
-    helpH2: '📖 족보표',
+    helpH2: '족보표',
     helpIntro: '위에서부터 먼저 성립하는 족보 <b>하나</b>로 판정합니다.<br>점수 = (<b>족보 구성 카드</b> 칩) × 배수 + 나머지 낸 카드 칩',
     legendS: '최고', legendA: '상위', legendB: '중위', legendC: '기본', legendD: '무조합',
     chipKwang: '광', chipYeol: '열끗', chipTti: '띠', chipSsang: '쌍피', chipPi: '피',
     helpTimeTitle: '시간 · 계절',
     helpTimeBody: (m1, m12) => `판은 <b>1월(${m1})→12월(${m12})</b>로 흐릅니다. 이달의 패는 칩 <b>×2</b>.`,
-    helpTimeDay: '☀️ 홀수 달 낮 · 광·열끗 <em>+2</em>',
-    helpTimeNight: '🌙 짝수 달 밤 · 띠·피 <em>+2</em>',
+    helpTimeDay: '홀수 달 낮 · 광·열끗 <em>+2</em>',
+    helpTimeNight: '짝수 달 밤 · 띠·피 <em>+2</em>',
     helpRoundTitle: '한 판 · 고/스톱',
-    helpRoundBody: '내기 <b>4회</b> · 버리기 <b>4회</b> · 손패 <b>8장</b>. 목표를 넘기면 <b>고</b> 또는 <b>스톱</b>. 고는 무제한 — n고 문턱 = 목표 ×(1+0.6n), 내기 +1 · 손패 보충, 보너스 n×월 냥. 점수가 이미 넘은 문턱은 고 선언 시 <b>전부 소급 인정(밀치기)</b> — 큰 한 방이면 여러 단계를 한 번에 점프. 실패하면 <b>고박 = 런 종료</b>.',
+    helpRoundBody: '내기 4회 · 버리기 4회 · 손패 8장. 목표를 넘기면 <b>고</b> 또는 <b>스톱</b>. 고는 무제한 — n고 문턱 = 목표 ×(1+0.6n), 내기 +1 · 손패 보충, 보너스 n×월 냥. 점수가 이미 넘은 문턱은 고 선언 시 전부 소급 인정(밀치기) — 큰 한 방이면 여러 단계를 한 번에 점프. 실패하면 <b>고박 = 런 종료</b>.',
     helpRuleTitle: '특수 규칙',
     helpRuleBody: '<b>3·6·9·12월</b>은 박 라운드(디버프). 안개는 손패 <b>2장</b>이 뒷면으로 옵니다.',
     helpRuleTag: '박 라운드 디버프',
     helpJokerTitle: '특수패 · 주막',
-    helpJokerBody: '특수패 <b>22종</b> · 소지 최대 <b>5</b>. 티어는 <b>커먼 / 레어 / 에픽 / 레전더리</b> (출현 약 55·28·13·4%). +점수는 배수 밖, +배수·×배수는 족보 배수에 얹힙니다.',
+    helpJokerBody: '특수패 22종 · 소지 최대 5. 티어는 커먼 / 레어 / 에픽 / 레전더리 (출현 약 55·28·13·4%). +점수는 배수 밖, +배수·×배수는 족보 배수에 얹힙니다.',
     helpJokerTags: ['커먼 3–4냥', '레어 6–7냥', '에픽 9–11냥', '레전 13–15냥'],
-    welcomeH2: '🎴 십이화 — 고스톱: 무한의 판',
+    welcomeH2: '십이화 — 고스톱: 무한의 판',
     welcomeSub: '한국 화투 48장으로 족보를 맞춰 목표 점수를 넘기는 <b>1인 런</b>입니다. 1월부터 12월까지 한 해를 버텨보세요.',
     welcomePlayTitle: '기본 플레이',
-    welcomePlayBody: '손패 <b>8장</b>에서 1~5장을 고른 뒤 <b>내기</b>로 점수를 쌓습니다. 마음에 안 들면 <b>버리기</b>로 패를 갈아끼울 수 있어요. 판마다 내기·버리기 각 <b>4회</b>.',
+    welcomePlayBody: '손패 8장에서 1~5장을 고른 뒤 <b>내기</b>로 점수를 쌓습니다. 마음에 안 들면 <b>버리기</b>로 패를 갈아끼울 수 있어요. 판마다 내기·버리기 각 4회.',
     welcomeScoreTitle: '점수 · 족보',
     welcomeScoreBody: '점수 = (<b>족보 구성 카드</b> 칩) × 배수 + 나머지 칩. 이달의 패는 칩 <b>×2</b>. 홀수 달은 낮(광·열끗 +2), 짝수 달은 밤(띠·피 +2).',
     welcomeGoTitle: '고 / 스톱',
-    welcomeGoBody: '목표를 넘기면 <b>스톱</b>(정산) 또는 <b>고</b>(목표↑ · 내기 +1 · 보너스). 한 방이 크면 이미 넘은 고 문턱을 <b>한 번에 밀치며</b> 여러 단계 점프! 고는 무제한이지만, 실패하면 <b>고박 = 런 종료</b>. <b>3·6·9·12월</b>은 박 라운드(디버프)가 붙습니다.',
+    welcomeGoBody: '목표를 넘기면 <b>스톱</b>(정산) 또는 <b>고</b>(목표↑ · 내기 +1 · 보너스). 한 방이 크면 이미 넘은 고 문턱을 한 번에 밀치며 여러 단계 점프. 고는 무제한이지만, 실패하면 <b>고박 = 런 종료</b>. 3·6·9·12월은 박 라운드(디버프)가 붙습니다.',
     welcomeShopTitle: '주막',
     welcomeShopBody: '판을 클리어하면 주막에서 <b>특수패</b>(커먼~레전더리 22종)를 사고팝니다. 소지 최대 5개.',
-    welcomeFoot: '자세한 족보표는 언제든 <b>📖 도움말</b>에서 볼 수 있어요.',
+    welcomeFoot: '자세한 족보표는 언제든 <b>도움말</b>에서 볼 수 있어요.',
     welcomeStart: '알겠어요 — 시작하기',
     welcomeStartSub: '1월 준비 화면으로 이동합니다',
-    prepTitle: (flower, name) => `${flower} 1월 · ${name} 준비`,
+    prepTitle: (name) => `1월 · ${name} 준비`,
     prepTarget: (n) => `목표 : <b class="prep-target" style="color:var(--gold-soft)">${n}점</b>`,
-    prepStart: '▶ 1월 시작',
-    gostopH2: '🎉 목표 달성!',
+    prepStart: '1월 시작',
+    gostopH2: '목표 달성!',
     gostopSub: (score, target, plays, cards) => `${score} / ${target}점 · 내기 ${plays} · 패 ${cards}`,
     gostopNextLabel: (n) => `${n}고 시 새 목표`,
     gostopGoJump: (j) => `${j}단계 밀치기`,
@@ -5257,7 +5253,7 @@ const I18N_UI = {
     gostopStopTipN: (n, bonus) => `지금 정산하고 다음 판으로<br>(${n}고 보너스 <b>+${bonus}냥</b> 확보)`,
     gostopGo1: '1고',
     gostopJump: (j) => `<b>${j}단계 밀치기</b><br>`,
-    gostopGoTip: (bonus) => `내기 <b>+1</b> · 손패 보충 · 성공 시 <b>+${bonus}냥</b><br>실패 시 <b>고박 = 런 종료</b>`,
+    gostopGoTip: (bonus) => `내기 +1 · 손패 보충 · 성공 시 +${bonus}냥<br>실패 시 <b>고박 = 런 종료</b>`,
     settleTitle: '정산',
     settleClear: (r, name) => `${r}월 · ${name} 클리어`,
     settleInterest: (n) => `이자 (보유 ${n}냥)`,
@@ -5275,37 +5271,37 @@ const I18N_UI = {
     shopSold: '판매 완료',
     shopEmpty: '빈 칸',
     shopNext: '다음 판으로',
-    shopNextLabel: (flower, n, name) => `다음 <b>${flower} ${n}월 · ${name}</b>`,
+    shopNextLabel: (n, name) => `다음 <b>${n}월 · ${name}</b>`,
     shopTarget: (n) => `목표 ${n}점`,
-    shopBossPick: (n) => `⚠ ${n}월 대박 — 디버프 선택`,
-    shopBossNext: (n) => `⚠ 다음 ${n}월 박 라운드`,
+    shopBossPick: (n) => `${n}월 대박 — 디버프 선택`,
+    shopBossNext: (n) => `다음 ${n}월 박 라운드`,
     shopNeedBoss: '디버프를 먼저 선택하세요',
-    gameoverH2: (reason) => `☠ 런 종료 — ${reason}`,
+    gameoverH2: (reason) => `런 종료 — ${reason}`,
     gameoverBody: (r, rounds, score, target, best, bestHand, earned, jokers) =>
       `도달: ${r}월 / ${rounds}월 (${score} / ${target}점)<br>최고 한 방: ${best}점${bestHand ? ` (${bestHand})` : ''}<br>총 획득: ${earned}냥 · 특수패 ${jokers}개`,
-    retry: '🔄 다시 도전',
-    victoryH2: '🏆 승리! 12월 대박까지 한 해를 완주했습니다!',
+    retry: '다시 도전',
+    victoryH2: '승리! 12월 대박까지 한 해를 완주했습니다!',
     victoryBody: (score, target, best, bestHand, earned, jokers) =>
       `최종 점수: ${score} / ${target}점<br>최고 한 방: ${best}점${bestHand ? ` (${bestHand})` : ''}<br>총 획득: ${earned}냥 · 최종 특수패 ${jokers}개`,
-    newRun: '🔄 새 런 시작',
+    newRun: '새 런 시작',
     deckPeekTitle: '🂠 패 보기',
     deckLeft: (n) => `남은 덱 <b>${n}</b>장`,
-    coachHandTitle: '✨ 조합 힌트',
-    coachHandNone: (n) => `<b>연두 빛</b>이 도는 패를 눌러 보세요. 조합이 없으면 칩 최고 패가 골라집니다.<br><span class="coach-muted">처음 ${n}회 무료 · 이후 추천 ON/OFF</span>`,
-    coachHandNamed: (name, n) => `<b>연두 빛</b>이 도는 패를 눌러 보세요. <b>${name}</b>이 한 번에 골라집니다.<br><span class="coach-muted">처음 ${n}회 무료 · 이후 추천 ON/OFF · 한 장씩 해제 가능</span>`,
-    coachHandFallback: '연두 빛 패를 눌러 조합을 골라 보세요. <b>1월 한정</b>이에요.',
-    coachPlayTitle: '🎯 내기',
+    coachHandTitle: '조합 힌트',
+    coachHandNone: (n) => `<b>금빛</b>이 도는 패를 눌러 보세요. 조합이 없으면 칩 최고 패가 골라집니다.<br><span class="coach-muted">처음 ${n}회 무료 · 이후 추천 ON/OFF</span>`,
+    coachHandNamed: (name, n) => `<b>금빛</b>이 도는 패를 눌러 보세요. <b>${name}</b>이 한 번에 골라집니다.<br><span class="coach-muted">처음 ${n}회 무료 · 이후 추천 ON/OFF · 한 장씩 해제 가능</span>`,
+    coachHandFallback: '금빛 패를 눌러 조합을 골라 보세요. <b>1월 한정</b>이에요.',
+    coachPlayTitle: '내기',
     coachPlayBody: '골랐으면 <b>내기</b>를 눌러 점수를 쌓아 보세요.',
-    coachJunkTitle: '🗑️ 버리기',
+    coachJunkTitle: '버리기',
     coachJunkSel: '<b>버리기</b>를 눌러 패를 갈아끼우세요 (한 번에 최대 5장). 버린 만큼 덱에서 보충됩니다.',
     coachJunkPick: '조합이 약할 땐 <b>피</b>처럼 약한 패를 버리세요. <b style="color:#fca5a5">빨간 빛</b> 패를 누르면 추천분이 한 번에 골라져요 (최대 5장).',
-    coachScoredTitle: '✨ 점수 획득!',
+    coachScoredTitle: '점수 획득!',
     coachScoredBody: (hand, score, chips, mult, flat, need) =>
-      `방금 <b>${hand}</b>으로 <b>+${score}점</b>!<br>점수 = (<b>족보 칩 ${chips}</b> × <b>${mult}배</b>)${flat ? ` + <b>${flat}</b>` : ''}.<br>목표까지 <b>남은 점수 ${need}</b> · 게이지를 확인하세요.`,
-    coachScoredFallback: '점수가 쌓였어요! 점수 = <b>족보 칩</b> × <b>배수</b> + 나머지.',
-    coachGoTitle: '🔥 고 / 스톱',
+      `방금 <b>${hand}</b>으로 +${score}점.<br>점수 = (족보 칩 ${chips} × ${mult}배)${flat ? ` + ${flat}` : ''}.<br>목표까지 남은 점수 ${need} · 게이지를 확인하세요.`,
+    coachScoredFallback: '점수가 쌓였어요. 점수 = 족보 칩 × 배수 + 나머지.',
+    coachGoTitle: '고 / 스톱',
     coachGoBody: '<b>스톱</b>은 지금 정산하고 다음 달로.<br><b>고</b>는 목표를 올리고 더 내지만, 실패하면 <b>고박 = 런 종료</b>!<br><span class="coach-muted">하나를 골라 보세요.</span>',
-    coachShopTitle: '🍶 주막',
+    coachShopTitle: '주막',
     coachShopBody: '특수패를 사고, 마음에 안 들면 <b>리롤</b>하세요. 준비되면 <b>다음 판으로</b>!',
     coachDeckTitle: '🂠 남은 덱',
     coachDeckBody: '오른쪽 <b>🂠</b> 숫자를 눌러 보세요. 아직 안 나온 패를 미리 볼 수 있어요.<br><span class="coach-muted">언제든 다시 열어볼 수 있어요.</span>',
@@ -5331,39 +5327,39 @@ const I18N_UI = {
     close: 'Close',
     skip: 'Skip',
     gotIt: 'Got it',
-    helpH2: '📖 Hands',
+    helpH2: 'Hands',
     helpIntro: 'The first matching hand from the top wins.<br>Score = (hand <b>core</b> chips) × mult + other played chips',
     legendS: 'Top', legendA: 'High', legendB: 'Mid', legendC: 'Basic', legendD: 'None',
     chipKwang: 'Bright', chipYeol: 'Animal', chipTti: 'Ribbon', chipSsang: 'Dbl Pi', chipPi: 'Pi',
     helpTimeTitle: 'Time · Season',
     helpTimeBody: (m1, m12) => `Rounds run <b>Jan (${m1}) → Dec (${m12})</b>. Month cards get chips <b>×2</b>.`,
-    helpTimeDay: '☀️ Odd months · day · Bright/Animal <em>+2</em>',
-    helpTimeNight: '🌙 Even months · night · Ribbon/Pi <em>+2</em>',
+    helpTimeDay: 'Odd months · day · Bright/Animal <em>+2</em>',
+    helpTimeNight: 'Even months · night · Ribbon/Pi <em>+2</em>',
     helpRoundTitle: 'Round · Go/Stop',
-    helpRoundBody: '<b>4</b> plays · <b>4</b> discards · hand of <b>8</b>. Beat the target to <b>Go</b> or <b>Stop</b>. Go is unlimited — Go n threshold = target ×(1+0.6n), +1 play · redraw, bonus n×month nyang. Thresholds already cleared are <b>all credited on Go (push)</b> — a big hit can jump several steps. Fail = <b>Go-bak = run over</b>.',
+    helpRoundBody: '4 plays · 4 discards · hand of 8. Beat the target to <b>Go</b> or <b>Stop</b>. Go is unlimited — Go n threshold = target ×(1+0.6n), +1 play · redraw, bonus n×month nyang. Thresholds already cleared are all credited on Go (push) — a big hit can jump several steps. Fail = <b>Go-bak = run over</b>.',
     helpRuleTitle: 'Special rules',
     helpRuleBody: '<b>Mar/Jun/Sep/Dec</b> are Bak rounds (debuffs). Fog deals <b>2</b> face-down cards.',
     helpRuleTag: 'Bak round debuffs',
     helpJokerTitle: 'Jokers · Tavern',
-    helpJokerBody: '<b>22</b> jokers · hold up to <b>5</b>. Tiers: <b>Common / Rare / Epic / Legendary</b> (~55·28·13·4%). Flat score is outside mult; +mult / ×mult stack on the hand mult.',
+    helpJokerBody: '22 jokers · hold up to 5. Tiers: Common / Rare / Epic / Legendary (~55·28·13·4%). Flat score is outside mult; +mult / ×mult stack on the hand mult.',
     helpJokerTags: ['Common 3–4', 'Rare 6–7', 'Epic 9–11', 'Legend 13–15'],
-    welcomeH2: '🎴 Sibiwha — Go-Stop: Infinite Table',
+    welcomeH2: 'Sibiwha — Go-Stop: Infinite Table',
     welcomeSub: 'A <b>solo run</b>: make hwatu hands and beat monthly targets with a 48-card Korean deck. Survive January through December.',
     welcomePlayTitle: 'Basics',
-    welcomePlayBody: 'From an <b>8-card</b> hand, pick 1–5 and <b>Play</b> to score. Or <b>Discard</b> to redraw. Each round: <b>4</b> plays · <b>4</b> discards.',
+    welcomePlayBody: 'From an 8-card hand, pick 1–5 and <b>Play</b> to score. Or <b>Discard</b> to redraw. Each round: 4 plays · 4 discards.',
     welcomeScoreTitle: 'Score · Hands',
     welcomeScoreBody: 'Score = (hand <b>core</b> chips) × mult + the rest. Month cards ×2 chips. Odd months are day (Bright/Animal +2), even are night (Ribbon/Pi +2).',
     welcomeGoTitle: 'Go / Stop',
-    welcomeGoBody: 'Beat the target to <b>Stop</b> (cash out) or <b>Go</b> (raise target · +1 play · bonus). A huge hit can <b>push through</b> several Go steps at once! Unlimited Go, but fail = <b>Go-bak = run over</b>. <b>3·6·9·12</b> are Bak rounds.',
+    welcomeGoBody: 'Beat the target to <b>Stop</b> (cash out) or <b>Go</b> (raise target · +1 play · bonus). A huge hit pushes through several Go steps at once. Unlimited Go, but fail = <b>Go-bak = run over</b>. Months 3·6·9·12 are Bak rounds.',
     welcomeShopTitle: 'Tavern',
     welcomeShopBody: 'Clear a month to shop <b>jokers</b> (Common–Legendary, 22 kinds). Hold up to 5.',
-    welcomeFoot: 'Full hand list is always in <b>📖 Help</b>.',
+    welcomeFoot: 'Full hand list is always in <b>Help</b>.',
     welcomeStart: 'Got it — Start',
     welcomeStartSub: 'Go to January prep',
-    prepTitle: (flower, name) => `${flower} January · ${name} prep`,
+    prepTitle: (name) => `January · ${name} prep`,
     prepTarget: (n) => `Target: <b class="prep-target" style="color:var(--gold-soft)">${n}</b>`,
-    prepStart: '▶ Start January',
-    gostopH2: '🎉 Target cleared!',
+    prepStart: 'Start January',
+    gostopH2: 'Target cleared!',
     gostopSub: (score, target, plays, cards) => `${score} / ${target} · plays ${plays} · cards ${cards}`,
     gostopNextLabel: (n) => `Go ${n} — new target`,
     gostopGoJump: (j) => `+${j} steps`,
@@ -5373,7 +5369,7 @@ const I18N_UI = {
     gostopStopTipN: (n, bonus) => `Cash out and continue<br>(Go ${n} bonus <b>+${bonus} nyang</b> locked in)`,
     gostopGo1: 'Go 1',
     gostopJump: (j) => `<b>+${j} steps</b><br>`,
-    gostopGoTip: (bonus) => `<b>+1</b> play · redraw · win <b>+${bonus} nyang</b><br>Fail = <b>Go-bak = run over</b>`,
+    gostopGoTip: (bonus) => `+1 play · redraw · win +${bonus} nyang<br>Fail = <b>Go-bak = run over</b>`,
     settleTitle: 'Settle',
     settleClear: (r, name) => `Month ${r} · ${name} clear`,
     settleInterest: (n) => `Interest (held ${n})`,
@@ -5391,37 +5387,37 @@ const I18N_UI = {
     shopSold: 'Sold',
     shopEmpty: 'Empty',
     shopNext: 'Next round',
-    shopNextLabel: (flower, n, name) => `Next <b>${flower} ${n} · ${name}</b>`,
+    shopNextLabel: (n, name) => `Next <b>${n} · ${name}</b>`,
     shopTarget: (n) => `Target ${n}`,
-    shopBossPick: (n) => `⚠ Month ${n} Bak — pick debuff`,
-    shopBossNext: (n) => `⚠ Next: month ${n} Bak`,
+    shopBossPick: (n) => `Month ${n} Bak — pick debuff`,
+    shopBossNext: (n) => `Next: month ${n} Bak`,
     shopNeedBoss: 'Pick a debuff first',
-    gameoverH2: (reason) => `☠ Run over — ${reason}`,
+    gameoverH2: (reason) => `Run over — ${reason}`,
     gameoverBody: (r, rounds, score, target, best, bestHand, earned, jokers) =>
       `Reached: month ${r} / ${rounds} (${score} / ${target})<br>Best hit: ${best}${bestHand ? ` (${bestHand})` : ''}<br>Earned: ${earned} · jokers ${jokers}`,
-    retry: '🔄 Try again',
-    victoryH2: '🏆 Victory! You finished the year through December Bak!',
+    retry: 'Try again',
+    victoryH2: 'Victory! You finished the year through December Bak!',
     victoryBody: (score, target, best, bestHand, earned, jokers) =>
       `Final: ${score} / ${target}<br>Best hit: ${best}${bestHand ? ` (${bestHand})` : ''}<br>Earned: ${earned} · jokers ${jokers}`,
-    newRun: '🔄 New run',
+    newRun: 'New run',
     deckPeekTitle: '🂠 Deck view',
     deckLeft: (n) => `Deck left <b>${n}</b>`,
-    coachHandTitle: '✨ Hand tip',
-    coachHandNone: (n) => `Tap the <b>green glow</b>. If no combo, highest-chip cards are picked.<br><span class="coach-muted">First ${n} free · then tip ON/OFF</span>`,
-    coachHandNamed: (name, n) => `Tap the <b>green glow</b> to pick <b>${name}</b> at once.<br><span class="coach-muted">First ${n} free · then tip ON/OFF · untap one by one</span>`,
-    coachHandFallback: 'Tap the green glow to build a hand. <b>January only</b>.',
-    coachPlayTitle: '🎯 Play',
+    coachHandTitle: 'Hand tip',
+    coachHandNone: (n) => `Tap the <b>gold glow</b>. If no combo, highest-chip cards are picked.<br><span class="coach-muted">First ${n} free · then tip ON/OFF</span>`,
+    coachHandNamed: (name, n) => `Tap the <b>gold glow</b> to pick <b>${name}</b> at once.<br><span class="coach-muted">First ${n} free · then tip ON/OFF · untap one by one</span>`,
+    coachHandFallback: 'Tap the gold glow to build a hand. <b>January only</b>.',
+    coachPlayTitle: 'Play',
     coachPlayBody: 'When ready, press <b>Play</b> to score.',
-    coachJunkTitle: '🗑️ Discard',
+    coachJunkTitle: 'Discard',
     coachJunkSel: 'Press <b>Discard</b> to redraw (up to 5). Replaced from the deck.',
     coachJunkPick: 'When weak, discard junk like <b>Pi</b>. Tap <b style="color:#fca5a5">red glow</b> to select the tip set (max 5).',
-    coachScoredTitle: '✨ Score!',
+    coachScoredTitle: 'Score!',
     coachScoredBody: (hand, score, chips, mult, flat, need) =>
-      `Just scored <b>${hand}</b> for <b>+${score}</b>!<br>Score = (<b>hand chips ${chips}</b> × <b>${mult}</b>)${flat ? ` + <b>${flat}</b>` : ''}.<br><b>${need}</b> left to target — check the gauge.`,
-    coachScoredFallback: 'Points in! Score = <b>hand chips</b> × <b>mult</b> + flat.',
-    coachGoTitle: '🔥 Go / Stop',
+      `Just scored <b>${hand}</b> for +${score}.<br>Score = (hand chips ${chips} × ${mult})${flat ? ` + ${flat}` : ''}.<br>${need} left to target — check the gauge.`,
+    coachScoredFallback: 'Points in. Score = hand chips × mult + flat.',
+    coachGoTitle: 'Go / Stop',
     coachGoBody: '<b>Stop</b> cashes out to next month.<br><b>Go</b> raises the target for more plays — fail = <b>Go-bak = run over</b>!<br><span class="coach-muted">Pick one.</span>',
-    coachShopTitle: '🍶 Tavern',
+    coachShopTitle: 'Tavern',
     coachShopBody: 'Buy jokers, <b>reroll</b> if needed, then <b>Next round</b>!',
     coachDeckTitle: '🂠 Deck left',
     coachDeckBody: 'Tap the <b>🂠</b> count on the right to peek at remaining cards.<br><span class="coach-muted">You can open it anytime.</span>',
@@ -5447,39 +5443,39 @@ const I18N_UI = {
     close: '閉じる',
     skip: 'スキップ',
     gotIt: 'わかった',
-    helpH2: '📖 役表',
+    helpH2: '役表',
     helpIntro: '上から最初に成立した役<b>ひとつ</b>で判定します。<br>スコア = (役の<b>コア</b>チップ) × 倍率 + それ以外のチップ',
     legendS: '最高', legendA: '上位', legendB: '中位', legendC: '基本', legendD: '役なし',
     chipKwang: '光', chipYeol: '十', chipTti: '短冊', chipSsang: 'カス×2', chipPi: 'カス',
     helpTimeTitle: '時間 · 季節',
     helpTimeBody: (m1, m12) => `卓は <b>1月(${m1})→12月(${m12})</b>。今月札はチップ <b>×2</b>。`,
-    helpTimeDay: '☀️ 奇数月・昼 · 光・十 <em>+2</em>',
-    helpTimeNight: '🌙 偶数月・夜 · 短冊・カス <em>+2</em>',
+    helpTimeDay: '奇数月・昼 · 光・十 <em>+2</em>',
+    helpTimeNight: '偶数月・夜 · 短冊・カス <em>+2</em>',
     helpRoundTitle: '一卓 · ゴー/ストップ',
-    helpRoundBody: '出し <b>4回</b> · 捨て <b>4回</b> · 手札 <b>8枚</b>。目標超えで <b>ゴー</b> か <b>ストップ</b>。ゴーは無制限 — nゴー閾値 = 目標×(1+0.6n)、出し+1・補充、ボーナス n×月の両。すでに超えた閾値はゴー宣言時に <b>すべて遡及(押し)</b> — 大物なら複数段ジャンプ。失敗は <b>ゴーバク = ラン終了</b>。',
+    helpRoundBody: '出し 4回 · 捨て 4回 · 手札 8枚。目標超えで <b>ゴー</b> か <b>ストップ</b>。ゴーは無制限 — nゴー閾値 = 目標×(1+0.6n)、出し+1・補充、ボーナス n×月の両。すでに超えた閾値はゴー宣言時にすべて遡及(押し) — 大物なら複数段ジャンプ。失敗は <b>ゴーバク = ラン終了</b>。',
     helpRuleTitle: '特殊ルール',
     helpRuleBody: '<b>3·6·9·12月</b>はバク卓(デバフ)。霧は手札 <b>2枚</b>が裏で来ます。',
     helpRuleTag: 'バク卓デバフ',
     helpJokerTitle: '特殊札 · 酒屋',
-    helpJokerBody: '特殊札 <b>22種</b> · 所持最大 <b>5</b>。ティアは <b>コモン / レア / エピック / レジェンド</b> (出現 約55·28·13·4%)。+点は倍率外、+倍率・×倍率は役倍率に乗ります。',
+    helpJokerBody: '特殊札 22種 · 所持最大 5。ティアは コモン / レア / エピック / レジェンド (出現 約55·28·13·4%)。+点は倍率外、+倍率・×倍率は役倍率に乗ります。',
     helpJokerTags: ['コモン 3–4両', 'レア 6–7両', 'エピック 9–11両', 'レジェ 13–15両'],
-    welcomeH2: '🎴 十二花 — ゴストップ: 無限の卓',
+    welcomeH2: '十二花 — ゴストップ: 無限の卓',
     welcomeSub: '韓国花札48枚で役を揃え目標を超える <b>1人ラン</b>。1月から12月まで一年を耐え抜け。',
     welcomePlayTitle: '基本プレイ',
-    welcomePlayBody: '手札 <b>8枚</b>から1〜5枚選び <b>出し</b>でスコア。合わなければ <b>捨て</b>で入れ替え。各卓 出し·捨て 各 <b>4回</b>。',
+    welcomePlayBody: '手札 8枚から1〜5枚選び <b>出し</b>でスコア。合わなければ <b>捨て</b>で入れ替え。各卓 出し·捨て 各 4回。',
     welcomeScoreTitle: 'スコア · 役',
     welcomeScoreBody: 'スコア = (役の<b>コア</b>チップ) × 倍率 + 残り。今月札は ×2。奇数月は昼(光·十 +2)、偶数月は夜(短冊·カス +2)。',
     welcomeGoTitle: 'ゴー / ストップ',
-    welcomeGoBody: '目標超えで <b>ストップ</b>(清算) か <b>ゴー</b>(目標↑ · 出し+1 · ボーナス)。大物なら閾値を <b>一気に押し</b>複数段ジャンプ! ゴー無制限だが失敗は <b>ゴーバク = ラン終了</b>。<b>3·6·9·12月</b>はバク卓。',
+    welcomeGoBody: '目標超えで <b>ストップ</b>(清算) か <b>ゴー</b>(目標↑ · 出し+1 · ボーナス)。大物なら閾値を一気に押して複数段ジャンプ。ゴー無制限だが失敗は <b>ゴーバク = ラン終了</b>。3·6·9·12月はバク卓。',
     welcomeShopTitle: '酒屋',
     welcomeShopBody: 'クリア後、酒屋で <b>特殊札</b>(コモン〜レジェンド22種)を売買。所持最大5。',
-    welcomeFoot: '詳しい役表はいつでも <b>📖 ヘルプ</b>で。',
+    welcomeFoot: '詳しい役表はいつでも <b>ヘルプ</b>で。',
     welcomeStart: 'わかった — はじめる',
     welcomeStartSub: '1月の準備へ',
-    prepTitle: (flower, name) => `${flower} 1月 · ${name} 準備`,
+    prepTitle: (name) => `1月 · ${name} 準備`,
     prepTarget: (n) => `目標 : <b class="prep-target" style="color:var(--gold-soft)">${n}点</b>`,
-    prepStart: '▶ 1月スタート',
-    gostopH2: '🎉 目標達成!',
+    prepStart: '1月スタート',
+    gostopH2: '目標達成!',
     gostopSub: (score, target, plays, cards) => `${score} / ${target}点 · 出し ${plays} · 札 ${cards}`,
     gostopNextLabel: (n) => `${n}ゴー時の新目標`,
     gostopGoJump: (j) => `${j}段押し`,
@@ -5489,7 +5485,7 @@ const I18N_UI = {
     gostopStopTipN: (n, bonus) => `今清算して次へ<br>(${n}ゴーボーナス <b>+${bonus}両</b>確保)`,
     gostopGo1: '1ゴー',
     gostopJump: (j) => `<b>${j}段押し</b><br>`,
-    gostopGoTip: (bonus) => `出し <b>+1</b> · 補充 · 成功で <b>+${bonus}両</b><br>失敗は <b>ゴーバク = ラン終了</b>`,
+    gostopGoTip: (bonus) => `出し +1 · 補充 · 成功で +${bonus}両<br>失敗は <b>ゴーバク = ラン終了</b>`,
     settleTitle: '清算',
     settleClear: (r, name) => `${r}月 · ${name} クリア`,
     settleInterest: (n) => `利息 (所持 ${n}両)`,
@@ -5507,37 +5503,37 @@ const I18N_UI = {
     shopSold: '売却済',
     shopEmpty: '空き',
     shopNext: '次の卓へ',
-    shopNextLabel: (flower, n, name) => `次 <b>${flower} ${n}月 · ${name}</b>`,
+    shopNextLabel: (n, name) => `次 <b>${n}月 · ${name}</b>`,
     shopTarget: (n) => `目標 ${n}点`,
-    shopBossPick: (n) => `⚠ ${n}月大バク — デバフ選択`,
-    shopBossNext: (n) => `⚠ 次 ${n}月バク卓`,
+    shopBossPick: (n) => `${n}月大バク — デバフ選択`,
+    shopBossNext: (n) => `次 ${n}月バク卓`,
     shopNeedBoss: '先にデバフを選んでください',
-    gameoverH2: (reason) => `☠ ラン終了 — ${reason}`,
+    gameoverH2: (reason) => `ラン終了 — ${reason}`,
     gameoverBody: (r, rounds, score, target, best, bestHand, earned, jokers) =>
       `到達: ${r}月 / ${rounds}月 (${score} / ${target}点)<br>最高一撃: ${best}点${bestHand ? ` (${bestHand})` : ''}<br>総獲得: ${earned}両 · 特殊札 ${jokers}`,
-    retry: '🔄 再挑戦',
-    victoryH2: '🏆 勝利! 12月大バクまで一年を完走!',
+    retry: '再挑戦',
+    victoryH2: '勝利! 12月大バクまで一年を完走!',
     victoryBody: (score, target, best, bestHand, earned, jokers) =>
       `最終: ${score} / ${target}点<br>最高一撃: ${best}点${bestHand ? ` (${bestHand})` : ''}<br>総獲得: ${earned}両 · 特殊札 ${jokers}`,
-    newRun: '🔄 新しいラン',
+    newRun: '新しいラン',
     deckPeekTitle: '🂠 札を見る',
     deckLeft: (n) => `山札 <b>${n}</b>枚`,
-    coachHandTitle: '✨ 役ヒント',
-    coachHandNone: (n) => `<b>緑の光</b>の札をタップ。役がなければ最高チップを選びます。<br><span class="coach-muted">最初 ${n}回無料 · 以降 ON/OFF</span>`,
-    coachHandNamed: (name, n) => `<b>緑の光</b>をタップで <b>${name}</b> を一括選択。<br><span class="coach-muted">最初 ${n}回無料 · 以降 ON/OFF · 1枚ずつ解除可</span>`,
-    coachHandFallback: '緑の光で役を選んで。<b>1月限定</b>です。',
-    coachPlayTitle: '🎯 出し',
+    coachHandTitle: '役ヒント',
+    coachHandNone: (n) => `<b>金の光</b>の札をタップ。役がなければ最高チップを選びます。<br><span class="coach-muted">最初 ${n}回無料 · 以降 ON/OFF</span>`,
+    coachHandNamed: (name, n) => `<b>金の光</b>をタップで <b>${name}</b> を一括選択。<br><span class="coach-muted">最初 ${n}回無料 · 以降 ON/OFF · 1枚ずつ解除可</span>`,
+    coachHandFallback: '金の光で役を選んで。<b>1月限定</b>です。',
+    coachPlayTitle: '出し',
     coachPlayBody: '選んだら <b>出し</b> でスコアを積みましょう。',
-    coachJunkTitle: '🗑️ 捨て',
+    coachJunkTitle: '捨て',
     coachJunkSel: '<b>捨て</b>で入れ替え (一度に最大5)。山札から補充されます。',
     coachJunkPick: '弱いときは <b>カス</b>などを捨てて。<b style="color:#fca5a5">赤光</b>をタップで推奨を一括選択 (最大5)。',
-    coachScoredTitle: '✨ スコア獲得!',
+    coachScoredTitle: 'スコア獲得!',
     coachScoredBody: (hand, score, chips, mult, flat, need) =>
-      `さっき <b>${hand}</b> で <b>+${score}点</b>!<br>スコア = (<b>役チップ ${chips}</b> × <b>${mult}倍</b>)${flat ? ` + <b>${flat}</b>` : ''}。<br>目標まで <b>残り ${need}</b> · ゲージを確認。`,
-    coachScoredFallback: '点が入りました! スコア = <b>役チップ</b> × <b>倍率</b> + 加点。',
-    coachGoTitle: '🔥 ゴー / ストップ',
+      `さっき <b>${hand}</b> で +${score}点。<br>スコア = (役チップ ${chips} × ${mult}倍)${flat ? ` + ${flat}` : ''}。<br>目標まで 残り ${need} · ゲージを確認。`,
+    coachScoredFallback: '点が入りました。スコア = 役チップ × 倍率 + 加点。',
+    coachGoTitle: 'ゴー / ストップ',
     coachGoBody: '<b>ストップ</b>は今清算して次月へ。<br><b>ゴー</b>は目標を上げて続けるが、失敗は <b>ゴーバク = ラン終了</b>!<br><span class="coach-muted">どちらか選んで。</span>',
-    coachShopTitle: '🍶 酒屋',
+    coachShopTitle: '酒屋',
     coachShopBody: '特殊札を買い、合わなければ <b>リロール</b>。準備できたら <b>次の卓へ</b>!',
     coachDeckTitle: '🂠 山札',
     coachDeckBody: '右の <b>🂠</b> 数字をタップすると残り札を先に見られます。<br><span class="coach-muted">いつでも開けます。</span>',
@@ -7346,7 +7342,7 @@ function surveyPromptHTML() {
   return `
     <div class="survey-prompt">
       <div class="survey-corners" aria-hidden="true"></div>
-      <div class="survey-badge" aria-hidden="true">🎴</div>
+      <div class="survey-badge" aria-hidden="true"><img src="Assets/Icons/icon-192.png" alt=""></div>
       <div class="survey-title">${tu('surveyTitle')}</div>
       <div class="survey-rule" aria-hidden="true"></div>
       <div class="survey-body">${tu('surveyBody')}</div>
@@ -8597,14 +8593,15 @@ function cardHTML(card, opts = {}) {
       body += `<img class="${ovCls}" src="${esc(assetSrc(overlaySrc))}" alt="" draggable="false">`;
     }
   } else if (card.type === 'kwang') {
-    body = `<div class="art">${M.gwangArt}</div><div class="gwangmark">光</div>`;
+    // 이미지 폴백 — 이모지 대신 글자. 48장 전부 art가 있어 평소엔 안 탄다.
+    body = `<div class="gwangmark">光</div>`;
   } else if (card.type === 'yeol') {
-    body = `<div class="art">${M.yeolArt}</div>`;
+    body = `<div class="art art-text">${esc(uiMonthName(card.month))}</div>`;
   } else if (card.type === 'tti') {
     const color = card.tags.find((x) => TTI_LABEL[x]) || 'bi_tti';
     body = `<div class="ribbon">${color === 'chodan' ? '' : uiTtiLabel(color)}</div>`;
   } else {
-    body = `<div class="art">${M.flower}</div>`;
+    body = `<div class="art art-text">${hanjaMonth(card.month)}</div>`;
   }
   if (!opts.noSeason && card.month === state.round) cls += ' season'; // 이달의 패 강조
   const selCls = opts.selectable && state.selected.includes(card.uid) && !discarding ? ' sel' : '';
@@ -8709,16 +8706,16 @@ function renderChunhyang() {
       btn.textContent = '✓ 다음 달 훈수 예약됨';
       btn.disabled = true;
     } else {
-      btn.textContent = `🍶 다음 달 훈수 예약 (3냥)`;
+      btn.textContent = `다음 달 훈수 예약 (3냥)`;
       btn.disabled = state.money < 3;
     }
   } else if (state.drunk) {
     btn.style.display = '';
-    btn.textContent = `🍶 ${state.round}월 훈수 중`;
+    btn.textContent = `${state.round}월 훈수 중`;
     btn.disabled = true;
   } else {
     btn.style.display = '';
-    btn.textContent = '🍶 훈수 없음';
+    btn.textContent = '훈수 없음';
     btn.disabled = true;
   }
 }
@@ -8743,7 +8740,7 @@ function renderTopbar() {
     }
   }
   $('jokerbar').innerHTML = slots;
-  $('moneybox').textContent = `💰 ${t('nyang')(state.money)}`;
+  $('moneybox').textContent = t('nyang')(state.money);
 }
 
 function showJokerPop(idx) {
@@ -8787,7 +8784,7 @@ function renderSide() {
     rp.classList.toggle('day', !night);
     rp.classList.toggle('night', night);
   }
-  $('roundlabel').innerHTML = `${M.flower} ${hanjaMonth(state.round)} · ${uiMonthName(state.round)} ${night ? '🌙' : '☀️'}` +
+  $('roundlabel').innerHTML = `${hanjaMonth(state.round)} · ${uiMonthName(state.round)}` +
     ` <span class="round-meta">${t('roundMeta')(state.round, ROUNDS)}</span>${bossTag}`;
   $('seasonline').innerHTML = (night ? t('seasonLineNight') : t('seasonLineDay'))(hanjaMonth(state.round));
 
@@ -8796,7 +8793,7 @@ function renderSide() {
     const b = uiBoss(BOSS_BY_ID[state.boss]);
     const nullified = hasJoker('pibak_boheom') && MILD_BOSSES.includes(state.boss);
     bb.style.display = 'block';
-    bb.innerHTML = `⚠ <b>${esc(b.name)}</b> — ${esc(b.desc)}${nullified ? ` <span class="nullified">${t('bossNull')}</span>` : ''}`;
+    bb.innerHTML = `<b>${esc(b.name)}</b> — ${esc(b.desc)}${nullified ? ` <span class="nullified">${t('bossNull')}</span>` : ''}`;
   } else bb.style.display = 'none';
 
   $('target-val').textContent = fmt(state.target);
@@ -9184,19 +9181,19 @@ function welcomeHTML() {
     <div class="sub" style="margin-bottom:10px">${tu('welcomeSub')}</div>
     <div class="help-sections">
       <div class="help-card hc-round">
-        <div class="hc-title"><span class="ico">🃏</span>${tu('welcomePlayTitle')}</div>
+        <div class="hc-title">${tu('welcomePlayTitle')}</div>
         <div class="hc-body">${tu('welcomePlayBody')}</div>
       </div>
       <div class="help-card hc-time">
-        <div class="hc-title"><span class="ico">✨</span>${tu('welcomeScoreTitle')}</div>
+        <div class="hc-title">${tu('welcomeScoreTitle')}</div>
         <div class="hc-body">${tu('welcomeScoreBody')}</div>
       </div>
       <div class="help-card hc-rule">
-        <div class="hc-title"><span class="ico">🔥</span>${tu('welcomeGoTitle')}</div>
+        <div class="hc-title">${tu('welcomeGoTitle')}</div>
         <div class="hc-body">${tu('welcomeGoBody')}</div>
       </div>
       <div class="help-card hc-helper">
-        <div class="hc-title"><span class="ico">🍶</span>${tu('welcomeShopTitle')}</div>
+        <div class="hc-title">${tu('welcomeShopTitle')}</div>
         <div class="hc-body">${tu('welcomeShopBody')}</div>
       </div>
     </div>
@@ -9212,7 +9209,7 @@ function welcomeHTML() {
 function prepHTML() {
   const M = MONTHS[0];
   return `
-    <h2>${tu('prepTitle')(M.flower, uiMonthName(1))}</h2>
+    <h2>${tu('prepTitle')(uiMonthName(1))}</h2>
     <div class="sub prep-stats">${tu('prepTarget')(fmt(TARGETS[0]))}</div>
     <div class="modal-actions">
       <button class="choicebtn btn-stop prep-start" onclick="beginFromPrep()">
@@ -9358,7 +9355,7 @@ function shopHTML() {
   const nextMonth = state.round + 1;
   const makDisabled = state.chunhyangNext || state.money < 3;
   const makBlock = CHUNHYANG_ENABLED ? `<div class="shop-util su-mak">
-    <div class="su-title">🍶 춘향 훈수 · 3냥</div>
+    <div class="su-title">춘향 훈수 · 3냥</div>
     ${nextMonth}월 동안 패를 봐주고, 내기/버리기에 올리면 다음 패를 예측해요.
     <div style="margin-top:8px">
       <button class="smallbtn" onclick="buyChunhyangNext()" ${makDisabled ? 'disabled' : ''}>${state.chunhyangNext ? '✓ 예약됨' : '다음 달 예약'}</button>
@@ -9397,7 +9394,7 @@ function shopHTML() {
         </section>` : ''}
       </div>
       <footer class="shop-footer" id="shop-footer">
-        <div class="sf-next">${tu('shopNextLabel')(nm.flower, next, uiMonthName(next))}
+        <div class="sf-next">${tu('shopNextLabel')(next, uiMonthName(next))}
           <div class="sf-target">${tu('shopTarget')(fmt(TARGETS[next - 1]))}</div></div>
         <button id="btn-nextround" onclick="nextRound()" ${needPick ? `disabled title="${tu('shopNeedBoss')}"` : ''}>${tu('shopNext')}</button>
       </footer>
@@ -9486,18 +9483,30 @@ function deckpeekHTML() {
 }
 
 function helpHTML() {
+  // 족보를 대표하는 실제 카드 — 이모지 대신 이미 있는 카드 아트를 쓴다
   const HAND_VIS = {
-    ogwang: '🕊️', sagwang: '🏯', chongtong: '🎴', godori: '🐦', bigodori: '🌧️🐦',
-    samgwang: '🌕', bisamgwang: '☔', dan: '🎀',
-    byeongpung: '📜', month3: '💥',
-    yeol3: '🂠', tti3: '🎗️', pi5: '🍂', month2: '2️⃣', none: '·',
+    ogwang:     'Assets/01_january/1-gwang.webp',
+    sagwang:    'Assets/03_march/3-gwang.webp',
+    chongtong:  'Assets/11_november/11-gwang.webp',
+    godori:     'Assets/02_february/2-yeolkkeut-warbler.webp',
+    bigodori:   'Assets/12_december/12-yeolkkeut-swallow.webp',
+    samgwang:   'Assets/08_august/8-gwang.webp',
+    bisamgwang: 'Assets/12_december/12-gwang-umbrella.webp',
+    dan:        'Assets/01_january/1-tti-hongdan.webp',
+    byeongpung: 'Assets/05_may/5-yeolkkeut.webp',
+    month3:     'Assets/07_july/7-yeolkkeut.webp',
+    yeol3:      'Assets/06_june/6-yeolkkeut.webp',
+    tti3:       'Assets/06_june/6-tti-cheongdan.webp',
+    pi5:        'Assets/12_december/12-pi-ssangpi.webp',
+    month2:     'Assets/03_march/3-pi-1.webp',
   };
   const rows = HANDS.map((h, i) => {
     const tier = h.id === 'bisamgwang' ? 'bi'
       : i <= 1 ? 's' : i <= 5 ? 'a' : i <= 8 ? 'b' : i <= 12 ? 'c' : 'd';
     return `<div class="hb-row t-${tier}">
       <div class="hb-rank">${i + 1}</div>
-      <div class="hb-vis" aria-hidden="true">${HAND_VIS[h.id] || '🎴'}</div>
+      <div class="hb-vis" aria-hidden="true">${HAND_VIS[h.id]
+        ? `<img src="${esc(assetSrc(HAND_VIS[h.id]))}" alt="" draggable="false">` : ''}</div>
       <div>
         <div class="hb-name">${uiHandName(h.id)}</div>
         <div class="hb-cond">${uiHandCond(h.id)}</div>
@@ -9513,20 +9522,20 @@ function helpHTML() {
     </div>
     <div class="sub" style="margin-bottom:6px">${tu('helpIntro')}</div>
     <div class="handbook-legend">
-      <span class="lg"><span class="dot" style="background:#fbbf24"></span>${tu('legendS')}</span>
-      <span class="lg"><span class="dot" style="background:#f87171"></span>${tu('legendA')}</span>
-      <span class="lg"><span class="dot" style="background:#60a5fa"></span>${tu('legendB')}</span>
-      <span class="lg"><span class="dot" style="background:#86efac"></span>${tu('legendC')}</span>
-      <span class="lg"><span class="dot" style="background:#64748b"></span>${tu('legendD')}</span>
+      <span class="lg"><span class="dot" style="background:var(--tier-s)"></span>${tu('legendS')}</span>
+      <span class="lg"><span class="dot" style="background:var(--tier-a)"></span>${tu('legendA')}</span>
+      <span class="lg"><span class="dot" style="background:var(--tier-b)"></span>${tu('legendB')}</span>
+      <span class="lg"><span class="dot" style="background:var(--tier-c)"></span>${tu('legendC')}</span>
+      <span class="lg"><span class="dot" style="background:var(--tier-d)"></span>${tu('legendD')}</span>
     </div>
     <div class="handbook">${rows}</div>
     <div class="chip-legend">
-      <span>${tu('chipKwang')} <b>12</b></span><span>${tu('chipYeol')} <b>8</b></span><span>${tu('chipTti')} <b>6</b></span>
-      <span>${tu('chipSsang')} <b>5</b></span><span>${tu('chipPi')} <b>2</b></span>
+      <span>${tu('chipKwang')} 12</span><span>${tu('chipYeol')} 8</span><span>${tu('chipTti')} 6</span>
+      <span>${tu('chipSsang')} 5</span><span>${tu('chipPi')} 2</span>
     </div>
     <div class="help-sections">
       <div class="help-card hc-time">
-        <div class="hc-title"><span class="ico">🌓</span>${tu('helpTimeTitle')}</div>
+        <div class="hc-title">${tu('helpTimeTitle')}</div>
         <div class="hc-body">${tu('helpTimeBody')(uiMonthName(1), uiMonthName(12))}</div>
         <div class="help-tags">
           <span>${tu('helpTimeDay')}</span>
@@ -9534,16 +9543,16 @@ function helpHTML() {
         </div>
       </div>
       <div class="help-card hc-round">
-        <div class="hc-title"><span class="ico">🎯</span>${tu('helpRoundTitle')}</div>
+        <div class="hc-title">${tu('helpRoundTitle')}</div>
         <div class="hc-body">${tu('helpRoundBody')}</div>
       </div>
       <div class="help-card hc-rule">
-        <div class="hc-title"><span class="ico">🃏</span>${tu('helpRuleTitle')}</div>
+        <div class="hc-title">${tu('helpRuleTitle')}</div>
         <div class="hc-body">${tu('helpRuleBody')}</div>
         <div class="help-tags"><span>${tu('helpRuleTag')}</span></div>
       </div>
       <div class="help-card hc-helper">
-        <div class="hc-title"><span class="ico">🍶</span>${tu('helpJokerTitle')}</div>
+        <div class="hc-title">${tu('helpJokerTitle')}</div>
         <div class="hc-body">${tu('helpJokerBody')}</div>
         <div class="help-tags">${tags}</div>
       </div>
@@ -9728,7 +9737,7 @@ function applyJokerEconomy(snap) {
   }
   snap._scoreBumped = bumped;
   const mb = $('moneybox');
-  if (mb) mb.textContent = `💰 ${state.money}냥`;
+  if (mb) mb.textContent = `${state.money}냥`;
 }
 
 function juiceBreakdown(snap) {
@@ -10143,7 +10152,7 @@ async function runGoShatterCascade(fromLevel, toLevel, opts = {}) {
       num.textContent = label;
       if (size) num.style.fontSize = size + 'px';
       if (final && fullscreen) {
-        num.style.color = '#fef08a';
+        num.style.color = 'var(--gold-lit)';
         num.style.textShadow = isMobile
           ? '0 0 18px rgba(250,204,21,.9), 0 0 36px rgba(239,68,68,.5), 0 5px 0 #9a3412, 0 8px 20px rgba(0,0,0,.5)'
           : '0 0 28px rgba(250,204,21,.95), 0 0 56px rgba(239,68,68,.65), 0 8px 0 #9a3412, 0 12px 28px rgba(0,0,0,.55)';
@@ -10412,7 +10421,7 @@ async function animGoSlide(stage, fromLevel, toLevel, wait) {
     const num = document.createElement('div');
     num.className = `go-num ${clsIn}`;
     num.textContent = goBtnLabel(lv);
-    if (asFinal || epic) num.style.color = '#fef08a';
+    if (asFinal || epic) num.style.color = 'var(--gold-lit)';
     stage.appendChild(num);
     cur = num;
     if (!flow && !sticky) juiceGoBtn(stage, !!(asFinal || epic));
@@ -10464,7 +10473,7 @@ async function animGoSlide(stage, fromLevel, toLevel, wait) {
   if (cur) {
     cur.classList.remove('slide-in', 'slide-flow-in');
     cur.classList.add('slide-fake');
-    cur.style.color = '#fef08a';
+    cur.style.color = 'var(--gold-lit)';
   }
   spawnGoImpact(stage);
   juiceGoBtn(stage, true);
@@ -10526,7 +10535,7 @@ async function animGoSlam(stage, fromLevel, toLevel, wait) {
     const num = document.createElement('div');
     num.className = 'go-num slam-drop';
     num.textContent = goBtnLabel(lv);
-    if (final) num.style.color = '#fef08a';
+    if (final) num.style.color = 'var(--gold-lit)';
     stage.appendChild(num);
     cur = num;
     await wait(90);
@@ -10552,7 +10561,7 @@ async function animGoShatter(stage, fromLevel, toLevel, wait) {
     const num = document.createElement('div');
     num.className = 'go-num assemble';
     num.textContent = goBtnLabel(lv);
-    if (final) num.style.color = '#fef08a';
+    if (final) num.style.color = 'var(--gold-lit)';
     stage.appendChild(num);
     cur = num;
     juiceGoBtn(stage, final);
@@ -10574,14 +10583,14 @@ async function animGoHeat(stage, fromLevel, toLevel, wait) {
     num.textContent = goBtnLabel(lv);
     num.style.textShadow =
       `0 1px 0 rgba(127,29,29,.65), 0 0 ${10 + t * 22}px rgba(251,146,60,${0.4 + t * 0.55}), 0 0 ${18 + t * 30}px rgba(239,68,68,${0.2 + t * 0.5})`;
-    if (final) num.style.color = '#fef08a';
+    if (final) num.style.color = 'var(--gold-lit)';
     stage.appendChild(num);
     cur = num;
     for (let f = 0; f < 2 + Math.floor(t * 3); f++) {
       const fl = document.createElement('div');
       fl.className = 'go-heat-flame';
       fl.textContent = '✦';
-      fl.style.color = '#fbbf24';
+      fl.style.color = 'var(--gold-lit)';
       fl.style.fontSize = '11px';
       fl.style.fontWeight = '900';
       fl.style.setProperty('--fx', ((Math.random() - 0.5) * 40) + 'px');
@@ -10619,7 +10628,7 @@ async function animGoGlitch(stage, fromLevel, toLevel, wait) {
   }
   num.classList.remove('glitch');
   num.classList.add('glitch-lock');
-  num.style.color = '#fef08a';
+  num.style.color = 'var(--gold-lit)';
   spawnGoImpact(stage);
   spawnGoSparks(stage, 10);
   juiceGoBtn(stage, true);
@@ -10849,7 +10858,6 @@ function spawnCoinParticles(n) {
   for (let i = 0; i < count; i++) {
     const el = document.createElement('div');
     el.className = 'coin-particle';
-    el.textContent = '💰';
     const dx = (Math.random() - 0.5) * 80;
     const dy = -40 - Math.random() * 70;
     el.style.left = (r.left + r.width / 2 + (Math.random() - 0.5) * 20) + 'px';
@@ -10880,7 +10888,7 @@ function chunhyangReact(score, handId) {
   const tier = juiceTier(handId);
   let mood = '😊', text = '좋은 한 수예요!';
   if (score >= 500 || tier === 'S') {
-    mood = '🤩'; text = '어머나!! 진짜 멋져요!!';
+    mood = '🤩'; text = '어머나, 이런 패를 다 잡으시고!';
   } else if (score >= 200 || tier === 'A') {
     mood = '😲'; text = '와… 세게 나갔네요!';
   } else if (score >= 80 || tier === 'B') {
@@ -11298,7 +11306,7 @@ async function playJuiceSequence(snap, fromRects = null) {
             bumpJokerGain(step.id, { money: step.money });
             snap._moneyPaid = true;
             const mb = $('moneybox');
-            if (mb) mb.textContent = `💰 ${state.money}냥`;
+            if (mb) mb.textContent = `${state.money}냥`;
             sfxCoin();
             await juiceWait(200);
           }
@@ -11339,7 +11347,7 @@ async function playJuiceSequence(snap, fromRects = null) {
           bumpJokerGain(step.id, { money: step.money });
           snap._moneyPaid = true;
           const mb = $('moneybox');
-          if (mb) mb.textContent = `💰 ${state.money}냥`;
+          if (mb) mb.textContent = `${state.money}냥`;
           sfxCoin();
         }
         const sg = (snap.jokerScoreGains || []).find((e) => e.id === step.id);
@@ -11564,6 +11572,7 @@ function startBgSpineGlowMirror(host) {
       ctx.shadowBlur = 0;
       ctx.shadowColor = 'transparent';
       ctx.drawImage(mid, PAD, PAD);
+      host.classList.add('glow-on'); // 미러가 실제로 그렸다 → 이제 원본을 숨긴다
     } catch (_) {}
   };
   if (bgSpineGlowRaf) cancelAnimationFrame(bgSpineGlowRaf);
@@ -11584,6 +11593,9 @@ function initBgSpine() {
     animation: FIRST_ANIM,
     animations: [FIRST_ANIM],
     showControls: false,
+    // 로딩 스피너 금지 — 배경 장식이 게임 화면 위에 주황색 스피너를 띄우면 안 된다.
+    // file:// 로 열면 skeleton.json fetch가 막혀 로딩이 끝나지 않고 스피너가 남는다.
+    showLoading: false,
     interactive: false,
     alpha: true,
     backgroundColor: '#00000000',
@@ -11607,6 +11619,9 @@ function initBgSpine() {
     },
     error(player, reason) {
       console.warn('[spine]', reason);
+      // 로드 실패 시 빈 캔버스라도 남기지 않는다 (file:// 등)
+      const fig = $('bg-figure');
+      if (fig) fig.style.display = 'none';
     },
   });
 }
