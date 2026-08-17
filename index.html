@@ -78,7 +78,10 @@
     --rank-4: #e8cd7a;               --rank-4-glow: rgba(232,205,122,.5);
     --tier-s: #f0dda0; --tier-a: #d4af37; --tier-bi: #b08d3f;
     --tier-b: #9a8352; --tier-c: #7a705c; --tier-d: #6e6857;
-    --chip-blue: #60a5fa; --mult-red: #f87171;
+    /* 칩·배수는 이 게임의 핵심 지표다. 역할은 그대로 두고, 색만
+       Tailwind 기본값(blue-400 / red-400)에서 이 팔레트로 옮긴다 */
+    --chip-blue: #6fb3d8; --mult-red: #e5705f;
+    --gold-lit: #f0c766; --gold-pale: #f6e6b4; --paper: #fffbef;
     --font-num: 'SSRockNum', 'SSRock', 'BaigeTianxing', 'Malgun Gothic', sans-serif;
     --font-overlay: 'SSRockNum', 'SSRock', 'BaigeTianxing', 'Malgun Gothic', sans-serif;
     --font-overlay-num: 'SSRockNum', 'SSRock', 'BaigeTianxing', 'Malgun Gothic', sans-serif;
@@ -298,7 +301,7 @@
   .jokerslot.filled .jtip-gain {
     margin-top: 8px; padding-top: 7px;
     border-top: 1px solid rgba(212,175,55,.28);
-    font-size: 12px; font-weight: 700; color: #fde68a; letter-spacing: -0.01em;
+    font-size: 12px; font-weight: 700; color: var(--gold-lit); letter-spacing: -0.01em;
   }
   .jokerslot.filled .jtip-gain.empty { color: var(--ink-4); font-weight: 600; }
   .jokerslot.filled .jtip::after {
@@ -324,7 +327,7 @@
     text-align: center;
   }
   .joker-pop-card .jp-icon { font-size: 40px; line-height: 1; margin-bottom: 8px; }
-  .joker-pop-card .jp-name { font-size: 18px; font-weight: 900; color: #fde68a; margin-bottom: 8px; }
+  .joker-pop-card .jp-name { font-size: 18px; font-weight: 900; color: var(--gold-lit); margin-bottom: 8px; }
   .joker-pop-card .jp-meta {
     display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;
   }
@@ -338,7 +341,7 @@
   .joker-pop-card .jp-gain {
     margin-top: 10px;
     font-family: var(--font-ui);
-    font-size: 13px; font-weight: 700; color: #fde68a; letter-spacing: -0.01em;
+    font-size: 13px; font-weight: 700; color: var(--gold-lit); letter-spacing: -0.01em;
     padding: 8px 12px; border-radius: 8px;
     background: rgba(253,230,138,.08); border: 1px solid rgba(253,230,138,.22);
   }
@@ -353,14 +356,14 @@
   }
   #moneybox {
     font-family: var(--font-overlay); font-weight: 400; font-synthesis: none;
-    font-size: 20px; color: #fbbf24; white-space: nowrap;
+    font-size: 20px; color: var(--gold-lit); white-space: nowrap;
     letter-spacing: 0.04em;
     padding: 6px 12px; border-radius: 8px;
     background: rgba(8, 16, 12, .45);
     border: 1px solid rgba(196, 162, 90, .4);
     box-shadow: inset 0 0 0 1px rgba(196, 162, 90, .12);
   }
-  #moneybox .delta { font-size: 13px; color: #a3e635; }
+  #moneybox .delta { font-size: 13px; color: var(--gold-lit); }
   #top-settings {
     flex-shrink: 0;
     width: 40px; height: 40px; padding: 0;
@@ -376,7 +379,7 @@
   #top-settings:hover, #top-settings:focus-visible {
     background: rgba(20, 32, 22, .7);
     border-color: rgba(232, 205, 122, .55);
-    color: #fde68a;
+    color: var(--gold-lit);
   }
   #top-help {
     display: none; flex-shrink: 0;
@@ -462,7 +465,7 @@
   }
   #settings-panel .set-label .set-val {
     font-variant-numeric: tabular-nums;
-    color: #fde68a; font-weight: 800; font-size: 12px;
+    color: var(--gold-lit); font-weight: 800; font-size: 12px;
   }
   #settings-panel .set-row-vol .set-label { margin-bottom: -2px; }
   #settings-panel .set-slider-row {
@@ -472,7 +475,7 @@
     flex-shrink: 0; min-width: 2.6em;
     text-align: right;
     font-variant-numeric: tabular-nums;
-    color: #fde68a; font-weight: 800; font-size: 12px;
+    color: var(--gold-lit); font-weight: 800; font-size: 12px;
   }
   #settings-panel input[type="range"] {
     flex: 1; min-width: 0;
@@ -486,7 +489,7 @@
     height: 8px; border-radius: 999px;
     border: 1px solid rgba(255,255,255,.06);
     background-color: rgba(255,255,255,.14);
-    background-image: linear-gradient(to right, #c9a25a, #e8cd7a);
+    background-image: linear-gradient(to right, var(--frame), #e8cd7a);
     background-size: var(--vol-fill) 100%;
     background-repeat: no-repeat;
   }
@@ -494,7 +497,7 @@
     -webkit-appearance: none;
     width: 20px; height: 20px; margin-top: -7px;
     border-radius: 50%;
-    background: linear-gradient(180deg, #efe0a8, #c9a25a);
+    background: linear-gradient(180deg, #efe0a8, var(--frame));
     border: 2px solid rgba(253, 230, 138, .45);
     box-shadow: 0 1px 4px rgba(0,0,0,.35);
     cursor: pointer;
@@ -506,13 +509,13 @@
   }
   #settings-panel input[type="range"]::-moz-range-progress {
     height: 8px; border-radius: 999px 0 0 999px;
-    background: linear-gradient(90deg, #c9a25a, #e8cd7a);
+    background: linear-gradient(90deg, var(--frame), #e8cd7a);
     border: none;
   }
   #settings-panel input[type="range"]::-moz-range-thumb {
     width: 20px; height: 20px;
     border-radius: 50%; border: none;
-    background: linear-gradient(180deg, #efe0a8, #c9a25a);
+    background: linear-gradient(180deg, #efe0a8, var(--frame));
     border: 2px solid rgba(253, 230, 138, .45);
     box-shadow: 0 1px 4px rgba(0,0,0,.35);
     cursor: pointer;
@@ -551,7 +554,7 @@
   }
   #settings-panel .set-seg button.on {
     color: #1a160e;
-    background: linear-gradient(180deg, #efe0a8, #c9a84e);
+    background: linear-gradient(180deg, #efe0a8, var(--frame));
     border-color: rgba(253, 230, 138, .35);
     box-shadow: 0 1px 0 rgba(255,255,255,.2) inset;
   }
@@ -579,7 +582,7 @@
     transition: transform .18s ease, background .15s ease;
   }
   #settings-panel .set-toggle.on .set-sw {
-    background: linear-gradient(180deg, #efe0a8, #c9a84e);
+    background: linear-gradient(180deg, #efe0a8, var(--frame));
     border-color: rgba(253, 230, 138, .45);
   }
   #settings-panel .set-toggle.on .set-sw::after {
@@ -594,7 +597,7 @@
     border-radius: 10px;
     border: 1px solid rgba(196, 162, 90, .32);
     background: rgba(0, 0, 0, .22);
-    color: #f1e4b8;
+    color: var(--gold-pale);
     font-family: var(--font-set);
     font-size: 14px;
     font-weight: 700;
@@ -606,7 +609,7 @@
   #settings-panel .set-linkbtn:hover {
     border-color: rgba(232, 205, 122, .48);
     background: rgba(0, 0, 0, .32);
-    color: #fde68a;
+    color: var(--gold-lit);
   }
   /* 옵션 오버레이(월·열끗) 숨김 — 광은 항상, 쌍피는 이중 점, 띠·피·점수는 미표시 */
   body.hide-card-labels .card .month-badge,
@@ -684,7 +687,7 @@
     color: var(--ink-4); font-size: 12px; font-weight: 400; margin-left: 4px; letter-spacing: 0;
   }
   #seasonline { font-size: 12.5px; color: var(--ink-3); margin-top: 6px; line-height: 1.55; }
-  #seasonline b { color: #fde68a; }
+  #seasonline b { color: var(--gold-lit); }
   #bossbanner {
     border: 1px solid rgba(252,165,165,.45); background: rgba(127,29,29,.42);
     border-radius: 6px; padding: 8px 10px; font-size: 11.5px; line-height: 1.45; color: #fecaca;
@@ -711,7 +714,7 @@
     background: linear-gradient(90deg, #38bdf8, #7dd3fc);
     transition: width .35s ease;
   }
-  .golevel { font-size: 11.5px; color: #fbbf24; margin-top: 4px; font-weight: 700; }
+  .golevel { font-size: 11.5px; color: var(--gold-lit); margin-top: 4px; font-weight: 700; }
 
   #previewbox { min-height: 110px; }
   #previewbox .pv-hand {
@@ -795,11 +798,11 @@
   }
   #jan-aura-hint.junk { color: #fca5a5; }
   #jan-aura-hint[hidden] { display: none !important; }
-  /* 내기 추천 — 연두 글로우 + 우상단 ✦ */
+  /* 내기 추천 — 금빛 테두리 + 우상단 ✦ */
   #handarea .card.coach-aura:not(.sel) {
     box-shadow:
       0 3px 8px rgba(0,0,0,.45),
-      0 0 12px rgba(163, 230, 53, .7),
+      0 0 12px rgba(232, 205, 122, .6),
       inset 0 0 0 2.5px rgba(192,57,43,.85),
       inset 0 0 0 4px rgba(255,255,255,.6);
     animation: coachAuraPulse 1.5s ease-in-out infinite;
@@ -808,7 +811,7 @@
   #handarea .card.kwang.coach-aura:not(.sel) {
     box-shadow:
       0 3px 8px rgba(0,0,0,.45),
-      0 0 12px rgba(163, 230, 53, .7),
+      0 0 12px rgba(232, 205, 122, .6),
       inset 0 0 0 2.5px var(--gold),
       inset 0 0 0 4px rgba(255,255,255,.6);
   }
@@ -816,8 +819,8 @@
   #handarea .card.has-art.kwang.coach-aura:not(.sel) {
     box-shadow:
       0 3px 8px rgba(0,0,0,.45),
-      0 0 0 2px #a3e635,
-      0 0 14px rgba(163, 230, 53, .85);
+      0 0 0 2px var(--gold-soft),
+      0 0 14px rgba(232, 205, 122, .7);
   }
   #handarea .card.coach-aura:not(.sel)::before {
     content: '✦';
@@ -828,10 +831,10 @@
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 11px; font-weight: 900; line-height: 1;
-    color: #14532d;
-    background: radial-gradient(circle at 40% 35%, #ecfccb, #a3e635);
-    border: 1.5px solid #65a30d;
-    box-shadow: 0 0 8px rgba(163, 230, 53, .85);
+    color: var(--ink-deep);
+    background: var(--gold-soft);
+    border: 1.5px solid var(--frame-deep);
+    box-shadow: 0 0 8px rgba(232, 205, 122, .7);
     pointer-events: none;
     animation: coachSpark 1.5s ease-in-out infinite;
   }
@@ -868,10 +871,10 @@
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 900; line-height: 1;
-    color: #fff;
-    background: radial-gradient(circle at 40% 35%, #fecaca, #ef4444);
-    border: 1.5px solid #b91c1c;
-    box-shadow: 0 0 8px rgba(248, 113, 113, .9);
+    color: var(--paper);
+    background: var(--red);
+    border: 1.5px solid #7f1d1d;
+    box-shadow: 0 0 8px rgba(229, 112, 95, .8);
     pointer-events: none;
     animation: coachSpark 1.5s ease-in-out infinite;
   }
@@ -908,10 +911,10 @@
     font-family: var(--font-ui); font-weight: 600;
     color: var(--ink-2); font-size: 14px; line-height: 1.5;
   }
-  #coach-root .coach-panel b { color: #fde68a; font-weight: 800; }
+  #coach-root .coach-panel b { color: var(--gold-lit); font-weight: 800; }
   #coach-root .coach-panel .coach-title {
     font-family: var(--font-ui); font-size: 15px; font-weight: 800;
-    color: #fef3c7; margin-bottom: 5px;
+    color: var(--gold-pale); margin-bottom: 5px;
     letter-spacing: 0.02em;
   }
   #coach-root .coach-panel .coach-muted {
@@ -959,7 +962,7 @@
     font-size: 12px; font-weight: 800; cursor: pointer;
     transition: color .2s ease;
   }
-  #hand-sort button.on { color: #fde68a; }
+  #hand-sort button.on { color: var(--gold-lit); }
   #hand-sort button:hover:not(:disabled):not(.on) { color: var(--ink-2); }
   #hand-sort.sort-blocked { opacity: .45; pointer-events: none; }
   #deckbox, .deck-pill {
@@ -982,7 +985,7 @@
     outline-offset: 2px;
   }
   #deckbox .deck-ico, .deck-pill .deck-ico { font-size: 15px; opacity: .9; }
-  #deckbox b, .deck-pill b { color: #fde68a; font-variant-numeric: tabular-nums; }
+  #deckbox b, .deck-pill b { color: var(--gold-lit); font-variant-numeric: tabular-nums; }
   /* 덱 5장 미만 — 바깥 은은한 빨간 호흡 글로우 */
   #deckbox.deck-low, .deck-pill.deck-low {
     border-color: rgba(248, 113, 113, .42);
@@ -1092,7 +1095,7 @@
   /* ── 카드 ────────────────────────────── */
   .card {
     width: 80px; height: 122px;
-    background: linear-gradient(160deg, #fffbef, #f5ecd4);
+    background: linear-gradient(160deg, var(--paper), var(--gold-pale));
     border-radius: 8px; border: 1.5px solid rgba(0,0,0,.55);
     box-shadow: 0 3px 8px rgba(0,0,0,.45), inset 0 0 0 2.5px rgba(192,57,43,.85), inset 0 0 0 4px rgba(255,255,255,.6);
     position: relative; display: flex; flex-direction: column; align-items: center;
@@ -1128,7 +1131,7 @@
     font-family: var(--font-overlay); font-size: 12px; font-weight: 400;
     text-align: center; border-radius: 4px; padding: 2px 0; letter-spacing: .5px; z-index: 2;
   }
-  .card.kwang { background: linear-gradient(160deg, #fff8dc, #f3e5ab); box-shadow: 0 3px 8px rgba(0,0,0,.45), inset 0 0 0 2.5px var(--gold), inset 0 0 0 4px rgba(255,255,255,.6); }
+  .card.kwang { background: linear-gradient(160deg, var(--paper), var(--gold-pale)); box-shadow: 0 3px 8px rgba(0,0,0,.45), inset 0 0 0 2.5px var(--gold), inset 0 0 0 4px rgba(255,255,255,.6); }
   .card.kwang.sel {
     box-shadow:
       0 14px 18px rgba(0,0,0,.42),
@@ -1138,14 +1141,14 @@
   }
   .card.kwang .gwangmark {
     margin-top: 3px; width: 32px; height: 32px; border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #ffe98a, var(--gold));
+    background: radial-gradient(circle at 35% 30%, var(--gold-lit), var(--gold));
     display: flex; align-items: center; justify-content: center;
     font-size: 17px; font-weight: 900; color: #7c2d12; box-shadow: 0 1px 3px rgba(0,0,0,.4);
   }
   .card.kwang .art { font-size: 25px; }
   .card.kwang .tag { background: var(--gold); color: #5c3a00; }
   .card.kwang.rain .tag { background: var(--gold); color: #5c3a00; }
-  .card.yeol .tag { background: #b45309; color: #fef3c7; }
+  .card.yeol .tag { background: #b45309; color: var(--gold-pale); }
   .card.tti .ribbon {
     margin-top: 5px; width: 17px; height: 50px; border-radius: 2px;
     display: flex; align-items: center; justify-content: center;
@@ -1168,7 +1171,7 @@
   /* 에셋 일러스트 카드 — 화투 붉은 테두리, 여백 없이 꽉 채움 */
   .card.has-art {
     padding: 0;
-    background: #fff8f0;
+    background: var(--paper);
     border: 3.5px solid var(--red);
     box-shadow: 0 3px 8px rgba(0,0,0,.45);
   }
@@ -1320,7 +1323,7 @@
     padding: 3px 8px; border-radius: 999px; pointer-events: none;
     font-family: var(--font-ui);
     font-size: 10px; font-weight: 800; line-height: 1.2; letter-spacing: 0.02em;
-    color: #fef3c7;
+    color: var(--gold-pale);
     background: rgba(0,0,0,.32);
     border: 1px solid rgba(253,230,138,.32);
     box-shadow: 0 2px 8px rgba(0,0,0,.25);
@@ -1372,7 +1375,7 @@
   @media (hover: hover) {
     .choicebtn.gs-simple:hover .gs-tip { display: block; }
   }
-  .choicebtn .gs-tip b { color: #fde68a; }
+  .choicebtn .gs-tip b { color: var(--gold-lit); }
   .btn-stop { background: linear-gradient(180deg, #16a34a, #15803d); color: #fff; }
   .btn-go { background: linear-gradient(180deg, #dc2626, #991b1b); color: #fff; }
 
@@ -1556,7 +1559,7 @@
     display: inline-flex; align-items: center; justify-content: center;
     width: 54px; height: 54px; margin-bottom: 14px;
     border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #ffe98a, var(--gold) 55%, #8a6e3a);
+    background: radial-gradient(circle at 35% 30%, var(--gold-lit), var(--gold) 55%, #8a6e3a);
     box-shadow: 0 6px 18px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.45);
     font-size: 26px; line-height: 1;
   }
@@ -1585,7 +1588,7 @@
     font-size: 16px; font-weight: 600; line-height: 1.55; margin-bottom: 28px;
   }
   #survey-overlay .survey-body b,
-  #shortcut-overlay .survey-body b { color: #fde68a; font-weight: 800; }
+  #shortcut-overlay .survey-body b { color: var(--gold-lit); font-weight: 800; }
   #shortcut-overlay .shortcut-steps {
     text-align: left; margin: 0 0 24px; padding: 14px 16px;
     border-radius: 12px; background: rgba(0,0,0,.28);
@@ -1597,7 +1600,7 @@
     margin: 0; padding-left: 1.25em;
   }
   #shortcut-overlay .shortcut-steps li { margin: 0.35em 0; }
-  #shortcut-overlay .shortcut-steps b { color: #fde68a; font-weight: 800; }
+  #shortcut-overlay .shortcut-steps b { color: var(--gold-lit); font-weight: 800; }
   #survey-overlay .survey-actions,
   #shortcut-overlay .survey-actions {
     display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
@@ -1615,7 +1618,7 @@
   #survey-overlay .survey-yes,
   #shortcut-overlay .survey-yes {
     border: none;
-    background: linear-gradient(180deg, #fbbf24, #f59e0b 45%, #d97706);
+    background: linear-gradient(180deg, var(--gold-lit), #f59e0b 45%, #d97706);
     color: #1a1205;
     box-shadow: 0 8px 20px rgba(217,119,6,.35), inset 0 1px 0 rgba(255,255,255,.35);
   }
@@ -1739,9 +1742,9 @@
   .settle-table tr.total td {
     border-bottom: none; border-top: 1.5px solid rgba(212,175,55,.45);
     padding-top: 14px; margin-top: 2px;
-    font-size: 17px; font-weight: 900; color: #fff8e7;
+    font-size: 17px; font-weight: 900; color: var(--paper);
   }
-  .settle-table tr.total .settle-amt { color: #ffe08a; }
+  .settle-table tr.total .settle-amt { color: var(--gold-lit); }
   .settle-table tr.settle-row {
     opacity: 0;
     transform: translateY(12px) scale(.97);
@@ -1855,7 +1858,7 @@
     box-shadow: 0 2px 0 rgba(0,0,0,.25);
   }
   .deck-peek-count b {
-    color: #fde68a; font-variant-numeric: tabular-nums;
+    color: var(--gold-lit); font-variant-numeric: tabular-nums;
   }
   .deck-peek-count.deck-low {
     border-color: rgba(248, 113, 113, .42);
@@ -1886,7 +1889,7 @@
     font-family: var(--font-overlay);
     font-weight: 400;
     font-size: 28px;
-    color: #fde68a;
+    color: var(--gold-lit);
     line-height: 1.1;
     letter-spacing: -0.06em;
     padding-left: 10px;
@@ -2079,7 +2082,7 @@
   .offer .o-buy {
     font-family: var(--font-ui);
     background: linear-gradient(180deg, rgba(196,162,90,.38), rgba(120,90,40,.55));
-    color: #fff8e7; padding: 10px; font-weight: 800; font-size: 14px;
+    color: var(--paper); padding: 10px; font-weight: 800; font-size: 14px;
     border-radius: 6px;
     border: 1px solid rgba(232,205,122,.7);
     width: 100%; margin-top: auto;
@@ -2088,7 +2091,7 @@
   }
   .offer .o-buy:hover:not(:disabled) {
     border-color: rgba(253,230,138,.9);
-    color: #fffbeb;
+    color: var(--paper);
     background: linear-gradient(180deg, rgba(212,175,55,.5), rgba(150,110,35,.65));
     filter: brightness(1.05);
   }
@@ -2208,7 +2211,7 @@
   }
   .owned-slot .os-gain {
     font-family: var(--font-ui);
-    font-size: 12px; font-weight: 700; color: #fde68a;
+    font-size: 12px; font-weight: 700; color: var(--gold-lit);
     text-align: center; letter-spacing: -0.01em;
     margin: 0; padding: 0;
     border: none; width: 100%;
@@ -2229,7 +2232,7 @@
   .owned-slot .os-tip-gain {
     margin-top: 10px; padding-top: 9px;
     border-top: 1px solid rgba(212,175,55,.28);
-    font-size: 12px; font-weight: 700; color: #fde68a;
+    font-size: 12px; font-weight: 700; color: var(--gold-lit);
   }
   .owned-slot .os-tip-gain.empty { color: var(--ink-4); font-weight: 600; }
   .owned-slot .os-tip::after {
@@ -2285,7 +2288,7 @@
     border: 1px solid rgba(252,165,165,.28); color: #fecaca;
     font-family: var(--font-ui); font-size: 12px; font-weight: 700;
   }
-  .boss-candidate.selected { border-color: var(--frame); background: rgba(196,162,90,.16); color: #fde68a; }
+  .boss-candidate.selected { border-color: var(--frame); background: rgba(196,162,90,.16); color: var(--gold-lit); }
   .shop-footer {
     display: flex; justify-content: space-between; align-items: center;
     margin: 0; gap: 12px; flex-wrap: wrap;
@@ -2339,7 +2342,7 @@
     font-family: var(--font-ui);
     font-size: 13px; font-weight: 800; padding: 8px 16px; border-radius: 6px;
     background: linear-gradient(180deg, rgba(196,162,90,.42), rgba(138,110,58,.55));
-    color: #fff8e7;
+    color: var(--paper);
     border: 1px solid rgba(232,205,122,.65);
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.18),
@@ -2349,7 +2352,7 @@
   }
   .shop-reroll:hover:not(:disabled) {
     border-color: rgba(253,230,138,.85);
-    color: #fffbeb;
+    color: var(--paper);
     background: linear-gradient(180deg, rgba(212,175,55,.55), rgba(160,120,40,.65));
     filter: brightness(1.06);
   }
@@ -2446,7 +2449,7 @@
     min-width: 3.2ch; text-align: right;
     text-shadow: 0 1px 0 rgba(0,0,0,.35);
   }
-  .hb-row.t-s .hb-mult { color: #fbbf24; }
+  .hb-row.t-s .hb-mult { color: var(--gold-lit); }
   .hb-row.t-bi .hb-mult { color: #f59e0b; }
   .chip-legend {
     display: flex; flex-wrap: wrap; gap: 6px;
@@ -2494,7 +2497,7 @@
     font-family: var(--font-ui);
     font-size: 11.5px; color: var(--ink-3); line-height: 1.55;
   }
-  .help-card .hc-body b { color: #fde68a; font-weight: 800; }
+  .help-card .hc-body b { color: var(--gold-lit); font-weight: 800; }
   .help-tags {
     display: flex; flex-wrap: wrap; gap: 6px;
     margin-top: 8px;
@@ -2561,7 +2564,7 @@
   #seedinfo { font-size: 10px; color: var(--ink-5); text-align: left; padding: 0 4px 2px; opacity: .75; }
   /* 이달의 패 ×2 — 따뜻한 바탕 + 좌하단 뱃지 (테두리 채널 안 씀) */
   .card.season:not(.kwang):not(.has-art) {
-    background: linear-gradient(165deg, #fff7ed, #f5e6c8 55%, #ffedd5);
+    background: linear-gradient(165deg, var(--paper), var(--gold-pale) 55%, #ffedd5);
   }
   .card.season.has-art {
     box-shadow:
@@ -2582,7 +2585,7 @@
     font-family: var(--font-overlay-num);
     font-size: 12px; font-weight: 400; line-height: 1;
     color: #7c2d12;
-    background: linear-gradient(180deg, #fef3c7, #f59e0b);
+    background: linear-gradient(180deg, var(--gold-pale), #f59e0b);
     border: 1.5px solid #c2410c;
     border-radius: 6px;
     padding: 3px 6px;
@@ -2597,13 +2600,13 @@
     display: flex; flex-direction: column; align-items: center; gap: 6px;
   }
   #ch-bubble {
-    background: #fffbef; color: #3f3120; border-radius: 10px; padding: 7px 9px;
+    background: var(--paper); color: #3f3120; border-radius: 10px; padding: 7px 9px;
     font-size: 11px; line-height: 1.45; box-shadow: 0 3px 10px rgba(0,0,0,.35);
     position: relative; width: 100%; text-align: center; min-height: 32px;
   }
   #ch-bubble::after {
     content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
-    border: 6px solid transparent; border-top-color: #fffbef; border-bottom: none;
+    border: 6px solid transparent; border-top-color: var(--paper); border-bottom: none;
   }
   #ch-figure { position: relative; width: 110px; filter: drop-shadow(0 4px 8px rgba(0,0,0,.4)); }
   #ch-face { position: absolute; top: 19px; left: 50%; transform: translateX(-50%); font-size: 23px; }
@@ -2680,7 +2683,7 @@
     100% { transform: scale(1); filter: brightness(1); }
   }
   #juice-cards .chip-float.joker-fx {
-    color: #fde68a;
+    color: var(--gold-lit);
     text-shadow: 0 2px 8px rgba(0,0,0,.65), 0 0 12px rgba(251,191,36,.5);
   }
   .play-fly-card {
@@ -2876,7 +2879,7 @@
     to { opacity: 0; transform: translate(-50%, -70%) scale(1.1); }
   }
   #hand-banner.tier-S {
-    color: #fde68a;
+    color: var(--gold-lit);
     -webkit-text-stroke-color: #3b2206;
     text-shadow: 0 0 2px #3b2206, 0 3px 0 #3b2206, 0 0 26px rgba(251,191,36,.65);
   }
@@ -2926,7 +2929,7 @@
     font-variant-numeric: tabular-nums;
     font-size: clamp(68px, 14vw, 148px);
     line-height: 1;
-    color: #fff7ed; letter-spacing: -0.04em; white-space: nowrap;
+    color: var(--paper); letter-spacing: -0.04em; white-space: nowrap;
     text-shadow:
       0 0 24px rgba(251,191,36,.85),
       0 0 48px rgba(239,68,68,.55),
@@ -2938,7 +2941,7 @@
   #go-cascade .go-num.push-out { animation: goPushOut .32s ease-in forwards; }
   #go-cascade .go-shard {
     position: absolute; left: 50%; top: 50%;
-    font-family: var(--font-overlay); font-weight: 400; color: #fde68a; pointer-events: none;
+    font-family: var(--font-overlay); font-weight: 400; color: var(--gold-lit); pointer-events: none;
     text-shadow: 0 0 12px rgba(251,191,36,.8);
     animation: goShardFly .55s cubic-bezier(.2,.7,.3,1) forwards;
   }
@@ -3040,7 +3043,7 @@
     font-family: var(--font-overlay); font-weight: 400;
     font-size: clamp(34px, 8vw, 56px);
     line-height: 1.15; letter-spacing: .02em;
-    color: #fff7ed; white-space: nowrap; text-align: center;
+    color: var(--paper); white-space: nowrap; text-align: center;
     text-shadow:
       0 0 18px rgba(251,191,36,.75),
       0 0 36px rgba(180,83,9,.45),
@@ -3093,7 +3096,7 @@
     transform-origin: center center;
     font-family: var(--font-overlay-num); font-weight: 400; font-synthesis: none;
     font-size: 1.7em; letter-spacing: 0.02em;
-    color: #fffef5; white-space: nowrap; line-height: 1;
+    color: var(--paper); white-space: nowrap; line-height: 1;
     text-align: center;
     text-shadow: 0 1px 0 rgba(127,29,29,.65), 0 0 12px rgba(254,240,138,.5);
     will-change: transform, opacity, filter;
@@ -3113,8 +3116,8 @@
   .choicebtn.btn-go .go-spark {
     position: absolute; left: 50%; top: 50%;
     width: 4px; height: 4px; border-radius: 50%;
-    background: #fef08a; pointer-events: none; z-index: 3;
-    box-shadow: 0 0 6px #fbbf24;
+    background: var(--gold-lit); pointer-events: none; z-index: 3;
+    box-shadow: 0 0 6px var(--gold-lit);
     animation: goSparkFly .48s cubic-bezier(.16,1,.3,1) forwards;
   }
   @keyframes goSparkFly {
@@ -3130,7 +3133,7 @@
     transform-origin: center center;
     font-family: var(--font-overlay-num); font-weight: 400; font-synthesis: none;
     font-size: 1.7em; letter-spacing: 0.02em;
-    color: #fffef5; line-height: 1;
+    color: var(--paper); line-height: 1;
     text-shadow: 0 1px 0 rgba(127,29,29,.65), 0 0 12px rgba(254,240,138,.5);
     pointer-events: none;
   }
@@ -3164,7 +3167,7 @@
   }
   .choicebtn.btn-go .go-num.punch-final {
     animation: goBtnPunchFinal .45s cubic-bezier(.16,1,.3,1) forwards;
-    color: #fef08a;
+    color: var(--gold-lit);
   }
   @keyframes goBtnPunch {
     0% { transform: translate(-50%, -50%) scale(.4); opacity: .25; filter: brightness(2); }
@@ -3199,11 +3202,11 @@
   }
   .choicebtn.btn-go .go-num.slide-in-epic {
     animation: goBtnSlideInEpic .72s cubic-bezier(.65,0,.35,1) forwards;
-    color: #fef08a;
+    color: var(--gold-lit);
   }
   .choicebtn.btn-go .go-num.slide-fake {
     animation: goBtnSlideFake .55s cubic-bezier(.65,0,.35,1) forwards;
-    color: #fef08a;
+    color: var(--gold-lit);
   }
   .choicebtn.btn-go .go-num.slide-doubt {
     animation: goBtnSlideDoubt .5s cubic-bezier(.65,0,.35,1) forwards;
@@ -3274,7 +3277,7 @@
   }
   .choicebtn.btn-go .go-num.hyper-final {
     animation: goBtnHyperFinal .48s cubic-bezier(.16,1,.3,1) forwards;
-    color: #fef08a;
+    color: var(--gold-lit);
   }
   @keyframes goBtnHyper {
     0% { opacity: 0; transform: translate(-50%, -50%) scale(1.65); filter: brightness(2) contrast(1.3); }
@@ -3321,7 +3324,7 @@
     position: absolute; left: 50%; top: 50%;
     transform: translate(-50%, -50%);
     transform-origin: center center;
-    font-weight: 900; font-size: 1.05em; color: #fde68a;
+    font-weight: 900; font-size: 1.05em; color: var(--gold-lit);
     letter-spacing: -0.03em; white-space: nowrap; line-height: 1;
     text-align: center;
     text-shadow: 0 0 8px rgba(251,191,36,.8);
@@ -3358,7 +3361,7 @@
   }
   .choicebtn.btn-go .go-num.glitch-lock {
     animation: goBtnGlitchLock .42s cubic-bezier(.16,1,.3,1) forwards;
-    color: #fef08a;
+    color: var(--gold-lit);
   }
   @keyframes goBtnGlitch {
     0% { transform: translate(-52%, -48%); text-shadow: 2px 0 #f43f5e, -2px 0 #38bdf8; }
@@ -3400,7 +3403,7 @@
   #juice-score-preview .gap-inner { width: min(1100px, 100%); margin: 0 auto; }
   #go-anim-preview h1,
   #juice-score-preview h1 {
-    margin: 0 0 6px; color: #fde68a; font-size: 22px; font-weight: 900;
+    margin: 0 0 6px; color: var(--gold-lit); font-size: 22px; font-weight: 900;
   }
   #go-anim-preview .gap-sub,
   #juice-score-preview .gap-sub {
@@ -3412,7 +3415,7 @@
   }
   #go-anim-preview .gap-section-title,
   #juice-score-preview .gap-section-title {
-    margin: 18px 0 10px; color: #fde68a; font-size: 15px; font-weight: 900;
+    margin: 18px 0 10px; color: var(--gold-lit); font-size: 15px; font-weight: 900;
   }
   #go-anim-preview .gap-section-title:first-of-type,
   #juice-score-preview .gap-section-title:first-of-type { margin-top: 4px; }
@@ -3443,7 +3446,7 @@
     border-radius: 12px; padding: 12px 10px; text-align: center;
   }
   #juice-score-preview .jsp-card h3 {
-    margin: 0 0 4px; color: #fef3c7; font-size: 13px; font-weight: 900;
+    margin: 0 0 4px; color: var(--gold-pale); font-size: 13px; font-weight: 900;
   }
   #juice-score-preview .jsp-card .jsp-meta {
     font-size: 11px; color: var(--ink-4); margin-bottom: 10px; min-height: 2.4em; line-height: 1.35;
@@ -3471,7 +3474,7 @@
     border-radius: 12px; padding: 12px 10px 12px;
   }
   #go-anim-preview .gap-live-card h3 {
-    margin: 0 0 2px; color: #fef3c7; font-size: 13px; font-weight: 900;
+    margin: 0 0 2px; color: var(--gold-pale); font-size: 13px; font-weight: 900;
   }
   #go-anim-preview .gap-live-card .gap-tag {
     display: inline-block; margin-bottom: 8px;
@@ -3496,7 +3499,7 @@
     border-radius: 14px; padding: 14px 12px 14px;
   }
   #go-anim-preview .gap-card h3 {
-    margin: 0 0 4px; color: #fef3c7; font-size: 14px; font-weight: 900;
+    margin: 0 0 4px; color: var(--gold-pale); font-size: 14px; font-weight: 900;
   }
   #go-anim-preview .gap-card p {
     margin: 0 0 12px; color: var(--ink-4); font-size: 11.5px; line-height: 1.4; min-height: 2.6em;
@@ -3515,9 +3518,9 @@
     margin-top: 18px; display: inline-block;
     color: #86efac; font-size: 13px; font-weight: 700;
   }
-  #gauge.overflow { box-shadow: 0 0 0 2px #fde68a, 0 0 18px rgba(250,204,21,.75); }
+  #gauge.overflow { box-shadow: 0 0 0 2px var(--gold-lit), 0 0 18px rgba(232,205,122,.7); }
   #gauge-fill.overflow {
-    background: linear-gradient(90deg, #fbbf24, #f472b6, #a3e635) !important;
+    background: linear-gradient(90deg, var(--gold), var(--gold-lit) 50%, var(--paper)) !important;
     animation: gaugeFlash .55s ease;
   }
   @keyframes gaugeFlash {
@@ -3934,7 +3937,7 @@
       color: rgba(255,255,255,.88); text-align: center; line-height: 1.4;
     }
     .choicebtn.gs-simple .gs-tip::after { display: none; }
-    .choicebtn .gs-tip b { color: #fef3c7; }
+    .choicebtn .gs-tip b { color: var(--gold-pale); }
     /* 주막 모바일: 세로 거대 카드 → 가로형 컴팩트 리스트 */
     #modal.shop-modal {
       padding: 0;
@@ -4155,11 +4158,11 @@
   }
   #boot-load .bl-fill {
     height: 100%; width: 0%;
-    background: linear-gradient(90deg, #b45309, #fbbf24 55%, #fde68a);
+    background: linear-gradient(90deg, #b45309, var(--gold-lit) 55%, var(--gold-lit));
     transition: width .12s ease-out;
   }
   #boot-load .bl-pct {
-    font-size: 12px; font-weight: 800; color: #fde68a;
+    font-size: 12px; font-weight: 800; color: var(--gold-lit);
     font-variant-numeric: tabular-nums; letter-spacing: 0.04em;
   }
 
@@ -4176,7 +4179,7 @@
   }
   #card-tune.on { display: block; }
   #card-tune .ct-title {
-    font-weight: 900; color: #fde68a; margin-bottom: 4px; font-size: 13px;
+    font-weight: 900; color: var(--gold-lit); margin-bottom: 4px; font-size: 13px;
   }
   #card-tune .ct-sub {
     color: var(--ink-4); font-size: 11px; line-height: 1.4; margin-bottom: 10px;
@@ -5269,9 +5272,9 @@ const I18N_UI = {
     deckPeekTitle: '🂠 패 보기',
     deckLeft: (n) => `남은 덱 <b>${n}</b>장`,
     coachHandTitle: '조합 힌트',
-    coachHandNone: (n) => `<b>연두 빛</b>이 도는 패를 눌러 보세요. 조합이 없으면 칩 최고 패가 골라집니다.<br><span class="coach-muted">처음 ${n}회 무료 · 이후 추천 ON/OFF</span>`,
-    coachHandNamed: (name, n) => `<b>연두 빛</b>이 도는 패를 눌러 보세요. <b>${name}</b>이 한 번에 골라집니다.<br><span class="coach-muted">처음 ${n}회 무료 · 이후 추천 ON/OFF · 한 장씩 해제 가능</span>`,
-    coachHandFallback: '연두 빛 패를 눌러 조합을 골라 보세요. <b>1월 한정</b>이에요.',
+    coachHandNone: (n) => `<b>금빛</b>이 도는 패를 눌러 보세요. 조합이 없으면 칩 최고 패가 골라집니다.<br><span class="coach-muted">처음 ${n}회 무료 · 이후 추천 ON/OFF</span>`,
+    coachHandNamed: (name, n) => `<b>금빛</b>이 도는 패를 눌러 보세요. <b>${name}</b>이 한 번에 골라집니다.<br><span class="coach-muted">처음 ${n}회 무료 · 이후 추천 ON/OFF · 한 장씩 해제 가능</span>`,
+    coachHandFallback: '금빛 패를 눌러 조합을 골라 보세요. <b>1월 한정</b>이에요.',
     coachPlayTitle: '내기',
     coachPlayBody: '골랐으면 <b>내기</b>를 눌러 점수를 쌓아 보세요.',
     coachJunkTitle: '버리기',
@@ -5385,9 +5388,9 @@ const I18N_UI = {
     deckPeekTitle: '🂠 Deck view',
     deckLeft: (n) => `Deck left <b>${n}</b>`,
     coachHandTitle: 'Hand tip',
-    coachHandNone: (n) => `Tap the <b>green glow</b>. If no combo, highest-chip cards are picked.<br><span class="coach-muted">First ${n} free · then tip ON/OFF</span>`,
-    coachHandNamed: (name, n) => `Tap the <b>green glow</b> to pick <b>${name}</b> at once.<br><span class="coach-muted">First ${n} free · then tip ON/OFF · untap one by one</span>`,
-    coachHandFallback: 'Tap the green glow to build a hand. <b>January only</b>.',
+    coachHandNone: (n) => `Tap the <b>gold glow</b>. If no combo, highest-chip cards are picked.<br><span class="coach-muted">First ${n} free · then tip ON/OFF</span>`,
+    coachHandNamed: (name, n) => `Tap the <b>gold glow</b> to pick <b>${name}</b> at once.<br><span class="coach-muted">First ${n} free · then tip ON/OFF · untap one by one</span>`,
+    coachHandFallback: 'Tap the gold glow to build a hand. <b>January only</b>.',
     coachPlayTitle: 'Play',
     coachPlayBody: 'When ready, press <b>Play</b> to score.',
     coachJunkTitle: 'Discard',
@@ -5501,9 +5504,9 @@ const I18N_UI = {
     deckPeekTitle: '🂠 札を見る',
     deckLeft: (n) => `山札 <b>${n}</b>枚`,
     coachHandTitle: '役ヒント',
-    coachHandNone: (n) => `<b>緑の光</b>の札をタップ。役がなければ最高チップを選びます。<br><span class="coach-muted">最初 ${n}回無料 · 以降 ON/OFF</span>`,
-    coachHandNamed: (name, n) => `<b>緑の光</b>をタップで <b>${name}</b> を一括選択。<br><span class="coach-muted">最初 ${n}回無料 · 以降 ON/OFF · 1枚ずつ解除可</span>`,
-    coachHandFallback: '緑の光で役を選んで。<b>1月限定</b>です。',
+    coachHandNone: (n) => `<b>金の光</b>の札をタップ。役がなければ最高チップを選びます。<br><span class="coach-muted">最初 ${n}回無料 · 以降 ON/OFF</span>`,
+    coachHandNamed: (name, n) => `<b>金の光</b>をタップで <b>${name}</b> を一括選択。<br><span class="coach-muted">最初 ${n}回無料 · 以降 ON/OFF · 1枚ずつ解除可</span>`,
+    coachHandFallback: '金の光で役を選んで。<b>1月限定</b>です。',
     coachPlayTitle: '出し',
     coachPlayBody: '選んだら <b>出し</b> でスコアを積みましょう。',
     coachJunkTitle: '捨て',
@@ -10133,7 +10136,7 @@ async function runGoShatterCascade(fromLevel, toLevel, opts = {}) {
       num.textContent = label;
       if (size) num.style.fontSize = size + 'px';
       if (final && fullscreen) {
-        num.style.color = '#fef08a';
+        num.style.color = 'var(--gold-lit)';
         num.style.textShadow = isMobile
           ? '0 0 18px rgba(250,204,21,.9), 0 0 36px rgba(239,68,68,.5), 0 5px 0 #9a3412, 0 8px 20px rgba(0,0,0,.5)'
           : '0 0 28px rgba(250,204,21,.95), 0 0 56px rgba(239,68,68,.65), 0 8px 0 #9a3412, 0 12px 28px rgba(0,0,0,.55)';
@@ -10402,7 +10405,7 @@ async function animGoSlide(stage, fromLevel, toLevel, wait) {
     const num = document.createElement('div');
     num.className = `go-num ${clsIn}`;
     num.textContent = goBtnLabel(lv);
-    if (asFinal || epic) num.style.color = '#fef08a';
+    if (asFinal || epic) num.style.color = 'var(--gold-lit)';
     stage.appendChild(num);
     cur = num;
     if (!flow && !sticky) juiceGoBtn(stage, !!(asFinal || epic));
@@ -10454,7 +10457,7 @@ async function animGoSlide(stage, fromLevel, toLevel, wait) {
   if (cur) {
     cur.classList.remove('slide-in', 'slide-flow-in');
     cur.classList.add('slide-fake');
-    cur.style.color = '#fef08a';
+    cur.style.color = 'var(--gold-lit)';
   }
   spawnGoImpact(stage);
   juiceGoBtn(stage, true);
@@ -10516,7 +10519,7 @@ async function animGoSlam(stage, fromLevel, toLevel, wait) {
     const num = document.createElement('div');
     num.className = 'go-num slam-drop';
     num.textContent = goBtnLabel(lv);
-    if (final) num.style.color = '#fef08a';
+    if (final) num.style.color = 'var(--gold-lit)';
     stage.appendChild(num);
     cur = num;
     await wait(90);
@@ -10542,7 +10545,7 @@ async function animGoShatter(stage, fromLevel, toLevel, wait) {
     const num = document.createElement('div');
     num.className = 'go-num assemble';
     num.textContent = goBtnLabel(lv);
-    if (final) num.style.color = '#fef08a';
+    if (final) num.style.color = 'var(--gold-lit)';
     stage.appendChild(num);
     cur = num;
     juiceGoBtn(stage, final);
@@ -10564,14 +10567,14 @@ async function animGoHeat(stage, fromLevel, toLevel, wait) {
     num.textContent = goBtnLabel(lv);
     num.style.textShadow =
       `0 1px 0 rgba(127,29,29,.65), 0 0 ${10 + t * 22}px rgba(251,146,60,${0.4 + t * 0.55}), 0 0 ${18 + t * 30}px rgba(239,68,68,${0.2 + t * 0.5})`;
-    if (final) num.style.color = '#fef08a';
+    if (final) num.style.color = 'var(--gold-lit)';
     stage.appendChild(num);
     cur = num;
     for (let f = 0; f < 2 + Math.floor(t * 3); f++) {
       const fl = document.createElement('div');
       fl.className = 'go-heat-flame';
       fl.textContent = '✦';
-      fl.style.color = '#fbbf24';
+      fl.style.color = 'var(--gold-lit)';
       fl.style.fontSize = '11px';
       fl.style.fontWeight = '900';
       fl.style.setProperty('--fx', ((Math.random() - 0.5) * 40) + 'px');
@@ -10609,7 +10612,7 @@ async function animGoGlitch(stage, fromLevel, toLevel, wait) {
   }
   num.classList.remove('glitch');
   num.classList.add('glitch-lock');
-  num.style.color = '#fef08a';
+  num.style.color = 'var(--gold-lit)';
   spawnGoImpact(stage);
   spawnGoSparks(stage, 10);
   juiceGoBtn(stage, true);
