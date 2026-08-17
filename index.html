@@ -1349,6 +1349,11 @@
   .modal-close:hover { background: rgba(255,255,255,.14); color: #fff; }
   #modal .sub { color: var(--ink-3); font-size: 13px; line-height: 1.55; }
   .modal-actions { display: flex; gap: 10px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+  /* 한국어는 어절 단위로 끊는다 — 기본값은 글자 아무 데서나 끊어 "판으/로"가 된다 */
+  #modal, #coach-root .coach-panel, .help-card .hc-body, .choicebtn .d, .gs-tip {
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
   .choicebtn { flex: 1; min-width: 190px; padding: 14px; border-radius: 12px; text-align: left; position: relative; }
   .choicebtn .t {
     font-family: var(--font-overlay); font-weight: 400; font-synthesis: none;
@@ -1382,8 +1387,10 @@
     .choicebtn.gs-simple:hover .gs-tip { display: block; }
   }
   .choicebtn .gs-tip b { color: var(--gold-lit); }
-  .btn-stop { background: linear-gradient(180deg, #16a34a, #15803d); color: #fff; }
-  .btn-go { background: linear-gradient(180deg, #dc2626, #991b1b); color: #fff; }
+  /* 확정·진행 = 금(이 게임의 1차 버튼) · 위험 = 주(朱).
+     초록/빨강은 어느 제품에나 있는 색이고 화투 판에서 겉돈다. */
+  .btn-stop { background: var(--gold); color: var(--ink-deep); }
+  .btn-go { background: linear-gradient(180deg, #c0392b, #8c2418); color: var(--paper); }
 
   #modal.end-modal .sub {
     font-family: var(--font-ui); font-weight: 600;
