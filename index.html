@@ -1077,10 +1077,11 @@
     .bigbtn .act-pips i.pip-in,
     .bigbtn .act-pips i.pip-out { animation: none; }
   }
-  #btn-play { background: linear-gradient(180deg, #dc2626, #991b1b); color: #fff; }
-  #btn-play .act-pips i { background: #fecaca; border-color: rgba(255, 248, 235, .95); }
-  #btn-discard { background: linear-gradient(180deg, #2563eb, #1e40af); color: #fff; }
-  #btn-discard .act-pips i { background: #bfdbfe; border-color: rgba(255, 248, 235, .95); }
+  /* 내기 = 주(朱) · 버리기 = 청(靑). 역할은 그대로, 색은 이 팔레트에서 */
+  #btn-play { background: linear-gradient(180deg, #c0392b, #8c2418); color: var(--paper); }
+  #btn-discard { background: linear-gradient(180deg, #35657f, #1e3f55); color: var(--paper); }
+  #btn-play .act-pips i,
+  #btn-discard .act-pips i { background: var(--paper); border-color: rgba(255, 248, 235, .95); }
   @media (min-width: 721px) {
     #btn-play, #btn-discard { width: 210px; box-sizing: border-box; }
   }
@@ -3835,12 +3836,12 @@
       filter: none !important;
     }
     #btn-play {
-      background: linear-gradient(180deg, #ef4444, #b91c1c) !important;
-      color: #fff !important;
+      background: linear-gradient(180deg, #cf4132, #8c2418) !important;
+      color: var(--paper) !important;
     }
     #btn-discard {
-      background: linear-gradient(180deg, #3b82f6, #1d4ed8) !important;
-      color: #fff !important;
+      background: linear-gradient(180deg, #3b708c, #1e3f55) !important;
+      color: var(--paper) !important;
     }
     .bigbtn .act-pips { gap: 4px; min-height: 7px; }
     .bigbtn .act-pips i { width: 7px; height: 7px; }
