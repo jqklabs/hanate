@@ -72,12 +72,11 @@
     /* 중립 램프 — 밝은 쪽부터. 본문·보조 텍스트는 전부 여기서 가져온다 */
     --ink-1: #f7f2e6; --ink-2: #e4dcc8; --ink-3: #c6bda4;
     --ink-4: #9a917b; --ink-5: #6e6857; --ink-deep: #191307;
-    /* 등급·서열 — 색이 아니라 금색의 농도와 두께로 순위를 만든다.
-       색을 4~6개 쓰면 순위가 아니라 카테고리로 읽힌다. */
-    --rank-1: rgba(206,196,170,.34); --rank-1-glow: rgba(206,196,170,.10);
-    --rank-2: rgba(196,162,90,.62);  --rank-2-glow: rgba(196,162,90,.20);
-    --rank-3: rgba(212,175,55,.9);   --rank-3-glow: rgba(212,175,55,.32);
-    --rank-4: #e8cd7a;               --rank-4-glow: rgba(232,205,122,.5);
+    /* 원신식 등급색: 커먼 회 · 레어 청 · 에픽 자 · 레전 금 */
+    --rank-1: rgba(186,198,212,.55); --rank-1-glow: rgba(148,163,184,.22);
+    --rank-2: rgba(96,165,250,.72);  --rank-2-glow: rgba(37,99,235,.42);
+    --rank-3: rgba(192,132,252,.78); --rank-3-glow: rgba(147,51,234,.48);
+    --rank-4: rgba(252,211,77,.88);  --rank-4-glow: rgba(234,179,8,.55);
     --tier-s: #f0dda0; --tier-a: #d4af37; --tier-bi: #b08d3f;
     --tier-b: #9a8352; --tier-c: #7a705c; --tier-d: #6e6857;
     /* 칩·배수는 이 게임의 핵심 지표다. 역할은 그대로 두고, 색만
@@ -251,25 +250,36 @@
     border: 1px solid rgba(255,255,255,.1);
     letter-spacing: .02em; line-height: 1.3; white-space: nowrap;
   }
+  /* 원신식 등급색: 커먼 회 · 레어 청 · 에픽 자 · 레전 금 (밝기도 단계↑) */
   .jokerslot.filled.aura-common {
     border-color: var(--rank-1);
+    background: linear-gradient(160deg, rgba(36, 44, 54, .94), rgba(14, 18, 24, .96));
     box-shadow: 0 0 8px var(--rank-1-glow);
   }
   .jokerslot.filled.aura-rare {
     border-color: var(--rank-2);
+    background: linear-gradient(160deg, rgba(22, 48, 88, .94), rgba(10, 22, 42, .96));
     box-shadow: 0 0 12px var(--rank-2-glow);
   }
   .jokerslot.filled.aura-epic {
     border-width: 1.5px; border-color: var(--rank-3);
+    background: linear-gradient(160deg, rgba(58, 28, 88, .94), rgba(28, 12, 46, .96));
     box-shadow: 0 0 16px var(--rank-3-glow);
   }
   .jokerslot.filled.aura-legendary {
     border-width: 2px; border-color: var(--rank-4);
+    background: linear-gradient(160deg, rgba(78, 52, 12, .95), rgba(36, 24, 8, .97));
     box-shadow: 0 0 20px var(--rank-4-glow);
   }
+  .jokerslot.filled.aura-common .jname { color: #e2e8f0; }
+  .jokerslot.filled.aura-rare .jname { color: #bfdbfe; }
+  .jokerslot.filled.aura-epic .jname { color: #e9d5ff; }
   .jokerslot.filled.aura-legendary .jname {
     color: var(--gold-soft);
   }
+  .jokerslot.filled.aura-rare .jkind { color: #93c5fd; border-color: rgba(96,165,250,.35); background: rgba(37,99,235,.16); }
+  .jokerslot.filled.aura-epic .jkind { color: #d8b4fe; border-color: rgba(192,132,252,.35); background: rgba(126,34,206,.18); }
+  .jokerslot.filled.aura-legendary .jkind { color: #fde68a; border-color: rgba(251,191,36,.4); background: rgba(180,83,9,.22); }
   /* 효과 발동 — 살짝 뽀용 */
   .jokerslot.filled.trig {
     z-index: 6;
@@ -2033,24 +2043,44 @@
     height: 100%;
     transition: border-color .15s, background .15s, box-shadow .15s;
   }
-  .offer.aura-common { border-color: var(--rank-1); }
+  .offer.aura-common {
+    border-color: var(--rank-1);
+    background: linear-gradient(180deg, rgba(40,48,58,.72), rgba(0,0,0,.58));
+  }
   .offer.aura-rare {
     border-color: var(--rank-2);
+    background: linear-gradient(180deg, rgba(20,48,92,.72), rgba(0,0,0,.58));
     box-shadow: 0 0 12px var(--rank-2-glow);
   }
   .offer.aura-epic {
     border-width: 1.5px; border-color: var(--rank-3);
+    background: linear-gradient(180deg, rgba(62,24,96,.74), rgba(0,0,0,.58));
     box-shadow: 0 0 14px var(--rank-3-glow);
   }
   .offer.aura-legendary {
     border-width: 2px; border-color: var(--rank-4);
+    background: linear-gradient(180deg, rgba(92,58,8,.76), rgba(0,0,0,.58));
     box-shadow: 0 0 18px var(--rank-4-glow);
   }
   .offer:not(.sold):hover {
-    background: rgba(0,0,0,.62);
     transform: none;
   }
-  .offer:not(.sold):hover { border-color: var(--gold-soft); }
+  .offer.aura-common:not(.sold):hover {
+    border-color: rgba(203,213,225,.7);
+    box-shadow: 0 0 14px var(--rank-1-glow);
+  }
+  .offer.aura-rare:not(.sold):hover {
+    border-color: rgba(147,197,253,.75);
+    box-shadow: 0 0 18px var(--rank-2-glow);
+  }
+  .offer.aura-epic:not(.sold):hover {
+    border-color: rgba(216,180,254,.78);
+    box-shadow: 0 0 18px var(--rank-3-glow);
+  }
+  .offer.aura-legendary:not(.sold):hover {
+    border-color: rgba(253,224,71,.8);
+    box-shadow: 0 0 20px var(--rank-4-glow);
+  }
   .offer.sold { opacity: .45; filter: grayscale(.3); }
   .offer .o-icon {
     font-size: 28px; line-height: 1; text-align: center;
@@ -2062,6 +2092,9 @@
     color: var(--ink-1); text-align: center; letter-spacing: -0.03em;
     line-height: 1.2; margin-bottom: 8px;
   }
+  .offer.aura-rare .o-name { color: #bfdbfe; }
+  .offer.aura-epic .o-name { color: #e9d5ff; }
+  .offer.aura-legendary .o-name { color: #fde68a; }
   .offer .o-meta {
     display: flex; justify-content: center; gap: 5px; flex-wrap: wrap;
     margin-bottom: 10px;
@@ -2079,10 +2112,10 @@
     white-space: nowrap; flex-shrink: 0;
     display: inline-block;
   }
-  .r-common { background: rgba(0,0,0,.42); color: var(--ink-4); }
-  .r-rare { background: rgba(0,0,0,.42); color: var(--frame); }
-  .r-epic { background: rgba(0,0,0,.42); color: var(--gold-soft); }
-  .r-legendary { background: var(--gold); color: var(--ink-deep); }
+  .r-common { background: rgba(71,85,105,.92); color: #e2e8f0; }
+  .r-rare { background: rgba(29,78,216,.88); color: #dbeafe; }
+  .r-epic { background: rgba(126,34,206,.88); color: #f3e8ff; }
+  .r-legendary { background: linear-gradient(180deg, #d97706, #b45309); color: #fff7ed; }
   .offer .o-desc {
     font-family: var(--font-ui); font-size: 13px; font-weight: 500;
     color: #e8eef5; line-height: 1.6;
@@ -2181,17 +2214,23 @@
     100% { transform: scale(1); }
   }
   /* 등급별 오라 — 은은한 테두리·글로우만 */
-  .owned-slot.filled.aura-common { border-color: var(--rank-1); }
+  .owned-slot.filled.aura-common {
+    border-color: var(--rank-1);
+    background: linear-gradient(180deg, rgba(40,48,58,.7), rgba(0,0,0,.5));
+  }
   .owned-slot.filled.aura-rare {
     border-color: var(--rank-2);
+    background: linear-gradient(180deg, rgba(20,48,92,.72), rgba(0,0,0,.5));
     box-shadow: 0 0 10px var(--rank-2-glow);
   }
   .owned-slot.filled.aura-epic {
     border-width: 1.5px; border-color: var(--rank-3);
+    background: linear-gradient(180deg, rgba(62,24,96,.74), rgba(0,0,0,.5));
     box-shadow: 0 0 12px var(--rank-3-glow);
   }
   .owned-slot.filled.aura-legendary {
     border-width: 2px; border-color: var(--rank-4);
+    background: linear-gradient(180deg, rgba(92,58,8,.76), rgba(0,0,0,.5));
     box-shadow: 0 0 16px var(--rank-4-glow);
   }
   .owned-slot .os-head {
@@ -2207,6 +2246,9 @@
     display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
     overflow: hidden; margin: 0;
   }
+  .owned-slot.filled.aura-common .os-name { color: #e2e8f0; }
+  .owned-slot.filled.aura-rare .os-name { color: #bfdbfe; }
+  .owned-slot.filled.aura-epic .os-name { color: #e9d5ff; }
   .owned-slot.filled.aura-legendary .os-name {
     color: var(--gold-soft);
     text-shadow: none;
