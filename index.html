@@ -139,6 +139,7 @@
     width: min(58vw, 720px);
     height: min(96vh, 1100px);
     pointer-events: none;
+    overflow: visible;
   }
   #bg-spine.spine-player,
   #bg-spine .spine-player {
@@ -147,20 +148,16 @@
     width: 100% !important;
     height: 100% !important;
     background: transparent !important;
-  }
-  /* WebGL엔 CSS drop-shadow 미적용 → 2D 미러에 흰 아우라를 픽셀로 그린다.
-     미러가 실제로 그리기 시작한 뒤에만 원본을 숨긴다 — 미러가 늦게 뜨거나
-     실패하면 아우라 없이라도 춘향이 보여야 한다 (안 보이는 것보다 낫다). */
-  #bg-spine.glow-on canvas.spine-player-canvas {
-    opacity: 0;
-  }
-  #bg-spine-glow {
-    position: absolute;
-    pointer-events: none;
-    z-index: 2;
+    overflow: visible;
+    filter:
+      drop-shadow(0 0 1px rgba(255,255,255,.95))
+      drop-shadow(0 0 4px rgba(255,255,255,.7))
+      drop-shadow(0 0 12px rgba(255,255,255,.42))
+      drop-shadow(0 0 28px rgba(255,248,230,.24));
   }
   #bg-spine .spine-player-controls,
   #bg-spine .spine-player-button,
+  #bg-spine .spine-player-error,
   #bg-spine .spine-player-canvas-container + * {
     display: none !important;
   }
@@ -168,11 +165,19 @@
     opacity: 0;
     visibility: hidden;
   }
-  /* 1400px 미만 — fade-out으로 숨김 (display:none 이면 트랜지션 불가) */
-  @media (max-width: 1399px) {
+  /* 폰 레이아웃에서만 숨김. 노트북 창(~1100)까지는 보이게 */
+  @media (max-width: 720px) {
     body.booted #bg-figure {
       opacity: 0;
       visibility: hidden;
+    }
+  }
+  @media (max-width: 1399px) {
+    #bg-spine {
+      width: min(48vw, 420px);
+      height: min(78vh, 640px);
+      right: -12%;
+      bottom: -12%;
     }
   }
   /* 화면 외곽 청동 프레임 + 모서리 장식 (화면 가장자리 밀착) */
@@ -2706,6 +2711,9 @@
   #ch-hint-tabs button.on {
     background: var(--gold); color: var(--ink-deep);
   }
+  @media (min-width: 1100px) {
+    #main { padding-right: 140px; }
+  }
   @media (min-width: 1400px) {
     #main { padding-right: 200px; }
   }
@@ -4832,12 +4840,49 @@ function detectHandInfo(cards, opts = {}) {
 }
 function detectHand(cards, opts) { return detectHandInfo(cards, opts).handId; }
 
-// ── 특수패 22종 (커먼 / 레어 / 에픽 / 레전더리) ───────────
-// 훅 ctx: { cards, handId, core, boss, mitjangChips }
+// 맞은편 달: 1↔7, 2↔8, … 6↔12
+function oppositeMonth(m) { return m <= 6 ? m + 6 : m - 6; }
+function hasMatdaePair(cards) {
+  const months = new Set(cards.map((c) => c.month));
+  for (const m of months) if (months.has(oppositeMonth(m))) return true;
+  return false;
+}
+function matdaeCards(cards) {
+  const months = new Set(cards.map((c) => c.month));
+  return cards.filter((c) => months.has(oppositeMonth(c.month)));
+}
+/** 박으로 실제 잃은 카드 칩. 피박보험이면 0. */
+function bakChipLoss(cards, env) {
+  const boss = env.boss;
+  if (!boss || !['pibak', 'gwangbak', 'meongbak'].includes(boss)) return 0;
+  if ((env.jokerIds || []).includes('pibak_boheom')) return 0;
+  const withBak = cards.reduce((s, c) => s + cardChip(c, env), 0);
+  const without = cards.reduce((s, c) => s + cardChip(c, { ...env, boss: null }), 0);
+  return Math.max(0, without - withBak);
+}
+function scoreJokerCtx(cards, handId, core, env) {
+  const heldCount = env.heldTotal != null
+    ? Math.max(0, env.heldTotal - cards.length)
+    : (env.heldCount || 0);
+  return {
+    cards, handId, core,
+    boss: env.boss,
+    mitjangChips: env.mitjangChips || 0,
+    isFirstPlay: !!env.isFirstPlay,
+    isLastPlay: !!env.isLastPlay,
+    discardsLeft: env.discardsLeft || 0,
+    heldCount,
+    geumjulMult: env.geumjulMult || 0,
+    gotaryeongMult: env.gotaryeongMult || 0,
+  };
+}
+
+// ── 특수패 28종 (커먼 / 레어 / 에픽 / 레전더리) ───────────
+// 훅 ctx: scoreJokerCtx(...)
 const JOKERS = [
   // ── 커먼 ───────────────────────────────────────────────
   { id: 'gwangpari', name: '광팔이', icon: '💰', rarity: 'common', price: 3, kind: '경제',
-    desc: '광을 낼 때마다 냥을 1개 받습니다. 한 판에 세 번까지 적용됩니다.' },
+    desc: '낸 광 한 장마다 1냥. 한 판에 세 번까지.' },
   { id: 'pi_merchant', name: '피장사', icon: '🧺', rarity: 'common', price: 4, kind: '+점수',
     desc: '낸 피마다 4점, 쌍피마다 8점을 배수 밖에서 더합니다.',
     addChips: (x) => x.cards.reduce((s, c) => s + (effType(c) === 'pi' ? 4 : effType(c) === 'ssangpi' ? 8 : 0), 0) },
@@ -4853,13 +4898,22 @@ const JOKERS = [
   { id: 'tti_jjang', name: '띠장수', icon: '🎀', rarity: 'common', price: 4, kind: '+점수',
     desc: '낸 띠마다 5점을 배수 밖에서 더합니다.',
     addChips: (x) => x.cards.filter((c) => effType(c) === 'tti').length * 5 },
+  { id: 'cheotsu', name: '첫수', icon: '☝️', rarity: 'common', price: 4, kind: '+배수',
+    desc: '그 판의 첫 내기에 배수가 4 올라갑니다.',
+    addMult: (x) => (x.isFirstPlay ? 4 : 0) },
+  { id: 'janson', name: '잔손', icon: '✋', rarity: 'common', price: 4, kind: '+점수',
+    desc: '내기 뒤 손에 남은 장마다 5점을 배수 밖에서 더합니다.',
+    addChips: (x) => x.heldCount * 5 },
+  { id: 'makpan', name: '막판뒤집기', icon: '🔄', rarity: 'common', price: 4, kind: '+배수',
+    desc: '마지막 내기에, 남은 버리기 1회마다 배수가 2 올라갑니다.',
+    addMult: (x) => (x.isLastPlay ? x.discardsLeft * 2 : 0) },
   // ── 레어 ───────────────────────────────────────────────
   { id: 'ssakssuri', name: '싹쓸이', icon: '🧹', rarity: 'rare', price: 6, kind: '+점수',
     desc: '다섯 장을 딱 맞춰 내면 35점을 배수 밖에서 더합니다.',
     addChips: (x) => (x.cards.length === 5 ? 35 : 0) },
   { id: 'godori_kkun', name: '고도리꾼', icon: '🐦', rarity: 'rare', price: 6, kind: '+배수',
-    desc: '고도리 새(2·4·8월 멍)를 낼 때마다 배수가 3씩 올라갑니다.',
-    addMult: (x) => x.cards.filter((c) => c.tags.includes('godori')).length * 3 },
+    desc: '족보에 포함되는 고도리 새(2·4·8월 멍)마다 배수가 3만큼 증가합니다.',
+    addMult: (x) => x.core.filter((c) => c.tags.includes('godori')).length * 3 },
   { id: 'dangol', name: '단골', icon: '🏮', rarity: 'rare', price: 7, kind: '+배수',
     desc: '홍단·청단·초단이나 띠셋을 내면 배수가 7 올라갑니다.',
     addMult: (x) => (x.handId === 'dan' || x.handId === 'tti3' ? 7 : 0) },
@@ -4878,11 +4932,20 @@ const JOKERS = [
     desc: '피 다섯 장 족보를 내면 배수가 3 올라갑니다.',
     addMult: (x) => (x.handId === 'pi5' ? 3 : 0) },
   { id: 'chodan_aeho', name: '초단꾼', icon: '🌿', rarity: 'rare', price: 6, kind: '+배수',
-    desc: '낸 초단마다 배수가 2씩 올라갑니다.',
-    addMult: (x) => x.cards.filter((c) => c.tags.includes('chodan')).length * 2 },
+    desc: '족보에 포함되는 초단마다 배수가 2만큼 증가합니다.',
+    addMult: (x) => x.core.filter((c) => c.tags.includes('chodan')).length * 2 },
+  { id: 'matdae', name: '맞대', icon: '⚔️', rarity: 'rare', price: 7, kind: '+배수',
+    desc: '한 수에 월 차이가 6인 쌍(1–7, 2–8…)이 있으면 배수가 6 올라갑니다.',
+    addMult: (x) => (hasMatdaePair(x.cards) ? 6 : 0) },
+  { id: 'geumjul', name: '금줄', icon: '🪢', rarity: 'rare', price: 7, kind: '성장',
+    desc: '박으로 실제 잃은 칩 10점마다 영구로 배수가 1 올라갑니다. 팔면 초기화됩니다.',
+    addMult: (x) => x.geumjulMult },
+  { id: 'gotaryeong', name: '고타령', icon: '🥁', rarity: 'rare', price: 7, kind: '성장',
+    desc: '고를 선언할 때마다 영구로 배수가 1 올라갑니다. 팔면 초기화됩니다.',
+    addMult: (x) => x.gotaryeongMult },
   // ── 에픽 ───────────────────────────────────────────────
   { id: 'bigwang_usan', name: '비광우산', icon: '☔', rarity: 'epic', price: 9, kind: '×배수',
-    desc: '12월 패를 삼광·고도리·초단·띠셋에 쓸 수 있게 해 줍니다(비삼광·비고도리 대신). 족보 코어에 12월이 있으면 배수가 2배가 됩니다. 무조합에는 적용되지 않습니다.',
+    desc: '12월 패를 삼광·고도리·초단·띠셋에 쓸 수 있게 해 줍니다(비삼광·비고도리 대신). 족보에 포함되는 12월이 있으면 배수가 2배가 됩니다. 무조합에는 적용되지 않습니다.',
     xMult: (x) => {
       if (x.handId === 'none') return 1;
       return x.core.some((c) => c.month === 12) ? 2 : 1;
@@ -4899,8 +4962,8 @@ const JOKERS = [
     desc: '멍셋(열끗 셋)을 내면 배수가 2배가 됩니다.',
     xMult: (x) => (x.handId === 'yeol3' ? 2 : 1) },
   { id: 'samgwang_nori', name: '삼광판', icon: '✨', rarity: 'epic', price: 10, kind: '+배수',
-    desc: '낸 광마다 배수가 3씩 올라갑니다. 비광도 포함됩니다.',
-    addMult: (x) => x.cards.filter((c) => c.type === 'kwang').length * 3 },
+    desc: '족보에 포함되는 광마다 배수가 3만큼 증가합니다. 비광도 포함됩니다.',
+    addMult: (x) => x.core.filter((c) => c.type === 'kwang').length * 3 },
   // ── 레전더리 ───────────────────────────────────────────
   { id: 'sipidal', name: '열두사철', icon: '🗓️', rarity: 'legendary', price: 13, kind: '+배수',
     desc: '낸 패에 섞인 달 수마다 배수가 2씩 올라갑니다.',
@@ -4971,7 +5034,7 @@ function computeScore(cards, env) {
     if (coreSet.has(c)) chips += v; else flat += v;
   }
 
-  const ctx = { cards, handId, core, boss: env.boss, mitjangChips: env.mitjangChips };
+  const ctx = scoreJokerCtx(cards, handId, core, env);
   // +칩 특수패는 배수 밖(flat)으로만 가산
   for (const id of env.jokerIds) { const j = JOKER_BY_ID[id]; if (j.addChips) flat += j.addChips(ctx); }
   for (const id of env.jokerIds) { const j = JOKER_BY_ID[id]; if (j.addMult)  mult  += j.addMult(ctx); }
@@ -5066,6 +5129,8 @@ const I18N = {
     auraPlay: (name) => `내기 추천 · 빛나는 패를 누르면 ${name}이 한 번에 골라져요`,
     gainNone: '아직 이득 없음', gainZero: '이득 0',
     mitjangNow: (n) => ` 지금 누적 ${n}칩입니다.`,
+    geumjulNow: (lost, mult) => ` 액운 ${lost % 10}/10 · +${mult}배수.`,
+    gotaryeongNow: (n) => ` 현재 +${n}배수.`,
     bestChipHand: '최고 칩 패', discardWord: '버리기',
     unitChip: '칩', unitMult: '배', unitScore: '점',
     months: {1:'송학',2:'매조',3:'벚꽃',4:'흑싸리',5:'난초',6:'모란',7:'홍싸리',8:'공산',9:'국진',10:'단풍',11:'오동',12:'비'},
@@ -5085,25 +5150,31 @@ const I18N = {
       pi5:'피·쌍피 환산 합 5 이상 (나머지는 +점수)', month2:'같은 달 2장', none:'해당 없음',
     },
     jokers: {
-      gwangpari:{name:'광팔이',kind:'경제',desc:'광을 낼 때마다 냥을 1개 받습니다. 한 판에 세 번까지 적용됩니다.'},
+      gwangpari:{name:'광팔이',kind:'경제',desc:'낸 광 한 장마다 1냥. 한 판에 세 번까지.'},
       pi_merchant:{name:'피장사',kind:'+점수',desc:'낸 피마다 4점, 쌍피마다 8점을 배수 밖에서 더합니다.'},
       meongtta:{name:'멍따',kind:'+점수',desc:'낸 멍(열끗)마다 6점을 배수 밖에서 더합니다.'},
       jjokjipge:{name:'쪽집게',kind:'+배수',desc:'쪽(같은 달 두 장)을 내면 배수가 2 올라갑니다.'},
       ssangpi_sarang:{name:'쌍피보따리',kind:'+점수',desc:'낸 쌍피마다 12점을 배수 밖에서 더합니다.'},
       tti_jjang:{name:'띠장수',kind:'+점수',desc:'낸 띠마다 5점을 배수 밖에서 더합니다.'},
+      cheotsu:{name:'첫수',kind:'+배수',desc:'그 판의 첫 내기에 배수가 4 올라갑니다.'},
+      janson:{name:'잔손',kind:'+점수',desc:'내기 뒤 손에 남은 장마다 5점을 배수 밖에서 더합니다.'},
+      makpan:{name:'막판뒤집기',kind:'+배수',desc:'마지막 내기에, 남은 버리기 1회마다 배수가 2 올라갑니다.'},
       ssakssuri:{name:'싹쓸이',kind:'+점수',desc:'다섯 장을 딱 맞춰 내면 35점을 배수 밖에서 더합니다.'},
-      godori_kkun:{name:'고도리꾼',kind:'+배수',desc:'고도리 새(2·4·8월 멍)를 낼 때마다 배수가 3씩 올라갑니다.'},
+      godori_kkun:{name:'고도리꾼',kind:'+배수',desc:'족보에 포함되는 고도리 새(2·4·8월 멍)마다 배수가 3만큼 증가합니다.'},
       dangol:{name:'단골',kind:'+배수',desc:'홍단·청단·초단이나 띠셋을 내면 배수가 7 올라갑니다.'},
       heundeulgi:{name:'흔들기',kind:'×배수',desc:'같은 달을 두 장 이상 내면 배수가 1.5배가 됩니다. 흔들기 금지 판에서는 효과가 없습니다.'},
       gwang_sujip:{name:'광모이',kind:'+점수',desc:'낸 광마다 10점을 배수 밖에서 더합니다. 비광도 포함됩니다.'},
       pi_ohjang:{name:'피오장',kind:'+배수',desc:'피 다섯 장 족보를 내면 배수가 3 올라갑니다.'},
-      chodan_aeho:{name:'초단꾼',kind:'+배수',desc:'낸 초단마다 배수가 2씩 올라갑니다.'},
-      bigwang_usan:{name:'비광우산',kind:'×배수',desc:'12월 패를 삼광·고도리·초단·띠셋에 쓸 수 있게 해 줍니다(비삼광·비고도리 대신). 족보 코어에 12월이 있으면 배수가 2배가 됩니다. 무조합에는 적용되지 않습니다.'},
+      chodan_aeho:{name:'초단꾼',kind:'+배수',desc:'족보에 포함되는 초단마다 배수가 2만큼 증가합니다.'},
+      matdae:{name:'맞대',kind:'+배수',desc:'한 수에 월 차이가 6인 쌍(1–7, 2–8…)이 있으면 배수가 6 올라갑니다.'},
+      geumjul:{name:'금줄',kind:'성장',desc:'박으로 실제 잃은 칩 10점마다 영구로 배수가 1 올라갑니다. 팔면 초기화됩니다.'},
+      gotaryeong:{name:'고타령',kind:'성장',desc:'고를 선언할 때마다 영구로 배수가 1 올라갑니다. 팔면 초기화됩니다.'},
+      bigwang_usan:{name:'비광우산',kind:'×배수',desc:'12월 패를 삼광·고도리·초단·띠셋에 쓸 수 있게 해 줍니다(비삼광·비고도리 대신). 족보에 포함되는 12월이 있으면 배수가 2배가 됩니다. 무조합에는 적용되지 않습니다.'},
       poktan:{name:'폭탄',kind:'×배수',desc:'폭탄(같은 달 세 장)이나 총통을 내면 배수가 3배가 됩니다.'},
       mitjang:{name:'밑장빼기',kind:'성장',desc:'버릴 때마다 영구로 10점이 쌓입니다. 점수는 배수 밖에서 더해지며, 팔면 초기화됩니다.'},
       pibak_boheom:{name:'피박보험',kind:'방어',desc:'피박·광박·멍박을 막아 주고, 판을 끝낼 때 냥을 1개 더 받습니다.'},
       yeol_janchi:{name:'멍잔치',kind:'×배수',desc:'멍셋(열끗 셋)을 내면 배수가 2배가 됩니다.'},
-      samgwang_nori:{name:'삼광판',kind:'+배수',desc:'낸 광마다 배수가 3씩 올라갑니다. 비광도 포함됩니다.'},
+      samgwang_nori:{name:'삼광판',kind:'+배수',desc:'족보에 포함되는 광마다 배수가 3만큼 증가합니다. 비광도 포함됩니다.'},
       sipidal:{name:'열두사철',kind:'+배수',desc:'낸 패에 섞인 달 수마다 배수가 2씩 올라갑니다.'},
       ogwang_kkum:{name:'오광소원',kind:'×배수',desc:'광을 세 장 이상 내면 배수가 2.5배가 됩니다. 비광도 포함됩니다.'},
       paewang:{name:'명인',kind:'×배수',desc:'족보가 성립하면 배수가 2배가 됩니다. 무조합에는 적용되지 않습니다.'},
@@ -5156,6 +5227,8 @@ const I18N = {
     auraPlay: (name) => `Play tip · tap glow to pick ${name}`,
     gainNone: 'No gain yet', gainZero: 'Gain 0',
     mitjangNow: (n) => ` Stacked ${n} chips now.`,
+    geumjulNow: (lost, mult) => ` Misfortune ${lost % 10}/10 · +${mult} mult.`,
+    gotaryeongNow: (n) => ` Now +${n} mult.`,
     bestChipHand: 'Best chip set', discardWord: 'Discard',
     unitChip: '', unitMult: '', unitScore: '',
     months: {1:'Pine Crane',2:'Plum Bird',3:'Cherry',4:'Black Bush',5:'Orchid',6:'Peony',7:'Red Bush',8:'Empty Mtn',9:'Chrysanthemum',10:'Maple',11:'Paulownia',12:'Rain'},
@@ -5175,28 +5248,34 @@ const I18N = {
       pi5:'Pi value ≥5 (rest is flat)', month2:'2 of same month', none:'None',
     },
     jokers: {
-      gwangpari:{name:'Bright Seller',kind:'Economy',desc:'Gain 1 nyang each time you play a Bright. Up to 3 times per round.'},
+      gwangpari:{name:'Bright Seller',kind:'Economy',desc:'+1 nyang per Bright played. Up to 3 times per round.'},
       pi_merchant:{name:'Pi Merchant',kind:'+Score',desc:'+4 flat per Pi, +8 flat per Double Pi.'},
       meongtta:{name:'Animal Tax',kind:'+Score',desc:'+6 flat per Animal played.'},
       jjokjipge:{name:'Pair Sniper',kind:'+Mult',desc:'Month Pair adds +2 mult.'},
       ssangpi_sarang:{name:'Double Bundle',kind:'+Score',desc:'+12 flat per Double Pi.'},
       tti_jjang:{name:'Ribbon Dealer',kind:'+Score',desc:'+5 flat per Ribbon.'},
+      cheotsu:{name:'First Play',kind:'+Mult',desc:'The round’s first play: +4 mult.'},
+      janson:{name:'Leftover',kind:'+Score',desc:'+5 flat per card left in hand after the play.'},
+      makpan:{name:'Last Flip',kind:'+Mult',desc:'On the last play, +2 mult per remaining discard.'},
       ssakssuri:{name:'Clean Sweep',kind:'+Score',desc:'Play exactly 5 cards for +35 flat.'},
-      godori_kkun:{name:'Godori Hunter',kind:'+Mult',desc:'Each Godori bird adds +3 mult.'},
+      godori_kkun:{name:'Godori Hunter',kind:'+Mult',desc:'Each Godori bird in the combo: +3 mult.'},
       dangol:{name:'Regular',kind:'+Mult',desc:'Ribbon set or Three Ribbons: +7 mult.'},
-      heundeulgi:{name:'Shake',kind:'×Mult',desc:'2+ cards of one month: ×1.5 mult. Disabled under No-Shake.'},
+      heundeulgi:{name:'Shake',kind:'×Mult',desc:'2+ cards of one month: ×1.5. Disabled under No-Shake.'},
       gwang_sujip:{name:'Bright Gather',kind:'+Score',desc:'+10 flat per Bright (incl. Rain).'},
       pi_ohjang:{name:'Five Junk+',kind:'+Mult',desc:'Five Junk hand: +3 mult.'},
-      chodan_aeho:{name:'Grass Fan',kind:'+Mult',desc:'Each Grass Ribbon: +2 mult.'},
-      bigwang_usan:{name:'Rain Umbrella',kind:'×Mult',desc:'Dec cards count for Three Bright / Godori / Grass / Three Ribbons. ×2 if core has Dec. Not on No combo.'},
-      poktan:{name:'Bomb!',kind:'×Mult',desc:'Bomb or Chongtong: ×3 mult.'},
+      chodan_aeho:{name:'Grass Fan',kind:'+Mult',desc:'Each Grass Ribbon in the combo: +2 mult.'},
+      matdae:{name:'Opposite',kind:'+Mult',desc:'If the play has a month pair 6 apart (1–7, 2–8…): +6 mult.'},
+      geumjul:{name:'Gold Rope',kind:'Growth',desc:'Every 10 chips actually lost to Bak: permanent +1 mult. Resets if sold.'},
+      gotaryeong:{name:'Go Ballad',kind:'Growth',desc:'Each Go declaration: permanent +1 mult. Resets if sold.'},
+      bigwang_usan:{name:'Rain Umbrella',kind:'×Mult',desc:'Dec cards count for Three Bright / Godori / Grass / Three Ribbons. ×2 if the combo includes Dec. Not on No combo.'},
+      poktan:{name:'Bomb!',kind:'×Mult',desc:'Bomb or Chongtong: ×3.'},
       mitjang:{name:'Bottom Deal',kind:'Growth',desc:'Each discard permanently stacks +10 flat. Resets if sold.'},
       pibak_boheom:{name:'Pi-Bak Cover',kind:'Defense',desc:'Blocks Pi/Gwang/Animal Bak and +1 nyang on settle.'},
-      yeol_janchi:{name:'Animal Feast',kind:'×Mult',desc:'Three Animals: ×2 mult.'},
-      samgwang_nori:{name:'Bright Board',kind:'+Mult',desc:'Each Bright: +3 mult (incl. Rain).'},
+      yeol_janchi:{name:'Animal Feast',kind:'×Mult',desc:'Three Animals: ×2.'},
+      samgwang_nori:{name:'Bright Board',kind:'+Mult',desc:'Each Bright in the combo: +3 mult (incl. Rain).'},
       sipidal:{name:'Twelve Seasons',kind:'+Mult',desc:'+2 mult per distinct month in the play.'},
-      ogwang_kkum:{name:'Five Wish',kind:'×Mult',desc:'3+ Brights: ×2.5 mult (incl. Rain).'},
-      paewang:{name:'Master',kind:'×Mult',desc:'Any real hand: ×2 mult. Not on No combo.'},
+      ogwang_kkum:{name:'Five Wish',kind:'×Mult',desc:'3+ Brights: ×2.5 (incl. Rain).'},
+      paewang:{name:'Master',kind:'×Mult',desc:'Any real hand: ×2. Not on No combo.'},
     },
     bosses: {
       pibak:{name:'Pi Bak',desc:'Pi & Double Pi chips = 0 (still count for hands)'},
@@ -5246,6 +5325,8 @@ const I18N = {
     auraPlay: (name) => `出し推奨 · 光る札で ${name} を一括選択`,
     gainNone: 'まだ利益なし', gainZero: '利益0',
     mitjangNow: (n) => ` 現在累積 ${n}チップ。`,
+    geumjulNow: (lost, mult) => ` 厄運 ${lost % 10}/10 · +${mult}倍率。`,
+    gotaryeongNow: (n) => ` 現在 +${n}倍率。`,
     bestChipHand: '最高チップ役', discardWord: '捨て',
     unitChip: 'チップ', unitMult: '倍', unitScore: '点',
     months: {1:'松鶴',2:'梅に鶯',3:'桜',4:'黒蓬',5:'蘭',6:'牡丹',7:'赤蓬',8:'空山',9:'菊',10:'紅葉',11:'桐',12:'雨'},
@@ -5265,25 +5346,31 @@ const I18N = {
       pi5:'カス換算合計5以上', month2:'同月2枚', none:'なし',
     },
     jokers: {
-      gwangpari:{name:'光売り',kind:'経済',desc:'光を出すたび両+1。1卓につき最大3回。'},
+      gwangpari:{name:'光売り',kind:'経済',desc:'出した光1枚ごとに両+1。1卓3回まで。'},
       pi_merchant:{name:'カス商人',kind:'+点',desc:'カスごとに+4、カス×2ごとに+8を倍率外加算。'},
       meongtta:{name:'十打ち',kind:'+点',desc:'十ごとに+6を倍率外加算。'},
       jjokjipge:{name:'ピンセット',kind:'+倍率',desc:'同月2枚で倍率+2。'},
       ssangpi_sarang:{name:'カス包み',kind:'+点',desc:'カス×2ごとに+12を倍率外加算。'},
       tti_jjang:{name:'短冊屋',kind:'+点',desc:'短冊ごとに+5を倍率外加算。'},
+      cheotsu:{name:'初手',kind:'+倍率',desc:'その卓の最初の出しで倍率+4。'},
+      janson:{name:'残り手',kind:'+点',desc:'出し後に手札に残った1枚ごとに+5を倍率外加算。'},
+      makpan:{name:'終盤裏返し',kind:'+倍率',desc:'最後の出しで、残りの捨て1回ごとに倍率+2。'},
       ssakssuri:{name:'掃討',kind:'+点',desc:'ちょうど5枚出しで+35を倍率外加算。'},
-      godori_kkun:{name:'五鳥使い',kind:'+倍率',desc:'五鳥の鳥ごとに倍率+3。'},
+      godori_kkun:{name:'五鳥使い',kind:'+倍率',desc:'役に含まれる五鳥の鳥ごとに倍率+3。'},
       dangol:{name:'常連',kind:'+倍率',desc:'短冊役や短冊セットで倍率+7。'},
       heundeulgi:{name:'揺らし',kind:'×倍率',desc:'同月2枚以上で倍率×1.5。揺らし禁止卓では無効。'},
       gwang_sujip:{name:'光集め',kind:'+点',desc:'光ごとに+10を倍率外加算。雨光含む。'},
       pi_ohjang:{name:'カス五',kind:'+倍率',desc:'カス5役で倍率+3。'},
-      chodan_aeho:{name:'草短好き',kind:'+倍率',desc:'草短ごとに倍率+2。'},
-      bigwang_usan:{name:'雨傘',kind:'×倍率',desc:'12月札を三光・五鳥・草短・短冊セットに使える。コアに12月があれば×2。役なしには無効。'},
+      chodan_aeho:{name:'草短好き',kind:'+倍率',desc:'役に含まれる草短ごとに倍率+2。'},
+      matdae:{name:'向かい月',kind:'+倍率',desc:'一度の出しに月差6の対(1–7, 2–8…)があれば倍率+6。'},
+      geumjul:{name:'禁縄',kind:'成長',desc:'バクで実際に失ったチップ10ごとに恒久倍率+1。売るとリセット。'},
+      gotaryeong:{name:'ゴー打令',kind:'成長',desc:'ゴー宣言のたびに恒久倍率+1。売るとリセット。'},
+      bigwang_usan:{name:'雨傘',kind:'×倍率',desc:'12月札を三光・五鳥・草短・短冊セットに使える。役に12月が含まれれば×2。役なしには無効。'},
       poktan:{name:'爆弾',kind:'×倍率',desc:'爆弾や総通で倍率×3。'},
       mitjang:{name:'底抜き',kind:'成長',desc:'捨てるたび恒久+10点が積み上がる。売るとリセット。'},
       pibak_boheom:{name:'皮バク保険',kind:'防御',desc:'皮/光/十バクを防ぎ、清算時に両+1。'},
       yeol_janchi:{name:'十宴',kind:'×倍率',desc:'十セットで倍率×2。'},
-      samgwang_nori:{name:'三光卓',kind:'+倍率',desc:'光ごとに倍率+3。雨光含む。'},
+      samgwang_nori:{name:'三光卓',kind:'+倍率',desc:'役に含まれる光ごとに倍率+3。雨光含む。'},
       sipidal:{name:'十二季節',kind:'+倍率',desc:'出した月の種類ごとに倍率+2。'},
       ogwang_kkum:{name:'五光の願い',kind:'×倍率',desc:'光3枚以上で×2.5。雨光含む。'},
       paewang:{name:'名人',kind:'×倍率',desc:'役が成立すれば×2。役なしは無効。'},
@@ -5320,7 +5407,7 @@ const I18N_UI = {
     helpRuleBody: '<b>3·6·9·12월</b>은 박 라운드(디버프). 안개는 손패 <b>2장</b>이 뒷면으로 옵니다.',
     helpRuleTag: '박 라운드 디버프',
     helpJokerTitle: '특수패 · 주막',
-    helpJokerBody: '특수패 22종 · 소지 최대 5. 티어는 커먼 / 레어 / 에픽 / 레전더리 (출현 약 55·28·13·4%). +점수는 배수 밖, +배수·×배수는 족보 배수에 얹힙니다.',
+    helpJokerBody: '특수패 28종 · 소지 최대 5. 티어는 커먼 / 레어 / 에픽 / 레전더리 (출현 약 55·28·13·4%). +점수는 배수 밖, +배수·×배수는 족보 배수에 얹힙니다.',
     helpJokerTags: ['커먼 3–4냥', '레어 6–7냥', '에픽 9–11냥', '레전 13–15냥'],
     welcomeH2: '십이화 — 고스톱: 무한의 판',
     welcomeSub: '한국 화투 48장으로 족보를 맞춰 목표 점수를 넘기는 <b>1인 런</b>입니다. 1월부터 12월까지 한 해를 버텨보세요.',
@@ -5331,7 +5418,7 @@ const I18N_UI = {
     welcomeGoTitle: '고 / 스톱',
     welcomeGoBody: '목표를 넘기면 <b>스톱</b>(정산) 또는 <b>고</b>(목표↑ · 내기 +1 · 보너스). 한 방이 크면 이미 넘은 고 문턱을 한 번에 밀치며 여러 단계 점프. 고는 무제한이지만, 실패하면 <b>고박 = 런 종료</b>. 3·6·9·12월은 박 라운드(디버프)가 붙습니다.',
     welcomeShopTitle: '주막',
-    welcomeShopBody: '판을 클리어하면 주막에서 <b>특수패</b>(커먼~레전더리 22종)를 사고팝니다. 소지 최대 5개.',
+    welcomeShopBody: '판을 클리어하면 주막에서 <b>특수패</b>(커먼~레전더리 28종)를 사고팝니다. 소지 최대 5개.',
     welcomeFoot: '자세한 족보표는 언제든 <b>도움말</b>에서 볼 수 있어요.',
     welcomeStart: '알겠어요 — 시작하기',
     welcomeStartSub: '1월 준비 화면으로 이동합니다',
@@ -5436,7 +5523,7 @@ const I18N_UI = {
     helpRuleBody: '<b>Mar/Jun/Sep/Dec</b> are Bak rounds (debuffs). Fog deals <b>2</b> face-down cards.',
     helpRuleTag: 'Bak round debuffs',
     helpJokerTitle: 'Jokers · Tavern',
-    helpJokerBody: '22 jokers · hold up to 5. Tiers: Common / Rare / Epic / Legendary (~55·28·13·4%). Flat score is outside mult; +mult / ×mult stack on the hand mult.',
+    helpJokerBody: '28 jokers · hold up to 5. Tiers: Common / Rare / Epic / Legendary (~55·28·13·4%). Flat score is outside mult; +mult / ×mult stack on the hand mult.',
     helpJokerTags: ['Common 3–4', 'Rare 6–7', 'Epic 9–11', 'Legend 13–15'],
     welcomeH2: 'Sibiwha — Go-Stop: Infinite Table',
     welcomeSub: 'A <b>solo run</b>: make hwatu hands and beat monthly targets with a 48-card Korean deck. Survive January through December.',
@@ -5447,7 +5534,7 @@ const I18N_UI = {
     welcomeGoTitle: 'Go / Stop',
     welcomeGoBody: 'Beat the target to <b>Stop</b> (cash out) or <b>Go</b> (raise target · +1 play · bonus). A huge hit pushes through several Go steps at once. Unlimited Go, but fail = <b>Go-bak = run over</b>. Months 3·6·9·12 are Bak rounds.',
     welcomeShopTitle: 'Tavern',
-    welcomeShopBody: 'Clear a month to shop <b>jokers</b> (Common–Legendary, 22 kinds). Hold up to 5.',
+    welcomeShopBody: 'Clear a month to shop <b>jokers</b> (Common–Legendary, 28 kinds). Hold up to 5.',
     welcomeFoot: 'Full hand list is always in <b>Help</b>.',
     welcomeStart: 'Got it — Start',
     welcomeStartSub: 'Go to January prep',
@@ -5552,7 +5639,7 @@ const I18N_UI = {
     helpRuleBody: '<b>3·6·9·12月</b>はバク卓(デバフ)。霧は手札 <b>2枚</b>が裏で来ます。',
     helpRuleTag: 'バク卓デバフ',
     helpJokerTitle: '特殊札 · 酒屋',
-    helpJokerBody: '特殊札 22種 · 所持最大 5。ティアは コモン / レア / エピック / レジェンド (出現 約55·28·13·4%)。+点は倍率外、+倍率・×倍率は役倍率に乗ります。',
+    helpJokerBody: '特殊札 28種 · 所持最大 5。ティアは コモン / レア / エピック / レジェンド (出現 約55·28·13·4%)。+点は倍率外、+倍率・×倍率は役倍率に乗ります。',
     helpJokerTags: ['コモン 3–4両', 'レア 6–7両', 'エピック 9–11両', 'レジェ 13–15両'],
     welcomeH2: '十二花 — ゴストップ: 無限の卓',
     welcomeSub: '韓国花札48枚で役を揃え目標を超える <b>1人ラン</b>。1月から12月まで一年を耐え抜け。',
@@ -5563,7 +5650,7 @@ const I18N_UI = {
     welcomeGoTitle: 'ゴー / ストップ',
     welcomeGoBody: '目標超えで <b>ストップ</b>(清算) か <b>ゴー</b>(目標↑ · 出し+1 · ボーナス)。大物なら閾値を一気に押して複数段ジャンプ。ゴー無制限だが失敗は <b>ゴーバク = ラン終了</b>。3·6·9·12月はバク卓。',
     welcomeShopTitle: '酒屋',
-    welcomeShopBody: 'クリア後、酒屋で <b>特殊札</b>(コモン〜レジェンド22種)を売買。所持最大5。',
+    welcomeShopBody: 'クリア後、酒屋で <b>特殊札</b>(コモン〜レジェンド28種)を売買。所持最大5。',
     welcomeFoot: '詳しい役表はいつでも <b>ヘルプ</b>で。',
     welcomeStart: 'わかった — はじめる',
     welcomeStartSub: '1月の準備へ',
@@ -5898,6 +5985,9 @@ const state = {
   rerollCost: 2,
   kwangSoldThisRound: 0,
   mitjangChips: 0,
+  geumjulLost: 0,      // 금줄: 박으로 잃은 칩 누적
+  geumjulMult: 0,      // 금줄: floor(lost/10)
+  gotaryeongMult: 0,   // 고타령: 고 선언 횟수
   makgeolli: 0,         // 레거시 미사용 (호환용)
   chunhyangNext: false, // 상점에서 다음 달 훈수 예약
   drunk: false,         // 이번 달 춘향이 훈수 활성 (라운드 시작 시 예약 소비)
@@ -5938,6 +6028,12 @@ const isNight = () => state.round % 2 === 0;
 const scoreEnv = () => ({
   boss: state.boss, jokerIds: jokerIds(), mitjangChips: state.mitjangChips,
   seasonMonth: state.round, night: isNight(),
+  isFirstPlay: state.playLog.length === 0,
+  isLastPlay: state.playsLeft === 1,
+  discardsLeft: state.discardsLeft,
+  heldTotal: state.hand.length,
+  geumjulMult: hasJoker('geumjul') ? state.geumjulMult : 0,
+  gotaryeongMult: hasJoker('gotaryeong') ? state.gotaryeongMult : 0,
 });
 
 function addMoney(n, { silent = false } = {}) {
@@ -5962,6 +6058,13 @@ function formatJokerGain(id, { short = false } = {}) {
   if (g.score) parts.push(`+ ${fmt(g.score)}${t('unitScore')}`);
   if (g.money) parts.push(`+ ${t('nyang')(g.money)}`);
   return short ? parts.join(' · ') : `${locale === 'en' ? 'Gain ' : locale === 'jp' ? '累積 ' : '누적 이득 '}${parts.join(' · ')}`;
+}
+
+function jokerLiveNote(id) {
+  if (id === 'mitjang') return t('mitjangNow')(state.mitjangChips);
+  if (id === 'geumjul') return t('geumjulNow')(state.geumjulLost || 0, state.geumjulMult || 0);
+  if (id === 'gotaryeong') return t('gotaryeongNow')(state.gotaryeongMult || 0);
+  return '';
 }
 
 // ── 판 진행 ────────────────────────────────────────────────
@@ -6436,10 +6539,26 @@ function canHandSweep(e) {
 }
 
 function sweepUidAt(x, y) {
+  const rects = HAND_SWEEP.rects;
+  if (rects) {
+    for (const r of rects) {
+      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return r.uid;
+    }
+    return null;
+  }
   const el = document.elementFromPoint(x, y);
   const card = el && el.closest('#handarea .card[data-uid]');
   if (!card || card.classList.contains('static') || card.classList.contains('discarding')) return null;
   return +card.dataset.uid;
+}
+
+function cacheSweepRects() {
+  HAND_SWEEP.rects = [...document.querySelectorAll('#handarea .card[data-uid]')]
+    .filter((el) => !el.classList.contains('static') && !el.classList.contains('discarding'))
+    .map((el) => {
+      const r = el.getBoundingClientRect();
+      return { uid: +el.dataset.uid, left: r.left, right: r.right, top: r.top, bottom: r.bottom };
+    });
 }
 
 function paintSweepPath(x0, y0, x1, y1) {
@@ -6484,7 +6603,6 @@ function applySweepSelection(uids) {
   });
   renderPreview();
   syncPlayActions();
-  if (CHUNHYANG_ENABLED) renderChunhyang();
   if (overflow && !HAND_SWEEP.capped) {
     HAND_SWEEP.capped = true;
     flashActions();
@@ -6495,6 +6613,7 @@ function endHandSweep() {
   HAND_SWEEP.pointerId = null;
   HAND_SWEEP.dragged = false;
   HAND_SWEEP.painted = [];
+  HAND_SWEEP.rects = null;
   document.body.classList.remove('card-sweeping');
 }
 
@@ -6523,6 +6642,7 @@ function initHandSweep() {
     if (!HAND_SWEEP.dragged) {
       HAND_SWEEP.dragged = true;
       document.body.classList.add('card-sweeping');
+      cacheSweepRects();
       try { $('handarea').setPointerCapture(e.pointerId); } catch (_) {}
     }
     paintSweepPath(HAND_SWEEP.lastX, HAND_SWEEP.lastY, e.clientX, e.clientY);
@@ -6558,10 +6678,10 @@ function initCursorTrail() {
   const ctx = canvas.getContext('2d');
   const pts = [];
   let raf = 0;
-  const LIFE = 320;
+  const LIFE = 240;
 
   const resize = () => {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = 1;
     canvas.width = Math.floor(window.innerWidth * dpr);
     canvas.height = Math.floor(window.innerHeight * dpr);
     canvas.style.width = window.innerWidth + 'px';
@@ -6649,24 +6769,26 @@ function initCursorTrail() {
       return;
     }
     const sweep = HAND_SWEEP.dragged;
-    const smooth = chaikin(pts);
+    const smooth = sweep ? chaikin(pts) : pts;
     fillRibbon(smooth, now, sweep ? 5.2 : 2.4,
       sweep ? 'rgba(232, 205, 122, 0.72)' : 'rgba(232, 205, 122, 0.28)');
-    fillRibbon(smooth, now, sweep ? 1.8 : 0.9,
-      sweep ? 'rgba(192, 57, 43, 0.38)' : 'rgba(192, 57, 43, 0.12)');
+    if (sweep) {
+      fillRibbon(smooth, now, 1.8, 'rgba(192, 57, 43, 0.38)');
+    }
     raf = requestAnimationFrame(draw);
   };
 
   window.addEventListener('pointermove', (e) => {
     if (!shouldTrail(e)) return;
     const now = performance.now();
+    const sweeping = HAND_SWEEP.dragged;
     const last = pts[pts.length - 1];
     if (last) {
       const dx = e.clientX - last.x;
       const dy = e.clientY - last.y;
       const d = Math.hypot(dx, dy);
-      if (d < 1.6) return;
-      if (d > 14) {
+      if (d < 2.4) return;
+      if (sweeping && d > 14) {
         const n = Math.min(8, Math.floor(d / 10));
         for (let i = 1; i <= n; i++) {
           const t = i / (n + 1);
@@ -6675,7 +6797,7 @@ function initCursorTrail() {
       }
     }
     pts.push({ x: e.clientX, y: e.clientY, t: now });
-    while (pts.length > 36) pts.shift();
+    while (pts.length > (sweeping ? 28 : 18)) pts.shift();
     if (!raf) raf = requestAnimationFrame(draw);
   }, { passive: true });
   document.addEventListener('pointerout', (e) => {
@@ -6832,6 +6954,14 @@ function playSelected() {
   const env = scoreEnv();
   const result = computeScore(cards, env);
   const scoreBefore = state.roundScore;
+
+  if (hasJoker('geumjul')) {
+    const loss = bakChipLoss(cards, env);
+    if (loss > 0) {
+      state.geumjulLost += loss;
+      state.geumjulMult = Math.floor(state.geumjulLost / 10);
+    }
+  }
 
   // 경제·이득 집계만 — 실제 지급/연출은 주스 아이템 정산 페이즈에서
   const triggeredJokers = [];
@@ -7036,6 +7166,7 @@ async function chooseGo() {
   state.goLevel = goLevelReached(state.baseTarget, state.roundScore, state.goLevel) + 1;
   state.target = goThreshold(state.baseTarget, state.goLevel);
   state.playsLeft++; // 고 보상: 내기 +1 (밀친 단계 수와 무관하게 선언 1회당 1개)
+  if (hasJoker('gotaryeong')) state.gotaryeongMult += 1;
   state.pendingGoStop = false;
   state.screen = 'play';
   state.dealing = true; // 드로우·정렬 전 조합 힌트 숨김
@@ -7378,6 +7509,8 @@ function sellJoker(i) {
   if (!j) return;
   addMoney(Math.floor(j.paid / 2));
   if (j.id === 'mitjang') state.mitjangChips = 0;
+  if (j.id === 'geumjul') { state.geumjulLost = 0; state.geumjulMult = 0; }
+  if (j.id === 'gotaryeong') state.gotaryeongMult = 0;
   delete state.jokerGains[j.id];
   state.jokers.splice(i, 1);
   render();
@@ -7601,7 +7734,7 @@ function resetRun() {
     round: 1, goLevel: 0, roundScore: 0, playsLeft: 4, discardsLeft: 4,
     deck: [], hand: [], selected: [], jokers: [], jokerGains: {}, money: 5, boss: null, usedBosses: [],
     nextBoss: null, bossCandidates: null, shopOffers: [], rerollCost: 2,
-    kwangSoldThisRound: 0, mitjangChips: 0, makgeolli: 0,
+    kwangSoldThisRound: 0, mitjangChips: 0, geumjulLost: 0, geumjulMult: 0, gotaryeongMult: 0, makgeolli: 0,
     chunhyangNext: false, drunk: false, hoverReact: null, tempReact: null, touchHintMode: 'play',
     lastPlay: null, juicing: false, dealing: false, pendingGoStop: false, playLog: [],
     playedCards: [], discardedCards: [],
@@ -9103,7 +9236,7 @@ function renderTopbar() {
       slots += `<div class="jokerslot filled aura-${def.rarity}" data-jid="${esc(def.id)}" tabindex="0"${tap}>
         <div class="jname">${esc(uj.name)}</div>
         ${uj.kind ? `<div class="jkind">${esc(uj.kind)}</div>` : ''}
-        <div class="jtip">${esc(uj.desc)}${def.id === 'mitjang' ? `<br>${esc(t('mitjangNow')(state.mitjangChips).trim())}` : ''}<div class="jtip-gain${gainEmpty}">${esc(gain)}</div></div>
+        <div class="jtip">${esc(uj.desc)}${jokerLiveNote(def.id) ? `<br>${esc(jokerLiveNote(def.id).trim())}` : ''}<div class="jtip-gain${gainEmpty}">${esc(gain)}</div></div>
       </div>`;
     } else {
       slots += `<div class="jokerslot">${t('emptyJoker')}</div>`;
@@ -9124,7 +9257,7 @@ function showJokerPop(idx) {
   $('joker-pop-meta').innerHTML = `
     <span class="o-rarity r-${def.rarity}">${uiRarity(def.rarity)}</span>
     <span class="o-kind">${esc(uj.kind || '')}</span>`;
-  $('joker-pop-desc').textContent = uj.desc + (def.id === 'mitjang' ? t('mitjangNow')(state.mitjangChips) : '');
+  $('joker-pop-desc').textContent = uj.desc + jokerLiveNote(def.id);
   const gain = formatJokerGain(def.id);
   const gainEl = $('joker-pop-gain');
   gainEl.textContent = gain;
@@ -9688,7 +9821,7 @@ function shopHTML() {
     }
     const def = JOKER_BY_ID[j.id];
     const uj = uiJoker(def);
-    const desc = uj.desc + (def.id === 'mitjang' ? t('mitjangNow')(state.mitjangChips) : '');
+    const desc = uj.desc + jokerLiveNote(def.id);
     const gain = formatJokerGain(def.id);
     const gainShort = formatJokerGain(def.id, { short: true });
     const gainEmpty = gain === t('gainNone') ? ' empty' : '';
@@ -9997,8 +10130,9 @@ function jokerAffectedCards(id, ctx) {
   switch (id) {
     case 'gwangpari':
     case 'gwang_sujip':
-    case 'samgwang_nori':
       return cards.filter((c) => c.type === 'kwang');
+    case 'samgwang_nori':
+      return core.filter((c) => c.type === 'kwang');
     case 'pi_merchant':
       return cards.filter((c) => { const t = effType(c); return t === 'pi' || t === 'ssangpi'; });
     case 'meongtta':
@@ -10012,7 +10146,7 @@ function jokerAffectedCards(id, ctx) {
     case 'ssakssuri':
       return cards.length === 5 ? cards : [];
     case 'godori_kkun':
-      return cards.filter((c) => c.tags.includes('godori'));
+      return core.filter((c) => c.tags.includes('godori'));
     case 'dangol':
       return (ctx.handId === 'dan' || ctx.handId === 'tti3') ? core : [];
     case 'heundeulgi': {
@@ -10024,7 +10158,7 @@ function jokerAffectedCards(id, ctx) {
     case 'pi_ohjang':
       return ctx.handId === 'pi5' ? cards.filter((c) => piCount(c) > 0) : [];
     case 'chodan_aeho':
-      return cards.filter((c) => c.tags.includes('chodan'));
+      return core.filter((c) => c.tags.includes('chodan'));
     case 'bigwang_usan':
       return ctx.handId === 'none' ? [] : core.filter((c) => c.month === 12);
     case 'poktan':
@@ -10039,23 +10173,40 @@ function jokerAffectedCards(id, ctx) {
     }
     case 'paewang':
       return ctx.handId !== 'none' ? core : [];
+    case 'matdae':
+      return matdaeCards(cards);
     default:
       return [];
   }
 }
 
+/** 카드 한 장마다 세는 특수패 — 정산도 한 장씩 */
+function jokerJuiceEach(id) {
+  return [
+    'gwangpari', 'pi_merchant', 'meongtta', 'ssangpi_sarang', 'tti_jjang',
+    'godori_kkun', 'gwang_sujip', 'chodan_aeho', 'samgwang_nori',
+  ].includes(id);
+}
+
 /** 카드 위 특수패 칩 라벨 (+4, +1냥 등) */
+function jokerCardFx(id, card) {
+  if (id === 'gwangpari') return { label: '+1냥', money: 1 };
+  if (id === 'pi_merchant') {
+    const ss = effType(card) === 'ssangpi';
+    return { label: ss ? '+8' : '+4', chip: ss ? 8 : 4 };
+  }
+  if (id === 'meongtta') return { label: '+6', chip: 6 };
+  if (id === 'ssangpi_sarang') return { label: '+12', chip: 12 };
+  if (id === 'tti_jjang') return { label: '+5', chip: 5 };
+  if (id === 'gwang_sujip') return { label: '+10', chip: 10 };
+  if (id === 'godori_kkun') return { label: '+3', addMult: 3 };
+  if (id === 'chodan_aeho') return { label: '+2', addMult: 2 };
+  if (id === 'samgwang_nori') return { label: '+3', addMult: 3 };
+  return { label: null };
+}
+
 function jokerCardLabel(id, card) {
-  if (id === 'pi_merchant') return effType(card) === 'ssangpi' ? '+8' : '+4';
-  if (id === 'meongtta') return '+6';
-  if (id === 'ssangpi_sarang') return '+12';
-  if (id === 'tti_jjang') return '+5';
-  if (id === 'gwang_sujip') return '+10';
-  if (id === 'gwangpari') return '+1냥';
-  if (id === 'samgwang_nori') return '+3';
-  if (id === 'godori_kkun') return '+3';
-  if (id === 'chodan_aeho') return '+2';
-  return null;
+  return jokerCardFx(id, card).label;
 }
 
 function parseJokerChipLabel(label) {
@@ -10064,7 +10215,7 @@ function parseJokerChipLabel(label) {
   return m ? parseInt(m[1], 10) : 0;
 }
 
-/** 아이템 정산 시 관련 카드를 한 번에 펄스 (등급색 · +점수면 칩 플로트) */
+/** 아이템 정산 시 관련 카드 펄스. 호출 측이 한 장만 넘기면 한 장씩, 여러 장이면 한 번에. */
 async function pulseJuiceCardsForJoker(wraps, cardSteps, affected, { labelsByUid = {}, rarity = 'common' } = {}) {
   if (!affected?.length || !wraps?.length) return;
   const uids = new Set(affected.map((c) => c.uid));
@@ -10103,10 +10254,13 @@ function applyJokerEconomy(snap) {
   if (!snap || snap._econApplied) return;
   snap._econApplied = true;
   const n = snap.pendingGwangpari || 0;
-  if (n > 0 && !snap._moneyPaid) {
-    addMoney(n);
-    state.kwangSoldThisRound += n;
-    bumpJokerGain('gwangpari', { money: n });
+  const paid = snap._gwangpariPaid || 0;
+  const left = Math.max(0, n - paid);
+  if (left > 0) {
+    addMoney(left);
+    state.kwangSoldThisRound += left;
+    bumpJokerGain('gwangpari', { money: left });
+    snap._gwangpariPaid = n;
     snap._moneyPaid = true;
   }
   const bumped = snap._scoreBumped || new Set();
@@ -10141,10 +10295,7 @@ function juiceBreakdown(snap) {
   const cardFlat = steps.filter((s) => !s.isCore).reduce((a, s) => a + s.chip, 0);
   const jokerChips = Math.max(0, result.flat - cardFlat);
   const baseMult = HAND_BY_ID[result.handId]?.mult ?? 1;
-  const ctx = {
-    cards, handId: result.handId, core,
-    boss: env.boss, mitjangChips: env.mitjangChips,
-  };
+  const ctx = scoreJokerCtx(cards, result.handId, core, env);
   // 특수패 슬롯 왼쪽→오른쪽 · 발동분만 — 칩 → +배수 → ×배수 → 냥
   const orderOf = (c) => cards.findIndex((x) => x.uid === c.uid);
   const jokerSteps = [];
@@ -10156,9 +10307,10 @@ function juiceBreakdown(snap) {
     const xm = j.xMult ? j.xMult(ctx) : 1;
     const money = id === 'gwangpari' ? (snap.pendingGwangpari || 0) : 0;
     if (chipGain || addM || xm !== 1 || money) {
-      const affected = jokerAffectedCards(id, ctx)
+      let affected = jokerAffectedCards(id, ctx)
         .slice()
         .sort((a, b) => orderOf(a) - orderOf(b));
+      if (id === 'gwangpari' && money > 0) affected = affected.slice(0, money);
       jokerSteps.push({
         id, chipGain, addMult: addM, xMult: xm, money, affected,
       });
@@ -11640,45 +11792,84 @@ async function playJuiceSequence(snap, fromRects = null) {
       for (const step of bd.jokerSteps) {
         if (JUICE.skip) break;
         const rarity = JOKER_BY_ID[step.id]?.rarity || 'common';
-        pulseJokerSlots([step.id]);
-        if (step.affected?.length) {
-          const labelsByUid = {};
+        const each = jokerJuiceEach(step.id) && step.affected?.length;
+
+        if (each) {
           for (const card of step.affected) {
-            const lab = jokerCardLabel(step.id, card);
-            if (lab) labelsByUid[card.uid] = [lab];
+            if (JUICE.skip) break;
+            pulseJokerSlots([step.id]);
+            const fx = jokerCardFx(step.id, card);
+            const labelsByUid = {};
+            if (fx.label) labelsByUid[card.uid] = [fx.label];
+            await pulseJuiceCardsForJoker(wraps, bd.steps, [card], { labelsByUid, rarity });
+            if (fx.chip) {
+              ensureFlatUI();
+              const from = flat;
+              flat += fx.chip;
+              await animateNumber(flatEl, from, flat, juiceMs(180));
+              flatEl.style.transform = 'scale(1.12)';
+              await juiceWait(70);
+              flatEl.style.transform = '';
+            }
+            if (fx.addMult) {
+              await bumpMult(mult + fx.addMult);
+              multAnimatedInItems = true;
+            }
+            if (fx.money) {
+              addMoney(1);
+              snap._gwangpariPaid = (snap._gwangpariPaid || 0) + 1;
+              state.kwangSoldThisRound += 1;
+              bumpJokerGain('gwangpari', { money: 1 });
+              if (snap._gwangpariPaid >= (snap.pendingGwangpari || 0)) snap._moneyPaid = true;
+              const mb = $('moneybox');
+              if (mb) mb.textContent = `${state.money}냥`;
+              sfxCoin();
+              await juiceWait(160);
+            }
           }
-          await pulseJuiceCardsForJoker(wraps, bd.steps, step.affected, { labelsByUid, rarity });
         } else {
-          await juiceWait(160);
+          pulseJokerSlots([step.id]);
+          if (step.affected?.length) {
+            const labelsByUid = {};
+            for (const card of step.affected) {
+              const lab = jokerCardLabel(step.id, card);
+              if (lab) labelsByUid[card.uid] = [lab];
+            }
+            await pulseJuiceCardsForJoker(wraps, bd.steps, step.affected, { labelsByUid, rarity });
+          } else {
+            await juiceWait(160);
+          }
+
+          if (step.chipGain) {
+            ensureFlatUI();
+            const from = flat;
+            flat += step.chipGain;
+            await animateNumber(flatEl, from, flat, juiceMs(200));
+            flatEl.style.transform = 'scale(1.12)';
+            await juiceWait(80);
+            flatEl.style.transform = '';
+          }
+          if (step.addMult) {
+            await bumpMult(mult + step.addMult);
+            multAnimatedInItems = true;
+          }
+          if (step.xMult !== 1) {
+            await bumpMult(mult * step.xMult);
+            multAnimatedInItems = true;
+          }
+          if (step.money > 0 && !snap._moneyPaid) {
+            addMoney(step.money);
+            snap._gwangpariPaid = (snap._gwangpariPaid || 0) + step.money;
+            state.kwangSoldThisRound += step.money;
+            bumpJokerGain(step.id, { money: step.money });
+            snap._moneyPaid = true;
+            const mb = $('moneybox');
+            if (mb) mb.textContent = `${state.money}냥`;
+            sfxCoin();
+            await juiceWait(200);
+          }
         }
 
-        if (step.chipGain) {
-          ensureFlatUI();
-          const from = flat;
-          flat += step.chipGain;
-          await animateNumber(flatEl, from, flat, juiceMs(200));
-          flatEl.style.transform = 'scale(1.12)';
-          await juiceWait(80);
-          flatEl.style.transform = '';
-        }
-        if (step.addMult) {
-          await bumpMult(mult + step.addMult);
-          multAnimatedInItems = true;
-        }
-        if (step.xMult !== 1) {
-          await bumpMult(mult * step.xMult);
-          multAnimatedInItems = true;
-        }
-        if (step.money > 0 && !snap._moneyPaid) {
-          addMoney(step.money);
-          state.kwangSoldThisRound += step.money;
-          bumpJokerGain(step.id, { money: step.money });
-          snap._moneyPaid = true;
-          const mb = $('moneybox');
-          if (mb) mb.textContent = `${state.money}냥`;
-          sfxCoin();
-          await juiceWait(200);
-        }
         const sg = (snap.jokerScoreGains || []).find((e) => e.id === step.id);
         if (sg?.score && !snap._scoreBumped.has(step.id)) {
           bumpJokerGain(step.id, { score: sg.score });
@@ -11805,13 +11996,24 @@ window.addEventListener('resize', () => {
  * 실제로 몸이 있는 우측 하단만 좁게 잡음.
  */
 function bgFigureHitRect() {
+  const host = $('bg-spine');
+  if (host) {
+    const r = host.getBoundingClientRect();
+    if (r.width > 1 && r.height > 1) {
+      // 캔버스 왼쪽·위는 빈 여백. 치마·상체가 있는 오른쪽 아래만.
+      return {
+        left: r.left + r.width * 0.42,
+        top: r.top + r.height * 0.22,
+        right: r.right - r.width * 0.06,
+        bottom: r.bottom - r.height * 0.04,
+      };
+    }
+  }
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const figH = vh * 0.78;
   const figW = figH * 0.55;
-  // 이미지 폭의 오른쪽 ~45%만 (투명 여백·팔 바깥은 무시)
   const left = Math.max(0, vw - figW * 0.45);
-  // 머리~상체 위쪽 여백은 조금 비움
   const top = Math.max(0, vh - figH * 0.78);
   return { left, top, right: vw, bottom: vh };
 }
@@ -11830,13 +12032,12 @@ function rectsOverlap(a, b, pad = 0) {
 function updateBgFigureForHand() {
   const el = $('bg-figure');
   if (!el) return;
-  if (window.matchMedia('(max-width: 1399px)').matches) {
+  if (window.matchMedia('(max-width: 720px)').matches) {
     el.classList.remove('away');
     return;
   }
   const fig = bgFigureHitRect();
-  // 투명 PNG 오탐 줄이려고 ~18px 정도 들어와야 숨김
-  const NEED = 18;
+  const NEED = 28;
   let overlap = false;
   document.querySelectorAll('#handarea .card').forEach((card) => {
     if (overlap) return;
@@ -11847,91 +12048,72 @@ function updateBgFigureForHand() {
   el.classList.toggle('away', overlap);
 }
 
-/** 배경 춘향 Spine — 첫 애니(idle_breath)만 루프 */
+/** 배경 춘향 Spine — 첫 애니(idle_breath)만 루프.
+ *  file:// 은 JSON fetch가 막히므로 gzip 임베드를 풀어 rawDataURI로 넣는다. */
 let bgSpinePlayer = null;
-let bgSpineGlowRaf = 0;
-/** WebGL → 2D 스냅샷 후 shadowBlur (WebGL 소스는 CSS/shadow 아우라가 무시됨) */
-function startBgSpineGlowMirror(host) {
-  const src = host.querySelector('canvas.spine-player-canvas');
-  if (!src) return;
-  let glow = $('bg-spine-glow');
-  if (!glow) {
-    glow = document.createElement('canvas');
-    glow.id = 'bg-spine-glow';
-    host.appendChild(glow);
-  }
-  const mid = document.createElement('canvas');
-  const midCtx = mid.getContext('2d', { alpha: true });
-  const ctx = glow.getContext('2d', { alpha: true });
-  const PAD = 28;
-  const tick = () => {
-    bgSpineGlowRaf = requestAnimationFrame(tick);
-    if (!host.isConnected) return;
-    if (host.closest('#bg-figure.away')) return;
-    const w = src.width;
-    const h = src.height;
-    if (!w || !h) return;
-    if (mid.width !== w || mid.height !== h) {
-      mid.width = w;
-      mid.height = h;
-    }
-    const gw = w + PAD * 2;
-    const gh = h + PAD * 2;
-    if (glow.width !== gw || glow.height !== gh) {
-      glow.width = gw;
-      glow.height = gh;
-      glow.style.left = `-${PAD}px`;
-      glow.style.top = `-${PAD}px`;
-      glow.style.width = `calc(100% + ${PAD * 2}px)`;
-      glow.style.height = `calc(100% + ${PAD * 2}px)`;
-    }
-    try {
-      midCtx.clearRect(0, 0, w, h);
-      midCtx.drawImage(src, 0, 0);
-      ctx.clearRect(0, 0, gw, gh);
-      // 원래 BackgroundFigure 흰 drop-shadow 1.5 / 7 / 18
-      ctx.shadowColor = 'rgba(255,255,255,0.28)';
-      ctx.shadowBlur = 3;
-      ctx.drawImage(mid, PAD, PAD);
-      ctx.shadowColor = 'rgba(255,255,255,0.14)';
-      ctx.shadowBlur = 14;
-      ctx.drawImage(mid, PAD, PAD);
-      ctx.shadowColor = 'rgba(255,255,255,0.08)';
-      ctx.shadowBlur = 28;
-      ctx.drawImage(mid, PAD, PAD);
-      ctx.shadowBlur = 0;
-      ctx.shadowColor = 'transparent';
-      ctx.drawImage(mid, PAD, PAD);
-      host.classList.add('glow-on'); // 미러가 실제로 그렸다 → 이제 원본을 숨긴다
-    } catch (_) {}
-  };
-  if (bgSpineGlowRaf) cancelAnimationFrame(bgSpineGlowRaf);
-  tick();
+function loadScriptOnce(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error('script ' + src));
+    document.head.appendChild(s);
+  });
 }
-function initBgSpine() {
+async function gunzipBase64(b64) {
+  const bin = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+  if (typeof DecompressionStream !== 'function') {
+    throw new Error('gzip 미지원');
+  }
+  const stream = new Blob([bin]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return await new Response(stream).text();
+}
+function textToDataUri(text, mime) {
+  // 메모리 맵용. 실제 URL로 쓰지 않으니 encode/btoa 없이 붙인다 (11MB JSON btoa 방지).
+  return 'data:' + mime + ',' + text;
+}
+async function initBgSpine() {
   const host = $('bg-spine');
   if (!host || host.dataset.ready) return;
+  host.dataset.ready = '1';
   if (!window.spine || typeof spine.SpinePlayer !== 'function') {
     console.warn('[spine] SpinePlayer 로드 실패');
     return;
   }
-  host.dataset.ready = '1';
+  let jsonText = null;
+  let atlasText = null;
+  let pngDataUri = null;
+  try {
+    if (!window.HWATRO_CHUNHYANG_SKEL) {
+      await loadScriptOnce('Assets/Spine/chunhyang/skel-embed.js');
+    }
+    const pack = window.HWATRO_CHUNHYANG_SKEL;
+    jsonText = await gunzipBase64(pack.gz);
+    atlasText = pack.atlas;
+    if (pack.png) pngDataUri = 'data:image/png;base64,' + pack.png;
+  } catch (e) {
+    console.warn('[spine] embed', e);
+  }
   const FIRST_ANIM = 'idle_breath';
-  bgSpinePlayer = new spine.SpinePlayer('bg-spine', {
-    skeleton: 'Assets/Spine/chunhyang/skeleton.json',
-    atlas: 'Assets/Spine/chunhyang/skeleton.atlas',
+  const jsonPath = 'Assets/Spine/chunhyang/skeleton.json';
+  const atlasPath = 'Assets/Spine/chunhyang/skeleton.atlas';
+  const pngPath = 'Assets/Spine/chunhyang/skeleton.png';
+  const rawDataURIs = {};
+  if (jsonText) rawDataURIs[jsonPath] = textToDataUri(jsonText, 'application/json');
+  if (atlasText) rawDataURIs[atlasPath] = textToDataUri(atlasText, 'text/plain');
+  if (pngDataUri) rawDataURIs[pngPath] = pngDataUri;
+  bgSpinePlayer = window.bgSpinePlayer = new spine.SpinePlayer('bg-spine', {
+    skeleton: jsonPath,
+    atlas: atlasPath,
+    rawDataURIs,
     animation: FIRST_ANIM,
     animations: [FIRST_ANIM],
     showControls: false,
-    // 로딩 스피너 금지 — 배경 장식이 게임 화면 위에 주황색 스피너를 띄우면 안 된다.
-    // file:// 로 열면 skeleton.json fetch가 막혀 로딩이 끝나지 않고 스피너가 남는다.
     showLoading: false,
     interactive: false,
     alpha: true,
     backgroundColor: '#00000000',
     premultipliedAlpha: true,
-    preserveDrawingBuffer: true, // 2D 미러용
-    // padTop↑ → 캔버스 안에서 아래로 (과하면 가라앉음)
     viewport: {
       padLeft: '5%',
       padRight: '6%',
@@ -11940,24 +12122,27 @@ function initBgSpine() {
       transitionTime: 0,
     },
     success(player) {
-      // setAnimation만 하면 currentViewport가 먼저 잡혀 SpinePlayer 내부 auto-play가 스킵됨
       try {
         player.setAnimation(FIRST_ANIM, true);
         player.play();
       } catch (_) {}
-      startBgSpineGlowMirror(host);
     },
     error(player, reason) {
       console.warn('[spine]', reason);
-      // 로드 실패 시 빈 캔버스라도 남기지 않는다 (file:// 등)
-      const fig = $('bg-figure');
-      if (fig) fig.style.display = 'none';
+      host.querySelectorAll('.spine-player-error').forEach((el) => el.remove());
     },
   });
 }
 
 syncHandSortBtn();
 window.addEventListener('resize', syncHandSortThumb);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    try { bgSpinePlayer?.pause?.(); } catch (_) {}
+    return;
+  }
+  try { bgSpinePlayer?.play?.(); } catch (_) {}
+});
 if (document.fonts?.ready) document.fonts.ready.then(syncHandSortThumb);
 syncVolUi();
 syncJuiceSpeedBtn();

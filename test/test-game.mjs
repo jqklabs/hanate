@@ -14,7 +14,7 @@ const E = new Function(src + `
 return { mulberry32, shuffle, buildDeck, CHIP, effType, baseChip, HANDS, HAND_BY_ID, handDisplayName,
   ROUNDS, TARGETS, BOSS_ROUNDS, MILD_BOSSES, goMult, goBonus, goThreshold, goLevelReached, detectHand, detectHandInfo, cardChip,
   combosOf, evaluateHand, JOKERS, JOKER_BY_ID, BOSSES, BOSS_BY_ID, computeScore, jokerMarginalGain,
-  rollJokerRarity, RARITY_ORDER };`)();
+  rollJokerRarity, RARITY_ORDER, bakChipLoss, hasMatdaePair, oppositeMonth };`)();
 
 let fails = 0;
 const assert = (cond, msg) => {
@@ -234,10 +234,10 @@ console.log('[5] 특수패·박 회귀');
   assert(rPi.flat === 8 && rPi.score === rPi.chips * rPi.mult + 8,
     `피장사도 flat (실제 flat ${rPi.flat} score ${rPi.score})`);
   // 4티어 로스터·신규 훅
-  assert(E.JOKERS.length === 22, `특수패 22종 (실제 ${E.JOKERS.length})`);
+  assert(E.JOKERS.length === 28, `특수패 28종 (실제 ${E.JOKERS.length})`);
   const byR = (r) => E.JOKERS.filter((j) => j.rarity === r).length;
-  assert(byR('common') === 6 && byR('rare') === 7 && byR('epic') === 6 && byR('legendary') === 3,
-    `티어 분포 6/7/6/3 (실제 ${byR('common')}/${byR('rare')}/${byR('epic')}/${byR('legendary')})`);
+  assert(byR('common') === 9 && byR('rare') === 10 && byR('epic') === 6 && byR('legendary') === 3,
+    `티어 분포 9/10/6/3 (실제 ${byR('common')}/${byR('rare')}/${byR('epic')}/${byR('legendary')})`);
   const ssang = pick((c) => c.type === 'ssangpi').slice(0, 1);
   const rSs = E.computeScore(ssang, env({ jokerIds: ['ssangpi_sarang'] }));
   assert(rSs.flat === 12, `쌍피보따리 flat +12 (실제 ${rSs.flat})`);
@@ -262,6 +262,14 @@ console.log('[5] 특수패·박 회귀');
   assert(rNori4.handId === 'sagwang' && rNori4.mult === 8 + 12,
     `삼광판 광4 = 8+12 (실제 hand=${rNori4.handId} mult=${rNori4.mult})`);
   assert(rNori4.score > rNori3.score, `삼광판 광4 점수 > 광3 (실제 ${rNori4.score} vs ${rNori3.score})`);
+  // 초단꾼: 족보(코어)에 들어간 초단만
+  const choAll = pick((c) => c.tags.includes('chodan'));
+  const rChoDan = E.computeScore(choAll.slice(0, 3), env({ jokerIds: ['chodan_aeho'] }));
+  assert(rChoDan.handId === 'dan' && rChoDan.mult === 4 + 6,
+    `초단꾼 초단 족보 3장 = 4+6 (실제 hand=${rChoDan.handId} mult=${rChoDan.mult})`);
+  const rChoFlat = E.computeScore([...gwang3, choAll[0]], env({ jokerIds: ['chodan_aeho'] }));
+  assert(rChoFlat.handId === 'samgwang' && rChoFlat.mult === 5,
+    `족보 밖 초단은 초단꾼 미적용 (실제 hand=${rChoFlat.handId} mult=${rChoFlat.mult})`);
   // leave-one-out 기여도
   const rPiBase = E.computeScore(pi2, env());
   const gainPi = E.jokerMarginalGain(pi2, env({ jokerIds: ['pi_merchant'] }), 'pi_merchant');
@@ -269,6 +277,31 @@ console.log('[5] 특수패·박 회귀');
     `피장사 기여도 +8 (실제 ${gainPi})`);
   assert(E.jokerMarginalGain(pi2, env({ jokerIds: ['pi_merchant'] }), 'gwangpari') === 0,
     '미보유 특수패 기여도 0');
+  // 신규 6종
+  const rCheot = E.computeScore([yeol1], env({ jokerIds: ['cheotsu'], isFirstPlay: true }));
+  const rCheot2 = E.computeScore([yeol1], env({ jokerIds: ['cheotsu'] }));
+  assert(rCheot.mult === rCheot2.mult + 4, `첫수 첫 내기 +4배수 (실제 ${rCheot.mult} vs ${rCheot2.mult})`);
+  const rJan = E.computeScore(pi2, env({ jokerIds: ['janson'], heldTotal: 8 }));
+  const rJan0 = E.computeScore(pi2, env({ heldTotal: 8 }));
+  assert(rJan.flat === rJan0.flat + 30, `잔손 6장 ×5 = +30 (실제 ${rJan.flat - rJan0.flat})`);
+  const rMak = E.computeScore(yeol3, env({ jokerIds: ['makpan'], isLastPlay: true, discardsLeft: 3 }));
+  const rMak0 = E.computeScore(yeol3, env());
+  assert(rMak.mult === rMak0.mult + 6, `막판뒤집기 버리기3 ×2 = +6배수 (실제 ${rMak.mult})`);
+  const m1pi = pick((c) => c.month === 1 && c.type === 'pi')[0];
+  const m7pi = pick((c) => c.month === 7 && c.type === 'pi')[0];
+  const rMat = E.computeScore([m1pi, m7pi], env({ jokerIds: ['matdae'] }));
+  const rMat0 = E.computeScore([m1pi, m7pi], env());
+  assert(rMat.mult === rMat0.mult + 6, `맞대 1–7월 +6배수 (실제 ${rMat.mult})`);
+  const m2pi = pick((c) => c.month === 2 && c.type === 'pi')[0];
+  const rMatNo = E.computeScore([m1pi, m2pi], env({ jokerIds: ['matdae'] }));
+  assert(rMatNo.mult === E.computeScore([m1pi, m2pi], env()).mult, '맞대 1–2월 미발동');
+  const rGeum = E.computeScore(yeol3, env({ jokerIds: ['geumjul'], geumjulMult: 4 }));
+  assert(rGeum.mult === rMak0.mult + 4, `금줄 누적 +4배수 (실제 ${rGeum.mult})`);
+  const rGoTa = E.computeScore(yeol3, env({ jokerIds: ['gotaryeong'], gotaryeongMult: 2 }));
+  assert(rGoTa.mult === rMak0.mult + 2, `고타령 누적 +2배수 (실제 ${rGoTa.mult})`);
+  const loss = E.bakChipLoss(pi2, env({ boss: 'pibak' }));
+  const noLoss = E.bakChipLoss(pi2, env({ boss: 'pibak', jokerIds: ['pibak_boheom'] }));
+  assert(loss > 0 && noLoss === 0, `금줄 손실 칩 ${loss} · 피박보험 0`);
 }
 
 // ─── 6. evaluateHand (춘향 훈수 엔진) ─────────────────────
@@ -327,7 +360,7 @@ console.log('[7] 풀런 시뮬레이션');
 
   function simulate(seed, buyAI) {
     const rng = E.mulberry32(seed);
-    let money = 5, jokers = [], mitjangChips = 0;
+    let money = 5, jokers = [], mitjangChips = 0, geumjulLost = 0, geumjulMult = 0;
     const usedBosses = [];
     for (let round = 1; round <= E.ROUNDS; round++) {
       let boss = null;
@@ -342,7 +375,13 @@ console.log('[7] 풀런 시뮬레이션');
       refill();
       let score = 0, playsLeft = 4, discardsLeft = boss === 'bibaram' ? 0 : 4;
       const target = E.TARGETS[round - 1];
-      const e = () => ({ boss, jokerIds: jokers, mitjangChips, seasonMonth: round, night: round % 2 === 0 });
+      let firstPlay = true;
+      const e = () => ({
+        boss, jokerIds: jokers, mitjangChips,
+        seasonMonth: round, night: round % 2 === 0,
+        isFirstPlay: firstPlay, isLastPlay: playsLeft === 1,
+        discardsLeft, heldTotal: hand.length, geumjulMult,
+      });
 
       while (playsLeft > 0 && score < target) {
         let best = E.evaluateHand(hand, e());
@@ -359,6 +398,11 @@ console.log('[7] 풀런 시뮬레이션');
           }
         }
         score += best.score;
+        if (jokers.includes('geumjul')) {
+          geumjulLost += E.bakChipLoss(best.cards, e());
+          geumjulMult = Math.floor(geumjulLost / 10);
+        }
+        firstPlay = false;
         const ids = new Set(best.cards.map((c) => c.uid));
         hand = hand.filter((c) => !ids.has(c.uid));
         playsLeft--;
