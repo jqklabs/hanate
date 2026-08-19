@@ -285,11 +285,21 @@
     z-index: 6;
     animation: jokerTrigPop .42s cubic-bezier(.2,1.35,.4,1) !important;
   }
-  /* 발동 — 등급과 무관하게 같은 금빛으로 번쩍인다 (발동 여부가 신호,
-     등급은 이미 테두리가 말하고 있다) */
-  .jokerslot.filled.trig {
+  .jokerslot.filled.aura-common.trig {
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 0 18px var(--rank-1-glow) !important;
+  }
+  .jokerslot.filled.aura-rare.trig {
+    border-color: #93c5fd !important;
+    box-shadow: 0 0 20px var(--rank-2-glow) !important;
+  }
+  .jokerslot.filled.aura-epic.trig {
+    border-color: #d8b4fe !important;
+    box-shadow: 0 0 20px var(--rank-3-glow) !important;
+  }
+  .jokerslot.filled.aura-legendary.trig {
     border-color: var(--gold-soft) !important;
-    box-shadow: 0 0 20px rgba(232,205,122,.55) !important;
+    box-shadow: 0 0 22px var(--rank-4-glow) !important;
   }
   @keyframes jokerTrigPop {
     0%   { transform: scale(1);    filter: brightness(1); }
@@ -807,6 +817,18 @@
 
   /* padding: 추천 ✦/↓ 뱃지가 카드 밖으로 나가도 잘리지 않게 */
   #handarea { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; min-height: 140px; padding: 10px 8px 4px; }
+  #cursor-trail {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 85;
+  }
+  body.card-sweeping { user-select: none; -webkit-user-select: none; }
+  body.card-sweeping #handarea .card:hover { transform: none; }
+  body.card-sweeping #handarea .card.sel {
+    transform: translateY(-18px) scale(1.03);
+  }
+  @media (hover: none), (prefers-reduced-motion: reduce) {
+    #cursor-trail { display: none; }
+  }
   #jan-aura-hint {
     text-align: center; font-size: 12px; font-weight: 700; color: #bef264;
     margin: 0 0 8px; text-shadow: 0 1px 0 rgba(0,0,0,.35);
@@ -2731,6 +2753,18 @@
   #juice-cards .juice-card-wrap.joker-hit {
     animation: cardJokerHit .36s cubic-bezier(.2,1.3,.4,1);
   }
+  #juice-cards .juice-card-wrap.joker-hit.hit-common .card {
+    box-shadow: 0 8px 16px rgba(0,0,0,.4), 0 0 0 2px #e2e8f0, 0 0 16px var(--rank-1-glow) !important;
+  }
+  #juice-cards .juice-card-wrap.joker-hit.hit-rare .card {
+    box-shadow: 0 8px 16px rgba(0,0,0,.4), 0 0 0 2px #60a5fa, 0 0 18px var(--rank-2-glow) !important;
+  }
+  #juice-cards .juice-card-wrap.joker-hit.hit-epic .card {
+    box-shadow: 0 8px 16px rgba(0,0,0,.4), 0 0 0 2px #c084fc, 0 0 18px var(--rank-3-glow) !important;
+  }
+  #juice-cards .juice-card-wrap.joker-hit.hit-legendary .card {
+    box-shadow: 0 8px 16px rgba(0,0,0,.4), 0 0 0 2px var(--gold-soft), 0 0 20px var(--rank-4-glow) !important;
+  }
   @keyframes cardLandPulse {
     0% { transform: scale(1); }
     40% { transform: scale(1.08); }
@@ -2742,6 +2776,22 @@
     100% { transform: scale(1); filter: brightness(1); }
   }
   #juice-cards .chip-float.joker-fx {
+    color: var(--gold-lit);
+    text-shadow: 0 2px 8px rgba(0,0,0,.65), 0 0 12px rgba(251,191,36,.5);
+  }
+  #juice-cards .chip-float.joker-fx.hit-common {
+    color: #e2e8f0;
+    text-shadow: 0 2px 8px rgba(0,0,0,.65), 0 0 12px rgba(148,163,184,.5);
+  }
+  #juice-cards .chip-float.joker-fx.hit-rare {
+    color: #93c5fd;
+    text-shadow: 0 2px 8px rgba(0,0,0,.65), 0 0 12px rgba(59,130,246,.55);
+  }
+  #juice-cards .chip-float.joker-fx.hit-epic {
+    color: #e9d5ff;
+    text-shadow: 0 2px 8px rgba(0,0,0,.65), 0 0 12px rgba(168,85,247,.55);
+  }
+  #juice-cards .chip-float.joker-fx.hit-legendary {
     color: var(--gold-lit);
     text-shadow: 0 2px 8px rgba(0,0,0,.65), 0 0 12px rgba(251,191,36,.5);
   }
@@ -4449,6 +4499,7 @@
   </div>
 </div>
 
+<canvas id="cursor-trail" aria-hidden="true"></canvas>
 <div id="juice-root">
   <div id="hand-banner"></div>
 </div>
@@ -6360,6 +6411,280 @@ function selectedCards() {
   return state.selected.map((uid) => state.hand.find((c) => c.uid === uid)).filter(Boolean);
 }
 
+const HAND_SWEEP = {
+  pointerId: null,
+  startX: 0,
+  startY: 0,
+  lastX: 0,
+  lastY: 0,
+  startUid: null,
+  painted: [],
+  baseSelected: [],
+  capped: false,
+  dragged: false,
+  suppressClick: false,
+};
+
+function canHandSweep(e) {
+  if (state.screen !== 'play' || state.juicing || state.dealing) return false;
+  if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return false;
+  if (e.button != null && e.button !== 0) return false;
+  if ($('settings-overlay')?.classList.contains('show')) return false;
+  if ($('modal-overlay')?.classList.contains('show')) return false;
+  const area = $('handarea');
+  return !!(area && area.contains(e.target) && !area.classList.contains('sorting'));
+}
+
+function sweepUidAt(x, y) {
+  const el = document.elementFromPoint(x, y);
+  const card = el && el.closest('#handarea .card[data-uid]');
+  if (!card || card.classList.contains('static') || card.classList.contains('discarding')) return null;
+  return +card.dataset.uid;
+}
+
+function paintSweepPath(x0, y0, x1, y1) {
+  const dist = Math.hypot(x1 - x0, y1 - y0);
+  const steps = Math.max(1, Math.ceil(dist / 10));
+  const seen = new Set(HAND_SWEEP.painted);
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const uid = sweepUidAt(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t);
+    if (uid != null) seen.add(uid);
+  }
+  if (HAND_SWEEP.startUid != null) seen.add(HAND_SWEEP.startUid);
+  HAND_SWEEP.painted = [...seen];
+}
+
+function applySweepSelection(uids) {
+  const base = HAND_SWEEP.baseSelected || [];
+  const baseSet = new Set(base);
+  const rangeSet = new Set(uids);
+  const next = base.filter((uid) => !rangeSet.has(uid));
+  let overflow = false;
+  for (const uid of uids) {
+    if (baseSet.has(uid)) continue;
+    if (next.length >= 5) { overflow = true; continue; }
+    next.push(uid);
+  }
+  const prev = state.selected;
+  if (prev.length === next.length && prev.every((u, i) => u === next[i])) {
+    if (overflow && !HAND_SWEEP.capped) {
+      HAND_SWEEP.capped = true;
+      flashActions();
+    }
+    return;
+  }
+  const added = next.some((u) => !prev.includes(u));
+  if (added) sfxCardSelect();
+  else sfxCardDeselect();
+  state.selected = next;
+  state.hoverReact = null;
+  document.querySelectorAll('#handarea .card[data-uid]').forEach((el) => {
+    el.classList.toggle('sel', state.selected.includes(+el.dataset.uid));
+  });
+  renderPreview();
+  syncPlayActions();
+  if (CHUNHYANG_ENABLED) renderChunhyang();
+  if (overflow && !HAND_SWEEP.capped) {
+    HAND_SWEEP.capped = true;
+    flashActions();
+  }
+}
+
+function endHandSweep() {
+  HAND_SWEEP.pointerId = null;
+  HAND_SWEEP.dragged = false;
+  HAND_SWEEP.painted = [];
+  document.body.classList.remove('card-sweeping');
+}
+
+function initHandSweep() {
+  document.addEventListener('pointerdown', (e) => {
+    if (!canHandSweep(e)) return;
+    const card = e.target.closest('#handarea .card[data-uid]');
+    HAND_SWEEP.pointerId = e.pointerId;
+    HAND_SWEEP.startX = e.clientX;
+    HAND_SWEEP.startY = e.clientY;
+    HAND_SWEEP.startUid = card && !card.classList.contains('static') && !card.classList.contains('discarding')
+      ? +card.dataset.uid : null;
+    HAND_SWEEP.lastX = e.clientX;
+    HAND_SWEEP.lastY = e.clientY;
+    HAND_SWEEP.painted = [];
+    HAND_SWEEP.baseSelected = state.selected.slice();
+    HAND_SWEEP.capped = false;
+    HAND_SWEEP.dragged = false;
+    HAND_SWEEP.suppressClick = false;
+  });
+  document.addEventListener('pointermove', (e) => {
+    if (HAND_SWEEP.pointerId !== e.pointerId) return;
+    const dx = e.clientX - HAND_SWEEP.startX;
+    const dy = e.clientY - HAND_SWEEP.startY;
+    if (!HAND_SWEEP.dragged && dx * dx + dy * dy < 64) return;
+    if (!HAND_SWEEP.dragged) {
+      HAND_SWEEP.dragged = true;
+      document.body.classList.add('card-sweeping');
+      try { $('handarea').setPointerCapture(e.pointerId); } catch (_) {}
+    }
+    paintSweepPath(HAND_SWEEP.lastX, HAND_SWEEP.lastY, e.clientX, e.clientY);
+    HAND_SWEEP.lastX = e.clientX;
+    HAND_SWEEP.lastY = e.clientY;
+    applySweepSelection(HAND_SWEEP.painted);
+  });
+  const finish = (e) => {
+    if (HAND_SWEEP.pointerId !== e.pointerId) return;
+    const dragged = HAND_SWEEP.dragged;
+    if (dragged) HAND_SWEEP.suppressClick = true;
+    try { $('handarea').releasePointerCapture(e.pointerId); } catch (_) {}
+    endHandSweep();
+    if (dragged) render();
+  };
+  document.addEventListener('pointerup', finish);
+  document.addEventListener('pointercancel', finish);
+  document.addEventListener('click', (e) => {
+    if (!HAND_SWEEP.suppressClick) return;
+    if (!e.target.closest('#handarea')) { HAND_SWEEP.suppressClick = false; return; }
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    HAND_SWEEP.suppressClick = false;
+  }, true);
+  document.addEventListener('dragstart', (e) => {
+    if (e.target.closest && e.target.closest('#handarea .card')) e.preventDefault();
+  });
+}
+
+function initCursorTrail() {
+  const canvas = $('cursor-trail');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const pts = [];
+  let raf = 0;
+  const LIFE = 320;
+
+  const resize = () => {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.floor(window.innerWidth * dpr);
+    canvas.height = Math.floor(window.innerHeight * dpr);
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  };
+
+  const shouldTrail = (e) => {
+    if (e.pointerType && e.pointerType !== 'mouse' && e.pointerType !== 'pen') return false;
+    if (window.matchMedia('(hover: none)').matches) return false;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+    return true;
+  };
+
+  const chaikin = (src) => {
+    if (src.length < 3) return src;
+    const out = [src[0]];
+    for (let i = 0; i < src.length - 1; i++) {
+      const a = src[i];
+      const b = src[i + 1];
+      out.push({
+        x: a.x * 0.75 + b.x * 0.25,
+        y: a.y * 0.75 + b.y * 0.25,
+        t: a.t,
+      });
+      out.push({
+        x: a.x * 0.25 + b.x * 0.75,
+        y: a.y * 0.25 + b.y * 0.75,
+        t: b.t,
+      });
+    }
+    out.push(src[src.length - 1]);
+    return out;
+  };
+
+  const fillRibbon = (src, now, maxW, color) => {
+    const n = src.length;
+    const left = new Array(n);
+    const right = new Array(n);
+    let px = 0;
+    let py = 1;
+    for (let i = 0; i < n; i++) {
+      const p = src[i];
+      const fade = Math.max(0, 1 - (now - p.t) / LIFE);
+      const w = maxW * fade * fade;
+      let dx;
+      let dy;
+      if (i === 0) {
+        dx = src[1].x - p.x;
+        dy = src[1].y - p.y;
+      } else if (i === n - 1) {
+        dx = p.x - src[i - 1].x;
+        dy = p.y - src[i - 1].y;
+      } else {
+        dx = src[i + 1].x - src[i - 1].x;
+        dy = src[i + 1].y - src[i - 1].y;
+      }
+      const len = Math.hypot(dx, dy) || 1;
+      let nx = -dy / len;
+      let ny = dx / len;
+      if (nx * px + ny * py < 0) {
+        nx = -nx;
+        ny = -ny;
+      }
+      px = nx;
+      py = ny;
+      left[i] = { x: p.x + nx * w * 0.5, y: p.y + ny * w * 0.5 };
+      right[i] = { x: p.x - nx * w * 0.5, y: p.y - ny * w * 0.5 };
+    }
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(left[0].x, left[0].y);
+    for (let i = 1; i < n; i++) ctx.lineTo(left[i].x, left[i].y);
+    for (let i = n - 1; i >= 0; i--) ctx.lineTo(right[i].x, right[i].y);
+    ctx.closePath();
+    ctx.fill();
+  };
+
+  const draw = (now) => {
+    raf = 0;
+    while (pts.length && now - pts[0].t > LIFE) pts.shift();
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    if (pts.length < 2) {
+      if (pts.length) raf = requestAnimationFrame(draw);
+      return;
+    }
+    const sweep = HAND_SWEEP.dragged;
+    const smooth = chaikin(pts);
+    fillRibbon(smooth, now, sweep ? 5.2 : 2.4,
+      sweep ? 'rgba(232, 205, 122, 0.72)' : 'rgba(232, 205, 122, 0.28)');
+    fillRibbon(smooth, now, sweep ? 1.8 : 0.9,
+      sweep ? 'rgba(192, 57, 43, 0.38)' : 'rgba(192, 57, 43, 0.12)');
+    raf = requestAnimationFrame(draw);
+  };
+
+  window.addEventListener('pointermove', (e) => {
+    if (!shouldTrail(e)) return;
+    const now = performance.now();
+    const last = pts[pts.length - 1];
+    if (last) {
+      const dx = e.clientX - last.x;
+      const dy = e.clientY - last.y;
+      const d = Math.hypot(dx, dy);
+      if (d < 1.6) return;
+      if (d > 14) {
+        const n = Math.min(8, Math.floor(d / 10));
+        for (let i = 1; i <= n; i++) {
+          const t = i / (n + 1);
+          pts.push({ x: last.x + dx * t, y: last.y + dy * t, t: now });
+        }
+      }
+    }
+    pts.push({ x: e.clientX, y: e.clientY, t: now });
+    while (pts.length > 36) pts.shift();
+    if (!raf) raf = requestAnimationFrame(draw);
+  }, { passive: true });
+  document.addEventListener('pointerout', (e) => {
+    if (!e.relatedTarget) pts.length = 0;
+  });
+  window.addEventListener('resize', resize);
+  resize();
+}
+
 /** 추천 묶음 클릭: 미선택이면 전체 선택, 이미 선택된 장이면 그 장만 해제 */
 function toggleHintBundle(uid, uids, { charge = false } = {}) {
   if (!uids.includes(uid)) return false;
@@ -6382,6 +6707,7 @@ function toggleHintBundle(uid, uids, { charge = false } = {}) {
 }
 
 function toggleSelect(uid) {
+  if (HAND_SWEEP.suppressClick) return;
   if (state.screen !== 'play' || state.juicing || state.dealing) return;
   // 1월 버리기 튜토: 빨간 빛 — 누르면 일괄, 선택된 장 다시 누르면 그 장만 해제
   if (state.coachStep === 'junk') {
@@ -8857,8 +9183,31 @@ function renderSide() {
     gl.textContent = t('goLevel')(state.goLevel, fmtMult(goMult(state.goLevel)), goBonus(state.goLevel, state.round));
   } else gl.style.display = 'none';
 
-  // 프리뷰 — 틀은 처음부터 펼쳐 두고 값만 갱신 (접었다 펴지 않음)
+  renderPreview();
+
+  $('deck-val').textContent = `${state.deck.length}`;
+  const deckLow = state.deck.length > 0 && state.deck.length <= 5;
+  const deckbox = $('deckbox');
+  deckbox.classList.toggle('deck-low', deckLow);
+  deckbox.classList.remove('deck-blocked');
+  deckbox.setAttribute('aria-disabled', 'false');
+  deckbox.tabIndex = 0;
+  deckbox.title = deckLow ? t('deckLow')(state.deck.length) : t('deckTitle');
+
+  const lp = $('playlog-panel');
+  if (playLogVisible && state.playLog.length > 0) {
+    lp.style.display = 'block';
+    $('playlog').innerHTML = state.playLog
+      .map((p, i) => `<div><span><span class="lognum">${i + 1}.</span> ${esc(p.hand)}</span><b>${fmt(p.score)}</b></div>`)
+      .join('');
+  } else lp.style.display = 'none';
+
+  $('seedinfo').textContent = `seed: ${runSeed}`;
+}
+
+function renderPreview() {
   const pv = $('previewbox');
+  if (!pv) return;
   const sel = selectedCards();
   let handName = '—';
   let chips = '—', mult = '—', flat = '—', score = '—';
@@ -8895,25 +9244,6 @@ function renderSide() {
   pv.querySelector('.pv-box.flat .val').textContent = flat;
   pv.querySelector('.pv-box.flat').classList.toggle('off', flatOff);
   pv.querySelector('.pv-total .tv').textContent = score;
-
-  $('deck-val').textContent = `${state.deck.length}`;
-  const deckLow = state.deck.length > 0 && state.deck.length <= 5;
-  const deckbox = $('deckbox');
-  deckbox.classList.toggle('deck-low', deckLow);
-  deckbox.classList.remove('deck-blocked');
-  deckbox.setAttribute('aria-disabled', 'false');
-  deckbox.tabIndex = 0;
-  deckbox.title = deckLow ? t('deckLow')(state.deck.length) : t('deckTitle');
-
-  const lp = $('playlog-panel');
-  if (playLogVisible && state.playLog.length > 0) {
-    lp.style.display = 'block';
-    $('playlog').innerHTML = state.playLog
-      .map((p, i) => `<div><span><span class="lognum">${i + 1}.</span> ${esc(p.hand)}</span><b>${fmt(p.score)}</b></div>`)
-      .join('');
-  } else lp.style.display = 'none';
-
-  $('seedinfo').textContent = `seed: ${runSeed}`;
 }
 
 function renderTable() {
@@ -8976,23 +9306,7 @@ function renderTable() {
 
   syncHandSortBtn();
   syncJuiceSpeedBtn();
-
-  const n = state.selected.length;
-  const canAct = state.screen === 'play' && !state.juicing && !state.dealing;
-  const sortBlocked = !canAct;
-  const handSort = $('hand-sort');
-  if (handSort) {
-    handSort.classList.toggle('sort-blocked', sortBlocked);
-    handSort.querySelectorAll('button').forEach((btn) => { btn.disabled = sortBlocked; });
-  }
-  const playBtn = $('btn-play');
-  const discardBtn = $('btn-discard');
-  syncActionBtn(playBtn, t('btnPlay'), state.playsLeft);
-  playBtn.title = t('playTitle')(state.playsLeft);
-  playBtn.disabled = !canAct || n < 1 || n > 5 || state.playsLeft <= 0 || state.coachStep === 'junk';
-  syncActionBtn(discardBtn, t('btnDiscard'), state.discardsLeft);
-  discardBtn.title = t('discardTitle')(state.discardsLeft);
-  discardBtn.disabled = !canAct || n < 1 || n > 5 || state.discardsLeft <= 0;
+  syncPlayActions();
   if (CHUNHYANG_ENABLED) {
     $('btn-play').onmouseenter = () => setChunhyangHover('play');
     $('btn-play').onmouseleave = () => clearChunhyangHover();
@@ -9007,6 +9321,26 @@ function renderTable() {
     $('btn-discard').onmouseleave = null;
   }
 
+}
+
+function syncPlayActions() {
+  const n = state.selected.length;
+  const canAct = state.screen === 'play' && !state.juicing && !state.dealing;
+  const sortBlocked = !canAct;
+  const handSort = $('hand-sort');
+  if (handSort) {
+    handSort.classList.toggle('sort-blocked', sortBlocked);
+    handSort.querySelectorAll('button').forEach((btn) => { btn.disabled = sortBlocked; });
+  }
+  const playBtn = $('btn-play');
+  const discardBtn = $('btn-discard');
+  if (!playBtn || !discardBtn) return;
+  syncActionBtn(playBtn, t('btnPlay'), state.playsLeft);
+  playBtn.title = t('playTitle')(state.playsLeft);
+  playBtn.disabled = !canAct || n < 1 || n > 5 || state.playsLeft <= 0 || state.coachStep === 'junk';
+  syncActionBtn(discardBtn, t('btnDiscard'), state.discardsLeft);
+  discardBtn.title = t('discardTitle')(state.discardsLeft);
+  discardBtn.disabled = !canAct || n < 1 || n > 5 || state.discardsLeft <= 0;
 }
 
 function renderCoach() {
@@ -9730,34 +10064,37 @@ function parseJokerChipLabel(label) {
   return m ? parseInt(m[1], 10) : 0;
 }
 
-/** 아이템 정산 시 관련 카드 살짝 펄스 (+점수면 칩 플로트, 복수 라벨 가능) */
-async function pulseJuiceCardsForJoker(wraps, cardSteps, affected, { chipLabel = null, chipLabels = null } = {}) {
+/** 아이템 정산 시 관련 카드를 한 번에 펄스 (등급색 · +점수면 칩 플로트) */
+async function pulseJuiceCardsForJoker(wraps, cardSteps, affected, { labelsByUid = {}, rarity = 'common' } = {}) {
   if (!affected?.length || !wraps?.length) return;
-  const labels = chipLabels?.filter(Boolean)?.length
-    ? chipLabels.filter(Boolean)
-    : (chipLabel ? [chipLabel] : []);
   const uids = new Set(affected.map((c) => c.uid));
+  const hitR = `hit-${rarity}`;
+  let any = false;
   for (let i = 0; i < cardSteps.length; i++) {
     if (JUICE.skip) break;
     if (!uids.has(cardSteps[i].card.uid)) continue;
     const w = wraps[i];
     if (!w) continue;
-    w.classList.remove('pulse', 'joker-hit');
+    w.classList.remove('pulse', 'joker-hit', 'hit-common', 'hit-rare', 'hit-epic', 'hit-legendary');
     void w.offsetWidth;
-    w.classList.add('joker-hit');
+    w.classList.add('joker-hit', hitR);
     w.querySelectorAll('.chip-float.joker-fx').forEach((el) => el.remove());
+    const labels = labelsByUid[cardSteps[i].card.uid] || [];
     labels.forEach((lab, idx) => {
       const fx = document.createElement('div');
-      fx.className = 'chip-float joker-fx';
+      fx.className = `chip-float joker-fx ${hitR}`;
       fx.textContent = lab;
       if (labels.length > 1) fx.style.top = `${-8 - idx * 24}px`;
       w.appendChild(fx);
       void fx.offsetWidth;
       fx.classList.add('go');
     });
-    sfxChip();
-    await juiceWait(130);
-    w.classList.remove('joker-hit');
+    any = true;
+  }
+  if (any) sfxChip();
+  await juiceWait(280);
+  for (const w of wraps) {
+    w.classList.remove('joker-hit', 'hit-common', 'hit-rare', 'hit-epic', 'hit-legendary');
   }
 }
 
@@ -11290,7 +11627,7 @@ async function playJuiceSequence(snap, fromRects = null) {
       if (tally) tally.style.opacity = '1';
     }
 
-    // 2.5) 아이템 정산 — 카드 칩 합산 후, 낸 패 왼→오 · 카드마다 해당 특수패 전부 한 번에
+    // 2.5) 아이템 정산 — 특수패 슬롯 왼→오, 한 장씩이 아니라 아이템마다 관련 패를 한 번에
     snap._scoreBumped = snap._scoreBumped || new Set();
     const needsItemPhase = bd.jokerSteps.length > 0;
     let multAnimatedInItems = false;
@@ -11300,88 +11637,35 @@ async function playJuiceSequence(snap, fromRects = null) {
       multEl.textContent = fmtMult(mult);
       await juiceWait(180);
 
-      const appliedChip = new Set();
-      const appliedAddMult = new Set();
-      const appliedXMult = new Set();
-
-      for (const cs of bd.steps) {
+      for (const step of bd.jokerSteps) {
         if (JUICE.skip) break;
-        const card = cs.card;
-        const hits = bd.jokerSteps.filter((s) => s.affected?.some((c) => c.uid === card.uid));
-        if (!hits.length) continue;
-
-        pulseJokerSlots(hits.map((h) => h.id));
-        const labels = hits.map((h) => jokerCardLabel(h.id, card)).filter(Boolean);
-        await pulseJuiceCardsForJoker(wraps, bd.steps, [card], { chipLabels: labels });
-
-        let cardFlat = 0;
-        for (const step of hits) {
-          const n = parseJokerChipLabel(jokerCardLabel(step.id, card));
-          if (n) cardFlat += n;
-          else if (step.chipGain && !appliedChip.has(step.id)) {
-            appliedChip.add(step.id);
-            cardFlat += step.chipGain;
+        const rarity = JOKER_BY_ID[step.id]?.rarity || 'common';
+        pulseJokerSlots([step.id]);
+        if (step.affected?.length) {
+          const labelsByUid = {};
+          for (const card of step.affected) {
+            const lab = jokerCardLabel(step.id, card);
+            if (lab) labelsByUid[card.uid] = [lab];
           }
+          await pulseJuiceCardsForJoker(wraps, bd.steps, step.affected, { labelsByUid, rarity });
+        } else {
+          await juiceWait(160);
         }
-        if (cardFlat) {
+
+        if (step.chipGain) {
           ensureFlatUI();
           const from = flat;
-          flat += cardFlat;
+          flat += step.chipGain;
           await animateNumber(flatEl, from, flat, juiceMs(200));
           flatEl.style.transform = 'scale(1.12)';
           await juiceWait(80);
           flatEl.style.transform = '';
         }
-
-        for (const step of hits) {
-          if (step.addMult && !appliedAddMult.has(step.id)) {
-            appliedAddMult.add(step.id);
-            await bumpMult(mult + step.addMult);
-            multAnimatedInItems = true;
-          }
-          if (step.xMult !== 1 && !appliedXMult.has(step.id)) {
-            appliedXMult.add(step.id);
-            await bumpMult(mult * step.xMult);
-            multAnimatedInItems = true;
-          }
-          if (step.money > 0 && !snap._moneyPaid) {
-            addMoney(step.money);
-            state.kwangSoldThisRound += step.money;
-            bumpJokerGain(step.id, { money: step.money });
-            snap._moneyPaid = true;
-            const mb = $('moneybox');
-            if (mb) mb.textContent = `${state.money}냥`;
-            sfxCoin();
-            await juiceWait(200);
-          }
-          const sg = (snap.jokerScoreGains || []).find((e) => e.id === step.id);
-          if (sg?.score && !snap._scoreBumped.has(step.id)) {
-            bumpJokerGain(step.id, { score: sg.score });
-            snap._scoreBumped.add(step.id);
-          }
-        }
-        await juiceWait(80);
-      }
-
-      // affected 없이 발동한 특수패(예외) — 슬롯·수치만
-      for (const step of bd.jokerSteps) {
-        if (JUICE.skip) break;
-        if (step.affected?.length) continue;
-        pulseJokerSlots([step.id]);
-        if (step.chipGain && !appliedChip.has(step.id)) {
-          appliedChip.add(step.id);
-          ensureFlatUI();
-          const from = flat;
-          flat += step.chipGain;
-          await animateNumber(flatEl, from, flat, juiceMs(200));
-        }
-        if (step.addMult && !appliedAddMult.has(step.id)) {
-          appliedAddMult.add(step.id);
+        if (step.addMult) {
           await bumpMult(mult + step.addMult);
           multAnimatedInItems = true;
         }
-        if (step.xMult !== 1 && !appliedXMult.has(step.id)) {
-          appliedXMult.add(step.id);
+        if (step.xMult !== 1) {
           await bumpMult(mult * step.xMult);
           multAnimatedInItems = true;
         }
@@ -11393,12 +11677,14 @@ async function playJuiceSequence(snap, fromRects = null) {
           const mb = $('moneybox');
           if (mb) mb.textContent = `${state.money}냥`;
           sfxCoin();
+          await juiceWait(200);
         }
         const sg = (snap.jokerScoreGains || []).find((e) => e.id === step.id);
         if (sg?.score && !snap._scoreBumped.has(step.id)) {
           bumpJokerGain(step.id, { score: sg.score });
           snap._scoreBumped.add(step.id);
         }
+        await juiceWait(80);
       }
 
       if (!JUICE.skip) applyJokerEconomy(snap);
@@ -11676,6 +11962,8 @@ if (document.fonts?.ready) document.fonts.ready.then(syncHandSortThumb);
 syncVolUi();
 syncJuiceSpeedBtn();
 syncPlayLogBtn();
+initCursorTrail();
+initHandSweep();
 initBgSpine();
 boot(); // 에셋 프리로드 → 첫 방문이면 룰 안내 → prep
 </script>
