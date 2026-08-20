@@ -69,8 +69,8 @@ export async function setup(config) {
 
   if (!analytics && !firestoreReady) return null;
 
-  /** 최초 1회 — users/{uid} 에 is_invite·og_image 기록 (Rules: read 불가 → getDoc 대신 localStorage) */
-  async function registerUser(isInvite, ogImage) {
+  /** 최초 1회 — users/{uid} 에 is_invite·og_image·locale 기록 (Rules: read 불가 → getDoc 대신 localStorage) */
+  async function registerUser(isInvite, ogImage, locale) {
     if (!firestoreReady) return;
     try {
       if (localStorage.getItem('hwatro_user_reg') === uid) return;
@@ -82,6 +82,8 @@ export async function setup(config) {
       };
       const og = String(ogImage || '').slice(0, 32);
       if (og) payload.og_image = og;
+      const loc = String(locale || '').slice(0, 8);
+      if (loc === 'kr' || loc === 'en' || loc === 'jp') payload.locale = loc;
       await setDoc(doc(db, 'users', uid), payload);
       try { localStorage.setItem('hwatro_user_reg', uid); } catch (_) {}
     } catch (_) {}

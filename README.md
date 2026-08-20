@@ -1,4 +1,4 @@
-# 화투로 — 고스톱: 무한의 판 🎴
+# 십이화 — 고스톱: 무한의 판 🎴
 
 한국 화투 48장으로 하는 1인용 **Balatro라이크** 로그라이크 덱빌더 웹 게임 프로토타입.
 
@@ -71,7 +71,7 @@ node test/test-game.mjs   # 단위 테스트 + 300런 시뮬레이션
 1. Vercel → hwatro → **Settings → Environment Variables**
 2. `FIREBASE_CONFIG_JSON` = firebaseConfig JSON 한 줄 (`measurementId` 포함)
 3. **Redeploy**
-4. Firebase → Authorized domains에 `hwatro.jqklabs.com` 추가
+4. Firebase → Authorized domains에 `hanate.jqklabs.com` 추가
 
 ### `run_end` 파라미터
 

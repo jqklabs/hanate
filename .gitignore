@@ -32,4 +32,5 @@ design/*/premiere/*.wav
 
 # AAF에서 뽑아낸 오디오 — premiere/build_audio.py 로 재생성됨
 design/*/audio-clips/_aaf_essence/
+design/*/audio-clips/hwatro_*_mix.wav
 design/*/audio-clips/hwatro_master_mix.wav

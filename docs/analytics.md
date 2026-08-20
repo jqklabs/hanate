@@ -32,24 +32,29 @@
 |------|------|------|
 | `is_invite` | number | `/invite` 유입 여부 (0/1), **최초 1회만** 기록 |
 | `og_image` | string | (선택) 유입 OG 변형 (`OG1`/`OG2`/`OGB1`/`OGB2`) |
+| `locale` | string | (선택) 유입·진입 언어 (`kr`/`en`/`jp`) — `localStorage.hwatro_locale` |
 | `created_at` | timestamp | 최초 등록 시각 |
 
-**분석:** `users` 에서 `is_invite == 1` 인 `uid` 목록 → `events` 를 `uid` 로 조인. OG별 유입은 `users.og_image` 또는 `session_start.params.og_image` 로 집계.
+**분석:** `users` 에서 `is_invite == 1` 인 `uid` 목록 → `events` 를 `uid` 로 조인. OG별 유입은 `users.og_image` 또는 `session_start.params.og_image` 로 집계. 언어별은 `users.locale` / `session_start.params.locale`.
 
 ### OG A/B 유입 링크
 
 | URL | 동작 |
 |-----|------|
-| `/invite` | 미들웨어가 `OG1`/`OG2`/`OGB1`/`OGB2` 중 **랜덤**으로 `/invite/{name}` 302 |
-| `/invite/{name}` | 해당 OG 미리보기 → `/{name}` 로 이동 |
-| `/{name}` | OG 미리보기 + `hwatro_og_image` 저장 후 `/` 로 이동 → Firestore 기록 |
+| `/invite` | 미들웨어가 `OG1`/`OG2`/`OGB1`/`OGB2` 중 **랜덤**으로 `/invite/{name}` 302 (KR) |
+| `/invite/en` · `/invite/jp` | 동일 랜덤 → `/invite/{locale}/{name}` |
+| `/invite/{name}` · `/invite/{locale}/{name}` | 해당 OG 미리보기 → 랜딩으로 이동 |
+| `/{name}` · `/{locale}/{name}` | OG 미리보기 + `hwatro_og_image`·`hwatro_locale` 저장 후 게임으로 이동 |
+| `/` · `/en/` · `/jp/` | 게임 본편 (`/?lang=` 또는 locale 셸) |
 
 **공유할 링크 (슬래시 하나):**
-- 랜덤: `https://hwatro.jqklabs.com/invite`
-- 고정: `https://hwatro.jqklabs.com/invite/OG1` 또는 `https://hwatro.jqklabs.com/OG1`
-- ❌ `https://hwatro.jqklabs.com//OG1` (슬래시 두 개)
+- KR 랜덤: `https://hanate.jqklabs.com/invite`
+- EN 랜덤: `https://hanate.jqklabs.com/invite/en`
+- JP 랜덤: `https://hanate.jqklabs.com/invite/jp`
+- 고정 예: `https://hanate.jqklabs.com/invite/OG1` · `https://hanate.jqklabs.com/invite/jp/OG1`
+- ❌ `https://hanate.jqklabs.com//OG1` (슬래시 두 개)
 
-참고: 카카오 캐시가 남으면 디버거로 재스크랩. OG 이미지는 `Assets/OG/{name}.jpg` (1200×630).
+참고: 카카오 캐시가 남으면 디버거로 재스크랩. OG 이미지는 `Assets/OG/{kr\|en\|jp}/{name}.jpg` (1200×630). EN/JP 아트는 추후 배치.
 
 콘솔에서 조회 예:
 
@@ -90,6 +95,7 @@ Anonymous Auth: 무료, Spark 에서 사용 가능.
 |----------|------|--------|
 | `returning_user` | number | 재방문 (0=첫 방문, 1=재방문) |
 | `days_since_last` | number | 마지막 방문 며칠 전 |
+| `locale` | string | UI 언어 (`kr`/`en`/`jp`) |
 | `og_image` | string | (있을 때만) 유입 OG 변형 이름 |
 
 ### session_end — 탭 닫기
@@ -185,14 +191,14 @@ Anonymous Auth: 무료, Spark 에서 사용 가능.
 Authentication → Settings → Authorized domains:
 
 - `localhost`
-- `hwatro.jqklabs.com`
+- `hanate.jqklabs.com`
 - (필요 시) `*.vercel.app` 프리뷰 도메인
 
 ### 5. Vercel 환경 변수 (배포)
 
 - `FIREBASE_CONFIG_JSON` — `projectId`, `apiKey`, `measurementId` 등 **기존과 동일 JSON**  
 - Firestore 는 같은 Firebase 프로젝트면 **추가 env 불필요**  
-- Redeploy 후 `https://hwatro.jqklabs.com/firebase-config.js` 가 `null` 이 아닌지 확인
+- Redeploy 후 `https://hanate.jqklabs.com/firebase-config.js` 가 `null` 이 아닌지 확인
 
 ### 6. 동작 확인
 
