@@ -12,9 +12,9 @@ const src = html.slice(codeStart, codeEnd);
 
 const E = new Function(src + `
 return { mulberry32, shuffle, buildDeck, CHIP, effType, baseChip, HANDS, HAND_BY_ID, handDisplayName,
-  ROUNDS, TARGETS, BOSS_ROUNDS, MILD_BOSSES, goMult, goBonus, goThreshold, goLevelReached, detectHand, detectHandInfo, cardChip,
+  ROUNDS, TARGETS, JOKER_SLOT_MAX, jokerSlotCount, BOSS_ROUNDS, MILD_BOSSES, goMult, goBonus, goThreshold, goLevelReached, detectHand, detectHandInfo, cardChip,
   combosOf, evaluateHand, JOKERS, JOKER_BY_ID, BOSSES, BOSS_BY_ID, computeScore, jokerMarginalGain,
-  rollJokerRarity, RARITY_ORDER, bakChipLoss, hasMatdaePair, oppositeMonth };`)();
+  rollJokerRarity, rarityWeightsForMonth, gotaryeongMultFromGoes, RARITY_ORDER, bakChipLoss, hasMatdaePair, oppositeMonth };`)();
 
 let fails = 0;
 const assert = (cond, msg) => {
@@ -33,6 +33,10 @@ console.log('[1] 덱 구성');
     '광5 열9 띠10 쌍피2 피22');
   assert(d.filter((c) => c.tags.includes('godori')).every((c) => [2, 4, 8].includes(c.month)), '고도리 새 2·4·8월');
   assert(E.ROUNDS === 12 && E.TARGETS.length === 12, '12판 · 목표 12개');
+  assert(E.JOKER_SLOT_MAX === 5
+    && E.jokerSlotCount(1) === 1 && E.jokerSlotCount(2) === 2
+    && E.jokerSlotCount(5) === 5 && E.jokerSlotCount(12) === 5,
+    '특수패 슬롯 1월 1칸 → 5월 5칸');
   assert(JSON.stringify(E.BOSS_ROUNDS) === '[3,6,9,12]', '박 라운드 3·6·9·12월');
 }
 
@@ -299,6 +303,18 @@ console.log('[5] 특수패·박 회귀');
   assert(rGeum.mult === rMak0.mult + 4, `금줄 누적 +4배수 (실제 ${rGeum.mult})`);
   const rGoTa = E.computeScore(yeol3, env({ jokerIds: ['gotaryeong'], gotaryeongMult: 2 }));
   assert(rGoTa.mult === rMak0.mult + 2, `고타령 누적 +2배수 (실제 ${rGoTa.mult})`);
+  assert(E.gotaryeongMultFromGoes(1) === 0 && E.gotaryeongMultFromGoes(2) === 1
+    && E.gotaryeongMultFromGoes(3) === 1 && E.gotaryeongMultFromGoes(4) === 2,
+    '고타령은 고 2회당 +1배수');
+  const w1 = E.rarityWeightsForMonth(1);
+  const w12 = E.rarityWeightsForMonth(12);
+  assert(w1.legendary < 0.006 && w12.legendary <= 0.027,
+    `레전 1월 ${w1.legendary} / 12월 ${w12.legendary} (기존 4% 미만)`);
+  assert(w1.common > w12.common && w1.epic < w12.epic && w1.legendary < w12.legendary,
+    '월이 오를수록 커먼↓ 에픽·레전↑');
+  assert(Math.abs(w1.common + w1.rare + w1.epic + w1.legendary - 1) < 1e-9
+    && Math.abs(w12.common + w12.rare + w12.epic + w12.legendary - 1) < 1e-9,
+    '월별 티어 확률 합 1');
   const loss = E.bakChipLoss(pi2, env({ boss: 'pibak' }));
   const noLoss = E.bakChipLoss(pi2, env({ boss: 'pibak', jokerIds: ['pibak_boheom'] }));
   assert(loss > 0 && noLoss === 0, `금줄 손실 칩 ${loss} · 피박보험 0`);
@@ -328,14 +344,14 @@ console.log('[7] 풀런 시뮬레이션');
 {
   const tierRank = { common: 1, rare: 2, epic: 3, legendary: 4 };
   /** 가성비: 티어↑·가격↓ 우선, 최소 예비금 2냥 유지 */
-  function shopBuy(money, jokers, rng) {
+  function shopBuy(money, jokers, rng, month) {
     const owned = new Set(jokers);
     const pool = E.JOKERS.filter((j) => !owned.has(j.id));
     const offers = [];
     for (let i = 0; i < 3; i++) {
       const avail = pool.filter((j) => !offers.includes(j));
       if (!avail.length) break;
-      const want = E.rollJokerRarity(rng);
+      const want = E.rollJokerRarity(rng, month);
       let cands = avail.filter((j) => j.rarity === want);
       if (!cands.length) {
         for (const r of E.RARITY_ORDER) {
@@ -352,7 +368,7 @@ console.log('[7] 풀런 시뮬레이션');
       return vb - va;
     });
     for (const o of offers) {
-      if (jokers.length >= 5) break;
+      if (jokers.length >= E.jokerSlotCount(month + 1)) break;
       if (money >= o.price + 2) { money -= o.price; jokers.push(o.id); }
     }
     return money;
@@ -412,7 +428,7 @@ console.log('[7] 풀런 시뮬레이션');
       if (score < target) return { cleared: round - 1 };
       const interest = Math.min(Math.floor(money / 5), 5);
       money += interest + (E.BOSS_ROUNDS.includes(round) ? 6 : 3) + playsLeft + (jokers.includes('pibak_boheom') ? 1 : 0);
-      if (round < E.ROUNDS && buyAI) money = shopBuy(money, jokers, rng);
+      if (round < E.ROUNDS && buyAI) money = shopBuy(money, jokers, rng, round);
     }
     return { cleared: E.ROUNDS };
   }

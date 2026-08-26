@@ -150,10 +150,10 @@
     background: transparent !important;
     overflow: visible;
     filter:
-      drop-shadow(0 0 1px rgba(255,255,255,.42))
-      drop-shadow(0 0 4px rgba(255,255,255,.28))
-      drop-shadow(0 0 10px rgba(255,255,255,.14))
-      drop-shadow(0 0 20px rgba(255,248,230,.08));
+      drop-shadow(0 0 1px rgba(255,255,255,.22))
+      drop-shadow(0 0 4px rgba(255,255,255,.14))
+      drop-shadow(0 0 8px rgba(255,255,255,.08))
+      drop-shadow(0 0 16px rgba(255,248,230,.04));
   }
   #bg-spine .spine-player-controls,
   #bg-spine .spine-player-button,
@@ -233,6 +233,11 @@
     border: 1px dashed rgba(226, 232, 240, .38);
     font-size: 12px; color: var(--ink-4); display: flex; align-items: center; justify-content: center;
     text-align: center;
+  }
+  .jokerslot.locked {
+    opacity: .4;
+    border-style: dotted;
+    color: var(--ink-5);
   }
   .jokerslot.filled {
     position: relative;
@@ -2224,6 +2229,12 @@
   .owned-slot.empty .os-plus {
     font-size: 18px; line-height: 1; opacity: .45;
   }
+  .owned-slot.locked {
+    opacity: .4;
+    justify-content: center; align-items: center; gap: 4px;
+    font-family: var(--font-ui); font-size: 11px; font-weight: 700; letter-spacing: .02em;
+    border-style: dotted;
+  }
   .owned-slot.filled {
     border-style: solid;
     border-color: rgba(196,162,90,.28);
@@ -3119,10 +3130,10 @@
   }
   #jumak-cascade.on { display: flex; }
   #jumak-cascade.out {
-    animation: jumakFadeOut .38s ease forwards;
+    animation: jumakFadeOut .30s ease forwards;
   }
   #jumak-cascade.out .jumak-stage {
-    animation: jumakStageFadeOut .38s ease forwards;
+    animation: jumakStageFadeOut .30s ease forwards;
   }
   @keyframes jumakFadeOut {
     from { opacity: 1; }
@@ -3145,7 +3156,7 @@
     will-change: transform, opacity, filter;
   }
   #jumak-cascade .jumak-stage.slam {
-    animation: jumakSlamIn .48s cubic-bezier(.15,1.55,.35,1) forwards;
+    animation: jumakSlamIn .38s cubic-bezier(.15,1.55,.35,1) forwards;
   }
   #jumak-cascade .jumak-frame {
     position: absolute; inset: 0;
@@ -3715,8 +3726,11 @@
       border-radius: 6px;
       display: flex; align-items: center; justify-content: center;
     }
-    .jokerslot:not(.filled)::before {
+    .jokerslot:not(.filled):not(.locked)::before {
       content: '＋'; font-size: 14px; color: var(--ink-5); font-weight: 700;
+    }
+    .jokerslot.locked {
+      font-size: 9px; line-height: 1.2;
     }
     .jokerslot.filled {
       width: auto; min-width: 0; max-width: none; padding: 3px 2px 4px;
@@ -4744,6 +4758,10 @@ function handDisplayName(handId, core) {
 // 12판 = 1월(송학) → 12월(비). 3·6·9·12월(환절기)은 박 라운드.
 const ROUNDS = 12;
 const TARGETS = [160, 240, 330, 450, 600, 820, 1150, 1600, 2200, 3000, 4100, 5500];
+const JOKER_SLOT_MAX = 5;
+function jokerSlotCount(month) {
+  return Math.min(JOKER_SLOT_MAX, Math.max(1, month | 0));
+}
 const BOSS_ROUNDS = [3, 6, 9, 12];
 const MILD_BOSSES = ['pibak', 'gwangbak', 'meongbak'];
 // 고 무제한: n고 = 목표 ×(1+0.6n), 성공 보너스 n×m냥 (m=현재 월)
@@ -4941,7 +4959,7 @@ const JOKERS = [
     desc: '박으로 실제 잃은 칩 10점마다 영구로 배수가 1 올라갑니다. 팔면 초기화됩니다.',
     addMult: (x) => x.geumjulMult },
   { id: 'gotaryeong', name: '고타령', icon: '🥁', rarity: 'rare', price: 7, kind: '성장',
-    desc: '고를 선언할 때마다 영구로 배수가 1 올라갑니다. 팔면 초기화됩니다.',
+    desc: '고를 두 번 선언할 때마다 영구로 배수가 1 올라갑니다. 팔면 초기화됩니다.',
     addMult: (x) => x.gotaryeongMult },
   // ── 에픽 ───────────────────────────────────────────────
   { id: 'bigwang_usan', name: '비광우산', icon: '☔', rarity: 'epic', price: 9, kind: '×배수',
@@ -4976,13 +4994,27 @@ const JOKERS = [
     xMult: (x) => (x.handId !== 'none' ? 2 : 1) },
 ];
 const JOKER_BY_ID = Object.fromEntries(JOKERS.map((j) => [j.id, j]));
-const RARITY_WEIGHT = { common: 0.55, rare: 0.28, epic: 0.13, legendary: 0.04 };
 const RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'];
-function rollJokerRarity(rngFn) {
+const GOTARYEONG_GOES_PER_MULT = 2;
+function gotaryeongMultFromGoes(goes) {
+  return Math.floor(Math.max(0, goes) / GOTARYEONG_GOES_PER_MULT);
+}
+/** 상점 티어 — 1월은 고등급이 드물고, 12월로 갈수록 레어·에픽이 열린다. 레전은 전 구간 기존 4% 미만. */
+function rarityWeightsForMonth(month) {
+  const m = Math.max(1, Math.min(ROUNDS, month | 0));
+  const t = (m - 1) / (ROUNDS - 1);
+  const legendary = 0.004 + t * 0.022; // 0.4% → 2.6%
+  const epic      = 0.025 + t * 0.205; // 2.5% → 23.0%
+  const rare      = 0.160 + t * 0.115; // 16.0% → 27.5%
+  const common    = 1 - rare - epic - legendary;
+  return { common, rare, epic, legendary };
+}
+function rollJokerRarity(rngFn, month) {
+  const w = rarityWeightsForMonth(month == null ? 1 : month);
   const r = rngFn();
-  if (r < 0.55) return 'common';
-  if (r < 0.83) return 'rare';
-  if (r < 0.96) return 'epic';
+  if (r < w.common) return 'common';
+  if (r < w.common + w.rare) return 'rare';
+  if (r < w.common + w.rare + w.epic) return 'epic';
   return 'legendary';
 }
 
@@ -5111,7 +5143,7 @@ const I18N = {
     sideGuide: '게임 가이드',
     labelsShow: '월·열끗 보이기', labelsHide: '월·열끗 숨기기',
     playLogTitle: '이번 판 내기 기록',
-    emptyJoker: '특수패<br>빈 슬롯', nyang: (n) => `${n}냥`,
+    emptyJoker: '특수패<br>빈 슬롯', slotLocked: (n) => `${n}월에 열림`, nyang: (n) => `${n}냥`,
     seasonLineDay: (m) => `이달의 패: <b>${m} 카드 칩 ×2</b><br>낮 — 광·열끗 칩 +2`,
     seasonLineNight: (m) => `이달의 패: <b>${m} 카드 칩 ×2</b><br>밤 — 띠·피·쌍피 칩 +2`,
     roundMeta: (r, t) => `(판 ${r}/${t})`, bak: '(박)',
@@ -5168,7 +5200,7 @@ const I18N = {
       chodan_aeho:{name:'초단꾼',kind:'+배수',desc:'족보에 포함되는 초단마다 배수가 2만큼 증가합니다.'},
       matdae:{name:'맞대',kind:'+배수',desc:'한 수에 월 차이가 6인 쌍(1–7, 2–8…)이 있으면 배수가 6 올라갑니다.'},
       geumjul:{name:'금줄',kind:'성장',desc:'박으로 실제 잃은 칩 10점마다 영구로 배수가 1 올라갑니다. 팔면 초기화됩니다.'},
-      gotaryeong:{name:'고타령',kind:'성장',desc:'고를 선언할 때마다 영구로 배수가 1 올라갑니다. 팔면 초기화됩니다.'},
+      gotaryeong:{name:'고타령',kind:'성장',desc:'고를 두 번 선언할 때마다 영구로 배수가 1 올라갑니다. 팔면 초기화됩니다.'},
       bigwang_usan:{name:'비광우산',kind:'×배수',desc:'12월 패를 삼광·고도리·초단·띠셋에 쓸 수 있게 해 줍니다(비삼광·비고도리 대신). 족보에 포함되는 12월이 있으면 배수가 2배가 됩니다. 무조합에는 적용되지 않습니다.'},
       poktan:{name:'폭탄',kind:'×배수',desc:'폭탄(같은 달 세 장)이나 총통을 내면 배수가 3배가 됩니다.'},
       mitjang:{name:'밑장빼기',kind:'성장',desc:'버릴 때마다 영구로 10점이 쌓입니다. 점수는 배수 밖에서 더해지며, 팔면 초기화됩니다.'},
@@ -5209,7 +5241,7 @@ const I18N = {
     sideGuide: 'Game guide',
     labelsShow: 'Show labels', labelsHide: 'Hide labels',
     playLogTitle: 'Plays this round',
-    emptyJoker: 'Joker<br>empty', nyang: (n) => `${n} nyang`,
+    emptyJoker: 'Joker<br>empty', slotLocked: (n) => `Opens in ${n}`, nyang: (n) => `${n} nyang`,
     seasonLineDay: (m) => `Month cards: <b>${m} chips ×2</b><br>Day — Gwang & Yeol +2`,
     seasonLineNight: (m) => `Month cards: <b>${m} chips ×2</b><br>Night — Ribbon & Pi +2`,
     roundMeta: (r, t) => `(Round ${r}/${t})`, bak: '(Bak)',
@@ -5266,7 +5298,7 @@ const I18N = {
       chodan_aeho:{name:'Grass Fan',kind:'+Mult',desc:'Each Grass Ribbon in the combo: +2 mult.'},
       matdae:{name:'Opposite',kind:'+Mult',desc:'If the play has a month pair 6 apart (1–7, 2–8…): +6 mult.'},
       geumjul:{name:'Gold Rope',kind:'Growth',desc:'Every 10 chips actually lost to Bak: permanent +1 mult. Resets if sold.'},
-      gotaryeong:{name:'Go Ballad',kind:'Growth',desc:'Each Go declaration: permanent +1 mult. Resets if sold.'},
+      gotaryeong:{name:'Go Ballad',kind:'Growth',desc:'Every 2 Go declarations: permanent +1 mult. Resets if sold.'},
       bigwang_usan:{name:'Rain Umbrella',kind:'×Mult',desc:'Dec cards count for Three Bright / Godori / Grass / Three Ribbons. ×2 if the combo includes Dec. Not on No combo.'},
       poktan:{name:'Bomb!',kind:'×Mult',desc:'Bomb or Chongtong: ×3.'},
       mitjang:{name:'Bottom Deal',kind:'Growth',desc:'Each discard permanently stacks +10 flat. Resets if sold.'},
@@ -5307,7 +5339,7 @@ const I18N = {
     sideGuide: 'ゲームガイド',
     labelsShow: 'ラベル表示', labelsHide: 'ラベル非表示',
     playLogTitle: 'この卓の出し記録',
-    emptyJoker: '特殊札<br>空き', nyang: (n) => `${n}両`,
+    emptyJoker: '特殊札<br>空き', slotLocked: (n) => `${n}月に開放`, nyang: (n) => `${n}両`,
     seasonLineDay: (m) => `今月札: <b>${m} チップ×2</b><br>昼 — 光・十＋2`,
     seasonLineNight: (m) => `今月札: <b>${m} チップ×2</b><br>夜 — 短冊・カス＋2`,
     roundMeta: (r, t) => `(卓 ${r}/${t})`, bak: '(バク)',
@@ -5364,7 +5396,7 @@ const I18N = {
       chodan_aeho:{name:'草短好き',kind:'+倍率',desc:'役に含まれる草短ごとに倍率+2。'},
       matdae:{name:'向かい月',kind:'+倍率',desc:'一度の出しに月差6の対(1–7, 2–8…)があれば倍率+6。'},
       geumjul:{name:'禁縄',kind:'成長',desc:'バクで実際に失ったチップ10ごとに恒久倍率+1。売るとリセット。'},
-      gotaryeong:{name:'ゴー打令',kind:'成長',desc:'ゴー宣言のたびに恒久倍率+1。売るとリセット。'},
+      gotaryeong:{name:'ゴー打令',kind:'成長',desc:'ゴー宣言2回ごとに恒久倍率+1。売るとリセット。'},
       bigwang_usan:{name:'雨傘',kind:'×倍率',desc:'12月札を三光・五鳥・草短・短冊セットに使える。役に12月が含まれれば×2。役なしには無効。'},
       poktan:{name:'爆弾',kind:'×倍率',desc:'爆弾や総通で倍率×3。'},
       mitjang:{name:'底抜き',kind:'成長',desc:'捨てるたび恒久+10点が積み上がる。売るとリセット。'},
@@ -5407,7 +5439,7 @@ const I18N_UI = {
     helpRuleBody: '<b>3·6·9·12월</b>은 박 라운드(디버프). 안개는 손패 <b>2장</b>이 뒷면으로 옵니다.',
     helpRuleTag: '박 라운드 디버프',
     helpJokerTitle: '특수패 · 주막',
-    helpJokerBody: '특수패 28종 · 소지 최대 5. 티어는 커먼 / 레어 / 에픽 / 레전더리 (출현 약 55·28·13·4%). +점수는 배수 밖, +배수·×배수는 족보 배수에 얹힙니다.',
+    helpJokerBody: '특수패 28종. 슬롯은 1월 1칸부터 달마다 하나씩 열려 5월에 5칸. 티어는 커먼 / 레어 / 에픽 / 레전더리(후반으로 갈수록 고등급↑). +점수는 배수 밖, +배수·×배수는 족보 배수에 얹힙니다.',
     helpJokerTags: ['커먼 3–4냥', '레어 6–7냥', '에픽 9–11냥', '레전 13–15냥'],
     welcomeH2: '십이화 — 고스톱: 무한의 판',
     welcomeSub: '한국 화투 48장으로 족보를 맞춰 목표 점수를 넘기는 <b>1인 런</b>입니다. 1월부터 12월까지 한 해를 버텨보세요.',
@@ -5418,7 +5450,7 @@ const I18N_UI = {
     welcomeGoTitle: '고 / 스톱',
     welcomeGoBody: '목표를 넘기면 <b>스톱</b>(정산) 또는 <b>고</b>(목표↑ · 내기 +1 · 보너스). 한 방이 크면 이미 넘은 고 문턱을 한 번에 밀치며 여러 단계 점프. 고는 무제한이지만, 실패하면 <b>고박 = 런 종료</b>. 3·6·9·12월은 박 라운드(디버프)가 붙습니다.',
     welcomeShopTitle: '주막',
-    welcomeShopBody: '판을 클리어하면 주막에서 <b>특수패</b>(커먼~레전더리 28종)를 사고팝니다. 소지 최대 5개.',
+    welcomeShopBody: '판을 클리어하면 주막에서 <b>특수패</b>(커먼~레전더리 28종)를 사고팝니다. 슬롯은 1월 1칸, 달마다 하나씩 열려 5월에 5칸.',
     welcomeFoot: '자세한 족보표는 언제든 <b>도움말</b>에서 볼 수 있어요.',
     welcomeStart: '알겠어요 — 시작하기',
     welcomeStartSub: '1월 준비 화면으로 이동합니다',
@@ -5523,7 +5555,7 @@ const I18N_UI = {
     helpRuleBody: '<b>Mar/Jun/Sep/Dec</b> are Bak rounds (debuffs). Fog deals <b>2</b> face-down cards.',
     helpRuleTag: 'Bak round debuffs',
     helpJokerTitle: 'Jokers · Tavern',
-    helpJokerBody: '28 jokers · hold up to 5. Tiers: Common / Rare / Epic / Legendary (~55·28·13·4%). Flat score is outside mult; +mult / ×mult stack on the hand mult.',
+    helpJokerBody: '28 jokers. Slots: 1 in January, one more each month, 5 by May. Tiers: Common / Rare / Epic / Legendary (higher tiers later). Flat score is outside mult; +mult / ×mult stack on the hand mult.',
     helpJokerTags: ['Common 3–4', 'Rare 6–7', 'Epic 9–11', 'Legend 13–15'],
     welcomeH2: 'Sibiwha — Go-Stop: Infinite Table',
     welcomeSub: 'A <b>solo run</b>: make hwatu hands and beat monthly targets with a 48-card Korean deck. Survive January through December.',
@@ -5534,7 +5566,7 @@ const I18N_UI = {
     welcomeGoTitle: 'Go / Stop',
     welcomeGoBody: 'Beat the target to <b>Stop</b> (cash out) or <b>Go</b> (raise target · +1 play · bonus). A huge hit pushes through several Go steps at once. Unlimited Go, but fail = <b>Go-bak = run over</b>. Months 3·6·9·12 are Bak rounds.',
     welcomeShopTitle: 'Tavern',
-    welcomeShopBody: 'Clear a month to shop <b>jokers</b> (Common–Legendary, 28 kinds). Hold up to 5.',
+    welcomeShopBody: 'Clear a month to shop <b>jokers</b> (Common–Legendary, 28 kinds). 1 slot in January, one more each month, 5 by May.',
     welcomeFoot: 'Full hand list is always in <b>Help</b>.',
     welcomeStart: 'Got it — Start',
     welcomeStartSub: 'Go to January prep',
@@ -5639,7 +5671,7 @@ const I18N_UI = {
     helpRuleBody: '<b>3·6·9·12月</b>はバク卓(デバフ)。霧は手札 <b>2枚</b>が裏で来ます。',
     helpRuleTag: 'バク卓デバフ',
     helpJokerTitle: '特殊札 · 酒屋',
-    helpJokerBody: '特殊札 28種 · 所持最大 5。ティアは コモン / レア / エピック / レジェンド (出現 約55·28·13·4%)。+点は倍率外、+倍率・×倍率は役倍率に乗ります。',
+    helpJokerBody: '特殊札 28種。スロットは1月1枠、月ごとに1枠開き5月で5枠。ティアは コモン / レア / エピック / レジェンド（後半ほど高ティア）。+点は倍率外、+倍率・×倍率は役倍率に乗ります。',
     helpJokerTags: ['コモン 3–4両', 'レア 6–7両', 'エピック 9–11両', 'レジェ 13–15両'],
     welcomeH2: '十二花 — ゴストップ: 無限の卓',
     welcomeSub: '韓国花札48枚で役を揃え目標を超える <b>1人ラン</b>。1月から12月まで一年を耐え抜け。',
@@ -5650,7 +5682,7 @@ const I18N_UI = {
     welcomeGoTitle: 'ゴー / ストップ',
     welcomeGoBody: '目標超えで <b>ストップ</b>(清算) か <b>ゴー</b>(目標↑ · 出し+1 · ボーナス)。大物なら閾値を一気に押して複数段ジャンプ。ゴー無制限だが失敗は <b>ゴーバク = ラン終了</b>。3·6·9·12月はバク卓。',
     welcomeShopTitle: '酒屋',
-    welcomeShopBody: 'クリア後、酒屋で <b>特殊札</b>(コモン〜レジェンド28種)を売買。所持最大5。',
+    welcomeShopBody: 'クリア後、酒屋で <b>特殊札</b>(コモン〜レジェンド28種)を売買。スロットは1月1枠、月ごとに1枠開き5月で5枠。',
     welcomeFoot: '詳しい役表はいつでも <b>ヘルプ</b>で。',
     welcomeStart: 'わかった — はじめる',
     welcomeStartSub: '1月の準備へ',
@@ -5987,7 +6019,8 @@ const state = {
   mitjangChips: 0,
   geumjulLost: 0,      // 금줄: 박으로 잃은 칩 누적
   geumjulMult: 0,      // 금줄: floor(lost/10)
-  gotaryeongMult: 0,   // 고타령: 고 선언 횟수
+  gotaryeongGoes: 0,   // 고타령: 고 선언 횟수
+  gotaryeongMult: 0,   // 고타령: floor(goes/2)
   makgeolli: 0,         // 레거시 미사용 (호환용)
   chunhyangNext: false, // 상점에서 다음 달 훈수 예약
   drunk: false,         // 이번 달 춘향이 훈수 활성 (라운드 시작 시 예약 소비)
@@ -6065,6 +6098,11 @@ function jokerLiveNote(id) {
   if (id === 'geumjul') return t('geumjulNow')(state.geumjulLost || 0, state.geumjulMult || 0);
   if (id === 'gotaryeong') return t('gotaryeongNow')(state.gotaryeongMult || 0);
   return '';
+}
+
+function openJokerSlots() {
+  const month = state.screen === 'shop' ? state.round + 1 : state.round;
+  return jokerSlotCount(month);
 }
 
 // ── 판 진행 ────────────────────────────────────────────────
@@ -7166,7 +7204,10 @@ async function chooseGo() {
   state.goLevel = goLevelReached(state.baseTarget, state.roundScore, state.goLevel) + 1;
   state.target = goThreshold(state.baseTarget, state.goLevel);
   state.playsLeft++; // 고 보상: 내기 +1 (밀친 단계 수와 무관하게 선언 1회당 1개)
-  if (hasJoker('gotaryeong')) state.gotaryeongMult += 1;
+  if (hasJoker('gotaryeong')) {
+    state.gotaryeongGoes = (state.gotaryeongGoes || 0) + 1;
+    state.gotaryeongMult = gotaryeongMultFromGoes(state.gotaryeongGoes);
+  }
   state.pendingGoStop = false;
   state.screen = 'play';
   state.dealing = true; // 드로우·정렬 전 조합 힌트 숨김
@@ -7381,7 +7422,7 @@ async function openShop() {
     await playJumakAppear();
     // 주막 등장 → 상점 UI 사이 짧은 여운
     await new Promise((res) => setTimeout(res,
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 80 : 280));
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 64 : 224));
   } finally {
     jumakAppearBusy = false;
   }
@@ -7397,7 +7438,7 @@ function genOffers() {
   for (let i = 0; i < 3; i++) {
     const avail = pool.filter((j) => !offers.some((o) => o.joker.id === j.id));
     if (!avail.length) break;
-    const want = rollJokerRarity(rng);
+    const want = rollJokerRarity(rng, state.round);
     let cands = avail.filter((j) => j.rarity === want);
     if (!cands.length) {
       // 해당 티어 없으면 가까운 티어부터 폴백
@@ -7416,7 +7457,7 @@ function buyJoker(i) {
   if (state.screen !== 'shop') return;
   const offer = state.shopOffers[i];
   if (!offer || offer.sold) return;
-  if (state.jokers.length >= 5 || state.money < offer.joker.price) { flashActions(); return; }
+  if (state.jokers.length >= openJokerSlots() || state.money < offer.joker.price) { flashActions(); return; }
   state.money -= offer.joker.price;
   trackEvent('shop_buy', {
     month: state.round,
@@ -7510,7 +7551,7 @@ function sellJoker(i) {
   addMoney(Math.floor(j.paid / 2));
   if (j.id === 'mitjang') state.mitjangChips = 0;
   if (j.id === 'geumjul') { state.geumjulLost = 0; state.geumjulMult = 0; }
-  if (j.id === 'gotaryeong') state.gotaryeongMult = 0;
+  if (j.id === 'gotaryeong') { state.gotaryeongGoes = 0; state.gotaryeongMult = 0; }
   delete state.jokerGains[j.id];
   state.jokers.splice(i, 1);
   render();
@@ -7734,7 +7775,7 @@ function resetRun() {
     round: 1, goLevel: 0, roundScore: 0, playsLeft: 4, discardsLeft: 4,
     deck: [], hand: [], selected: [], jokers: [], jokerGains: {}, money: 5, boss: null, usedBosses: [],
     nextBoss: null, bossCandidates: null, shopOffers: [], rerollCost: 2,
-    kwangSoldThisRound: 0, mitjangChips: 0, geumjulLost: 0, geumjulMult: 0, gotaryeongMult: 0, makgeolli: 0,
+    kwangSoldThisRound: 0, mitjangChips: 0, geumjulLost: 0, geumjulMult: 0, gotaryeongGoes: 0, gotaryeongMult: 0, makgeolli: 0,
     chunhyangNext: false, drunk: false, hoverReact: null, tempReact: null, touchHintMode: 'play',
     lastPlay: null, juicing: false, dealing: false, pendingGoStop: false, playLog: [],
     playedCards: [], discardedCards: [],
@@ -9224,8 +9265,9 @@ function renderChunhyang() {
 }
 
 function renderTopbar() {
+  const open = openJokerSlots();
   let slots = '';
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < JOKER_SLOT_MAX; i++) {
     const j = state.jokers[i];
     if (j) {
       const def = JOKER_BY_ID[j.id];
@@ -9238,8 +9280,10 @@ function renderTopbar() {
         ${uj.kind ? `<div class="jkind">${esc(uj.kind)}</div>` : ''}
         <div class="jtip">${esc(uj.desc)}${jokerLiveNote(def.id) ? `<br>${esc(jokerLiveNote(def.id).trim())}` : ''}<div class="jtip-gain${gainEmpty}">${esc(gain)}</div></div>
       </div>`;
-    } else {
+    } else if (i < open) {
       slots += `<div class="jokerslot">${t('emptyJoker')}</div>`;
+    } else {
+      slots += `<div class="jokerslot locked">${t('slotLocked')(i + 1)}</div>`;
     }
   }
   $('jokerbar').innerHTML = slots;
@@ -9796,7 +9840,7 @@ function shopHTML() {
   const offers = state.shopOffers.map((o, i) => {
     const j = o.joker;
     const uj = uiJoker(j);
-    const cant = state.money < j.price || state.jokers.length >= 5;
+    const cant = state.money < j.price || state.jokers.length >= openJokerSlots();
     return `<div class="offer aura-${j.rarity}${o.sold ? ' sold' : ''}">
       <div class="o-icon">${j.icon}</div>
       <div class="o-name">${esc(uj.name)}</div>
@@ -9811,10 +9855,16 @@ function shopHTML() {
     </div>`;
   }).join('');
 
-  // 항상 5칸 — 빈 칸을 미리 잡아 첫 구매 때 모달이 커지지 않게
-  const ownedSlots = Array.from({ length: 5 }, (_, i) => {
+  const openSlots = openJokerSlots();
+  // 항상 5칸 — 빈/잠긴 칸을 미리 잡아 첫 구매 때 모달이 커지지 않게
+  const ownedSlots = Array.from({ length: JOKER_SLOT_MAX }, (_, i) => {
     const j = state.jokers[i];
     if (!j) {
+      if (i >= openSlots) {
+        return `<div class="owned-slot locked" aria-label="${esc(t('slotLocked')(i + 1))}">
+          <span class="os-plus">＋</span><span>${t('slotLocked')(i + 1)}</span>
+        </div>`;
+      }
       return `<div class="owned-slot empty" aria-label="빈 특수패 칸">
         <span class="os-plus">＋</span><span>${tu('shopEmpty')}</span>
       </div>`;
@@ -9886,7 +9936,7 @@ function shopHTML() {
           <div class="shop-wallet"><b>${state.money}냥</b></div>
         </div>
         <section class="shop-sec" id="shop-owned">
-          <div class="shop-sec-h">${tu('shopOwned')} <span>${state.jokers.length}/5</span></div>
+          <div class="shop-sec-h">${tu('shopOwned')} <span>${state.jokers.length}/${openSlots}</span></div>
           <div class="shop-owned-slots">${ownedSlots}</div>
         </section>
         <section class="shop-sec" id="shop-offers">
@@ -10088,7 +10138,7 @@ const JUICE = {
 };
 
 /** 점수 연출 템포 — 1보다 크면 느리게. juiceSpeed(1|2)로 배속 */
-const JUICE_TEMPO = 1.2;
+const JUICE_TEMPO = 1.08;
 function juiceMs(ms) { return Math.max(1, Math.round(ms * JUICE_TEMPO / juiceSpeed)); }
 function juiceWait(ms) {
   return new Promise((resolve) => {
@@ -10746,16 +10796,16 @@ async function playJumakAppear() {
   try {
     if (reduce) {
       sfxJumakAppear();
-      await wait(420);
+      await wait(336);
     } else {
       stage.classList.add('slam');
       sfxJumakAppear();
-      await wait(isMobile ? 1280 : 1530);
+      await wait(isMobile ? 1024 : 1224);
     }
     // 사라질 때 fade-out (slam forwards와 안 겹치게 먼저 해제)
     stage.classList.remove('slam');
     overlay.classList.add('out');
-    await wait(reduce ? 150 : 380);
+    await wait(reduce ? 120 : 304);
   } finally {
     overlay.classList.remove('on', 'out');
     overlay.setAttribute('aria-hidden', 'true');
