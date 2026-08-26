@@ -131,6 +131,31 @@
     opacity: 1;
     visibility: visible;
   }
+  /* 밤 판 — 가장자리 비네팅 + 보랏빛 딤. 모달(110) 아래, 판(1) 위 */
+  #night-veil {
+    position: fixed; inset: 0;
+    z-index: 25;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .5s ease;
+    background:
+      radial-gradient(ellipse 58% 54% at 46% 38%, transparent 12%, rgba(14, 4, 22, .28) 48%, rgba(6, 0, 12, .62) 78%, rgba(2, 0, 8, .88) 100%),
+      linear-gradient(180deg, rgba(22, 8, 36, .22), rgba(8, 2, 16, .36));
+  }
+  body.night-round #night-veil { opacity: 1; }
+  body.night-round #bg-spine.spine-player,
+  body.night-round #bg-spine .spine-player {
+    filter:
+      brightness(.72) saturate(.78)
+      drop-shadow(0 0 1px rgba(255,255,255,.12))
+      drop-shadow(0 0 8px rgba(40, 16, 48, .25));
+  }
+  body.night-round #roundpanel.night {
+    background:
+      linear-gradient(145deg, rgba(72, 40, 88, .18), rgba(16, 8, 24, .14) 50%, transparent),
+      var(--panel);
+    border-color: rgba(140, 100, 160, .32);
+  }
   #bg-spine {
     position: absolute;
     right: -8%;
@@ -250,7 +275,8 @@
   }
   .jokerslot .jname {
     font-family: var(--font-overlay); font-weight: 400;
-    font-size: 17px; letter-spacing: .04em; line-height: 1.15;
+    font-size: 17px; letter-spacing: .02em; line-height: 1.3;
+    padding: 0.06em 0.1em 0;
     color: var(--ink-1);
   }
   .jokerslot .jkind {
@@ -281,15 +307,22 @@
     background: linear-gradient(160deg, rgba(78, 52, 12, .95), rgba(36, 24, 8, .97));
     box-shadow: 0 0 20px var(--rank-4-glow);
   }
+  .jokerslot.filled.aura-dark {
+    border-width: 1.5px; border-color: #6b2a36;
+    background: linear-gradient(160deg, rgba(48, 16, 22, .96), rgba(14, 8, 10, .97));
+    box-shadow: 0 0 14px rgba(88, 24, 36, .45);
+  }
   .jokerslot.filled.aura-common .jname { color: #e2e8f0; }
   .jokerslot.filled.aura-rare .jname { color: #bfdbfe; }
   .jokerslot.filled.aura-epic .jname { color: #e9d5ff; }
   .jokerslot.filled.aura-legendary .jname {
     color: var(--gold-soft);
   }
+  .jokerslot.filled.aura-dark .jname { color: #e8c4c8; }
   .jokerslot.filled.aura-rare .jkind { color: #93c5fd; border-color: rgba(96,165,250,.35); background: rgba(37,99,235,.16); }
   .jokerslot.filled.aura-epic .jkind { color: #d8b4fe; border-color: rgba(192,132,252,.35); background: rgba(126,34,206,.18); }
   .jokerslot.filled.aura-legendary .jkind { color: #fde68a; border-color: rgba(251,191,36,.4); background: rgba(180,83,9,.22); }
+  .jokerslot.filled.aura-dark .jkind { color: #e8b4b8; border-color: rgba(139,48,62,.45); background: rgba(80,20,32,.28); }
   /* 효과 발동 — 살짝 뽀용 */
   .jokerslot.filled.trig {
     z-index: 6;
@@ -310,6 +343,10 @@
   .jokerslot.filled.aura-legendary.trig {
     border-color: var(--gold-soft) !important;
     box-shadow: 0 0 22px var(--rank-4-glow) !important;
+  }
+  .jokerslot.filled.aura-dark.trig {
+    border-color: #c4a0a4 !important;
+    box-shadow: 0 0 18px rgba(120, 32, 48, .55) !important;
   }
   @keyframes jokerTrigPop {
     0%   { transform: scale(1);    filter: brightness(1); }
@@ -1850,6 +1887,20 @@
       inset 0 0 0 4px var(--frame-dim),
       0 10px 24px rgba(0, 0, 0, .55);
   }
+  body.dark-shop #modal-overlay {
+    background: rgba(6, 2, 12, .78);
+  }
+  #modal.shop-modal.dark-shop {
+    background: rgba(8, 4, 14, .98);
+    border-color: rgba(120, 82, 140, .42);
+    box-shadow:
+      inset 0 0 0 3px rgba(10, 4, 16, .94),
+      inset 0 0 0 4px rgba(88, 56, 104, .35),
+      0 12px 28px rgba(0, 0, 0, .7);
+  }
+  #modal.shop-modal.dark-shop::before {
+    border-color: rgba(140, 100, 160, .16);
+  }
   #modal.shop-modal::before {
     content: '';
     position: absolute; inset: 5px;
@@ -2031,7 +2082,13 @@
   .shop-sign h2 {
     margin: 0;
     font-family: var(--font-overlay); font-weight: 400;
-    font-size: 30px; letter-spacing: -0.04em; color: var(--ink-1);
+    font-size: 30px; letter-spacing: -0.02em; color: var(--ink-1);
+    line-height: 1.35;
+    padding: 0.08em 0.14em 0.04em;
+  }
+  #modal.shop-modal.dark-shop .shop-sign h2 { color: #ddd0e4; }
+  #modal.shop-modal.dark-shop .shop-sign {
+    border-bottom-color: rgba(140, 100, 160, .22);
   }
   .shop-sign .shop-sub {
     margin-top: 3px;
@@ -2094,6 +2151,11 @@
     background: linear-gradient(180deg, rgba(92,58,8,.76), rgba(0,0,0,.58));
     box-shadow: 0 0 18px var(--rank-4-glow);
   }
+  .offer.aura-dark {
+    border-width: 1.5px; border-color: #6b2a36;
+    background: linear-gradient(180deg, rgba(56,18,24,.78), rgba(0,0,0,.62));
+    box-shadow: 0 0 14px rgba(88, 24, 36, .4);
+  }
   .offer:not(.sold):hover {
     transform: none;
   }
@@ -2113,6 +2175,10 @@
     border-color: rgba(253,224,71,.8);
     box-shadow: 0 0 20px var(--rank-4-glow);
   }
+  .offer.aura-dark:not(.sold):hover {
+    border-color: rgba(180, 90, 100, .75);
+    box-shadow: 0 0 16px rgba(88, 24, 36, .5);
+  }
   .offer.sold { opacity: .45; filter: grayscale(.3); }
   .offer .o-icon {
     font-size: 28px; line-height: 1; text-align: center;
@@ -2121,12 +2187,14 @@
   }
   .offer .o-name {
     font-family: var(--font-overlay); font-weight: 400; font-size: 20px;
-    color: var(--ink-1); text-align: center; letter-spacing: -0.03em;
-    line-height: 1.2; margin-bottom: 8px;
+    color: var(--ink-1); text-align: center; letter-spacing: -0.02em;
+    line-height: 1.35; margin-bottom: 8px;
+    padding: 0.06em 0.12em 0;
   }
   .offer.aura-rare .o-name { color: #bfdbfe; }
   .offer.aura-epic .o-name { color: #e9d5ff; }
   .offer.aura-legendary .o-name { color: #fde68a; }
+  .offer.aura-dark .o-name { color: #e8c4c8; }
   .offer .o-meta {
     display: flex; justify-content: center; gap: 5px; flex-wrap: wrap;
     margin-bottom: 10px;
@@ -2148,6 +2216,7 @@
   .r-rare { background: rgba(29,78,216,.88); color: #dbeafe; }
   .r-epic { background: rgba(126,34,206,.88); color: #f3e8ff; }
   .r-legendary { background: linear-gradient(180deg, #d97706, #b45309); color: #fff7ed; }
+  .r-dark { background: rgba(80, 20, 32, .92); color: #e8c4c4; }
   .offer .o-desc {
     font-family: var(--font-ui); font-size: 13px; font-weight: 500;
     color: #e8eef5; line-height: 1.6;
@@ -2220,7 +2289,8 @@
   @media (prefers-reduced-motion: reduce) {
     .owned-slot.filled.aura-rare,
     .owned-slot.filled.aura-epic,
-    .owned-slot.filled.aura-legendary { animation: none; }
+    .owned-slot.filled.aura-legendary,
+    .owned-slot.filled.aura-dark { animation: none; }
   }
   .owned-slot.empty {
     justify-content: center; align-items: center; gap: 4px;
@@ -2271,6 +2341,11 @@
     background: linear-gradient(180deg, rgba(92,58,8,.76), rgba(0,0,0,.5));
     box-shadow: 0 0 16px var(--rank-4-glow);
   }
+  .owned-slot.filled.aura-dark {
+    border-width: 1.5px; border-color: #6b2a36;
+    background: linear-gradient(180deg, rgba(56,18,24,.78), rgba(0,0,0,.55));
+    box-shadow: 0 0 12px rgba(88, 24, 36, .4);
+  }
   .owned-slot .os-head {
     display: flex; flex-direction: column; align-items: center; gap: 7px;
     padding-bottom: 0;
@@ -2280,9 +2355,10 @@
   .owned-slot .os-name {
     font-family: var(--font-overlay); font-weight: 400;
     font-size: 18px; color: var(--ink-1); text-align: center;
-    line-height: 1.25; max-width: 100%; letter-spacing: -0.02em;
+    line-height: 1.35; max-width: 100%; letter-spacing: -0.02em;
     display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
     overflow: hidden; margin: 0;
+    padding: 0.08em 0.12em 0;
   }
   .owned-slot.filled.aura-common .os-name { color: #e2e8f0; }
   .owned-slot.filled.aura-rare .os-name { color: #bfdbfe; }
@@ -2291,6 +2367,7 @@
     color: var(--gold-soft);
     text-shadow: none;
   }
+  .owned-slot.filled.aura-dark .os-name { color: #e8c4c8; }
   .owned-slot .os-meta {
     font-family: var(--font-ui);
     font-size: 10px; font-weight: 700; color: var(--ink-4); text-align: center;
@@ -3170,13 +3247,21 @@
     transform: translate(-50%, -50%);
     font-family: var(--font-overlay); font-weight: 400;
     font-size: clamp(34px, 8vw, 56px);
-    line-height: 1.15; letter-spacing: .02em;
+    line-height: 1.3; letter-spacing: .02em;
+    padding: 0.08em 0.2em;
     color: var(--paper); white-space: nowrap; text-align: center;
     text-shadow:
       0 0 18px rgba(251,191,36,.75),
       0 0 36px rgba(180,83,9,.45),
       0 4px 0 #7c2d12,
       0 8px 18px rgba(0,0,0,.55);
+  }
+  #jumak-cascade.dark .jumak-label {
+    text-shadow:
+      0 0 16px rgba(160, 110, 180, .45),
+      0 0 28px rgba(40, 12, 48, .5),
+      0 4px 0 #2a1030,
+      0 8px 18px rgba(0,0,0,.65);
   }
   @keyframes jumakSlamIn {
     0% { opacity: 0; transform: scale(1.55); filter: brightness(1.6); }
@@ -4347,6 +4432,7 @@
 <body>
 
 <div id="bg-figure" aria-hidden="true"><div id="bg-spine"></div></div>
+<div id="night-veil" aria-hidden="true"></div>
 
 <div id="boot-load" role="status" aria-live="polite" aria-busy="true">
   <div class="bl-brand">십이화</div>
@@ -4757,7 +4843,7 @@ function handDisplayName(handId, core) {
 
 // 12판 = 1월(송학) → 12월(비). 3·6·9·12월(환절기)은 박 라운드.
 const ROUNDS = 12;
-const TARGETS = [160, 240, 330, 450, 600, 820, 1150, 1600, 2200, 3000, 4100, 5500];
+const TARGETS = [160, 240, 340, 500, 740, 1100, 1650, 2500, 3800, 5800, 9000, 14000];
 const JOKER_SLOT_MAX = 5;
 function jokerSlotCount(month) {
   return Math.min(JOKER_SLOT_MAX, Math.max(1, month | 0));
@@ -4895,7 +4981,8 @@ function scoreJokerCtx(cards, handId, core, env) {
   };
 }
 
-// ── 특수패 28종 (커먼 / 레어 / 에픽 / 레전더리) ───────────
+// ── 특수패 33종 (커먼 / 레어 / 에픽 / 레전더리 / 암흑) ────
+// 오버레이 붓글씨(SSRock)에 없는 한글: 암·묻·잃 등. 제목·패 이름은 있는 글자만.
 // 훅 ctx: scoreJokerCtx(...)
 const JOKERS = [
   // ── 커먼 ───────────────────────────────────────────────
@@ -4992,22 +5079,46 @@ const JOKERS = [
   { id: 'paewang', name: '명인', icon: '🥋', rarity: 'legendary', price: 15, kind: '×배수',
     desc: '족보가 성립하면 배수가 2배가 됩니다. 무조합에는 적용되지 않습니다.',
     xMult: (x) => (x.handId !== 'none' ? 2 : 1) },
+  // ── 암흑 (암흑 주막 전용) ────────────────────────────────
+  { id: 'mudgo_double', name: '더블로 가', icon: '♠️', rarity: 'dark', price: 16, kind: '변환',
+    desc: '버리기 2회를 줄입니다. 모든 화투패의 기본 칩이 20이 됩니다. 이달의 패 ×2, 박 0은 그 위에 그대로 적용됩니다.' },
+  { id: 'binjari', name: '모두가 빈 자리', icon: '◻', rarity: 'dark', price: 18, kind: '올인',
+    desc: '사는 즉시 보유 특수패를 전부 반값에 팝니다. 슬롯이 모두 잠기고, 이후 모든 내기에 (팔기 직전 보유 수 × 10) 배수를 더합니다.' },
+  { id: 'hansu_allin', name: '한 수 올인', icon: '❶', rarity: 'dark', price: 17, kind: '도박',
+    desc: '내기가 1회로 줄어듭니다. 그 내기 배수가 4배가 됩니다.',
+    xMult: () => 4 },
+  { id: 'dokbae', name: '독배', icon: '🍷', rarity: 'dark', price: 16, kind: '변환',
+    desc: '모든 내기에 배수가 10 올라갑니다. 이달의 패 ×2는 사라집니다.',
+    addMult: () => 10 },
+  { id: 'yeokbak', name: '역박', icon: '⚔', rarity: 'dark', price: 17, kind: '도박',
+    desc: '피박·광박·멍박의 칩 0을 무시합니다. 그 박 라운드에서는 배수가 2배가 됩니다.',
+    xMult: (x) => (x.boss && ['pibak', 'gwangbak', 'meongbak'].includes(x.boss) ? 2 : 1) },
 ];
 const JOKER_BY_ID = Object.fromEntries(JOKERS.map((j) => [j.id, j]));
 const RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'];
+const RARITY_MONTH_MAX = 14;
 const GOTARYEONG_GOES_PER_MULT = 2;
 function gotaryeongMultFromGoes(goes) {
   return Math.floor(Math.max(0, goes) / GOTARYEONG_GOES_PER_MULT);
 }
-/** 상점 티어 — 1월은 고등급이 드물고, 12월로 갈수록 레어·에픽이 열린다. 레전은 전 구간 기존 4% 미만. */
+/** 상점 티어 — 1~14월. t=(m-1)/11 이라 14월은 t≈1.18, 커먼 약 40%. */
 function rarityWeightsForMonth(month) {
-  const m = Math.max(1, Math.min(ROUNDS, month | 0));
+  const m = Math.max(1, Math.min(RARITY_MONTH_MAX, month | 0));
   const t = (m - 1) / (ROUNDS - 1);
-  const legendary = 0.004 + t * 0.022; // 0.4% → 2.6%
-  const epic      = 0.025 + t * 0.205; // 2.5% → 23.0%
-  const rare      = 0.160 + t * 0.115; // 16.0% → 27.5%
+  const legendary = 0.004 + t * 0.022; // 0.4% → 12월 2.6% → 14월 ~3.0%
+  const epic      = 0.025 + t * 0.205;
+  const rare      = 0.160 + t * 0.115;
   const common    = 1 - rare - epic - legendary;
   return { common, rare, epic, legendary };
+}
+function shopRarityMonth(month, dark) {
+  const m = month | 0;
+  if (!dark) return Math.max(1, Math.min(ROUNDS, m));
+  return Math.max(1, Math.min(RARITY_MONTH_MAX, m + 2));
+}
+/** 암흑 오퍼 확률. 밤에서 친 고×2 + 1 %. */
+function darkOfferChance(nightGo) {
+  return ((nightGo | 0) * 2 + 1) / 100;
 }
 function rollJokerRarity(rngFn, month) {
   const w = rarityWeightsForMonth(month == null ? 1 : month);
@@ -5016,6 +5127,10 @@ function rollJokerRarity(rngFn, month) {
   if (r < w.common + w.rare) return 'rare';
   if (r < w.common + w.rare + w.epic) return 'epic';
   return 'legendary';
+}
+function rollShopRarity(rngFn, month, { dark = false, nightGo = 0 } = {}) {
+  if (dark && rngFn() < darkOfferChance(nightGo)) return 'dark';
+  return rollJokerRarity(rngFn, shopRarityMonth(month, dark));
 }
 
 // ── 박 라운드 디버프 6종 ──────────────────────────────────
@@ -5029,15 +5144,15 @@ const BOSSES = [
 ];
 const BOSS_BY_ID = Object.fromEntries(BOSSES.map((b) => [b.id, b]));
 
-// ── 카드 1장의 칩 (계절/밤낮 보정 → 박 디버프 순서로 적용) ──
-// env: { boss, jokerIds, mitjangChips, seasonMonth?, night? }
+// ── 카드 1장의 칩 (기본칩 → 이달의 패 ×2 → 박 0) ──
+// env: { boss, jokerIds, mitjangChips, seasonMonth?, flatBaseChip? }
 function cardChip(c, env) {
-  let chip = baseChip(c);
+  let chip = env.flatBaseChip ? env.flatBaseChip : baseChip(c);
   const t = effType(c);
-  if (env.seasonMonth && c.month === env.seasonMonth) chip *= 2;          // 이달의 패
-  if (env.night === false && (t === 'kwang' || t === 'yeol')) chip += 2;  // 낮: 광·열끗
-  if (env.night === true && (t === 'tti' || t === 'ssangpi' || t === 'pi')) chip += 2; // 밤: 띠·피
-  if (!env.jokerIds.includes('pibak_boheom')) {
+  const ids = env.jokerIds || [];
+  if (env.seasonMonth && c.month === env.seasonMonth && !env.noSeason) chip *= 2; // 이달의 패
+  const bakCovered = ids.includes('pibak_boheom') || ids.includes('yeokbak');
+  if (!bakCovered) {
     if (env.boss === 'pibak' && (t === 'pi' || t === 'ssangpi')) chip = 0;
     if (env.boss === 'gwangbak' && t === 'kwang') chip = 0;
     if (env.boss === 'meongbak' && t === 'yeol') chip = 0;
@@ -5070,6 +5185,7 @@ function computeScore(cards, env) {
   // +칩 특수패는 배수 밖(flat)으로만 가산
   for (const id of env.jokerIds) { const j = JOKER_BY_ID[id]; if (j.addChips) flat += j.addChips(ctx); }
   for (const id of env.jokerIds) { const j = JOKER_BY_ID[id]; if (j.addMult)  mult  += j.addMult(ctx); }
+  if (env.binjariMult) mult += env.binjariMult;
   for (const id of env.jokerIds) { const j = JOKER_BY_ID[id]; if (j.xMult)    mult  *= j.xMult(ctx); }
 
   return {
@@ -5143,9 +5259,9 @@ const I18N = {
     sideGuide: '게임 가이드',
     labelsShow: '월·열끗 보이기', labelsHide: '월·열끗 숨기기',
     playLogTitle: '이번 판 내기 기록',
-    emptyJoker: '특수패<br>빈 슬롯', slotLocked: (n) => `${n}월에 열림`, nyang: (n) => `${n}냥`,
-    seasonLineDay: (m) => `이달의 패: <b>${m} 카드 칩 ×2</b><br>낮 — 광·열끗 칩 +2`,
-    seasonLineNight: (m) => `이달의 패: <b>${m} 카드 칩 ×2</b><br>밤 — 띠·피·쌍피 칩 +2`,
+    emptyJoker: '특수패<br>빈 슬롯', slotLocked: (n) => `${n}월에 열림`, slotSealed: '잠김', nyang: (n) => `${n}냥`,
+    seasonLineDay: (m) => `이달의 패: <b>${m} 카드 칩 ×2</b>`,
+    seasonLineNight: (m) => `이달의 패: <b>${m} 카드 칩 ×2</b><br>밤 — 목표·정산 ×2`,
     roundMeta: (r, t) => `(판 ${r}/${t})`, bak: '(박)',
     bossNull: ' → 피박보험으로 무효!',
     goLevel: (n, mult, bonus) => `${n}고! (목표 ×${mult} · 성공 시 +${bonus}냥)`,
@@ -5171,7 +5287,7 @@ const I18N = {
     dan: {hongdan:'홍단',cheongdan:'청단',chodan:'초단'},
     tti: {hongdan:'홍단',cheongdan:'청단',chodan:'초단',bi_tti:'비단'},
     cardTag: {kwang:'광',bikwang:'비광',yeol:'열끗',yeolBird:'열끗(새)',ssangpi:'쌍피',pi:'피'},
-    rarity: {common:'커먼',rare:'레어',epic:'에픽',legendary:'레전더리'},
+    rarity: {common:'커먼',rare:'레어',epic:'에픽',legendary:'레전더리',dark:'암흑'},
     gobak: '고박', missTarget: '목표 미달',
     handConds: {
       ogwang:'광 5장 전부', sagwang:'광 4장 (비광 무관)', chongtong:'같은 달 4장',
@@ -5210,6 +5326,11 @@ const I18N = {
       sipidal:{name:'열두사철',kind:'+배수',desc:'낸 패에 섞인 달 수마다 배수가 2씩 올라갑니다.'},
       ogwang_kkum:{name:'오광소원',kind:'×배수',desc:'광을 세 장 이상 내면 배수가 2.5배가 됩니다. 비광도 포함됩니다.'},
       paewang:{name:'명인',kind:'×배수',desc:'족보가 성립하면 배수가 2배가 됩니다. 무조합에는 적용되지 않습니다.'},
+      mudgo_double:{name:'더블로 가',kind:'변환',desc:'버리기 2회를 줄입니다. 모든 화투패의 기본 칩이 20이 됩니다. 이달의 패 ×2, 박 0은 그 위에 그대로 적용됩니다.'},
+      binjari:{name:'모두가 빈 자리',kind:'올인',desc:'사는 즉시 보유 특수패를 전부 반값에 팝니다. 슬롯이 모두 잠기고, 이후 모든 내기에 (팔기 직전 보유 수 × 10) 배수를 더합니다.'},
+      hansu_allin:{name:'한 수 올인',kind:'도박',desc:'내기가 1회로 줄어듭니다. 그 내기 배수가 4배가 됩니다.'},
+      dokbae:{name:'독배',kind:'변환',desc:'모든 내기에 배수가 10 올라갑니다. 이달의 패 ×2는 사라집니다.'},
+      yeokbak:{name:'역박',kind:'도박',desc:'피박·광박·멍박의 칩 0을 무시합니다. 그 박 라운드에서는 배수가 2배가 됩니다.'},
     },
     bosses: {
       pibak:{name:'피박',desc:'피·쌍피의 카드 칩이 0 (족보 판정에는 카운트)'},
@@ -5241,9 +5362,9 @@ const I18N = {
     sideGuide: 'Game guide',
     labelsShow: 'Show labels', labelsHide: 'Hide labels',
     playLogTitle: 'Plays this round',
-    emptyJoker: 'Joker<br>empty', slotLocked: (n) => `Opens in ${n}`, nyang: (n) => `${n} nyang`,
-    seasonLineDay: (m) => `Month cards: <b>${m} chips ×2</b><br>Day — Gwang & Yeol +2`,
-    seasonLineNight: (m) => `Month cards: <b>${m} chips ×2</b><br>Night — Ribbon & Pi +2`,
+    emptyJoker: 'Joker<br>empty', slotLocked: (n) => `Opens in ${n}`, slotSealed: 'Locked', nyang: (n) => `${n} nyang`,
+    seasonLineDay: (m) => `Month cards: <b>${m} chips ×2</b>`,
+    seasonLineNight: (m) => `Month cards: <b>${m} chips ×2</b><br>Night — target & settle ×2`,
     roundMeta: (r, t) => `(Round ${r}/${t})`, bak: '(Bak)',
     bossNull: ' → negated by Pi-Bak Insurance!',
     goLevel: (n, mult, bonus) => `Go ${n}! (target ×${mult} · win +${bonus} nyang)`,
@@ -5269,7 +5390,7 @@ const I18N = {
     dan: {hongdan:'Red Ribbon',cheongdan:'Blue Ribbon',chodan:'Grass Ribbon'},
     tti: {hongdan:'Red',cheongdan:'Blue',chodan:'Grass',bi_tti:'Rain Rib.'},
     cardTag: {kwang:'Bright',bikwang:'Rain Bright',yeol:'Animal',yeolBird:'Animal(bird)',ssangpi:'Double Pi',pi:'Pi'},
-    rarity: {common:'Common',rare:'Rare',epic:'Epic',legendary:'Legendary'},
+    rarity: {common:'Common',rare:'Rare',epic:'Epic',legendary:'Legendary',dark:'Dark'},
     gobak: 'Go-bak', missTarget: 'Missed target',
     handConds: {
       ogwang:'All 5 Bright', sagwang:'Any 4 Bright', chongtong:'4 of same month',
@@ -5308,6 +5429,11 @@ const I18N = {
       sipidal:{name:'Twelve Seasons',kind:'+Mult',desc:'+2 mult per distinct month in the play.'},
       ogwang_kkum:{name:'Five Wish',kind:'×Mult',desc:'3+ Brights: ×2.5 (incl. Rain).'},
       paewang:{name:'Master',kind:'×Mult',desc:'Any real hand: ×2. Not on No combo.'},
+      mudgo_double:{name:'Double Down',kind:'Convert',desc:'Lose 2 discards. Every card’s base chips become 20. Month ×2 and Bak 0 still apply on top.'},
+      binjari:{name:'Empty Seats',kind:'All-in',desc:'Instantly sells all held jokers at half. Locks every slot. Then every play gains +(count before sell × 10) mult.'},
+      hansu_allin:{name:'One Shot',kind:'Gamble',desc:'Only 1 play per round. That play’s mult ×4.'},
+      dokbae:{name:'Poison Cup',kind:'Convert',desc:'+10 mult on every play. Month-card ×2 is gone.'},
+      yeokbak:{name:'Reverse Bak',kind:'Gamble',desc:'Ignores Pi/Bright/Animal Bak chip-zero. On those Bak rounds, mult ×2.'},
     },
     bosses: {
       pibak:{name:'Pi Bak',desc:'Pi & Double Pi chips = 0 (still count for hands)'},
@@ -5339,9 +5465,9 @@ const I18N = {
     sideGuide: 'ゲームガイド',
     labelsShow: 'ラベル表示', labelsHide: 'ラベル非表示',
     playLogTitle: 'この卓の出し記録',
-    emptyJoker: '特殊札<br>空き', slotLocked: (n) => `${n}月に開放`, nyang: (n) => `${n}両`,
-    seasonLineDay: (m) => `今月札: <b>${m} チップ×2</b><br>昼 — 光・十＋2`,
-    seasonLineNight: (m) => `今月札: <b>${m} チップ×2</b><br>夜 — 短冊・カス＋2`,
+    emptyJoker: '特殊札<br>空き', slotLocked: (n) => `${n}月に開放`, slotSealed: '閉鎖', nyang: (n) => `${n}両`,
+    seasonLineDay: (m) => `今月札: <b>${m} チップ×2</b>`,
+    seasonLineNight: (m) => `今月札: <b>${m} チップ×2</b><br>夜 — 目標・清算 ×2`,
     roundMeta: (r, t) => `(卓 ${r}/${t})`, bak: '(バク)',
     bossNull: ' → 皮バク保険で無効!',
     goLevel: (n, mult, bonus) => `${n}ゴー! (目標×${mult} · 成功+${bonus}両)`,
@@ -5367,7 +5493,7 @@ const I18N = {
     dan: {hongdan:'赤短',cheongdan:'青短',chodan:'草短'},
     tti: {hongdan:'赤短',cheongdan:'青短',chodan:'草短',bi_tti:'雨短'},
     cardTag: {kwang:'光',bikwang:'雨光',yeol:'十',yeolBird:'十(鳥)',ssangpi:'カス×2',pi:'カス'},
-    rarity: {common:'コモン',rare:'レア',epic:'エピック',legendary:'レジェンド'},
+    rarity: {common:'コモン',rare:'レア',epic:'エピック',legendary:'レジェンド',dark:'暗黒'},
     gobak: 'ゴーバク', missTarget: '目標未達',
     handConds: {
       ogwang:'光5枚すべて', sagwang:'光4枚', chongtong:'同月4枚',
@@ -5406,6 +5532,11 @@ const I18N = {
       sipidal:{name:'十二季節',kind:'+倍率',desc:'出した月の種類ごとに倍率+2。'},
       ogwang_kkum:{name:'五光の願い',kind:'×倍率',desc:'光3枚以上で×2.5。雨光含む。'},
       paewang:{name:'名人',kind:'×倍率',desc:'役が成立すれば×2。役なしは無効。'},
+      mudgo_double:{name:'ダブルで勝負',kind:'変換',desc:'捨て2回を減らす。全札の基本チップが20。今月×2、バク0はその上に適用。'},
+      binjari:{name:'空席ばかり',kind:'オールイン',desc:'購入直後に所持札を半額売却。スロット全閉鎖。以後すべての出しに(売却直前の所持数×10)倍率。'},
+      hansu_allin:{name:'一手オールイン',kind:'賭博',desc:'出しは1回だけ。その出しの倍率×4。'},
+      dokbae:{name:'毒杯',kind:'変換',desc:'すべての出しで倍率+10。今月札×2は消える。'},
+      yeokbak:{name:'逆バク',kind:'賭博',desc:'皮/光/十バクのチップ0を無視。そのバク卓では倍率×2。'},
     },
     bosses: {
       pibak:{name:'皮バク',desc:'カス・カス×2のチップ0 (役判定には数える)'},
@@ -5431,26 +5562,26 @@ const I18N_UI = {
     chipKwang: '광', chipYeol: '열끗', chipTti: '띠', chipSsang: '쌍피', chipPi: '피',
     helpTimeTitle: '시간 · 계절',
     helpTimeBody: (m1, m12) => `판은 <b>1월(${m1})→12월(${m12})</b>로 흐릅니다. 이달의 패는 칩 <b>×2</b>.`,
-    helpTimeDay: '홀수 달 낮 · 광·열끗 <em>+2</em>',
-    helpTimeNight: '짝수 달 밤 · 띠·피 <em>+2</em>',
+    helpTimeDay: '2월부터 3고+ 스톱 시 밤 도전',
+    helpTimeNight: '밤은 목표·정산 ×2 · 성공 시 흑막 주막',
     helpRoundTitle: '한 판 · 고/스톱',
     helpRoundBody: '내기 4회 · 버리기 4회 · 손패 8장. 목표를 넘기면 <b>고</b> 또는 <b>스톱</b>. 고는 무제한 — n고 문턱 = 목표 ×(1+0.6n), 내기 +1 · 손패 보충, 보너스 n×월 냥. 점수가 이미 넘은 문턱은 고 선언 시 전부 소급 인정(밀치기) — 큰 한 방이면 여러 단계를 한 번에 점프. 실패하면 <b>고박 = 런 종료</b>.',
     helpRuleTitle: '특수 규칙',
     helpRuleBody: '<b>3·6·9·12월</b>은 박 라운드(디버프). 안개는 손패 <b>2장</b>이 뒷면으로 옵니다.',
     helpRuleTag: '박 라운드 디버프',
     helpJokerTitle: '특수패 · 주막',
-    helpJokerBody: '특수패 28종. 슬롯은 1월 1칸부터 달마다 하나씩 열려 5월에 5칸. 티어는 커먼 / 레어 / 에픽 / 레전더리(후반으로 갈수록 고등급↑). +점수는 배수 밖, +배수·×배수는 족보 배수에 얹힙니다.',
-    helpJokerTags: ['커먼 3–4냥', '레어 6–7냥', '에픽 9–11냥', '레전 13–15냥'],
+    helpJokerBody: '특수패 33종. 슬롯은 1월 1칸부터 달마다 하나씩 열려 5월에 5칸. 티어는 커먼 / 레어 / 에픽 / 레전더리 / 암흑(흑막 주막 전용). +점수는 배수 밖, +배수·×배수는 족보 배수에 얹힙니다.',
+    helpJokerTags: ['커먼 3–4냥', '레어 6–7냥', '에픽 9–11냥', '레전 13–15냥', '암흑 16–18냥'],
     welcomeH2: '십이화 — 고스톱: 무한의 판',
     welcomeSub: '한국 화투 48장으로 족보를 맞춰 목표 점수를 넘기는 <b>1인 런</b>입니다. 1월부터 12월까지 한 해를 버텨보세요.',
     welcomePlayTitle: '기본 플레이',
     welcomePlayBody: '손패 8장에서 1~5장을 고른 뒤 <b>내기</b>로 점수를 쌓습니다. 마음에 안 들면 <b>버리기</b>로 패를 갈아끼울 수 있어요. 판마다 내기·버리기 각 4회.',
     welcomeScoreTitle: '점수 · 족보',
-    welcomeScoreBody: '점수 = (<b>족보 구성 카드</b> 칩) × 배수 + 나머지 칩. 이달의 패는 칩 <b>×2</b>. 홀수 달은 낮(광·열끗 +2), 짝수 달은 밤(띠·피 +2).',
+    welcomeScoreBody: '점수 = (<b>족보 구성 카드</b> 칩) × 배수 + 나머지 칩. 이달의 패는 칩 <b>×2</b>.',
     welcomeGoTitle: '고 / 스톱',
-    welcomeGoBody: '목표를 넘기면 <b>스톱</b>(정산) 또는 <b>고</b>(목표↑ · 내기 +1 · 보너스). 한 방이 크면 이미 넘은 고 문턱을 한 번에 밀치며 여러 단계 점프. 고는 무제한이지만, 실패하면 <b>고박 = 런 종료</b>. 3·6·9·12월은 박 라운드(디버프)가 붙습니다.',
+    welcomeGoBody: '목표를 넘기면 <b>스톱</b>(정산) 또는 <b>고</b>(목표↑ · 내기 +1 · 보너스). 한 방이 크면 이미 넘은 고 문턱을 한 번에 밀치며 여러 단계 점프. 2월부터 3고 이상 스톱하면 <b>밤</b>에 도전할 수 있습니다. 고는 무제한이지만, 실패하면 <b>고박 = 런 종료</b>. 3·6·9·12월은 박 라운드(디버프)가 붙습니다.',
     welcomeShopTitle: '주막',
-    welcomeShopBody: '판을 클리어하면 주막에서 <b>특수패</b>(커먼~레전더리 28종)를 사고팝니다. 슬롯은 1월 1칸, 달마다 하나씩 열려 5월에 5칸.',
+    welcomeShopBody: '판을 클리어하면 주막에서 <b>특수패</b>(커먼~레전더리 28종, 암흑 5종)를 사고팝니다. 밤을 깨면 <b>흑막 주막</b>이 열립니다. 슬롯은 1월 1칸, 달마다 하나씩 열려 5월에 5칸.',
     welcomeFoot: '자세한 족보표는 언제든 <b>도움말</b>에서 볼 수 있어요.',
     welcomeStart: '알겠어요 — 시작하기',
     welcomeStartSub: '1월 준비 화면으로 이동합니다',
@@ -5465,11 +5596,20 @@ const I18N_UI = {
     gostopStop: '스톱',
     gostopStopTip0: '지금 정산하고 안전하게 다음 판으로',
     gostopStopTipN: (n, bonus) => `지금 정산하고 다음 판으로<br>(${n}고 보너스 <b>+${bonus}냥</b> 확보)`,
+    gostopStopTipNight0: '지금 정산하고 흑막 주막으로',
+    gostopStopTipNightN: (n, bonus) => `지금 정산하고 흑막 주막으로<br>(${n}고 보너스 <b>+${bonus}냥</b> · 정산 ×2)`,
+    nightAskH2: '밤에 도전하시겠습니까?',
+    nightAskSub: '목표는 두 배. 실패하면 고박입니다. 낮 정산은 지금 받습니다.',
+    nightAskYes: '도전',
+    nightAskYesTip: '같은 달 밤 판 — 목표·정산 ×2',
+    nightAskNo: '거절',
+    nightAskNoTip: '정산 후 평소 주막으로',
     gostopGo1: '1고',
     gostopJump: (j) => `<b>${j}단계 밀치기</b><br>`,
     gostopGoTip: (bonus) => `내기 +1 · 손패 보충 · 성공 시 +${bonus}냥<br>실패 시 <b>고박 = 런 종료</b>`,
     settleTitle: '정산',
     settleClear: (r, name) => `${r}월 · ${name} 클리어`,
+    settleClearNight: (r, name) => `${r}월 · ${name} 밤 클리어 · 정산 ×2`,
     settleInterest: (n) => `이자 (보유 ${n}냥)`,
     settleBase: (bak) => `기본 상금${bak ? ' · 박' : ''}`,
     settlePlayBonus: (n) => `남은 내기 ${n}회`,
@@ -5477,7 +5617,12 @@ const I18N_UI = {
     settleTotal: '합계',
     settleNyang: (n) => `+${n}냥`,
     shopTitle: '주막',
+    shopTitleDark: '흑막 주막',
     shopSub: (r) => `${r}월 클리어 · 특수패를 사고 다음 달로`,
+    shopSubDark: (r) => `${r}월 밤 클리어 · 흑막 등급이 뜰 수 있습니다`,
+    shopFinish: '한 해 마치기',
+    shopClearLabel: '12월까지 완주했습니다',
+    shopClearHint: '흑막 주막을 둘러본 뒤 승리를 확정하세요',
     shopOwned: '내 특수패',
     shopOffers: '오늘의 패',
     shopReroll: (n) => `리롤 · ${n}냥`,
@@ -5520,6 +5665,7 @@ const I18N_UI = {
     coachDeckTitle: '🂠 남은 덱',
     coachDeckBody: '오른쪽 <b>🂠</b> 숫자를 눌러 보세요. 아직 안 나온 패를 미리 볼 수 있어요.<br><span class="coach-muted">언제든 다시 열어볼 수 있어요.</span>',
     jumakAppear: '주막 등장',
+    jumakAppearDark: '흑막 주막',
     surveyTitle: '설문 한 장만 부탁해요',
     surveyBody: '플레이 소감이 궁금합니다.<br><b>1분이면</b> 끝나요.',
     surveyYes: '설문하기',
@@ -5547,26 +5693,26 @@ const I18N_UI = {
     chipKwang: 'Bright', chipYeol: 'Animal', chipTti: 'Ribbon', chipSsang: 'Dbl Pi', chipPi: 'Pi',
     helpTimeTitle: 'Time · Season',
     helpTimeBody: (m1, m12) => `Rounds run <b>Jan (${m1}) → Dec (${m12})</b>. Month cards get chips <b>×2</b>.`,
-    helpTimeDay: 'Odd months · day · Bright/Animal <em>+2</em>',
-    helpTimeNight: 'Even months · night · Ribbon/Pi <em>+2</em>',
+    helpTimeDay: 'From February, 3+ Go then Stop to try Night',
+    helpTimeNight: 'Night: target & settle ×2 · win opens the Dark tavern',
     helpRoundTitle: 'Round · Go/Stop',
     helpRoundBody: '4 plays · 4 discards · hand of 8. Beat the target to <b>Go</b> or <b>Stop</b>. Go is unlimited — Go n threshold = target ×(1+0.6n), +1 play · redraw, bonus n×month nyang. Thresholds already cleared are all credited on Go (push) — a big hit can jump several steps. Fail = <b>Go-bak = run over</b>.',
     helpRuleTitle: 'Special rules',
     helpRuleBody: '<b>Mar/Jun/Sep/Dec</b> are Bak rounds (debuffs). Fog deals <b>2</b> face-down cards.',
     helpRuleTag: 'Bak round debuffs',
     helpJokerTitle: 'Jokers · Tavern',
-    helpJokerBody: '28 jokers. Slots: 1 in January, one more each month, 5 by May. Tiers: Common / Rare / Epic / Legendary (higher tiers later). Flat score is outside mult; +mult / ×mult stack on the hand mult.',
-    helpJokerTags: ['Common 3–4', 'Rare 6–7', 'Epic 9–11', 'Legend 13–15'],
+    helpJokerBody: '33 jokers. Slots: 1 in January, one more each month, 5 by May. Tiers: Common / Rare / Epic / Legendary / Dark (Dark tavern only). Flat score is outside mult; +mult / ×mult stack on the hand mult.',
+    helpJokerTags: ['Common 3–4', 'Rare 6–7', 'Epic 9–11', 'Legend 13–15', 'Dark 16–18'],
     welcomeH2: 'Sibiwha — Go-Stop: Infinite Table',
     welcomeSub: 'A <b>solo run</b>: make hwatu hands and beat monthly targets with a 48-card Korean deck. Survive January through December.',
     welcomePlayTitle: 'Basics',
     welcomePlayBody: 'From an 8-card hand, pick 1–5 and <b>Play</b> to score. Or <b>Discard</b> to redraw. Each round: 4 plays · 4 discards.',
     welcomeScoreTitle: 'Score · Hands',
-    welcomeScoreBody: 'Score = (hand <b>core</b> chips) × mult + the rest. Month cards ×2 chips. Odd months are day (Bright/Animal +2), even are night (Ribbon/Pi +2).',
+    welcomeScoreBody: 'Score = (hand <b>core</b> chips) × mult + the rest. Month cards ×2 chips.',
     welcomeGoTitle: 'Go / Stop',
-    welcomeGoBody: 'Beat the target to <b>Stop</b> (cash out) or <b>Go</b> (raise target · +1 play · bonus). A huge hit pushes through several Go steps at once. Unlimited Go, but fail = <b>Go-bak = run over</b>. Months 3·6·9·12 are Bak rounds.',
+    welcomeGoBody: 'Beat the target to <b>Stop</b> (cash out) or <b>Go</b> (raise target · +1 play · bonus). A huge hit pushes through several Go steps at once. From February, 3+ Go then Stop can challenge <b>Night</b>. Unlimited Go, but fail = <b>Go-bak = run over</b>. Months 3·6·9·12 are Bak rounds.',
     welcomeShopTitle: 'Tavern',
-    welcomeShopBody: 'Clear a month to shop <b>jokers</b> (Common–Legendary, 28 kinds). 1 slot in January, one more each month, 5 by May.',
+    welcomeShopBody: 'Clear a month to shop <b>jokers</b> (Common–Legendary 28, Dark 5). Beat Night to open the <b>Dark tavern</b>. 1 slot in January, one more each month, 5 by May.',
     welcomeFoot: 'Full hand list is always in <b>Help</b>.',
     welcomeStart: 'Got it — Start',
     welcomeStartSub: 'Go to January prep',
@@ -5581,11 +5727,20 @@ const I18N_UI = {
     gostopStop: 'Stop',
     gostopStopTip0: 'Cash out and move on safely',
     gostopStopTipN: (n, bonus) => `Cash out and continue<br>(Go ${n} bonus <b>+${bonus} nyang</b> locked in)`,
+    gostopStopTipNight0: 'Cash out and open the Dark tavern',
+    gostopStopTipNightN: (n, bonus) => `Cash out to the Dark tavern<br>(Go ${n} bonus <b>+${bonus} nyang</b> · settle ×2)`,
+    nightAskH2: 'Challenge the night?',
+    nightAskSub: 'Target doubles. Fail is Go-bak. Day settle pays now.',
+    nightAskYes: 'Challenge',
+    nightAskYesTip: 'Same month, night — target & settle ×2',
+    nightAskNo: 'Decline',
+    nightAskNoTip: 'Settle, then the usual tavern',
     gostopGo1: 'Go 1',
     gostopJump: (j) => `<b>+${j} steps</b><br>`,
     gostopGoTip: (bonus) => `+1 play · redraw · win +${bonus} nyang<br>Fail = <b>Go-bak = run over</b>`,
     settleTitle: 'Settle',
     settleClear: (r, name) => `Month ${r} · ${name} clear`,
+    settleClearNight: (r, name) => `Month ${r} · ${name} night clear · settle ×2`,
     settleInterest: (n) => `Interest (held ${n})`,
     settleBase: (bak) => `Base prize${bak ? ' · Bak' : ''}`,
     settlePlayBonus: (n) => `Leftover plays ×${n}`,
@@ -5593,7 +5748,12 @@ const I18N_UI = {
     settleTotal: 'Total',
     settleNyang: (n) => `+${n}`,
     shopTitle: 'Tavern',
+    shopTitleDark: 'Dark tavern',
     shopSub: (r) => `Month ${r} clear · buy jokers, then next month`,
+    shopSubDark: (r) => `Month ${r} night clear · Dark tier can appear`,
+    shopFinish: 'Finish the year',
+    shopClearLabel: 'You finished through December',
+    shopClearHint: 'Browse the Dark tavern, then take the win',
     shopOwned: 'Your jokers',
     shopOffers: "Today's deals",
     shopReroll: (n) => `Reroll · ${n}`,
@@ -5636,6 +5796,7 @@ const I18N_UI = {
     coachDeckTitle: '🂠 Deck left',
     coachDeckBody: 'Tap the <b>🂠</b> count on the right to peek at remaining cards.<br><span class="coach-muted">You can open it anytime.</span>',
     jumakAppear: 'Tavern opens',
+    jumakAppearDark: 'Dark tavern',
     surveyTitle: 'One quick survey?',
     surveyBody: 'We would love your thoughts.<br>Takes about <b>1 minute</b>.',
     surveyYes: 'Take survey',
@@ -5663,26 +5824,26 @@ const I18N_UI = {
     chipKwang: '光', chipYeol: '十', chipTti: '短冊', chipSsang: 'カス×2', chipPi: 'カス',
     helpTimeTitle: '時間 · 季節',
     helpTimeBody: (m1, m12) => `卓は <b>1月(${m1})→12月(${m12})</b>。今月札はチップ <b>×2</b>。`,
-    helpTimeDay: '奇数月・昼 · 光・十 <em>+2</em>',
-    helpTimeNight: '偶数月・夜 · 短冊・カス <em>+2</em>',
+    helpTimeDay: '2月から3ゴー以上ストップで夜に挑戦',
+    helpTimeNight: '夜は目標・清算×2 · 成功で暗黒酒屋',
     helpRoundTitle: '一卓 · ゴー/ストップ',
     helpRoundBody: '出し 4回 · 捨て 4回 · 手札 8枚。目標超えで <b>ゴー</b> か <b>ストップ</b>。ゴーは無制限 — nゴー閾値 = 目標×(1+0.6n)、出し+1・補充、ボーナス n×月の両。すでに超えた閾値はゴー宣言時にすべて遡及(押し) — 大物なら複数段ジャンプ。失敗は <b>ゴーバク = ラン終了</b>。',
     helpRuleTitle: '特殊ルール',
     helpRuleBody: '<b>3·6·9·12月</b>はバク卓(デバフ)。霧は手札 <b>2枚</b>が裏で来ます。',
     helpRuleTag: 'バク卓デバフ',
     helpJokerTitle: '特殊札 · 酒屋',
-    helpJokerBody: '特殊札 28種。スロットは1月1枠、月ごとに1枠開き5月で5枠。ティアは コモン / レア / エピック / レジェンド（後半ほど高ティア）。+点は倍率外、+倍率・×倍率は役倍率に乗ります。',
-    helpJokerTags: ['コモン 3–4両', 'レア 6–7両', 'エピック 9–11両', 'レジェ 13–15両'],
+    helpJokerBody: '特殊札 33種。スロットは1月1枠、月ごとに1枠開き5月で5枠。ティアは コモン / レア / エピック / レジェンド / 暗黒（暗黒酒屋のみ）。+点は倍率外、+倍率・×倍率は役倍率に乗ります。',
+    helpJokerTags: ['コモン 3–4両', 'レア 6–7両', 'エピック 9–11両', 'レジェ 13–15両', '暗黒 16–18両'],
     welcomeH2: '十二花 — ゴストップ: 無限の卓',
     welcomeSub: '韓国花札48枚で役を揃え目標を超える <b>1人ラン</b>。1月から12月まで一年を耐え抜け。',
     welcomePlayTitle: '基本プレイ',
     welcomePlayBody: '手札 8枚から1〜5枚選び <b>出し</b>でスコア。合わなければ <b>捨て</b>で入れ替え。各卓 出し·捨て 各 4回。',
     welcomeScoreTitle: 'スコア · 役',
-    welcomeScoreBody: 'スコア = (役の<b>コア</b>チップ) × 倍率 + 残り。今月札は ×2。奇数月は昼(光·十 +2)、偶数月は夜(短冊·カス +2)。',
+    welcomeScoreBody: 'スコア = (役の<b>コア</b>チップ) × 倍率 + 残り。今月札は ×2。',
     welcomeGoTitle: 'ゴー / ストップ',
-    welcomeGoBody: '目標超えで <b>ストップ</b>(清算) か <b>ゴー</b>(目標↑ · 出し+1 · ボーナス)。大物なら閾値を一気に押して複数段ジャンプ。ゴー無制限だが失敗は <b>ゴーバク = ラン終了</b>。3·6·9·12月はバク卓。',
+    welcomeGoBody: '目標超えで <b>ストップ</b>(清算) か <b>ゴー</b>(目標↑ · 出し+1 · ボーナス)。大物なら閾値を一気に押して複数段ジャンプ。2月から3ゴー以上ストップで<b>夜</b>に挑戦できる。ゴー無制限だが失敗は <b>ゴーバク = ラン終了</b>。3·6·9·12月はバク卓。',
     welcomeShopTitle: '酒屋',
-    welcomeShopBody: 'クリア後、酒屋で <b>特殊札</b>(コモン〜レジェンド28種)を売買。スロットは1月1枠、月ごとに1枠開き5月で5枠。',
+    welcomeShopBody: 'クリア後、酒屋で <b>特殊札</b>(コモン〜レジェンド28種、暗黒5種)を売買。夜を破ると<b>暗黒酒屋</b>が開く。スロットは1月1枠、月ごとに1枠開き5月で5枠。',
     welcomeFoot: '詳しい役表はいつでも <b>ヘルプ</b>で。',
     welcomeStart: 'わかった — はじめる',
     welcomeStartSub: '1月の準備へ',
@@ -5697,11 +5858,20 @@ const I18N_UI = {
     gostopStop: 'ストップ',
     gostopStopTip0: '今清算して安全に次へ',
     gostopStopTipN: (n, bonus) => `今清算して次へ<br>(${n}ゴーボーナス <b>+${bonus}両</b>確保)`,
+    gostopStopTipNight0: '今清算して暗黒酒屋へ',
+    gostopStopTipNightN: (n, bonus) => `今清算して暗黒酒屋へ<br>(${n}ゴーボーナス <b>+${bonus}両</b> · 清算 ×2)`,
+    nightAskH2: '夜に挑戦しますか?',
+    nightAskSub: '目標は2倍。失敗はゴーバク。昼の清算は今受け取ります。',
+    nightAskYes: '挑戦',
+    nightAskYesTip: '同じ月の夜卓 — 目標・清算 ×2',
+    nightAskNo: '断る',
+    nightAskNoTip: '清算後、いつもの酒屋へ',
     gostopGo1: '1ゴー',
     gostopJump: (j) => `<b>${j}段押し</b><br>`,
     gostopGoTip: (bonus) => `出し +1 · 補充 · 成功で +${bonus}両<br>失敗は <b>ゴーバク = ラン終了</b>`,
     settleTitle: '清算',
     settleClear: (r, name) => `${r}月 · ${name} クリア`,
+    settleClearNight: (r, name) => `${r}月 · ${name} 夜クリア · 清算 ×2`,
     settleInterest: (n) => `利息 (所持 ${n}両)`,
     settleBase: (bak) => `基本賞金${bak ? ' · バク' : ''}`,
     settlePlayBonus: (n) => `残出し ${n}回`,
@@ -5709,7 +5879,12 @@ const I18N_UI = {
     settleTotal: '合計',
     settleNyang: (n) => `+${n}両`,
     shopTitle: '酒屋',
+    shopTitleDark: '暗黒酒屋',
     shopSub: (r) => `${r}月クリア · 特殊札を買って次へ`,
+    shopSubDark: (r) => `${r}月夜クリア · 暗黒ティアが出ることがあります`,
+    shopFinish: '一年を終える',
+    shopClearLabel: '12月まで走り切りました',
+    shopClearHint: '暗黒酒屋を見てから勝利を確定',
     shopOwned: '所持特殊札',
     shopOffers: '今日の札',
     shopReroll: (n) => `リロール · ${n}両`,
@@ -5752,6 +5927,7 @@ const I18N_UI = {
     coachDeckTitle: '🂠 山札',
     coachDeckBody: '右の <b>🂠</b> 数字をタップすると残り札を先に見られます。<br><span class="coach-muted">いつでも開けます。</span>',
     jumakAppear: '酒屋登場',
+    jumakAppearDark: '暗黒酒屋',
     surveyTitle: 'アンケートお願いします',
     surveyBody: 'プレイの感想を聞かせてください。<br><b>1分</b>で終わります。',
     surveyYes: '回答する',
@@ -5995,7 +6171,7 @@ let rng = mulberry32(runSeed);
 const JAN_AURA_USES = 3; // 1월 조합 오라·일괄선택 횟수
 
 const state = {
-  screen: 'play', // play | gostop | settle | shop | gameover | victory | help | deckpeek | prep | welcome | langpick
+  screen: 'play', // play | gostop | nightask | settle | shop | gameover | victory | help | deckpeek | prep | welcome | langpick
   round: 1,
   baseTarget: TARGETS[0],
   target: TARGETS[0],
@@ -6051,16 +6227,24 @@ const state = {
   janTutorJunkPending: false, // 1월: 조합 튜토 다음 보충에서 버리기 유도
   playFadeGen: 0,
   dealGen: 0,
+  isNightRound: false,
+  darkShop: false,
+  nightGoLevel: 0,
+  binjariMult: 0,
+  slotsLocked: false,
+  settleAfter: 'shop', // shop | night | victory
 };
 
 const hasJoker = (id) => state.jokers.some((j) => j.id === id);
 const jokerIds = () => state.jokers.map((j) => j.id);
 const isBossRound = (r) => BOSS_ROUNDS.includes(r);
-// 판 번호 = 월. 홀수 달 = 낮(광·열끗 +3칩), 짝수 달 = 밤(띠·피 +3칩)
-const isNight = () => state.round % 2 === 0;
+const isNight = () => !!state.isNightRound;
 const scoreEnv = () => ({
   boss: state.boss, jokerIds: jokerIds(), mitjangChips: state.mitjangChips,
   seasonMonth: state.round, night: isNight(),
+  flatBaseChip: hasJoker('mudgo_double') ? 20 : 0,
+  noSeason: hasJoker('dokbae'),
+  binjariMult: state.binjariMult || 0,
   isFirstPlay: state.playLog.length === 0,
   isLastPlay: state.playsLeft === 1,
   discardsLeft: state.discardsLeft,
@@ -6101,17 +6285,37 @@ function jokerLiveNote(id) {
 }
 
 function openJokerSlots() {
-  const month = state.screen === 'shop' ? state.round + 1 : state.round;
-  return jokerSlotCount(month);
+  if (state.slotsLocked) return 0;
+  return jokerSlotCount(state.round);
+}
+
+function startDiscards() {
+  if (state.boss === 'bibaram') return 0;
+  return hasJoker('mudgo_double') ? 2 : 4;
+}
+function startPlays() {
+  return hasJoker('hansu_allin') ? 1 : 4;
+}
+
+function canAskNight() {
+  return !state.isNightRound && state.round >= 2 && state.goLevel >= 3;
+}
+
+function lockedSlotLabel(month) {
+  return state.slotsLocked ? t('slotSealed') : t('slotLocked')(month);
 }
 
 // ── 판 진행 ────────────────────────────────────────────────
 function startRound() {
+  state.isNightRound = false;
+  state.darkShop = false;
+  state.nightGoLevel = 0;
+  state.settleAfter = 'shop';
   state.deck = shuffle(buildDeck(), rng);
   state.hand = [];
   state.selected = [];
   state.roundScore = 0;
-  state.playsLeft = 4;
+  state.playsLeft = startPlays();
   state.discardsLeft = 4;
   state.goLevel = 0;
   state.baseTarget = TARGETS[state.round - 1];
@@ -6144,11 +6348,48 @@ function startRound() {
   state.bossCandidates = null;
   if (state.boss) {
     state.usedBosses.push(state.boss);
-    if (state.boss === 'bibaram') state.discardsLeft = 0;
   }
+  state.discardsLeft = startDiscards();
 
   state.screen = 'play';
   render(); // 빈 손패부터
+  dealToHand({ isRoundStart: true });
+}
+
+/** 같은 달 밤 판 — 보스·춘향은 낮에서 이미 소비. 목표만 ×2. */
+function startNightRound() {
+  state.isNightRound = true;
+  state.darkShop = false;
+  state.settleAfter = 'shop';
+  state.deck = shuffle(buildDeck(), rng);
+  state.hand = [];
+  state.selected = [];
+  state.roundScore = 0;
+  state.playsLeft = startPlays();
+  state.goLevel = 0;
+  state.baseTarget = TARGETS[state.round - 1] * 2;
+  state.target = state.baseTarget;
+  state.kwangSoldThisRound = 0;
+  state.hoverReact = null;
+  state.lastPlay = null;
+  state.playLog = [];
+  state.playedCards = [];
+  state.discardedCards = [];
+  state.pendingGoStop = false;
+  state.dealing = false;
+  state.janAuraLeft = 0;
+  state.janAuraCharged = false;
+  state.coachStep = null;
+  state.coachPendingScored = false;
+  state.coachAfterDeal = null;
+  state.janTutorJunkPending = false;
+  if (state.runStats) {
+    state.runStats.playTurnInRound = 0;
+    state.runStats.discardTurnInRound = 0;
+  }
+  state.discardsLeft = startDiscards();
+  state.screen = 'play';
+  render();
   dealToHand({ isRoundStart: true });
 }
 
@@ -7171,18 +7412,36 @@ function canDeclareGo() {
   return cardsRemaining() >= 8;
 }
 
+function afterClearChoice() {
+  if (state.isNightRound) {
+    state.nightGoLevel = state.goLevel;
+    state.darkShop = true;
+    state.settleAfter = 'shop';
+    settle();
+    return;
+  }
+  if (canAskNight()) {
+    state.screen = 'nightask';
+    return;
+  }
+  state.settleAfter = state.round === ROUNDS ? 'victory' : 'shop';
+  settle();
+}
+
+function onRoundCleared() {
+  if (!canDeclareGo()) {
+    state.pendingGoStop = false;
+    afterClearChoice();
+    return;
+  }
+  state.pendingGoStop = true;
+  state.screen = 'gostop';
+  maybeStartGoStopCoach();
+}
+
 function checkAfterPlay() {
   if (state.roundScore >= state.target) {
-    if (state.round === ROUNDS) { victory(); return; }
-    // 8장으로 못 채우면 고 불가 → 바로 정산
-    if (!canDeclareGo()) {
-      state.pendingGoStop = false;
-      settle();
-      return;
-    }
-    // 내기 0이어도 고/스톱 선택 — 고 시 내기 +1·드로우로 이어갈 수 있음
-    state.screen = 'gostop';
-    maybeStartGoStopCoach();
+    onRoundCleared();
   } else if (state.playsLeft === 0) {
     gameOver(state.goLevel > 0 ? 'gobak' : 'miss');
   }
@@ -7230,6 +7489,20 @@ function chooseStop() {
     if (!hasSeenJanCoach()) markJanCoachSeen();
   }
   state.pendingGoStop = false;
+  afterClearChoice();
+  render();
+}
+
+function acceptNight() {
+  if (state.screen !== 'nightask') return;
+  state.settleAfter = 'night';
+  settle();
+  render();
+}
+
+function declineNight() {
+  if (state.screen !== 'nightask') return;
+  state.settleAfter = state.round === ROUNDS ? 'victory' : 'shop';
   settle();
   render();
 }
@@ -7284,15 +7557,8 @@ function discardSelected() {
     state.dealing = true; // 드로우·정렬 끝날 때까지 조합 힌트 숨김
     render(); // 버린 뒤 빈 자리
     await dealToHand();
-    if (state.roundScore >= state.target && state.round !== ROUNDS) {
-      if (!canDeclareGo()) {
-        state.pendingGoStop = false;
-        settle();
-      } else {
-        state.pendingGoStop = true;
-        state.screen = 'gostop';
-        maybeStartGoStopCoach();
-      }
+    if (state.roundScore >= state.target) {
+      onRoundCleared();
       render();
     }
   };
@@ -7305,11 +7571,12 @@ function discardSelected() {
 let settleJuiceBusy = false;
 let settleJuiceSkip = false;
 function settle() {
-  const interest = Math.min(Math.floor(state.money / 5), 5); // 정산 진입 시점 보유금 기준, 가장 먼저
-  const base = isBossRound(state.round) ? 6 : 3;
-  const playBonus = state.playsLeft;
-  const goB = state.goLevel > 0 ? goBonus(state.goLevel, state.round) : 0;
-  const insBonus = hasJoker('pibak_boheom') ? 1 : 0;
+  const nightMul = state.isNightRound ? 2 : 1;
+  const interest = Math.min(Math.floor(state.money / 5), 5) * nightMul; // 정산 진입 시점 보유금 기준, 가장 먼저
+  const base = (isBossRound(state.round) ? 6 : 3) * nightMul;
+  const playBonus = state.playsLeft * nightMul;
+  const goB = (state.goLevel > 0 ? goBonus(state.goLevel, state.round) : 0) * nightMul;
+  const insBonus = (hasJoker('pibak_boheom') ? 1 : 0) * nightMul;
   const total = interest + base + playBonus + goB + insBonus;
   state.settleData = { interest, base, playBonus, goBonus: goB, insBonus, total, moneyBefore: state.money };
   // 짤랑은 정산 로그(+1냥 이상)가 뜰 때만 — 여기서 미리 내지 않음
@@ -7389,6 +7656,15 @@ async function playSettleJuice() {
     }
     await wait(reduce ? 120 : 280);
     if (state.screen !== 'settle' || settleJuiceSkip) return;
+    if (state.settleAfter === 'night') {
+      state.settleAfter = 'shop';
+      startNightRound();
+      return;
+    }
+    if (state.settleAfter === 'victory') {
+      victory();
+      return;
+    }
     await openShop();
   } finally {
     if (ov) ov.classList.remove('settle-out');
@@ -7433,15 +7709,16 @@ async function openShop() {
 
 function genOffers() {
   const owned = jokerIds();
-  const pool = JOKERS.filter((j) => !owned.includes(j.id));
+  const dark = !!state.darkShop;
+  const pool = JOKERS.filter((j) => !owned.includes(j.id) && (j.rarity !== 'dark' || dark));
   const offers = [];
   for (let i = 0; i < 3; i++) {
     const avail = pool.filter((j) => !offers.some((o) => o.joker.id === j.id));
     if (!avail.length) break;
-    const want = rollJokerRarity(rng, state.round);
+    const want = rollShopRarity(rng, state.round, { dark, nightGo: state.nightGoLevel });
     let cands = avail.filter((j) => j.rarity === want);
     if (!cands.length) {
-      // 해당 티어 없으면 가까운 티어부터 폴백
+      // 암흑 풀이 비었거나 해당 티어가 없으면 일반 티어로 폴백
       for (const r of RARITY_ORDER) {
         cands = avail.filter((j) => j.rarity === r);
         if (cands.length) break;
@@ -7468,6 +7745,11 @@ function buyJoker(i) {
   state.jokers.push({ id: offer.joker.id, paid: offer.joker.price });
   if (!state.jokerGains[offer.joker.id]) state.jokerGains[offer.joker.id] = { score: 0, money: 0 };
   offer.sold = true;
+  if (offer.joker.id === 'binjari') {
+    applyBinjariPurchase();
+    render();
+    return;
+  }
   state.shopFlashOwned = state.jokers.length - 1;
   render();
   setTimeout(() => {
@@ -7544,6 +7826,22 @@ function toggleOwnedTip(i, ev) {
   else resetOwnedTip(cur);
 }
 
+function applyBinjariPurchase() {
+  const n = state.jokers.length;
+  state.binjariMult = n * 10;
+  let refund = 0;
+  for (const j of state.jokers) refund += Math.floor(j.paid / 2);
+  addMoney(refund);
+  state.mitjangChips = 0;
+  state.geumjulLost = 0;
+  state.geumjulMult = 0;
+  state.gotaryeongGoes = 0;
+  state.gotaryeongMult = 0;
+  state.jokerGains = {};
+  state.jokers = [];
+  state.slotsLocked = true;
+}
+
 function sellJoker(i) {
   if (state.screen !== 'shop') return;
   const j = state.jokers[i];
@@ -7578,6 +7876,7 @@ function pickBossCandidate(id) {
 
 function nextRound() {
   if (state.screen !== 'shop') return;
+  if (state.round >= ROUNDS) { victory(); return; }
   if (isBossRound(state.round + 1) && !state.nextBoss) { flashActions(); return; }
   if (state.coachStep === 'shop' || (state.coachStep && String(state.coachStep).startsWith('shop'))) {
     state.coachStep = null;
@@ -7785,6 +8084,8 @@ function resetRun() {
     runStats: null,
     janAuraLeft: 0, janAuraCharged: false, hintEnabled: false,
     coachStep: null, coachPendingScored: false, coachAfterDeal: null, janTutorJunkPending: false,
+    isNightRound: false, darkShop: false, nightGoLevel: 0,
+    binjariMult: 0, slotsLocked: false, settleAfter: 'shop',
   });
   state.baseTarget = TARGETS[0];
   state.target = TARGETS[0];
@@ -9178,6 +9479,8 @@ function cardHTML(card, opts = {}) {
 
 function render() {
   document.body.dataset.screen = state.screen || '';
+  document.body.classList.toggle('night-round', isNight());
+  document.body.classList.toggle('dark-shop', state.screen === 'shop' && !!state.darkShop);
   renderTopbar();
   renderSide();
   renderTable();
@@ -9283,7 +9586,7 @@ function renderTopbar() {
     } else if (i < open) {
       slots += `<div class="jokerslot">${t('emptyJoker')}</div>`;
     } else {
-      slots += `<div class="jokerslot locked">${t('slotLocked')(i + 1)}</div>`;
+      slots += `<div class="jokerslot locked">${lockedSlotLabel(i + 1)}</div>`;
     }
   }
   $('jokerbar').innerHTML = slots;
@@ -9642,14 +9945,26 @@ function renderModal() {
   const m = $('modal');
   const screens = {
     langpick: langpickHTML,
-    welcome: welcomeHTML, prep: prepHTML, gostop: gostopHTML, settle: settleHTML, shop: shopHTML,
+    welcome: welcomeHTML, prep: prepHTML, gostop: gostopHTML, nightask: nightaskHTML, settle: settleHTML, shop: shopHTML,
     gameover: gameoverHTML, victory: victoryHTML, help: helpHTML, deckpeek: deckpeekHTML,
   };
   const fn = screens[state.screen];
   if (!fn) {
-    m.classList.remove('gostop-modal', 'shop-modal', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal', 'prep-modal', 'langpick-modal');
+    m.classList.remove('gostop-modal', 'shop-modal', 'dark-shop', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal', 'prep-modal', 'langpick-modal');
     m.dataset.modalSig = '';
     ov.classList.remove('show', 'gostop-open', 'settle-out', 'prep-open');
+    return;
+  }
+
+  if (state.screen === 'nightask') {
+    const sig = `nightask:${state.round}:${state.goLevel}:${state.roundScore}`;
+    m.classList.remove('shop-modal', 'dark-shop', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal', 'prep-modal');
+    m.classList.add('gostop-modal');
+    ov.classList.remove('settle-out', 'prep-open');
+    ov.classList.add('show', 'gostop-open');
+    if (m.dataset.modalSig === sig) return;
+    m.dataset.modalSig = sig;
+    m.innerHTML = nightaskHTML();
     return;
   }
 
@@ -9658,7 +9973,7 @@ function renderModal() {
   if (isGoStop) {
     const n = goLevelReached(state.baseTarget, state.roundScore, state.goLevel) + 1;
     const sig = `gostop:${state.goLevel}:${n}:${state.roundScore}:${state.playsLeft}:${cardsRemaining()}`;
-    m.classList.remove('shop-modal', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal', 'prep-modal');
+    m.classList.remove('shop-modal', 'dark-shop', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal', 'prep-modal');
     m.classList.add('gostop-modal');
     ov.classList.remove('settle-out', 'prep-open');
     ov.classList.add('show', 'gostop-open');
@@ -9680,7 +9995,7 @@ function renderModal() {
     const sig = d
       ? `settle:${state.round}:${d.total}:${d.moneyBefore}`
       : `settle:${state.round}`;
-    m.classList.remove('gostop-modal', 'shop-modal', 'deckpeek-modal', 'howto-modal', 'end-modal', 'prep-modal');
+    m.classList.remove('gostop-modal', 'shop-modal', 'dark-shop', 'deckpeek-modal', 'howto-modal', 'end-modal', 'prep-modal');
     m.classList.add('settle-modal');
     ov.classList.remove('gostop-open', 'settle-out', 'prep-open');
     ov.classList.add('show');
@@ -9692,8 +10007,13 @@ function renderModal() {
   }
 
   m.dataset.modalSig = state.screen;
-  m.classList.remove('gostop-modal', 'shop-modal', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal', 'prep-modal', 'langpick-modal');
-  if (state.screen === 'shop') m.classList.add('shop-modal');
+  m.classList.remove('gostop-modal', 'shop-modal', 'dark-shop', 'settle-modal', 'deckpeek-modal', 'howto-modal', 'end-modal', 'prep-modal', 'langpick-modal');
+  if (state.screen === 'shop') {
+    m.classList.add('shop-modal');
+    if (state.darkShop) m.classList.add('dark-shop');
+  } else {
+    m.classList.remove('dark-shop');
+  }
   if (state.screen === 'prep') m.classList.add('prep-modal');
   if (state.screen === 'deckpeek') m.classList.add('deckpeek-modal');
   if (state.screen === 'help' || state.screen === 'welcome') m.classList.add('howto-modal');
@@ -9773,13 +10093,33 @@ function prepHTML() {
     </div>`;
 }
 
+function nightaskHTML() {
+  return `
+    <h2>${tu('nightAskH2')}</h2>
+    <div class="sub" style="margin-bottom:12px">${tu('nightAskSub')}</div>
+    <div class="modal-actions">
+      <button class="choicebtn btn-stop gs-simple" onclick="declineNight()">
+        <div class="t">${tu('nightAskNo')}</div>
+        <div class="gs-tip">${tu('nightAskNoTip')}</div>
+      </button>
+      <button class="choicebtn btn-go gs-simple" onclick="acceptNight()">
+        <div class="t">${tu('nightAskYes')}</div>
+        <div class="gs-tip">${tu('nightAskYesTip')}</div>
+      </button>
+    </div>`;
+}
+
 function gostopHTML() {
   const n = goLevelReached(state.baseTarget, state.roundScore, state.goLevel) + 1;
   const jump = n - state.goLevel;
   const newTarget = goThreshold(state.baseTarget, n);
-  const stopTip = state.goLevel > 0
-    ? tu('gostopStopTipN')(state.goLevel, goBonus(state.goLevel, state.round))
-    : tu('gostopStopTip0');
+  const stopTip = state.isNightRound
+    ? (state.goLevel > 0
+      ? tu('gostopStopTipNightN')(state.goLevel, goBonus(state.goLevel, state.round) * 2)
+      : tu('gostopStopTipNight0'))
+    : (state.goLevel > 0
+      ? tu('gostopStopTipN')(state.goLevel, goBonus(state.goLevel, state.round))
+      : tu('gostopStopTip0'));
   const goTip = (jump > 1 ? tu('gostopJump')(jump) : '')
     + tu('gostopGoTip')(goBonus(n, state.round));
   const goTitle = n <= 1
@@ -9827,7 +10167,7 @@ function settleHTML() {
   if (d.insBonus) rows.push([uiJoker(JOKER_BY_ID.pibak_boheom).name, d.insBonus]);
   return `
     <h2 class="settle-title">${tu('settleTitle')}</h2>
-    <div class="settle-month">${tu('settleClear')(state.round, esc(uiMonthName(state.round)))}</div>
+    <div class="settle-month">${(state.isNightRound ? tu('settleClearNight') : tu('settleClear'))(state.round, esc(uiMonthName(state.round)))}</div>
     <div class="settle-tally">
       <table class="settle-table" id="settle-table">
         ${rows.map(([k, v]) => `<tr class="settle-row"><td>${k}</td><td><span class="settle-amt">${tu('settleNyang')(v)}</span></td></tr>`).join('')}
@@ -9861,8 +10201,8 @@ function shopHTML() {
     const j = state.jokers[i];
     if (!j) {
       if (i >= openSlots) {
-        return `<div class="owned-slot locked" aria-label="${esc(t('slotLocked')(i + 1))}">
-          <span class="os-plus">＋</span><span>${t('slotLocked')(i + 1)}</span>
+        return `<div class="owned-slot locked" aria-label="${esc(lockedSlotLabel(i + 1))}">
+          <span class="os-plus">＋</span><span>${lockedSlotLabel(i + 1)}</span>
         </div>`;
       }
       return `<div class="owned-slot empty" aria-label="빈 특수패 칸">
@@ -9913,6 +10253,7 @@ function shopHTML() {
     }
   }
 
+  const lastMonth = state.round >= ROUNDS;
   const nextMonth = state.round + 1;
   const makDisabled = state.chunhyangNext || state.money < 3;
   const makBlock = CHUNHYANG_ENABLED ? `<div class="shop-util su-mak">
@@ -9930,8 +10271,8 @@ function shopHTML() {
       <div class="shop-body">
         <div class="shop-sign">
           <div class="shop-titles">
-            <h2>${tu('shopTitle')}</h2>
-            <div class="shop-sub">${tu('shopSub')(state.round)}</div>
+            <h2>${state.darkShop ? tu('shopTitleDark') : tu('shopTitle')}</h2>
+            <div class="shop-sub">${(state.darkShop ? tu('shopSubDark') : tu('shopSub'))(state.round)}</div>
           </div>
           <div class="shop-wallet"><b>${state.money}냥</b></div>
         </div>
@@ -9955,9 +10296,13 @@ function shopHTML() {
         </section>` : ''}
       </div>
       <footer class="shop-footer" id="shop-footer">
-        <div class="sf-next">${tu('shopNextLabel')(next, uiMonthName(next))}
+        ${lastMonth
+          ? `<div class="sf-next">${tu('shopClearLabel')}
+          <div class="sf-target">${tu('shopClearHint')}</div></div>
+        <button id="btn-nextround" onclick="nextRound()">${tu('shopFinish')}</button>`
+          : `<div class="sf-next">${tu('shopNextLabel')(next, uiMonthName(next))}
           <div class="sf-target">${tu('shopTarget')(fmt(TARGETS[next - 1]))}</div></div>
-        <button id="btn-nextround" onclick="nextRound()" ${needPick ? `disabled title="${tu('shopNeedBoss')}"` : ''}>${tu('shopNext')}</button>
+        <button id="btn-nextround" onclick="nextRound()" ${needPick ? `disabled title="${tu('shopNeedBoss')}"` : ''}>${tu('shopNext')}</button>`}
       </footer>
     </div>`;
 }
@@ -10777,9 +11122,10 @@ async function playGoCascade(fromLevel, toLevel) {
 
 // 상점 진입 직전 — 주막 프레임 + "주막 등장" 슬램 (n고 풀스크린과 동일 톤)
 async function playJumakAppear() {
-  const jl = $('jumak-label'); if (jl) jl.textContent = tu('jumakAppear');
+  const jl = $('jumak-label'); if (jl) jl.textContent = state.darkShop ? tu('jumakAppearDark') : tu('jumakAppear');
 
   const overlay = $('jumak-cascade');
+  if (overlay) overlay.classList.toggle('dark', !!state.darkShop);
   const stage = $('jumak-cascade-stage');
   if (!overlay || !stage) return;
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

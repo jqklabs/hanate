@@ -14,7 +14,8 @@ const E = new Function(src + `
 return { mulberry32, shuffle, buildDeck, CHIP, effType, baseChip, HANDS, HAND_BY_ID, handDisplayName,
   ROUNDS, TARGETS, JOKER_SLOT_MAX, jokerSlotCount, BOSS_ROUNDS, MILD_BOSSES, goMult, goBonus, goThreshold, goLevelReached, detectHand, detectHandInfo, cardChip,
   combosOf, evaluateHand, JOKERS, JOKER_BY_ID, BOSSES, BOSS_BY_ID, computeScore, jokerMarginalGain,
-  rollJokerRarity, rarityWeightsForMonth, gotaryeongMultFromGoes, RARITY_ORDER, bakChipLoss, hasMatdaePair, oppositeMonth };`)();
+  rollJokerRarity, rarityWeightsForMonth, gotaryeongMultFromGoes, RARITY_ORDER, RARITY_MONTH_MAX,
+  shopRarityMonth, darkOfferChance, rollShopRarity, bakChipLoss, hasMatdaePair, oppositeMonth };`)();
 
 let fails = 0;
 const assert = (cond, msg) => {
@@ -105,8 +106,8 @@ console.log('[2] 족보 판정');
     '띠셋 코어에 비단 미포함');
 }
 
-// ─── 3. 계절(이달의 패) + 밤일낮장 ────────────────────────
-console.log('[3] 계절 · 밤낮 보정');
+// ─── 3. 계절(이달의 패) ──────────────────────────────────
+console.log('[3] 계절 · 이달의 패');
 {
   const d = E.buildDeck();
   const pick = (p) => d.filter(p);
@@ -116,17 +117,29 @@ console.log('[3] 계절 · 밤낮 보정');
 
   assert(E.cardChip(m1kwang, env()) === 12, '보정 없음: 광 12');
   assert(E.cardChip(m1kwang, env({ seasonMonth: 1 })) === 24, '이달의 패: 광 12→24');
-  assert(E.cardChip(m1kwang, env({ seasonMonth: 1, night: false })) === 26, '낮: 광 24+2=26');
-  assert(E.cardChip(m1kwang, env({ seasonMonth: 2, night: true })) === 12, '밤은 광에 보너스 없음');
-  assert(E.cardChip(m1pi, env({ seasonMonth: 1, night: true })) === 6, '이달+밤: 피 2×2+2=6');
-  assert(E.cardChip(m2tti, env({ seasonMonth: 1, night: true })) === 8, '밤: 띠 6+2=8');
+  assert(E.cardChip(m1kwang, env({ seasonMonth: 1, night: false })) === 24, '낮/밤 +2 없음: 광 24');
+  assert(E.cardChip(m1kwang, env({ seasonMonth: 2, night: true })) === 12, '다른 달 밤은 광에 보너스 없음');
+  assert(E.cardChip(m1pi, env({ seasonMonth: 1, night: true })) === 4, '이달 피: 2×2=4');
+  assert(E.cardChip(m2tti, env({ seasonMonth: 1, night: true })) === 6, '밤이어도 띠 기본 6');
   assert(E.cardChip(m1pi, env({ seasonMonth: 1, night: true, boss: 'pibak' })) === 0, '피박은 계절 보정도 0으로');
-  assert(E.cardChip(m1pi, env({ seasonMonth: 1, night: true, boss: 'pibak', jokerIds: ['pibak_boheom'] })) === 6, '피박보험 시 보정 복구');
+  assert(E.cardChip(m1pi, env({ seasonMonth: 1, night: true, boss: 'pibak', jokerIds: ['pibak_boheom'] })) === 4, '피박보험 시 이달 칩 복구');
+  assert(E.cardChip(m1pi, env({ seasonMonth: 1, flatBaseChip: 20 })) === 40, '묻고 더블로 가: 기본 20 ×2 = 40');
+  assert(E.cardChip(m1kwang, env({ flatBaseChip: 20, boss: 'gwangbak' })) === 0, '묻고 더블로 가 위에도 광박 0');
 
-  // computeScore 통합: 1월 피 2장(이달), 낮 → month2 = (4 + 4) × 2 = 16 (족보 기본칩 없음)
+  // computeScore 통합: 1월 피 2장(이달) → month2 = (4 + 4) × 2 = 16
   const m1pis = pick((c) => c.month === 1 && c.type === 'pi');
-  const r = E.computeScore(m1pis, env({ seasonMonth: 1, night: false }));
+  const r = E.computeScore(m1pis, env({ seasonMonth: 1 }));
   assert(r.handId === 'month2' && r.score === 16, `계절 통합 16점 (실제 ${r.score})`);
+  const rBin = E.computeScore(m1pis, env({ seasonMonth: 1, binjariMult: 20 }));
+  assert(rBin.mult === 22 && rBin.score === 8 * 22, `빈 자리 +20배수 (실제 mult ${rBin.mult} score ${rBin.score})`);
+  assert(E.cardChip(m1pi, env({ seasonMonth: 1, noSeason: true })) === 2, '독배: 이달 ×2 없음');
+  assert(E.cardChip(m1pi, env({ boss: 'pibak', jokerIds: ['yeokbak'] })) === 2, '역박: 피박 칩 유지');
+  const rDok = E.computeScore(m1pis, env({ seasonMonth: 1, noSeason: true, jokerIds: ['dokbae'] }));
+  assert(rDok.mult === 12 && rDok.score === 4 * 12, `독배 +10배수 · 이달 없음 (실제 mult ${rDok.mult} score ${rDok.score})`);
+  const rAllin = E.computeScore(m1pis, env({ seasonMonth: 1, jokerIds: ['hansu_allin'] }));
+  assert(rAllin.mult === 8 && rAllin.score === 8 * 8, `한 수 올인 ×4 (실제 mult ${rAllin.mult} score ${rAllin.score})`);
+  const rYeok = E.computeScore(m1pis, env({ boss: 'pibak', jokerIds: ['yeokbak'] }));
+  assert(rYeok.chips === 4 && rYeok.mult === 4, `역박 피박 ×2 (실제 chips ${rYeok.chips} mult ${rYeok.mult})`);
 }
 
 // ─── 3.5 코어/플랫 분리 (족보 구성 카드만 배수) ────────────
@@ -238,10 +251,10 @@ console.log('[5] 특수패·박 회귀');
   assert(rPi.flat === 8 && rPi.score === rPi.chips * rPi.mult + 8,
     `피장사도 flat (실제 flat ${rPi.flat} score ${rPi.score})`);
   // 4티어 로스터·신규 훅
-  assert(E.JOKERS.length === 28, `특수패 28종 (실제 ${E.JOKERS.length})`);
+  assert(E.JOKERS.length === 33, `특수패 33종 (실제 ${E.JOKERS.length})`);
   const byR = (r) => E.JOKERS.filter((j) => j.rarity === r).length;
-  assert(byR('common') === 9 && byR('rare') === 10 && byR('epic') === 6 && byR('legendary') === 3,
-    `티어 분포 9/10/6/3 (실제 ${byR('common')}/${byR('rare')}/${byR('epic')}/${byR('legendary')})`);
+  assert(byR('common') === 9 && byR('rare') === 10 && byR('epic') === 6 && byR('legendary') === 3 && byR('dark') === 5,
+    `티어 분포 9/10/6/3/5 (실제 ${byR('common')}/${byR('rare')}/${byR('epic')}/${byR('legendary')}/${byR('dark')})`);
   const ssang = pick((c) => c.type === 'ssangpi').slice(0, 1);
   const rSs = E.computeScore(ssang, env({ jokerIds: ['ssangpi_sarang'] }));
   assert(rSs.flat === 12, `쌍피보따리 flat +12 (실제 ${rSs.flat})`);
@@ -308,13 +321,25 @@ console.log('[5] 특수패·박 회귀');
     '고타령은 고 2회당 +1배수');
   const w1 = E.rarityWeightsForMonth(1);
   const w12 = E.rarityWeightsForMonth(12);
+  const w14 = E.rarityWeightsForMonth(14);
+  assert(E.RARITY_MONTH_MAX === 14 && E.shopRarityMonth(2, true) === 4 && E.shopRarityMonth(12, true) === 14,
+    '암흑 주막 등급 월 = 현재+2 (상한 14)');
+  assert(E.darkOfferChance(0) === 0.01 && E.darkOfferChance(3) === 0.07 && E.darkOfferChance(5) === 0.11,
+    '암흑 등장 (고×2+1)%');
   assert(w1.legendary < 0.006 && w12.legendary <= 0.027,
     `레전 1월 ${w1.legendary} / 12월 ${w12.legendary} (기존 4% 미만)`);
   assert(w1.common > w12.common && w1.epic < w12.epic && w1.legendary < w12.legendary,
     '월이 오를수록 커먼↓ 에픽·레전↑');
+  assert(w14.common > 0.38 && w14.common < 0.43 && w14.legendary > w12.legendary,
+    `14월 커먼 ~40% (실제 ${w14.common.toFixed(3)})`);
   assert(Math.abs(w1.common + w1.rare + w1.epic + w1.legendary - 1) < 1e-9
-    && Math.abs(w12.common + w12.rare + w12.epic + w12.legendary - 1) < 1e-9,
+    && Math.abs(w12.common + w12.rare + w12.epic + w12.legendary - 1) < 1e-9
+    && Math.abs(w14.common + w14.rare + w14.epic + w14.legendary - 1) < 1e-9,
     '월별 티어 확률 합 1');
+  const forcedDark = E.rollShopRarity(() => 0, 2, { dark: true, nightGo: 50 });
+  assert(forcedDark === 'dark', '암흑 확률을 넘기면 dark');
+  const noDark = E.rollShopRarity(() => 0.99, 1, { dark: false });
+  assert(noDark !== 'dark', '평소 주막에는 dark 없음');
   const loss = E.bakChipLoss(pi2, env({ boss: 'pibak' }));
   const noLoss = E.bakChipLoss(pi2, env({ boss: 'pibak', jokerIds: ['pibak_boheom'] }));
   assert(loss > 0 && noLoss === 0, `금줄 손실 칩 ${loss} · 피박보험 0`);
@@ -346,7 +371,7 @@ console.log('[7] 풀런 시뮬레이션');
   /** 가성비: 티어↑·가격↓ 우선, 최소 예비금 2냥 유지 */
   function shopBuy(money, jokers, rng, month) {
     const owned = new Set(jokers);
-    const pool = E.JOKERS.filter((j) => !owned.has(j.id));
+    const pool = E.JOKERS.filter((j) => !owned.has(j.id) && j.rarity !== 'dark');
     const offers = [];
     for (let i = 0; i < 3; i++) {
       const avail = pool.filter((j) => !offers.includes(j));
@@ -368,7 +393,7 @@ console.log('[7] 풀런 시뮬레이션');
       return vb - va;
     });
     for (const o of offers) {
-      if (jokers.length >= E.jokerSlotCount(month + 1)) break;
+      if (jokers.length >= E.jokerSlotCount(month)) break;
       if (money >= o.price + 2) { money -= o.price; jokers.push(o.id); }
     }
     return money;
