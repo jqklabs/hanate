@@ -1,9 +1,10 @@
-/** invite · OG 랜딩 정적 HTML 생성 (kr/en/jp) */
+/** invite · OG 랜딩 정적 HTML 생성 → pages/ (pages/guide는 수동 관리하므로 건드리지 않음) */
 import { mkdirSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const pages = join(root, 'pages');
 const VARIANTS = ['OG1', 'OG2', 'OGB1', 'OGB2'];
 const ORIGIN = 'https://hanate.jqklabs.com';
 const OG_VER = 34;
@@ -155,57 +156,54 @@ location.replace('/?lang=${L.code}');
 
 for (const L of Object.values(LOCALES)) {
   const inviteRoot = L.code === 'kr'
-    ? join(root, 'invite')
-    : join(root, 'invite', L.code);
+    ? join(pages, 'invite')
+    : join(pages, 'invite', L.code);
   mkdirSync(inviteRoot, { recursive: true });
   writeFileSync(join(inviteRoot, 'index.html'), inviteIndexHtml(L));
 
   for (const name of VARIANTS) {
     const inviteDir = L.code === 'kr'
-      ? join(root, 'invite', name)
-      : join(root, 'invite', L.code, name);
-    const landDir = L.code === 'kr'
-      ? join(root, name)
-      : join(root, L.code, name);
+      ? join(pages, 'invite', name)
+      : join(pages, 'invite', L.code, name);
+    const landDir = join(pages, 'land', L.code, name);
     mkdirSync(inviteDir, { recursive: true });
     mkdirSync(landDir, { recursive: true });
     writeFileSync(join(inviteDir, 'index.html'), inviteHtml(L, name));
     writeFileSync(join(landDir, 'index.html'), landHtml(L, name));
   }
 
-  if (L.code !== 'kr') {
-    mkdirSync(join(root, L.code), { recursive: true });
-    writeFileSync(join(root, L.code, 'index.html'), gameLocaleShell(L));
+  mkdirSync(join(pages, 'locale', L.code), { recursive: true });
+  if (L.code === 'kr') {
+    writeFileSync(join(pages, 'locale', 'kr', 'index.html'), `<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><script>location.replace('/');</script></head><body></body></html>
+`);
+  } else {
+    writeFileSync(join(pages, 'locale', L.code, 'index.html'), gameLocaleShell(L));
   }
 
   if (L.code === 'kr') {
-    mkdirSync(join(root, 'invite', 'kr'), { recursive: true });
-    writeFileSync(join(root, 'invite', 'kr', 'index.html'), inviteIndexHtml(L));
+    mkdirSync(join(pages, 'invite', 'kr'), { recursive: true });
+    writeFileSync(join(pages, 'invite', 'kr', 'index.html'), inviteIndexHtml(L));
   }
   console.log(`[og] locale=${L.code}`);
 }
 
-mkdirSync(join(root, 'kr'), { recursive: true });
-writeFileSync(join(root, 'kr', 'index.html'), `<!DOCTYPE html>
-<html lang="ko"><head><meta charset="utf-8"><script>location.replace('/');</script></head><body></body></html>
-`);
-
 // 구 경로 별칭
-mkdirSync(join(root, 'ja'), { recursive: true });
-writeFileSync(join(root, 'ja', 'index.html'), `<!DOCTYPE html>
+mkdirSync(join(pages, 'locale', 'ja'), { recursive: true });
+writeFileSync(join(pages, 'locale', 'ja', 'index.html'), `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><script>try{localStorage.setItem('hwatro_locale','jp')}catch(_){}location.replace('/jp/'+location.search+location.hash)</script></head><body></body></html>
 `);
-mkdirSync(join(root, 'invite', 'ja'), { recursive: true });
-writeFileSync(join(root, 'invite', 'ja', 'index.html'), `<!DOCTYPE html>
+mkdirSync(join(pages, 'invite', 'ja'), { recursive: true });
+writeFileSync(join(pages, 'invite', 'ja', 'index.html'), `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><script>location.replace('/invite/jp'+location.search+location.hash)</script></head><body></body></html>
 `);
-mkdirSync(join(root, 'zh'), { recursive: true });
-writeFileSync(join(root, 'zh', 'index.html'), `<!DOCTYPE html>
+mkdirSync(join(pages, 'locale', 'zh'), { recursive: true });
+writeFileSync(join(pages, 'locale', 'zh', 'index.html'), `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><script>try{localStorage.setItem('hwatro_locale','en')}catch(_){}location.replace('/en/'+location.search+location.hash)</script></head><body></body></html>
 `);
-mkdirSync(join(root, 'invite', 'zh'), { recursive: true });
-writeFileSync(join(root, 'invite', 'zh', 'index.html'), `<!DOCTYPE html>
+mkdirSync(join(pages, 'invite', 'zh'), { recursive: true });
+writeFileSync(join(pages, 'invite', 'zh', 'index.html'), `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><script>location.replace('/invite/en'+location.search+location.hash)</script></head><body></body></html>
 `);
 
-console.log('[og] done');
+console.log('[og] done → pages/');

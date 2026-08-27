@@ -16,7 +16,7 @@
 | 플랫폼 | 웹 (데스크톱 + 모바일 브라우저), 빌드·서버 없음 |
 | 한 런 | 1월 → 12월, 12판 |
 | 세션 길이 | `[가정]` 1런 15~25분 (실측 없음 · §04_balance 앵커 `T_s`) |
-| 배포 | GitHub Pages — https://sleeeppy.github.io/hwatro/ |
+| 배포 | Vercel — https://hanate.jqklabs.com |
 | 타겟 | 화투 룰을 아는 한국 이용자 + Balatro류 덱빌더 이용자 |
 
 **플레이 판타지**

@@ -1,5 +1,10 @@
 {
-  "devDependencies": {
-    "playwright": "^1.62.1"
+  "name": "hanate",
+  "private": true,
+  "description": "십이화 : 무한의 판",
+  "scripts": {
+    "test": "node test/test-game.mjs",
+    "og:gen": "node scripts/og-landing-html.mjs",
+    "firebase:config": "node scripts/generate-firebase-config.mjs"
   }
 }

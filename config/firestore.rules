@@ -1,6 +1,6 @@
 rules_version = '2';
 // Firebase Console → Firestore → Rules 에 붙여넣기
-// Anonymous Auth 활성화 필수 (firebase-telemetry.mjs 가 signInAnonymously 사용)
+// Anonymous Auth 활성화 필수 (lib/firebase-telemetry.mjs 가 signInAnonymously 사용)
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -8,7 +8,9 @@ service cloud.firestore {
       function allowedEvent() {
         return request.resource.data.event in [
           'session_start', 'session_end', 'run_end',
-          'hand_play', 'cards_discard', 'shop_buy', 'shop_reroll', 'settle'
+          'hand_play', 'cards_discard', 'shop_buy', 'shop_reroll', 'settle',
+          'survey_enter', 'survey_close',
+          'shortcut_prompt_show', 'shortcut_prompt_click', 'shortcut_prompt_close'
         ];
       }
       function validPayload() {

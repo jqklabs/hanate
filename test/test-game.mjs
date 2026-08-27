@@ -12,9 +12,10 @@ const src = html.slice(codeStart, codeEnd);
 
 const E = new Function(src + `
 return { mulberry32, shuffle, buildDeck, CHIP, effType, baseChip, HANDS, HAND_BY_ID, handDisplayName,
-  ROUNDS, TARGETS, BOSS_ROUNDS, MILD_BOSSES, goMult, goBonus, goThreshold, goLevelReached, detectHand, detectHandInfo, cardChip,
+  ROUNDS, TARGETS, JOKER_SLOT_MAX, jokerSlotCount, BOSS_ROUNDS, MILD_BOSSES, goMult, goBonus, goThreshold, goLevelReached, detectHand, detectHandInfo, cardChip,
   combosOf, evaluateHand, JOKERS, JOKER_BY_ID, BOSSES, BOSS_BY_ID, computeScore, jokerMarginalGain,
-  rollJokerRarity, RARITY_ORDER };`)();
+  rollJokerRarity, rarityWeightsForMonth, gotaryeongMultFromGoes, RARITY_ORDER, RARITY_MONTH_MAX,
+  shopRarityMonth, darkOfferChance, rollShopRarity, bakChipLoss, hasMatdaePair, oppositeMonth };`)();
 
 let fails = 0;
 const assert = (cond, msg) => {
@@ -33,6 +34,10 @@ console.log('[1] 덱 구성');
     '광5 열9 띠10 쌍피2 피22');
   assert(d.filter((c) => c.tags.includes('godori')).every((c) => [2, 4, 8].includes(c.month)), '고도리 새 2·4·8월');
   assert(E.ROUNDS === 12 && E.TARGETS.length === 12, '12판 · 목표 12개');
+  assert(E.JOKER_SLOT_MAX === 5
+    && E.jokerSlotCount(1) === 1 && E.jokerSlotCount(2) === 2
+    && E.jokerSlotCount(5) === 5 && E.jokerSlotCount(12) === 5,
+    '특수패 슬롯 1월 1칸 → 5월 5칸');
   assert(JSON.stringify(E.BOSS_ROUNDS) === '[3,6,9,12]', '박 라운드 3·6·9·12월');
 }
 
@@ -101,8 +106,8 @@ console.log('[2] 족보 판정');
     '띠셋 코어에 비단 미포함');
 }
 
-// ─── 3. 계절(이달의 패) + 밤일낮장 ────────────────────────
-console.log('[3] 계절 · 밤낮 보정');
+// ─── 3. 계절(이달의 패) ──────────────────────────────────
+console.log('[3] 계절 · 이달의 패');
 {
   const d = E.buildDeck();
   const pick = (p) => d.filter(p);
@@ -112,17 +117,52 @@ console.log('[3] 계절 · 밤낮 보정');
 
   assert(E.cardChip(m1kwang, env()) === 12, '보정 없음: 광 12');
   assert(E.cardChip(m1kwang, env({ seasonMonth: 1 })) === 24, '이달의 패: 광 12→24');
-  assert(E.cardChip(m1kwang, env({ seasonMonth: 1, night: false })) === 26, '낮: 광 24+2=26');
-  assert(E.cardChip(m1kwang, env({ seasonMonth: 2, night: true })) === 12, '밤은 광에 보너스 없음');
-  assert(E.cardChip(m1pi, env({ seasonMonth: 1, night: true })) === 6, '이달+밤: 피 2×2+2=6');
-  assert(E.cardChip(m2tti, env({ seasonMonth: 1, night: true })) === 8, '밤: 띠 6+2=8');
+  assert(E.cardChip(m1kwang, env({ seasonMonth: 1, night: false })) === 24, '낮/밤 +2 없음: 광 24');
+  assert(E.cardChip(m1kwang, env({ seasonMonth: 2, night: true })) === 12, '다른 달 밤은 광에 보너스 없음');
+  assert(E.cardChip(m1pi, env({ seasonMonth: 1, night: true })) === 4, '이달 피: 2×2=4');
+  assert(E.cardChip(m2tti, env({ seasonMonth: 1, night: true })) === 6, '밤이어도 띠 기본 6');
   assert(E.cardChip(m1pi, env({ seasonMonth: 1, night: true, boss: 'pibak' })) === 0, '피박은 계절 보정도 0으로');
-  assert(E.cardChip(m1pi, env({ seasonMonth: 1, night: true, boss: 'pibak', jokerIds: ['pibak_boheom'] })) === 6, '피박보험 시 보정 복구');
+  assert(E.cardChip(m1pi, env({ seasonMonth: 1, night: true, boss: 'pibak', jokerIds: ['pibak_boheom'] })) === 4, '피박보험 시 이달 칩 복구');
+  assert(E.cardChip(m1pi, env({ seasonMonth: 1, flatBaseChip: 20 })) === 40, '묻고 더블로 가: 기본 20 ×2 = 40');
+  assert(E.cardChip(m1kwang, env({ flatBaseChip: 20, boss: 'gwangbak' })) === 0, '묻고 더블로 가 위에도 광박 0');
 
-  // computeScore 통합: 1월 피 2장(이달), 낮 → month2 = (4 + 4) × 2 = 16 (족보 기본칩 없음)
+  // computeScore 통합: 1월 피 2장(이달) → month2 = (4 + 4) × 2 = 16
   const m1pis = pick((c) => c.month === 1 && c.type === 'pi');
-  const r = E.computeScore(m1pis, env({ seasonMonth: 1, night: false }));
+  const r = E.computeScore(m1pis, env({ seasonMonth: 1 }));
   assert(r.handId === 'month2' && r.score === 16, `계절 통합 16점 (실제 ${r.score})`);
+  const rBin = E.computeScore(m1pis, env({ seasonMonth: 1, binjariMult: 20 }));
+  assert(rBin.mult === 22 && rBin.score === 8 * 22, `빈 자리 +20배수 (실제 mult ${rBin.mult} score ${rBin.score})`);
+  assert(E.cardChip(m1pi, env({ seasonMonth: 1, jokerIds: ['geokkuro'] })) === 80, '거꾸로: 이달 피 2×20×2=80');
+  assert(E.cardChip(m1kwang, env({ jokerIds: ['geokkuro'] })) === 240, '거꾸로: 광 12×20=240');
+  assert(E.cardChip(m1pi, env({ boss: 'pibak', jokerIds: ['yeokbak'] })) === 2, '역박: 피박 칩 유지');
+  const rInv = E.computeScore(m1pis, env({ seasonMonth: 1, jokerIds: ['geokkuro'] }));
+  assert(rInv.handId === 'month2' && rInv.mult === 0.5 && rInv.score === 80,
+    `거꾸로 month2: 칩 160 × 1/2 = 80 (실제 mult ${rInv.mult} score ${rInv.score})`);
+  const kwangs = pick((c) => c.type === 'kwang').slice(0, 5);
+  const rOg = E.computeScore(kwangs, env({ jokerIds: ['geokkuro'] }));
+  assert(rOg.handId === 'ogwang' && rOg.mult === 1 / 12 && rOg.score === 100,
+    `거꾸로 오광: 칩 1200 × 1/12 = 100 (실제 mult ${rOg.mult} score ${rOg.score})`);
+  const rAllin = E.computeScore(m1pis, env({ seasonMonth: 1, jokerIds: ['hansu_allin'] }));
+  assert(rAllin.mult === 8 && rAllin.score === 8 * 8, `한 수 올인 ×4 (실제 mult ${rAllin.mult} score ${rAllin.score})`);
+  const rYeok = E.computeScore(m1pis, env({ boss: 'pibak', jokerIds: ['yeokbak'] }));
+  assert(rYeok.chips === 4 && rYeok.mult === 4, `역박 피박 ×2 (실제 chips ${rYeok.chips} mult ${rYeok.mult})`);
+  assert(E.cardChip(m1kwang, env({ jokerIds: ['oegil'], oegilKind: 'pi' })) === 0, '외길 피: 광 칩 0');
+  assert(E.cardChip(m1pi, env({ jokerIds: ['oegil'], oegilKind: 'pi' })) === 2, '외길 피: 피 2');
+  assert(E.cardChip(m1pi, env({ seasonMonth: 1, jokerIds: ['oegil'], oegilKind: 'pi' })) === 4, '외길 피: 이달 피 4');
+  const ssang = pick((c) => c.type === 'ssangpi')[0];
+  assert(E.cardChip(ssang, env({ jokerIds: ['oegil'], oegilKind: 'pi' })) === 5, '외길 피: 쌍피도 피');
+  const rOegilJjok = E.computeScore(m1pis, env({ jokerIds: ['oegil'], oegilKind: 'pi' }));
+  assert(rOegilJjok.handId === 'month2' && rOegilJjok.mult === 16 && rOegilJjok.score === 64,
+    `외길 피 month2: 칩 4 × 16 = 64 (실제 mult ${rOegilJjok.mult} score ${rOegilJjok.score})`);
+  const pi5 = pick((c) => c.type === 'pi').slice(0, 5);
+  const rOegilPi5 = E.computeScore(pi5, env({ jokerIds: ['oegil'], oegilKind: 'pi' }));
+  assert(rOegilPi5.handId === 'pi5' && rOegilPi5.mult === 32 && rOegilPi5.score === 320,
+    `외길 피 피5: 칩 10 × 32 = 320 (실제 mult ${rOegilPi5.mult} score ${rOegilPi5.score})`);
+  const rOegilOg = E.computeScore(kwangs, env({ jokerIds: ['oegil'], oegilKind: 'kwang' }));
+  assert(rOegilOg.handId === 'ogwang' && rOegilOg.mult === 192 && rOegilOg.score === 11520,
+    `외길 광 오광: 칩 60 × 192 = 11520 (실제 mult ${rOegilOg.mult} score ${rOegilOg.score})`);
+  const rOegilMiss = E.computeScore(kwangs, env({ jokerIds: ['oegil'], oegilKind: 'pi' }));
+  assert(rOegilMiss.chips === 0 && rOegilMiss.score === 0, '외길 피 + 오광 = 0');
 }
 
 // ─── 3.5 코어/플랫 분리 (족보 구성 카드만 배수) ────────────
@@ -234,10 +274,10 @@ console.log('[5] 특수패·박 회귀');
   assert(rPi.flat === 8 && rPi.score === rPi.chips * rPi.mult + 8,
     `피장사도 flat (실제 flat ${rPi.flat} score ${rPi.score})`);
   // 4티어 로스터·신규 훅
-  assert(E.JOKERS.length === 22, `특수패 22종 (실제 ${E.JOKERS.length})`);
+  assert(E.JOKERS.length === 34, `특수패 34종 (실제 ${E.JOKERS.length})`);
   const byR = (r) => E.JOKERS.filter((j) => j.rarity === r).length;
-  assert(byR('common') === 6 && byR('rare') === 7 && byR('epic') === 6 && byR('legendary') === 3,
-    `티어 분포 6/7/6/3 (실제 ${byR('common')}/${byR('rare')}/${byR('epic')}/${byR('legendary')})`);
+  assert(byR('common') === 9 && byR('rare') === 10 && byR('epic') === 6 && byR('legendary') === 3 && byR('dark') === 6,
+    `티어 분포 9/10/6/3/6 (실제 ${byR('common')}/${byR('rare')}/${byR('epic')}/${byR('legendary')}/${byR('dark')})`);
   const ssang = pick((c) => c.type === 'ssangpi').slice(0, 1);
   const rSs = E.computeScore(ssang, env({ jokerIds: ['ssangpi_sarang'] }));
   assert(rSs.flat === 12, `쌍피보따리 flat +12 (실제 ${rSs.flat})`);
@@ -262,6 +302,14 @@ console.log('[5] 특수패·박 회귀');
   assert(rNori4.handId === 'sagwang' && rNori4.mult === 8 + 12,
     `삼광판 광4 = 8+12 (실제 hand=${rNori4.handId} mult=${rNori4.mult})`);
   assert(rNori4.score > rNori3.score, `삼광판 광4 점수 > 광3 (실제 ${rNori4.score} vs ${rNori3.score})`);
+  // 초단꾼: 족보(코어)에 들어간 초단만
+  const choAll = pick((c) => c.tags.includes('chodan'));
+  const rChoDan = E.computeScore(choAll.slice(0, 3), env({ jokerIds: ['chodan_aeho'] }));
+  assert(rChoDan.handId === 'dan' && rChoDan.mult === 4 + 6,
+    `초단꾼 초단 족보 3장 = 4+6 (실제 hand=${rChoDan.handId} mult=${rChoDan.mult})`);
+  const rChoFlat = E.computeScore([...gwang3, choAll[0]], env({ jokerIds: ['chodan_aeho'] }));
+  assert(rChoFlat.handId === 'samgwang' && rChoFlat.mult === 5,
+    `족보 밖 초단은 초단꾼 미적용 (실제 hand=${rChoFlat.handId} mult=${rChoFlat.mult})`);
   // leave-one-out 기여도
   const rPiBase = E.computeScore(pi2, env());
   const gainPi = E.jokerMarginalGain(pi2, env({ jokerIds: ['pi_merchant'] }), 'pi_merchant');
@@ -269,6 +317,55 @@ console.log('[5] 특수패·박 회귀');
     `피장사 기여도 +8 (실제 ${gainPi})`);
   assert(E.jokerMarginalGain(pi2, env({ jokerIds: ['pi_merchant'] }), 'gwangpari') === 0,
     '미보유 특수패 기여도 0');
+  // 신규 6종
+  const rCheot = E.computeScore([yeol1], env({ jokerIds: ['cheotsu'], isFirstPlay: true }));
+  const rCheot2 = E.computeScore([yeol1], env({ jokerIds: ['cheotsu'] }));
+  assert(rCheot.mult === rCheot2.mult + 4, `첫수 첫 내기 +4배수 (실제 ${rCheot.mult} vs ${rCheot2.mult})`);
+  const rJan = E.computeScore(pi2, env({ jokerIds: ['janson'], heldTotal: 8 }));
+  const rJan0 = E.computeScore(pi2, env({ heldTotal: 8 }));
+  assert(rJan.flat === rJan0.flat + 30, `잔손 6장 ×5 = +30 (실제 ${rJan.flat - rJan0.flat})`);
+  const rMak = E.computeScore(yeol3, env({ jokerIds: ['makpan'], isLastPlay: true, discardsLeft: 3 }));
+  const rMak0 = E.computeScore(yeol3, env());
+  assert(rMak.mult === rMak0.mult + 6, `막판뒤집기 버리기3 ×2 = +6배수 (실제 ${rMak.mult})`);
+  const m1pi = pick((c) => c.month === 1 && c.type === 'pi')[0];
+  const m7pi = pick((c) => c.month === 7 && c.type === 'pi')[0];
+  const rMat = E.computeScore([m1pi, m7pi], env({ jokerIds: ['matdae'] }));
+  const rMat0 = E.computeScore([m1pi, m7pi], env());
+  assert(rMat.mult === rMat0.mult + 6, `맞대 1–7월 +6배수 (실제 ${rMat.mult})`);
+  const m2pi = pick((c) => c.month === 2 && c.type === 'pi')[0];
+  const rMatNo = E.computeScore([m1pi, m2pi], env({ jokerIds: ['matdae'] }));
+  assert(rMatNo.mult === E.computeScore([m1pi, m2pi], env()).mult, '맞대 1–2월 미발동');
+  const rGeum = E.computeScore(yeol3, env({ jokerIds: ['geumjul'], geumjulMult: 4 }));
+  assert(rGeum.mult === rMak0.mult + 4, `금줄 누적 +4배수 (실제 ${rGeum.mult})`);
+  const rGoTa = E.computeScore(yeol3, env({ jokerIds: ['gotaryeong'], gotaryeongMult: 2 }));
+  assert(rGoTa.mult === rMak0.mult + 2, `고타령 누적 +2배수 (실제 ${rGoTa.mult})`);
+  assert(E.gotaryeongMultFromGoes(1) === 0 && E.gotaryeongMultFromGoes(2) === 1
+    && E.gotaryeongMultFromGoes(3) === 1 && E.gotaryeongMultFromGoes(4) === 2,
+    '고타령은 고 2회당 +1배수');
+  const w1 = E.rarityWeightsForMonth(1);
+  const w12 = E.rarityWeightsForMonth(12);
+  const w14 = E.rarityWeightsForMonth(14);
+  assert(E.RARITY_MONTH_MAX === 14 && E.shopRarityMonth(2, true) === 4 && E.shopRarityMonth(12, true) === 14,
+    '암흑 주막 등급 월 = 현재+2 (상한 14)');
+  assert(E.darkOfferChance(0) === 0.01 && E.darkOfferChance(3) === 0.07 && E.darkOfferChance(5) === 0.11,
+    '암흑 등장 (고×2+1)%');
+  assert(w1.legendary < 0.006 && w12.legendary <= 0.027,
+    `레전 1월 ${w1.legendary} / 12월 ${w12.legendary} (기존 4% 미만)`);
+  assert(w1.common > w12.common && w1.epic < w12.epic && w1.legendary < w12.legendary,
+    '월이 오를수록 커먼↓ 에픽·레전↑');
+  assert(w14.common > 0.38 && w14.common < 0.43 && w14.legendary > w12.legendary,
+    `14월 커먼 ~40% (실제 ${w14.common.toFixed(3)})`);
+  assert(Math.abs(w1.common + w1.rare + w1.epic + w1.legendary - 1) < 1e-9
+    && Math.abs(w12.common + w12.rare + w12.epic + w12.legendary - 1) < 1e-9
+    && Math.abs(w14.common + w14.rare + w14.epic + w14.legendary - 1) < 1e-9,
+    '월별 티어 확률 합 1');
+  const forcedDark = E.rollShopRarity(() => 0, 2, { dark: true, nightGo: 50 });
+  assert(forcedDark === 'dark', '암흑 확률을 넘기면 dark');
+  const noDark = E.rollShopRarity(() => 0.99, 1, { dark: false });
+  assert(noDark !== 'dark', '평소 주막에는 dark 없음');
+  const loss = E.bakChipLoss(pi2, env({ boss: 'pibak' }));
+  const noLoss = E.bakChipLoss(pi2, env({ boss: 'pibak', jokerIds: ['pibak_boheom'] }));
+  assert(loss > 0 && noLoss === 0, `금줄 손실 칩 ${loss} · 피박보험 0`);
 }
 
 // ─── 6. evaluateHand (춘향 훈수 엔진) ─────────────────────
@@ -295,14 +392,14 @@ console.log('[7] 풀런 시뮬레이션');
 {
   const tierRank = { common: 1, rare: 2, epic: 3, legendary: 4 };
   /** 가성비: 티어↑·가격↓ 우선, 최소 예비금 2냥 유지 */
-  function shopBuy(money, jokers, rng) {
+  function shopBuy(money, jokers, rng, month) {
     const owned = new Set(jokers);
-    const pool = E.JOKERS.filter((j) => !owned.has(j.id));
+    const pool = E.JOKERS.filter((j) => !owned.has(j.id) && j.rarity !== 'dark');
     const offers = [];
     for (let i = 0; i < 3; i++) {
       const avail = pool.filter((j) => !offers.includes(j));
       if (!avail.length) break;
-      const want = E.rollJokerRarity(rng);
+      const want = E.rollJokerRarity(rng, month);
       let cands = avail.filter((j) => j.rarity === want);
       if (!cands.length) {
         for (const r of E.RARITY_ORDER) {
@@ -319,7 +416,7 @@ console.log('[7] 풀런 시뮬레이션');
       return vb - va;
     });
     for (const o of offers) {
-      if (jokers.length >= 5) break;
+      if (jokers.length >= E.jokerSlotCount(month)) break;
       if (money >= o.price + 2) { money -= o.price; jokers.push(o.id); }
     }
     return money;
@@ -327,7 +424,7 @@ console.log('[7] 풀런 시뮬레이션');
 
   function simulate(seed, buyAI) {
     const rng = E.mulberry32(seed);
-    let money = 5, jokers = [], mitjangChips = 0;
+    let money = 5, jokers = [], mitjangChips = 0, geumjulLost = 0, geumjulMult = 0;
     const usedBosses = [];
     for (let round = 1; round <= E.ROUNDS; round++) {
       let boss = null;
@@ -342,7 +439,13 @@ console.log('[7] 풀런 시뮬레이션');
       refill();
       let score = 0, playsLeft = 4, discardsLeft = boss === 'bibaram' ? 0 : 4;
       const target = E.TARGETS[round - 1];
-      const e = () => ({ boss, jokerIds: jokers, mitjangChips, seasonMonth: round, night: round % 2 === 0 });
+      let firstPlay = true;
+      const e = () => ({
+        boss, jokerIds: jokers, mitjangChips,
+        seasonMonth: round, night: round % 2 === 0,
+        isFirstPlay: firstPlay, isLastPlay: playsLeft === 1,
+        discardsLeft, heldTotal: hand.length, geumjulMult,
+      });
 
       while (playsLeft > 0 && score < target) {
         let best = E.evaluateHand(hand, e());
@@ -359,6 +462,11 @@ console.log('[7] 풀런 시뮬레이션');
           }
         }
         score += best.score;
+        if (jokers.includes('geumjul')) {
+          geumjulLost += E.bakChipLoss(best.cards, e());
+          geumjulMult = Math.floor(geumjulLost / 10);
+        }
+        firstPlay = false;
         const ids = new Set(best.cards.map((c) => c.uid));
         hand = hand.filter((c) => !ids.has(c.uid));
         playsLeft--;
@@ -368,7 +476,7 @@ console.log('[7] 풀런 시뮬레이션');
       if (score < target) return { cleared: round - 1 };
       const interest = Math.min(Math.floor(money / 5), 5);
       money += interest + (E.BOSS_ROUNDS.includes(round) ? 6 : 3) + playsLeft + (jokers.includes('pibak_boheom') ? 1 : 0);
-      if (round < E.ROUNDS && buyAI) money = shopBuy(money, jokers, rng);
+      if (round < E.ROUNDS && buyAI) money = shopBuy(money, jokers, rng, round);
     }
     return { cleared: E.ROUNDS };
   }

@@ -1,86 +1,125 @@
-# 십이화 — 고스톱: 무한의 판 🎴
+<p align="center">
+  <a href="https://hanate.jqklabs.com/invite">
+    <img src="Assets/OG/kr/OG1.jpg" alt="십이화 — 고스톱: 무한의 판" width="760"/>
+  </a>
+</p>
 
-한국 화투 48장으로 하는 1인용 **Balatro라이크** 로그라이크 덱빌더 웹 게임 프로토타입.
+<p align="center">
+  <img src="Assets/Icons/icon-192.png" width="88" alt="십이화 아이콘"/>
+</p>
 
-고스톱의 족보·고/스톱·박·정산을 Balatro의 칩×배수 스코어링, 블라인드 커브, 조커(특수패), 상점 경제에 녹였습니다.
+<h1 align="center">십이화 — 고스톱: 무한의 판</h1>
 
-기획·시스템 전체는 **[docs/기획서.md](docs/기획서.md)** 참고.
+<p align="center">
+  한국 화투 48장 · 1인용 Balatro라이크 로그라이크 덱빌더
+</p>
 
-## 실행
+<p align="center">
+  <a href="https://hanate.jqklabs.com/invite"><strong>🎴 지금 플레이</strong></a>
+  &nbsp;·&nbsp;
+  <a href="https://hanate.jqklabs.com/invite/en">EN</a>
+  &nbsp;·&nbsp;
+  <a href="https://hanate.jqklabs.com/invite/jp">JP</a>
+</p>
 
-`index.html`을 브라우저에서 열면 끝. 빌드·서버 불필요 (로컬 Firebase 테스트는 HTTP 서버 권장).
-
-- 배포: **Vercel** (Git push 시 자동)
-- 시드 고정: `?seed=42`
-
-```bash
-python3 -m http.server 8080   # 로컬 (Firebase 테스트)
-node test/test-game.mjs       # 엔진 테스트
-```
-
-## 게임 규칙
-
-- **한 해 완주**: 판 = 1월(송학) → 12월(비), 총 12판. 판마다 목표 점수(160 → 5,500)를 내기 4회 안에 돌파.
-- **스코어링**: 손패 8장에서 1~5장을 내면 족보 판정 → `(족보를 구성한 카드의 칩) × 배수 + 나머지 낸 카드 칩`. 족보 기본칩 없음 — 배수가 족보 가치. 족보에 안 들어간 카드는 배수를 못 탄다.
-  - 족보 13종 고정 우선순위: 오광(×12) > 사광(×8) > 총통(×7) > 고도리(×6) > 삼광(×5) > 비삼광(×4) > 홍단/청단/초단(×4) > 같은 달 3장(×3) > 열끗 셋(×3) > 띠 셋(×3) > 피 5장(×2, 쌍피=피2장 환산) > 같은 달 2장(×2) > 무조합(×1)
-  - 카드 칩: 광 12 · 열끗 8 · 띠 6 · 쌍피 5 · 피 2.
-- **시간 시스템**: 이달의 패(현재 월 카드 칩 ×2), 밤일낮장(홀수 달 낮☀️ = 광·열끗 +2칩, 짝수 달 밤🌙 = 띠·피 +2칩).
-- **고/스톱 (무제한 · 밀치기)**: 목표 도달 시 스톱(정산) 또는 고. n고 문턱 = 기본 목표 ×(1+0.6n), 성공 시 보너스 n×m냥(m=월). 고 선언 시 현재 점수가 이미 넘은 문턱은 **전부 소급 인정(밀치기)** — 큰 한 방이면 1고→3고처럼 여러 단계를 한 번에 점프하고, 선언 목표는 "아직 못 넘은 첫 문턱"이라 항상 현재 점수보다 높다(공짜 연쇄 고 없음). 실패하면 **고박 = 런 종료**.
-- **정산**: 이자(보유 5냥당 1냥, 최대 5) + 기본 상금 + 남은 내기 보너스 + 고 보너스.
-- **상점**: 특수패(조커) 22종 · 티어 커먼/레어/에픽/레전더리 (출현 55/28/13/4%). 커먼(광팔이·피장사·멍따·쪽집게·쌍피보따리·띠장수), 레어(싹쓸이·고도리꾼·단골·흔들기·광모이·피오장·초단꾼), 에픽(비광우산·폭탄·밑장빼기·피박보험·멍잔치·삼광판), 레전더리(열두사철·오광소원·명인). 소지 5개, 리롤 가능. 삼광판은 낸 광마다 +3배수.
-- **박 라운드(보스)**: 3·6·9·12월. 피박/광박/멍박/흔들기 금지/비바람/안개 중 하나가 걸림 (직전 상점에서 예고, 12월은 2종 중 선택).
-- **조력자 춘향** 🍶: 준비/상점에서 다음 달 훈수를 예약(3냥). 해당 월 내내 손패를 평가하고, 패를 고른 뒤 내기·버리기에 마우스를 올리면 덱 위 패를 엿봐 표정으로 알려줌.
-
-## 구조
-
-```
-index.html        게임 전체 (ENGINE 순수 로직 + UI 레이어, 마커로 분리)
-test/test-game.mjs  엔진 추출 단위 테스트 + 그리디 봇 풀런 시뮬레이션
-```
-
-```bash
-node test/test-game.mjs   # 단위 테스트 + 300런 시뮬레이션
-```
-
-## Firebase Analytics (선택)
-
-수집 이벤트·파라미터만 전송 (그 외 없음).
-
-| 이벤트 | 파라미터 |
-|--------|----------|
-| `session_start` | `returning_user`, `days_since_last` |
-| `session_end` | `session_play_sec` |
-| `run_end` | `duration_sec`, `session_play_sec` |
-| `hand_play` | `month`, `play_turn`, `hand_id`, `hand_label`, `cards_played`, `score`, `money`, `round_score` |
-| `cards_discard` | `month`, `discard_turn`, `cards`, `card_count`, `money` |
-| `shop_buy` | `month`, `joker_id`, `price`, `money_after` |
-| `shop_reroll` | `month`, `cost`, `money_after` |
-| `settle` | `money_after` |
-
-리텐션: IP 불가 → `hwatro_uid` + GA4 Retention. DebugView: `?ga_debug=1`.
-
-### 로컬
-
-1. Firebase Console → 웹 앱 + **Google Analytics(GA4)** 연결 (`measurementId` 필요)
-2. `firebase-config.example.js` → `firebase-config.js` 복사 후 값 입력
-3. Authorized domains: `localhost` 추가
-4. `python3 -m http.server 8080` → 한 팔 플레이 → Console **Analytics → DebugView** 또는 **Realtime**
-
-### Vercel 배포
-
-1. Vercel → hwatro → **Settings → Environment Variables**
-2. `FIREBASE_CONFIG_JSON` = firebaseConfig JSON 한 줄 (`measurementId` 포함)
-3. **Redeploy**
-4. Firebase → Authorized domains에 `hanate.jqklabs.com` 추가
-
-### `run_end` 파라미터
-
-`month`, `duration_sec`, `gwang_played`, `go_count`, `shop_spent`, `best_single`, `total_earned`, `won`, `reason` 등
-
-Firebase Console → **Analytics → Events → run_end** / BigQuery 연동으로 집계.
-
-## 밸런스 (시뮬레이션 기준)
-
-그리디 봇(부분집합 전수 평가) 300런: 무조커는 3월 벽(~14%)에서 대부분 사망, 상점 봇(티어 가중 구매)도 6~7월 벽·승률 ~0% — 종반은 에픽/레전 배수 빌드와 고 스노우볼이 필수. 점수 = 카드칩×족보배수 (족보 기본칩 없음).
+<p align="center">
+  <a href="https://hanate.jqklabs.com/invite">
+    <img src="Assets/OG/kr/OGB1.jpg" alt="십이화 초대" width="480"/>
+  </a>
+</p>
 
 ---
+
+고스톱의 족보·고/스톱·박·정산을, 칩×배수 스코어링·블라인드 커브·특수패·상점 경제에 녹인 웹 프로토타입입니다.
+
+| 문서 | 내용 |
+|------|------|
+| [docs/기획서.md](docs/기획서.md) | 규칙·밸런스·특수패 |
+| [HANDOFF.md](HANDOFF.md) | 최근 변경·다음 작업 |
+| [docs/analytics.md](docs/analytics.md) | Firebase 이벤트 |
+| [docs/ai-slop-audit.md](docs/ai-slop-audit.md) | UI 슬롭 진단·개선 목록 |
+
+---
+
+## 바로 열기
+
+| 링크 | URL |
+|------|-----|
+| **초대 (공유용)** | https://hanate.jqklabs.com/invite |
+| EN / JP 초대 | `/invite/en` · `/invite/jp` |
+
+로컬은 `index.html`만 열면 됩니다. 빌드 불필요. 시드: `?seed=42`
+
+```bash
+python3 -m http.server 8080   # Firebase 로컬 테스트용
+npm test                      # 엔진 테스트 + 시뮬
+npm run og:gen                # OG / invite 랜딩 → pages/
+```
+
+배포: **Vercel** (push 시 자동)
+
+---
+
+## 한 판 요약
+
+<p align="center">
+  <img src="Assets/01_january/1-gwang.webp" height="120" alt="1월 광"/>
+  &nbsp;
+  <img src="Assets/03_march/3-gwang.webp" height="120" alt="3월 광"/>
+  &nbsp;
+  <img src="Assets/08_august/8-gwang.webp" height="120" alt="8월 광"/>
+  &nbsp;
+  <img src="Assets/11_november/11-gwang.webp" height="120" alt="11월 광"/>
+  &nbsp;
+  <img src="Assets/12_december/12-gwang-umbrella.webp" height="120" alt="12월 비광"/>
+</p>
+
+- **12개월 완주** — 1월(송학)→12월(비) · 목표 160→14,000 · 내기 4회
+- **점수** — `(족보 코어 칩) × 배수 + 나머지 칩` · 족보 기본칩 없음
+- **고/스톱** — 무제한 · 밀치기 · 실패 시 고박=런 종료. 2월+ 3고 스톱 시 밤 도전
+- **상점** — 특수패 34종(암흑 6은 흑막 주막) · 슬롯 1→5 · 리롤
+- **박(보스)** — 3·6·9·12월 · 상점에서 예고
+- **춘향** — 다음 달 훈수 예약 · 내기/버리기 호버 시 표정 힌트
+
+---
+
+## 저장소
+
+```
+index.html          게임 (ENGINE + UI)
+pages/guide/        게임 규칙·공략 가이드
+pages/              OG·invite 랜딩 생성물
+Assets/             카드 · BGM · SFX · OG · Icons
+config/             firestore.rules 등
+lib/                firebase-telemetry.mjs
+test/               엔진 테스트 + 시뮬
+docs/               기획 · analytics
+```
+
+`==== ENGINE START/END ====` 사이는 **순수 로직** (DOM 금지). 엔진 수정 후 `npm test` 필수.
+
+---
+
+## Analytics
+
+GA4 + Firestore 동시 기록 → 상세는 [docs/analytics.md](docs/analytics.md)
+
+`session_*` · `run_end` · `hand_play` · `shop_*` · `survey_*` · `shortcut_prompt_*`
+
+DebugView: `?ga_debug=1` · Vercel env: `FIREBASE_CONFIG_JSON`
+
+---
+
+## 밸런스
+
+그리디 봇 300런: 무조커는 3월 벽(~14%)에서 대부분 사망, 상점 봇 승률 ~0%. 종반은 에픽/레전 배수와 고 스노우볼이 필요합니다.
+
+---
+
+<p align="center">
+  <a href="https://hanate.jqklabs.com/invite">
+    <img src="Assets/Icons/icon-512.png" width="120" alt="플레이하러 가기"/>
+  </a>
+  <br/>
+  <sub><a href="https://hanate.jqklabs.com/invite">hanate.jqklabs.com/invite</a></sub>
+</p>

@@ -6000,7 +6000,8 @@ var spine = (() => {
         });
       } else {
         let image = new Image();
-        image.crossOrigin = "anonymous";
+        if (typeof location === "undefined" || location.protocol !== "file:")
+          image.crossOrigin = "anonymous";
         image.onload = () => {
           this.success(success, path, this.textureLoader(image));
         };
