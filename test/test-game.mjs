@@ -132,14 +132,37 @@ console.log('[3] 계절 · 이달의 패');
   assert(r.handId === 'month2' && r.score === 16, `계절 통합 16점 (실제 ${r.score})`);
   const rBin = E.computeScore(m1pis, env({ seasonMonth: 1, binjariMult: 20 }));
   assert(rBin.mult === 22 && rBin.score === 8 * 22, `빈 자리 +20배수 (실제 mult ${rBin.mult} score ${rBin.score})`);
-  assert(E.cardChip(m1pi, env({ seasonMonth: 1, noSeason: true })) === 2, '독배: 이달 ×2 없음');
+  assert(E.cardChip(m1pi, env({ seasonMonth: 1, jokerIds: ['geokkuro'] })) === 80, '거꾸로: 이달 피 2×20×2=80');
+  assert(E.cardChip(m1kwang, env({ jokerIds: ['geokkuro'] })) === 240, '거꾸로: 광 12×20=240');
   assert(E.cardChip(m1pi, env({ boss: 'pibak', jokerIds: ['yeokbak'] })) === 2, '역박: 피박 칩 유지');
-  const rDok = E.computeScore(m1pis, env({ seasonMonth: 1, noSeason: true, jokerIds: ['dokbae'] }));
-  assert(rDok.mult === 12 && rDok.score === 4 * 12, `독배 +10배수 · 이달 없음 (실제 mult ${rDok.mult} score ${rDok.score})`);
+  const rInv = E.computeScore(m1pis, env({ seasonMonth: 1, jokerIds: ['geokkuro'] }));
+  assert(rInv.handId === 'month2' && rInv.mult === 0.5 && rInv.score === 80,
+    `거꾸로 month2: 칩 160 × 1/2 = 80 (실제 mult ${rInv.mult} score ${rInv.score})`);
+  const kwangs = pick((c) => c.type === 'kwang').slice(0, 5);
+  const rOg = E.computeScore(kwangs, env({ jokerIds: ['geokkuro'] }));
+  assert(rOg.handId === 'ogwang' && rOg.mult === 1 / 12 && rOg.score === 100,
+    `거꾸로 오광: 칩 1200 × 1/12 = 100 (실제 mult ${rOg.mult} score ${rOg.score})`);
   const rAllin = E.computeScore(m1pis, env({ seasonMonth: 1, jokerIds: ['hansu_allin'] }));
   assert(rAllin.mult === 8 && rAllin.score === 8 * 8, `한 수 올인 ×4 (실제 mult ${rAllin.mult} score ${rAllin.score})`);
   const rYeok = E.computeScore(m1pis, env({ boss: 'pibak', jokerIds: ['yeokbak'] }));
   assert(rYeok.chips === 4 && rYeok.mult === 4, `역박 피박 ×2 (실제 chips ${rYeok.chips} mult ${rYeok.mult})`);
+  assert(E.cardChip(m1kwang, env({ jokerIds: ['oegil'], oegilKind: 'pi' })) === 0, '외길 피: 광 칩 0');
+  assert(E.cardChip(m1pi, env({ jokerIds: ['oegil'], oegilKind: 'pi' })) === 2, '외길 피: 피 2');
+  assert(E.cardChip(m1pi, env({ seasonMonth: 1, jokerIds: ['oegil'], oegilKind: 'pi' })) === 4, '외길 피: 이달 피 4');
+  const ssang = pick((c) => c.type === 'ssangpi')[0];
+  assert(E.cardChip(ssang, env({ jokerIds: ['oegil'], oegilKind: 'pi' })) === 5, '외길 피: 쌍피도 피');
+  const rOegilJjok = E.computeScore(m1pis, env({ jokerIds: ['oegil'], oegilKind: 'pi' }));
+  assert(rOegilJjok.handId === 'month2' && rOegilJjok.mult === 16 && rOegilJjok.score === 64,
+    `외길 피 month2: 칩 4 × 16 = 64 (실제 mult ${rOegilJjok.mult} score ${rOegilJjok.score})`);
+  const pi5 = pick((c) => c.type === 'pi').slice(0, 5);
+  const rOegilPi5 = E.computeScore(pi5, env({ jokerIds: ['oegil'], oegilKind: 'pi' }));
+  assert(rOegilPi5.handId === 'pi5' && rOegilPi5.mult === 32 && rOegilPi5.score === 320,
+    `외길 피 피5: 칩 10 × 32 = 320 (실제 mult ${rOegilPi5.mult} score ${rOegilPi5.score})`);
+  const rOegilOg = E.computeScore(kwangs, env({ jokerIds: ['oegil'], oegilKind: 'kwang' }));
+  assert(rOegilOg.handId === 'ogwang' && rOegilOg.mult === 192 && rOegilOg.score === 11520,
+    `외길 광 오광: 칩 60 × 192 = 11520 (실제 mult ${rOegilOg.mult} score ${rOegilOg.score})`);
+  const rOegilMiss = E.computeScore(kwangs, env({ jokerIds: ['oegil'], oegilKind: 'pi' }));
+  assert(rOegilMiss.chips === 0 && rOegilMiss.score === 0, '외길 피 + 오광 = 0');
 }
 
 // ─── 3.5 코어/플랫 분리 (족보 구성 카드만 배수) ────────────
@@ -251,10 +274,10 @@ console.log('[5] 특수패·박 회귀');
   assert(rPi.flat === 8 && rPi.score === rPi.chips * rPi.mult + 8,
     `피장사도 flat (실제 flat ${rPi.flat} score ${rPi.score})`);
   // 4티어 로스터·신규 훅
-  assert(E.JOKERS.length === 33, `특수패 33종 (실제 ${E.JOKERS.length})`);
+  assert(E.JOKERS.length === 34, `특수패 34종 (실제 ${E.JOKERS.length})`);
   const byR = (r) => E.JOKERS.filter((j) => j.rarity === r).length;
-  assert(byR('common') === 9 && byR('rare') === 10 && byR('epic') === 6 && byR('legendary') === 3 && byR('dark') === 5,
-    `티어 분포 9/10/6/3/5 (실제 ${byR('common')}/${byR('rare')}/${byR('epic')}/${byR('legendary')}/${byR('dark')})`);
+  assert(byR('common') === 9 && byR('rare') === 10 && byR('epic') === 6 && byR('legendary') === 3 && byR('dark') === 6,
+    `티어 분포 9/10/6/3/6 (실제 ${byR('common')}/${byR('rare')}/${byR('epic')}/${byR('legendary')}/${byR('dark')})`);
   const ssang = pick((c) => c.type === 'ssangpi').slice(0, 1);
   const rSs = E.computeScore(ssang, env({ jokerIds: ['ssangpi_sarang'] }));
   assert(rSs.flat === 12, `쌍피보따리 flat +12 (실제 ${rSs.flat})`);

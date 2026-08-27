@@ -391,6 +391,75 @@
     padding: 18px; background: rgba(0,0,0,.58);
   }
   #joker-pop-overlay.show { display: flex; }
+  #oegil-overlay {
+    position: fixed; inset: 0; z-index: 128;
+    display: none; align-items: center; justify-content: center;
+    padding: 18px;
+    background: rgba(6, 2, 12, .82);
+  }
+  #oegil-overlay.show { display: flex; }
+  #oegil-panel {
+    width: min(440px, 94vw);
+    padding: 26px 22px 18px;
+    background: rgba(10, 4, 16, .98);
+    border: 1px solid rgba(120, 82, 140, .42);
+    border-radius: 6px;
+    box-shadow:
+      inset 0 0 0 3px rgba(10, 4, 16, .94),
+      inset 0 0 0 4px rgba(88, 56, 104, .35),
+      0 12px 28px rgba(0, 0, 0, .7);
+    text-align: center;
+  }
+  #oegil-panel h2 {
+    font-family: var(--font-overlay);
+    font-size: 28px; font-weight: 400; letter-spacing: 0.12em;
+    color: #ddd0e4; margin: 0 0 6px;
+    padding-block: 0.12em; line-height: 1.35;
+  }
+  #oegil-panel .oegil-sub {
+    font-size: 13px; color: rgba(232, 224, 236, .72);
+    line-height: 1.5; margin: 0 0 18px;
+  }
+  .oegil-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .oegil-path {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 14px 10px 12px;
+    background: rgba(16, 8, 22, .9);
+    border: 1px solid rgba(196, 162, 90, .28);
+    border-radius: 4px;
+    color: var(--ink-1);
+    cursor: pointer;
+  }
+  .oegil-path:hover, .oegil-path:focus-visible {
+    border-color: rgba(232, 205, 122, .75);
+    background: rgba(28, 14, 36, .95);
+  }
+  .oegil-path img {
+    width: 72px; height: auto; aspect-ratio: 2 / 3;
+    object-fit: cover; border-radius: 2px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.45);
+  }
+  .oegil-path .op-name {
+    font-family: var(--font-overlay);
+    font-size: 22px; font-weight: 400; letter-spacing: 0.06em;
+  }
+  .oegil-path .op-chip { font-size: 12px; color: var(--gold-soft); }
+  .oegil-path .op-note { font-size: 11px; color: rgba(232, 224, 236, .55); }
+  .oegil-cancel {
+    margin-top: 14px; background: none; border: 0;
+    color: rgba(232, 224, 236, .5); font-size: 13px; cursor: pointer;
+    text-decoration: underline; text-underline-offset: 3px;
+  }
+  .oegil-cancel:hover { color: rgba(232, 224, 236, .85); }
+  @media (max-width: 520px) {
+    #oegil-panel { padding: 20px 14px 14px; }
+    #oegil-panel h2 { font-size: 24px; }
+    .oegil-path { padding: 10px 6px 10px; gap: 6px; }
+    .oegil-path img { width: 58px; }
+    .oegil-path .op-name { font-size: 18px; }
+  }
   .joker-pop-card {
     width: min(320px, 92vw); border-radius: 16px; padding: 20px 18px 16px;
     background: linear-gradient(170deg, #2a2410, #1a1508);
@@ -4596,6 +4665,15 @@
 <div id="survey-overlay" aria-hidden="true"></div>
 <div id="shortcut-overlay" aria-hidden="true"></div>
 
+<div id="oegil-overlay" onclick="if(event.target===this)closeOegilPick()" aria-hidden="true">
+  <div id="oegil-panel" role="dialog" aria-modal="true" aria-labelledby="oegil-title">
+    <h2 id="oegil-title">외길</h2>
+    <p class="oegil-sub" id="oegil-sub">한 종류만 산다. 고르면 그 길로만 간다.</p>
+    <div class="oegil-grid" id="oegil-grid"></div>
+    <button type="button" class="oegil-cancel" id="oegil-cancel" onclick="closeOegilPick()">그만</button>
+  </div>
+</div>
+
 <div id="joker-pop-overlay" onclick="closeJokerPop()">
   <div class="joker-pop-card" role="dialog" aria-labelledby="joker-pop-name" onclick="event.stopPropagation()">
     <div class="jp-icon" id="joker-pop-icon"></div>
@@ -4803,6 +4881,20 @@ function buildDeck() {
 const CHIP = { kwang: 12, yeol: 8, tti: 6, ssangpi: 5, pi: 2 };
 const effType = (c) => c.type;
 const baseChip = (c) => CHIP[effType(c)];
+const OEGIL_KINDS = ['kwang', 'yeol', 'tti', 'pi'];
+function oegilTypeMatch(c, kind) {
+  if (!kind) return true;
+  const t = effType(c);
+  if (kind === 'pi') return t === 'pi' || t === 'ssangpi';
+  return t === kind;
+}
+function oegilHandMatch(handId, kind) {
+  if (kind === 'kwang') return ['ogwang', 'sagwang', 'samgwang', 'bisamgwang'].includes(handId);
+  if (kind === 'yeol') return ['yeol3', 'godori', 'bigodori'].includes(handId);
+  if (kind === 'tti') return ['dan', 'tti3'].includes(handId);
+  if (kind === 'pi') return handId === 'pi5';
+  return false;
+}
 // 쌍피 = 피 2장 환산 (고스톱 관례). 피5 족보 판정용.
 const piCount = (c) => { const t = effType(c); return t === 'ssangpi' ? 2 : t === 'pi' ? 1 : 0; };
 
@@ -4978,10 +5070,11 @@ function scoreJokerCtx(cards, handId, core, env) {
     heldCount,
     geumjulMult: env.geumjulMult || 0,
     gotaryeongMult: env.gotaryeongMult || 0,
+    oegilKind: env.oegilKind || null,
   };
 }
 
-// ── 특수패 33종 (커먼 / 레어 / 에픽 / 레전더리 / 암흑) ────
+// ── 특수패 34종 (커먼 / 레어 / 에픽 / 레전더리 / 암흑) ────
 // 오버레이 붓글씨(SSRock)에 없는 한글: 암·묻·잃 등. 제목·패 이름은 있는 글자만.
 // 훅 ctx: scoreJokerCtx(...)
 const JOKERS = [
@@ -5087,12 +5180,14 @@ const JOKERS = [
   { id: 'hansu_allin', name: '한 수 올인', icon: '❶', rarity: 'dark', price: 17, kind: '도박',
     desc: '내기가 1회로 줄어듭니다. 그 내기 배수가 4배가 됩니다.',
     xMult: () => 4 },
-  { id: 'dokbae', name: '독배', icon: '🍷', rarity: 'dark', price: 16, kind: '변환',
-    desc: '모든 내기에 배수가 10 올라갑니다. 이달의 패 ×2는 사라집니다.',
-    addMult: () => 10 },
+  { id: 'geokkuro', name: '거꾸로', icon: '🔃', rarity: 'dark', price: 16, kind: '변환',
+    desc: '족보 배수가 역수가 됩니다. 오광 ×12는 ×1/12. 모든 화투패의 기본 칩이 20배가 됩니다. 이달의 패 ×2, 박 0은 그 위에 그대로 적용됩니다.' },
   { id: 'yeokbak', name: '역박', icon: '⚔', rarity: 'dark', price: 17, kind: '도박',
     desc: '피박·광박·멍박의 칩 0을 무시합니다. 그 박 라운드에서는 배수가 2배가 됩니다.',
     xMult: (x) => (x.boss && ['pibak', 'gwangbak', 'meongbak'].includes(x.boss) ? 2 : 1) },
+  { id: 'oegil', name: '외길', icon: '一', rarity: 'dark', price: 17, kind: '올인',
+    desc: '살 때 광·열끗·띠·피 중 하나를 고릅니다. 그 종류만 칩이 남고 배수가 8배가 됩니다. 그 종류 족보면 한 번 더 2배입니다.',
+    xMult: (x) => (x.oegilKind ? (oegilHandMatch(x.handId, x.oegilKind) ? 16 : 8) : 1) },
 ];
 const JOKER_BY_ID = Object.fromEntries(JOKERS.map((j) => [j.id, j]));
 const RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'];
@@ -5144,13 +5239,16 @@ const BOSSES = [
 ];
 const BOSS_BY_ID = Object.fromEntries(BOSSES.map((b) => [b.id, b]));
 
-// ── 카드 1장의 칩 (기본칩 → 이달의 패 ×2 → 박 0) ──
-// env: { boss, jokerIds, mitjangChips, seasonMonth?, flatBaseChip? }
+// ── 카드 1장의 칩 (기본칩 → 거꾸로 ×20 → 이달의 패 ×2 → 박 0) ──
+// env: { boss, jokerIds, mitjangChips, seasonMonth?, flatBaseChip?, baseChipMult? }
 function cardChip(c, env) {
   let chip = env.flatBaseChip ? env.flatBaseChip : baseChip(c);
   const t = effType(c);
   const ids = env.jokerIds || [];
-  if (env.seasonMonth && c.month === env.seasonMonth && !env.noSeason) chip *= 2; // 이달의 패
+  const chipMult = env.baseChipMult || (ids.includes('geokkuro') ? 20 : 1);
+  if (chipMult !== 1) chip *= chipMult;
+  if (env.seasonMonth && c.month === env.seasonMonth) chip *= 2; // 이달의 패
+  if (env.oegilKind && !oegilTypeMatch(c, env.oegilKind)) chip = 0;
   const bakCovered = ids.includes('pibak_boheom') || ids.includes('yeokbak');
   if (!bakCovered) {
     if (env.boss === 'pibak' && (t === 'pi' || t === 'ssangpi')) chip = 0;
@@ -5173,6 +5271,7 @@ function computeScore(cards, env) {
   const hd = HAND_BY_ID[handId];
   let chips = 0;
   let mult = hd.mult;
+  if ((env.jokerIds || []).includes('geokkuro')) mult = 1 / hd.mult;
   let flat = 0;
 
   const coreSet = new Set(core);
@@ -5329,8 +5428,9 @@ const I18N = {
       mudgo_double:{name:'더블로 가',kind:'변환',desc:'버리기 2회를 줄입니다. 모든 화투패의 기본 칩이 20이 됩니다. 이달의 패 ×2, 박 0은 그 위에 그대로 적용됩니다.'},
       binjari:{name:'모두가 빈 자리',kind:'올인',desc:'사는 즉시 보유 특수패를 전부 반값에 팝니다. 슬롯이 모두 잠기고, 이후 모든 내기에 (팔기 직전 보유 수 × 10) 배수를 더합니다.'},
       hansu_allin:{name:'한 수 올인',kind:'도박',desc:'내기가 1회로 줄어듭니다. 그 내기 배수가 4배가 됩니다.'},
-      dokbae:{name:'독배',kind:'변환',desc:'모든 내기에 배수가 10 올라갑니다. 이달의 패 ×2는 사라집니다.'},
+      geokkuro:{name:'거꾸로',kind:'변환',desc:'족보 배수가 역수가 됩니다. 오광 ×12는 ×1/12. 모든 화투패의 기본 칩이 20배가 됩니다. 이달의 패 ×2, 박 0은 그 위에 그대로 적용됩니다.'},
       yeokbak:{name:'역박',kind:'도박',desc:'피박·광박·멍박의 칩 0을 무시합니다. 그 박 라운드에서는 배수가 2배가 됩니다.'},
+      oegil:{name:'외길',kind:'올인',desc:'살 때 광·열끗·띠·피 중 하나를 고릅니다. 그 종류만 칩이 남고 배수가 8배가 됩니다. 그 종류 족보면 한 번 더 2배입니다.'},
     },
     bosses: {
       pibak:{name:'피박',desc:'피·쌍피의 카드 칩이 0 (족보 판정에는 카운트)'},
@@ -5432,8 +5532,9 @@ const I18N = {
       mudgo_double:{name:'Double Down',kind:'Convert',desc:'Lose 2 discards. Every card’s base chips become 20. Month ×2 and Bak 0 still apply on top.'},
       binjari:{name:'Empty Seats',kind:'All-in',desc:'Instantly sells all held jokers at half. Locks every slot. Then every play gains +(count before sell × 10) mult.'},
       hansu_allin:{name:'One Shot',kind:'Gamble',desc:'Only 1 play per round. That play’s mult ×4.'},
-      dokbae:{name:'Poison Cup',kind:'Convert',desc:'+10 mult on every play. Month-card ×2 is gone.'},
+      geokkuro:{name:'Upside Down',kind:'Convert',desc:'Hand mult becomes its reciprocal (Five Bright ×12 → ×1/12). Every card’s base chips ×20. Month ×2 and Bak 0 still apply on top.'},
       yeokbak:{name:'Reverse Bak',kind:'Gamble',desc:'Ignores Pi/Bright/Animal Bak chip-zero. On those Bak rounds, mult ×2.'},
+      oegil:{name:'One Path',kind:'All-in',desc:'On buy, pick Bright / Animal / Ribbon / Pi. Only that type keeps chips. Mult ×8, or ×16 if the hand is of that type.'},
     },
     bosses: {
       pibak:{name:'Pi Bak',desc:'Pi & Double Pi chips = 0 (still count for hands)'},
@@ -5535,8 +5636,9 @@ const I18N = {
       mudgo_double:{name:'ダブルで勝負',kind:'変換',desc:'捨て2回を減らす。全札の基本チップが20。今月×2、バク0はその上に適用。'},
       binjari:{name:'空席ばかり',kind:'オールイン',desc:'購入直後に所持札を半額売却。スロット全閉鎖。以後すべての出しに(売却直前の所持数×10)倍率。'},
       hansu_allin:{name:'一手オールイン',kind:'賭博',desc:'出しは1回だけ。その出しの倍率×4。'},
-      dokbae:{name:'毒杯',kind:'変換',desc:'すべての出しで倍率+10。今月札×2は消える。'},
+      geokkuro:{name:'さかさま',kind:'変換',desc:'役倍率が逆数になる。五光×12は×1/12。全札の基本チップが20倍。今月×2、バク0はその上に適用。'},
       yeokbak:{name:'逆バク',kind:'賭博',desc:'皮/光/十バクのチップ0を無視。そのバク卓では倍率×2。'},
+      oegil:{name:'一路',kind:'オールイン',desc:'購入時に光・十・短冊・カスを一つ選ぶ。その種類だけチップが残る。倍率×8。その種類の役ならさらに×2。'},
     },
     bosses: {
       pibak:{name:'皮バク',desc:'カス・カス×2のチップ0 (役判定には数える)'},
@@ -5570,7 +5672,7 @@ const I18N_UI = {
     helpRuleBody: '<b>3·6·9·12월</b>은 박 라운드(디버프). 안개는 손패 <b>2장</b>이 뒷면으로 옵니다.',
     helpRuleTag: '박 라운드 디버프',
     helpJokerTitle: '특수패 · 주막',
-    helpJokerBody: '특수패 33종. 슬롯은 1월 1칸부터 달마다 하나씩 열려 5월에 5칸. 티어는 커먼 / 레어 / 에픽 / 레전더리 / 암흑(흑막 주막 전용). +점수는 배수 밖, +배수·×배수는 족보 배수에 얹힙니다.',
+    helpJokerBody: '특수패 34종. 슬롯은 1월 1칸부터 달마다 하나씩 열려 5월에 5칸. 티어는 커먼 / 레어 / 에픽 / 레전더리 / 암흑(흑막 주막 전용). +점수는 배수 밖, +배수·×배수는 족보 배수에 얹힙니다.',
     helpJokerTags: ['커먼 3–4냥', '레어 6–7냥', '에픽 9–11냥', '레전 13–15냥', '암흑 16–18냥'],
     welcomeH2: '십이화 — 고스톱: 무한의 판',
     welcomeSub: '한국 화투 48장으로 족보를 맞춰 목표 점수를 넘기는 <b>1인 런</b>입니다. 1월부터 12월까지 한 해를 버텨보세요.',
@@ -5581,7 +5683,7 @@ const I18N_UI = {
     welcomeGoTitle: '고 / 스톱',
     welcomeGoBody: '목표를 넘기면 <b>스톱</b>(정산) 또는 <b>고</b>(목표↑ · 내기 +1 · 보너스). 한 방이 크면 이미 넘은 고 문턱을 한 번에 밀치며 여러 단계 점프. 2월부터 3고 이상 스톱하면 <b>밤</b>에 도전할 수 있습니다. 고는 무제한이지만, 실패하면 <b>고박 = 런 종료</b>. 3·6·9·12월은 박 라운드(디버프)가 붙습니다.',
     welcomeShopTitle: '주막',
-    welcomeShopBody: '판을 클리어하면 주막에서 <b>특수패</b>(커먼~레전더리 28종, 암흑 5종)를 사고팝니다. 밤을 깨면 <b>흑막 주막</b>이 열립니다. 슬롯은 1월 1칸, 달마다 하나씩 열려 5월에 5칸.',
+    welcomeShopBody: '판을 클리어하면 주막에서 <b>특수패</b>(커먼~레전더리 28종, 암흑 6종)를 사고팝니다. 밤을 깨면 <b>흑막 주막</b>이 열립니다. 슬롯은 1월 1칸, 달마다 하나씩 열려 5월에 5칸.',
     welcomeFoot: '자세한 족보표는 언제든 <b>도움말</b>에서 볼 수 있어요.',
     welcomeStart: '알겠어요 — 시작하기',
     welcomeStartSub: '1월 준비 화면으로 이동합니다',
@@ -5635,6 +5737,12 @@ const I18N_UI = {
     shopBossPick: (n) => `${n}월 대박 — 디버프 선택`,
     shopBossNext: (n) => `다음 ${n}월 박 라운드`,
     shopNeedBoss: '디버프를 먼저 선택하세요',
+    oegilPickH2: '외길',
+    oegilPickSub: '한 종류만 산다. 고르면 그 길로만 간다.',
+    oegilPickChip: (n) => `기본 칩 ${n}`,
+    oegilPickNote: '나머진 칩 0 · ×8',
+    oegilPickCancel: '그만',
+    oegilNow: (kind) => ` · ${kind}만 산다`,
     gameoverH2: (reason) => `런 종료 — ${reason}`,
     gameoverBody: (r, rounds, score, target, best, bestHand, earned, jokers) =>
       `도달: ${r}월 / ${rounds}월 (${score} / ${target}점)<br>최고 한 방: ${best}점${bestHand ? ` (${bestHand})` : ''}<br>총 획득: ${earned}냥 · 특수패 ${jokers}개`,
@@ -5701,7 +5809,7 @@ const I18N_UI = {
     helpRuleBody: '<b>Mar/Jun/Sep/Dec</b> are Bak rounds (debuffs). Fog deals <b>2</b> face-down cards.',
     helpRuleTag: 'Bak round debuffs',
     helpJokerTitle: 'Jokers · Tavern',
-    helpJokerBody: '33 jokers. Slots: 1 in January, one more each month, 5 by May. Tiers: Common / Rare / Epic / Legendary / Dark (Dark tavern only). Flat score is outside mult; +mult / ×mult stack on the hand mult.',
+    helpJokerBody: '34 jokers. Slots: 1 in January, one more each month, 5 by May. Tiers: Common / Rare / Epic / Legendary / Dark (Dark tavern only). Flat score is outside mult; +mult / ×mult stack on the hand mult.',
     helpJokerTags: ['Common 3–4', 'Rare 6–7', 'Epic 9–11', 'Legend 13–15', 'Dark 16–18'],
     welcomeH2: 'Sibiwha — Go-Stop: Infinite Table',
     welcomeSub: 'A <b>solo run</b>: make hwatu hands and beat monthly targets with a 48-card Korean deck. Survive January through December.',
@@ -5712,7 +5820,7 @@ const I18N_UI = {
     welcomeGoTitle: 'Go / Stop',
     welcomeGoBody: 'Beat the target to <b>Stop</b> (cash out) or <b>Go</b> (raise target · +1 play · bonus). A huge hit pushes through several Go steps at once. From February, 3+ Go then Stop can challenge <b>Night</b>. Unlimited Go, but fail = <b>Go-bak = run over</b>. Months 3·6·9·12 are Bak rounds.',
     welcomeShopTitle: 'Tavern',
-    welcomeShopBody: 'Clear a month to shop <b>jokers</b> (Common–Legendary 28, Dark 5). Beat Night to open the <b>Dark tavern</b>. 1 slot in January, one more each month, 5 by May.',
+    welcomeShopBody: 'Clear a month to shop <b>jokers</b> (Common–Legendary 28, Dark 6). Beat Night to open the <b>Dark tavern</b>. 1 slot in January, one more each month, 5 by May.',
     welcomeFoot: 'Full hand list is always in <b>Help</b>.',
     welcomeStart: 'Got it — Start',
     welcomeStartSub: 'Go to January prep',
@@ -5766,6 +5874,12 @@ const I18N_UI = {
     shopBossPick: (n) => `Month ${n} Bak — pick debuff`,
     shopBossNext: (n) => `Next: month ${n} Bak`,
     shopNeedBoss: 'Pick a debuff first',
+    oegilPickH2: 'One Path',
+    oegilPickSub: 'Walk one type only. The choice stays.',
+    oegilPickChip: (n) => `Base ${n}`,
+    oegilPickNote: 'Others 0 · ×8',
+    oegilPickCancel: 'Back',
+    oegilNow: (kind) => ` · ${kind} only`,
     gameoverH2: (reason) => `Run over — ${reason}`,
     gameoverBody: (r, rounds, score, target, best, bestHand, earned, jokers) =>
       `Reached: month ${r} / ${rounds} (${score} / ${target})<br>Best hit: ${best}${bestHand ? ` (${bestHand})` : ''}<br>Earned: ${earned} · jokers ${jokers}`,
@@ -5832,7 +5946,7 @@ const I18N_UI = {
     helpRuleBody: '<b>3·6·9·12月</b>はバク卓(デバフ)。霧は手札 <b>2枚</b>が裏で来ます。',
     helpRuleTag: 'バク卓デバフ',
     helpJokerTitle: '特殊札 · 酒屋',
-    helpJokerBody: '特殊札 33種。スロットは1月1枠、月ごとに1枠開き5月で5枠。ティアは コモン / レア / エピック / レジェンド / 暗黒（暗黒酒屋のみ）。+点は倍率外、+倍率・×倍率は役倍率に乗ります。',
+    helpJokerBody: '特殊札 34種。スロットは1月1枠、月ごとに1枠開き5月で5枠。ティアは コモン / レア / エピック / レジェンド / 暗黒（暗黒酒屋のみ）。+点は倍率外、+倍率・×倍率は役倍率に乗ります。',
     helpJokerTags: ['コモン 3–4両', 'レア 6–7両', 'エピック 9–11両', 'レジェ 13–15両', '暗黒 16–18両'],
     welcomeH2: '十二花 — ゴストップ: 無限の卓',
     welcomeSub: '韓国花札48枚で役を揃え目標を超える <b>1人ラン</b>。1月から12月まで一年を耐え抜け。',
@@ -5843,7 +5957,7 @@ const I18N_UI = {
     welcomeGoTitle: 'ゴー / ストップ',
     welcomeGoBody: '目標超えで <b>ストップ</b>(清算) か <b>ゴー</b>(目標↑ · 出し+1 · ボーナス)。大物なら閾値を一気に押して複数段ジャンプ。2月から3ゴー以上ストップで<b>夜</b>に挑戦できる。ゴー無制限だが失敗は <b>ゴーバク = ラン終了</b>。3·6·9·12月はバク卓。',
     welcomeShopTitle: '酒屋',
-    welcomeShopBody: 'クリア後、酒屋で <b>特殊札</b>(コモン〜レジェンド28種、暗黒5種)を売買。夜を破ると<b>暗黒酒屋</b>が開く。スロットは1月1枠、月ごとに1枠開き5月で5枠。',
+    welcomeShopBody: 'クリア後、酒屋で <b>特殊札</b>(コモン〜レジェンド28種、暗黒6種)を売買。夜を破ると<b>暗黒酒屋</b>が開く。スロットは1月1枠、月ごとに1枠開き5月で5枠。',
     welcomeFoot: '詳しい役表はいつでも <b>ヘルプ</b>で。',
     welcomeStart: 'わかった — はじめる',
     welcomeStartSub: '1月の準備へ',
@@ -5897,6 +6011,12 @@ const I18N_UI = {
     shopBossPick: (n) => `${n}月大バク — デバフ選択`,
     shopBossNext: (n) => `次 ${n}月バク卓`,
     shopNeedBoss: '先にデバフを選んでください',
+    oegilPickH2: '一路',
+    oegilPickSub: '一種類だけ残す。選んだら戻れない。',
+    oegilPickChip: (n) => `基本 ${n}`,
+    oegilPickNote: '他は0 · ×8',
+    oegilPickCancel: 'やめる',
+    oegilNow: (kind) => ` · ${kind}のみ`,
     gameoverH2: (reason) => `ラン終了 — ${reason}`,
     gameoverBody: (r, rounds, score, target, best, bestHand, earned, jokers) =>
       `到達: ${r}月 / ${rounds}月 (${score} / ${target}点)<br>最高一撃: ${best}点${bestHand ? ` (${bestHand})` : ''}<br>総獲得: ${earned}両 · 特殊札 ${jokers}`,
@@ -6182,7 +6302,8 @@ const state = {
   deck: [],
   hand: [],
   selected: [],       // uid 배열 (인덱스 금지)
-  jokers: [],         // { id, paid }
+  jokers: [],         // { id, paid, oegilKind? }
+  oegilPickOffer: null,
   jokerGains: {},     // id -> { score, money } 런 누적 이득
   money: 5,
   boss: null,
@@ -6243,7 +6364,8 @@ const scoreEnv = () => ({
   boss: state.boss, jokerIds: jokerIds(), mitjangChips: state.mitjangChips,
   seasonMonth: state.round, night: isNight(),
   flatBaseChip: hasJoker('mudgo_double') ? 20 : 0,
-  noSeason: hasJoker('dokbae'),
+  baseChipMult: hasJoker('geokkuro') ? 20 : 0,
+  oegilKind: (state.jokers.find((j) => j.id === 'oegil') || {}).oegilKind || null,
   binjariMult: state.binjariMult || 0,
   isFirstPlay: state.playLog.length === 0,
   isLastPlay: state.playsLeft === 1,
@@ -6281,6 +6403,10 @@ function jokerLiveNote(id) {
   if (id === 'mitjang') return t('mitjangNow')(state.mitjangChips);
   if (id === 'geumjul') return t('geumjulNow')(state.geumjulLost || 0, state.geumjulMult || 0);
   if (id === 'gotaryeong') return t('gotaryeongNow')(state.gotaryeongMult || 0);
+  if (id === 'oegil') {
+    const j = state.jokers.find((x) => x.id === 'oegil');
+    return j && j.oegilKind ? tu('oegilNow')(oegilKindLabel(j.oegilKind)) : '';
+  }
   return '';
 }
 
@@ -7735,14 +7861,28 @@ function buyJoker(i) {
   const offer = state.shopOffers[i];
   if (!offer || offer.sold) return;
   if (state.jokers.length >= openJokerSlots() || state.money < offer.joker.price) { flashActions(); return; }
+  if (offer.joker.id === 'oegil') {
+    state.oegilPickOffer = i;
+    openOegilPick();
+    return;
+  }
+  completeBuyJoker(i);
+}
+
+function completeBuyJoker(i, extra = {}) {
+  if (state.screen !== 'shop') return;
+  const offer = state.shopOffers[i];
+  if (!offer || offer.sold) return;
+  if (state.jokers.length >= openJokerSlots() || state.money < offer.joker.price) { flashActions(); return; }
   state.money -= offer.joker.price;
   trackEvent('shop_buy', {
     month: state.round,
     joker_id: offer.joker.id,
     price: offer.joker.price,
     money_after: state.money,
+    oegil_kind: extra.oegilKind || '',
   });
-  state.jokers.push({ id: offer.joker.id, paid: offer.joker.price });
+  state.jokers.push({ id: offer.joker.id, paid: offer.joker.price, ...extra });
   if (!state.jokerGains[offer.joker.id]) state.jokerGains[offer.joker.id] = { score: 0, money: 0 };
   offer.sold = true;
   if (offer.joker.id === 'binjari') {
@@ -7758,6 +7898,61 @@ function buyJoker(i) {
     const el = document.querySelector('.owned-slot.filled.pop');
     if (el) el.classList.remove('pop');
   }, 420);
+}
+
+const OEGIL_ART = {
+  kwang: 'Assets/01_january/1-gwang.webp',
+  yeol: 'Assets/02_february/2-yeolkkeut-warbler.webp',
+  tti: 'Assets/01_january/1-tti-hongdan.webp',
+  pi: 'Assets/01_january/1-pi-1.webp',
+};
+function oegilKindLabel(kind) {
+  return {
+    kwang: tu('chipKwang'),
+    yeol: tu('chipYeol'),
+    tti: tu('chipTti'),
+    pi: tu('chipPi'),
+  }[kind] || kind;
+}
+function jokerDisplayName(j) {
+  const def = JOKER_BY_ID[j.id];
+  const uj = uiJoker(def);
+  if (j.id === 'oegil' && j.oegilKind) return `${uj.name} · ${oegilKindLabel(j.oegilKind)}`;
+  return uj.name;
+}
+function openOegilPick() {
+  const ov = $('oegil-overlay');
+  if (!ov) return;
+  $('oegil-title').textContent = tu('oegilPickH2');
+  $('oegil-sub').textContent = tu('oegilPickSub');
+  $('oegil-cancel').textContent = tu('oegilPickCancel');
+  const grid = $('oegil-grid');
+  grid.innerHTML = OEGIL_KINDS.map((kind) => {
+    const chip = kind === 'pi' ? CHIP.pi : CHIP[kind];
+    return `<button type="button" class="oegil-path" onclick="confirmOegil('${kind}')">
+      <img src="${OEGIL_ART[kind]}" alt="" draggable="false">
+      <span class="op-name">${esc(oegilKindLabel(kind))}</span>
+      <span class="op-chip">${tu('oegilPickChip')(chip)}</span>
+      <span class="op-note">${tu('oegilPickNote')}</span>
+    </button>`;
+  }).join('');
+  ov.classList.add('show');
+  ov.setAttribute('aria-hidden', 'false');
+}
+function closeOegilPick() {
+  const ov = $('oegil-overlay');
+  if (ov) {
+    ov.classList.remove('show');
+    ov.setAttribute('aria-hidden', 'true');
+  }
+  state.oegilPickOffer = null;
+}
+function confirmOegil(kind) {
+  if (!OEGIL_KINDS.includes(kind)) return;
+  const i = state.oegilPickOffer;
+  closeOegilPick();
+  if (i == null) return;
+  completeBuyJoker(i, { oegilKind: kind });
 }
 
 /** 보유 특수패 툴팁 — 화면 좌우에 안 잘리게 위치 보정 */
@@ -8086,7 +8281,9 @@ function resetRun() {
     coachStep: null, coachPendingScored: false, coachAfterDeal: null, janTutorJunkPending: false,
     isNightRound: false, darkShop: false, nightGoLevel: 0,
     binjariMult: 0, slotsLocked: false, settleAfter: 'shop',
+    oegilPickOffer: null,
   });
+  closeOegilPick();
   state.baseTarget = TARGETS[0];
   state.target = TARGETS[0];
   initRunStats();
@@ -9096,6 +9293,11 @@ function hookModalKeys() {
       closeSettings();
       return;
     }
+    if ($('oegil-overlay')?.classList.contains('show')) {
+      e.preventDefault();
+      closeOegilPick();
+      return;
+    }
     if ($('shortcut-overlay')?.classList.contains('show')) {
       e.preventDefault();
       dismissShortcutPrompt('esc');
@@ -9579,7 +9781,7 @@ function renderTopbar() {
       const gain = formatJokerGain(def.id);
       const gainEmpty = gain === t('gainNone') ? ' empty' : '';
       slots += `<div class="jokerslot filled aura-${def.rarity}" data-jid="${esc(def.id)}" tabindex="0"${tap}>
-        <div class="jname">${esc(uj.name)}</div>
+        <div class="jname">${esc(jokerDisplayName(j))}</div>
         ${uj.kind ? `<div class="jkind">${esc(uj.kind)}</div>` : ''}
         <div class="jtip">${esc(uj.desc)}${jokerLiveNote(def.id) ? `<br>${esc(jokerLiveNote(def.id).trim())}` : ''}<div class="jtip-gain${gainEmpty}">${esc(gain)}</div></div>
       </div>`;
@@ -9600,7 +9802,7 @@ function showJokerPop(idx) {
   const def = JOKER_BY_ID[j.id];
   const uj = uiJoker(def);
   $('joker-pop-icon').textContent = def.icon;
-  $('joker-pop-name').textContent = uj.name;
+  $('joker-pop-name').textContent = jokerDisplayName(j);
   $('joker-pop-meta').innerHTML = `
     <span class="o-rarity r-${def.rarity}">${uiRarity(def.rarity)}</span>
     <span class="o-kind">${esc(uj.kind || '')}</span>`;
@@ -10219,7 +10421,7 @@ function shopHTML() {
     return `<div class="owned-slot filled aura-${def.rarity}${pop}" onclick="toggleOwnedTip(${i}, event)" title="탭하면 설명">
       <div class="os-tip">${esc(desc)}<div class="os-tip-gain${gainEmpty}">${esc(gain)}</div></div>
       <div class="os-head">
-        <div class="os-name">${esc(uj.name)}</div>
+        <div class="os-name">${esc(jokerDisplayName(j))}</div>
         <div class="os-meta">
           <span class="o-rarity r-${def.rarity}">${uiRarity(def.rarity)}</span>
           ${uj.kind ? `<span class="o-kind">${esc(uj.kind)}</span>` : ''}
@@ -10349,14 +10551,12 @@ function deckpeekHTML() {
   for (let m = 1; m <= 12; m++) {
     byMonth[m].sort((a, b) => TYPE_ORDER[a.type] - TYPE_ORDER[b.type]);
   }
-  const fogPeek = state.boss === 'angae';
   const rowHTML = (M) => {
     const cards = byMonth[M.n];
     const cardsHtml = cards.map((c) => {
       const inHand = heldUids.has(c.uid);
-      const reveal = !(fogPeek && inHand && c.faceDown);
-      let html = cardHTML(c, { reveal, noSeason: true });
-      if (inHand && !fogPeek) html = html.replace('class="card ', 'class="card dp-held ');
+      let html = cardHTML(c, { reveal: true, noSeason: true });
+      if (inHand) html = html.replace('class="card ', 'class="card dp-held ');
       else if (playedUids.has(c.uid)) html = html.replace('class="card ', 'class="card dp-played ');
       else if (discardedUids.has(c.uid)) html = html.replace('class="card ', 'class="card dp-discarded ');
       return html;
@@ -10689,7 +10889,8 @@ function juiceBreakdown(snap) {
   }));
   const cardFlat = steps.filter((s) => !s.isCore).reduce((a, s) => a + s.chip, 0);
   const jokerChips = Math.max(0, result.flat - cardFlat);
-  const baseMult = HAND_BY_ID[result.handId]?.mult ?? 1;
+  let baseMult = HAND_BY_ID[result.handId]?.mult ?? 1;
+  if ((env.jokerIds || []).includes('geokkuro')) baseMult = 1 / baseMult;
   const ctx = scoreJokerCtx(cards, result.handId, core, env);
   // 특수패 슬롯 왼쪽→오른쪽 · 발동분만 — 칩 → +배수 → ×배수 → 냥
   const orderOf = (c) => cards.findIndex((x) => x.uid === c.uid);
