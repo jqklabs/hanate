@@ -16,6 +16,7 @@
   #playresult .r-formula .m { color: var(--mult-red); font-weight: 400; }
   #playresult .r-formula .m.is-div,
   #playresult .r-formula .op-div { color: var(--mult-div); }
+  #playresult .r-formula .op { color: var(--ink-2); }
   .mult-div { color: var(--mult-div); font-family: var(--font-overlay-num); font-weight: 400; }
   #playresult .r-score { font-size: 30px; font-weight: 400; color: #fff; font-synthesis: none; }
   /* 숫자는 항상 SSRockNum — bold 합성으로 글리프 깨짐 방지 */
@@ -33,6 +34,7 @@
   #cursor-trail {
     position: fixed; inset: 0; width: 100%; height: 100%;
     pointer-events: none; z-index: 85;
+    contain: strict;
   }
   body.card-sweeping { user-select: none; -webkit-user-select: none; }
   /* 호버를 0으로 끄면 들렸던 패가 내려갔다 다시 올라간다 */

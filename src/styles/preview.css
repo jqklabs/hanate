@@ -158,7 +158,7 @@
     100% { transform: translateY(-90px) rotate(22deg) scale(.5); opacity: 0; filter: grayscale(.85); }
   }
   #handarea .card.deal-in {
-    animation: dealIn .4s cubic-bezier(.2,1.25,.35,1) both;
+    animation: dealIn .5s cubic-bezier(.2,1.25,.35,1) both;
     pointer-events: none;
   }
   #handarea.sorting .card { pointer-events: none; }

@@ -54,7 +54,7 @@
     --font-overlay-num: 'SSRockNum', 'SSRock', 'BaigeTianxing', 'Malgun Gothic', sans-serif;
     --font-ui: 'SSRockNum', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
     --font-joker: 'SSRock', 'BaigeTianxing', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
-    --mult-div: #5c2d7a;
+    --mult-div: #3a1650;
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
@@ -112,7 +112,7 @@
   body.night-round #night-veil { opacity: 1; }
   body.night-round #bg-spine.spine-player,
   body.night-round #bg-spine .spine-player {
-    filter: brightness(.72) drop-shadow(0 0 8px rgba(40, 16, 48, .25));
+    filter: brightness(.72);
   }
   body.night-round #roundpanel.night {
     background:
@@ -122,9 +122,9 @@
   }
   #bg-spine {
     position: absolute;
-    right: -8%;
+    right: calc(-8% - 22px);
     /* 치마가 바닥에 닿되 과하게 가라앉지 않게 */
-    bottom: -9%;
+    bottom: calc(-9% - 28px);
     width: min(58vw, 720px);
     height: min(96vh, 1100px);
     pointer-events: none;
@@ -138,7 +138,6 @@
     height: 100% !important;
     background: transparent !important;
     overflow: visible;
-    filter: drop-shadow(0 0 8px rgba(255,255,255,.16));
   }
   #bg-spine .spine-player-controls,
   #bg-spine .spine-player-button,
@@ -161,8 +160,8 @@
     #bg-spine {
       width: min(48vw, 420px);
       height: min(78vh, 640px);
-      right: -12%;
-      bottom: -12%;
+      right: calc(-12% - 16px);
+      bottom: calc(-12% - 20px);
     }
   }
   /* 화면 외곽 청동 프레임 + 모서리 장식 (화면 가장자리 밀착) */

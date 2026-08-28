@@ -220,6 +220,7 @@ async function readDom(page) {
       handarea: grab('#handarea'),
       actions: grab('#actions'),
       modal: grab('#modal'),
+      nightask: grab('#night-ask'),
     };
   });
   const out = {};
@@ -287,7 +288,7 @@ export async function playthrough(page, { onSnapshot } = {}) {
     } else if (sc === 'nightask') {
       const pick = NIGHT_SCRIPT[nightIdx++ % NIGHT_SCRIPT.length];
       snap.action = 'night:' + pick;
-      await clickIfPresent(page, pick === 'accept' ? '#modal .btn-go' : '#modal .btn-stop');
+      await clickIfPresent(page, pick === 'accept' ? '#night-ask .na-yes' : '#night-ask .na-no');
     } else if (sc === 'gostop') {
       const pick = GOSTOP_SCRIPT[goIdx++ % GOSTOP_SCRIPT.length];
       snap.action = 'gostop:' + pick;

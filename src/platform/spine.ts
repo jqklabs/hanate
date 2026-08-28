@@ -6,6 +6,11 @@ declare global {
       setAnimation: (name: string, loop: boolean) => void;
       play: () => void;
       pause?: () => void;
+      stopRendering?: () => void;
+      startRendering?: () => void;
+      drawFrame?: (requestNext?: boolean) => void;
+      sceneRenderer?: { resize: (mode: unknown) => void; canvas: HTMLCanvasElement; context: { gl: { viewport: (x: number, y: number, w: number, h: number) => void } }; camera?: { setViewport?: (w: number, h: number) => void } };
+      stopRequestAnimationFrame?: boolean;
     } };
     HWATRO_CHUNHYANG_SKEL?: { gz: string; atlas: string; png?: string };
     bgSpinePlayer?: unknown;
@@ -54,6 +59,29 @@ async function gunzipBase64(b64: string) {
 
 function textToDataUri(text: string, mime: string) {
   return 'data:' + mime + ',' + text;
+}
+
+/** idle은 24fps면 충분. 디스플레이 주사율대로 돌리지 않는다. */
+function throttleSpine(player: any) {
+  if (typeof player.drawFrame !== 'function') return;
+  const raw = player.drawFrame.bind(player);
+  let last = 0;
+  let pending = false;
+  player.drawFrame = (requestNext = true) => {
+    const now = performance.now();
+    if (now - last < 1000 / 24) {
+      if (requestNext && !player.stopRequestAnimationFrame && !pending) {
+        pending = true;
+        requestAnimationFrame(() => {
+          pending = false;
+          player.drawFrame(true);
+        });
+      }
+      return;
+    }
+    last = now;
+    raw(requestNext);
+  };
 }
 
 /** 배경 춘향 Spine. 플레이어·스켈레톤은 첫 페인트 이후에만 받는다. */
@@ -125,6 +153,7 @@ export async function initBgSpine() {
     },
     success(p: any) {
       try {
+        throttleSpine(p);
         p.setAnimation(FIRST_ANIM, true);
         p.play();
       } catch (_) { /* ignore */ }

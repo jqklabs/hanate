@@ -1,0 +1,167 @@
+  /* 밤 도전 — 고/스톱 모달과 분리. 판 위에 해가 지고 묻는다. */
+  #night-ask {
+    position: fixed; inset: 0; z-index: 118; display: none;
+    align-items: center; justify-content: center;
+    padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0)
+      env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+    pointer-events: none;
+  }
+  #night-ask.on { display: flex; pointer-events: auto; }
+  #night-ask .na-veil {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 70% 58% at 50% 42%, rgba(28, 16, 22, .28) 0%, transparent 58%),
+      #0a0708;
+    opacity: 0;
+  }
+  #night-ask.enter .na-veil,
+  #night-ask.ready .na-veil { opacity: 1; }
+  #night-ask.enter .na-veil {
+    animation: naVeilIn .42s ease forwards;
+  }
+  #night-ask .na-stage {
+    position: relative;
+    width: min(92vw, 440px);
+    text-align: center;
+    padding: 8px 12px 4px;
+  }
+  #night-ask .na-mark {
+    font-family: var(--font-overlay);
+    font-weight: 400;
+    font-size: clamp(72px, 16vw, 128px);
+    line-height: .92;
+    letter-spacing: -0.04em;
+    color: var(--paper);
+    text-shadow: 0 7px 0 #140c10, 0 14px 28px rgba(0, 0, 0, .55);
+    opacity: 0;
+  }
+  #night-ask.enter .na-mark {
+    animation: naMarkIn .52s cubic-bezier(.16, 1, .3, 1) .08s forwards;
+  }
+  #night-ask.ready .na-mark { opacity: 1; }
+  #night-ask .na-copy {
+    margin-top: 10px;
+    opacity: 0;
+  }
+  #night-ask.enter .na-copy {
+    animation: naRise .36s ease .32s forwards;
+  }
+  #night-ask.ready .na-copy { opacity: 1; }
+  #night-ask .na-title {
+    margin: 0;
+    font-family: var(--font-overlay);
+    font-weight: 400;
+    font-size: clamp(22px, 4.6vw, 30px);
+    line-height: 1.25;
+    letter-spacing: 0.02em;
+    color: var(--gold-soft);
+  }
+  #night-ask .na-sub {
+    margin: 10px 0 0;
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.55;
+    color: var(--ink-4);
+    word-break: keep-all;
+  }
+  #night-ask .na-target {
+    margin-top: 14px;
+    font-family: var(--font-overlay-num);
+    font-weight: 400;
+    font-size: clamp(28px, 6vw, 40px);
+    line-height: 1;
+    color: var(--paper);
+    font-variant-numeric: tabular-nums;
+  }
+  #night-ask .na-target small {
+    font-family: var(--font-overlay);
+    font-size: .48em;
+    margin-left: 2px;
+    vertical-align: .12em;
+    color: var(--gold-soft);
+  }
+  #night-ask .na-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+    opacity: 0;
+    pointer-events: none;
+  }
+  #night-ask.enter .na-actions {
+    animation: naRise .36s ease .48s forwards;
+  }
+  #night-ask.ready .na-actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  #night-ask .na-no,
+  #night-ask .na-yes {
+    flex: 1;
+    min-width: 0;
+    min-height: 86px;
+    padding: 14px 12px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+    word-break: keep-all;
+  }
+  #night-ask .na-btn-t {
+    display: block;
+    font-family: var(--font-overlay);
+    font-weight: 400;
+    font-size: 26px;
+    letter-spacing: 0.06em;
+    line-height: 1.15;
+  }
+  #night-ask .na-btn-d {
+    display: block;
+    margin-top: 8px;
+    font-family: var(--font-ui);
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  /* 거절 = 낮을 닫고 주막으로. 도전 = 밤으로 넘어감. 고/스톱 빨강·금과 자리를 바꿈. */
+  #night-ask .na-no {
+    background: transparent;
+    border: 1.5px solid rgba(232, 205, 122, .42);
+    color: var(--gold-pale);
+  }
+  #night-ask .na-no .na-btn-d { color: var(--ink-4); }
+  #night-ask .na-no:hover { background: rgba(232, 205, 122, .08); }
+  #night-ask .na-yes {
+    background: #2a1020;
+    border: 1.5px solid var(--gold);
+    color: var(--gold-soft);
+  }
+  #night-ask .na-yes .na-btn-d { color: var(--gold-pale); }
+  #night-ask .na-yes:hover { background: #3a1730; }
+  @keyframes naVeilIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes naMarkIn {
+    0% { opacity: 0; transform: scale(1.55); filter: blur(3px); }
+    62% { opacity: 1; transform: scale(.97); filter: blur(0); }
+    100% { opacity: 1; transform: scale(1); filter: none; }
+  }
+  @keyframes naRise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #night-ask.enter .na-veil,
+    #night-ask.enter .na-mark,
+    #night-ask.enter .na-copy,
+    #night-ask.enter .na-actions { animation: none; opacity: 1; }
+    #night-ask.enter .na-actions { pointer-events: auto; }
+  }
+  @media (max-width: 720px) {
+    #night-ask .na-mark { font-size: clamp(64px, 22vw, 96px); }
+    #night-ask .na-title { font-size: 22px; }
+    #night-ask .na-actions { flex-direction: column-reverse; gap: 10px; margin-top: 22px; }
+    #night-ask .na-no,
+    #night-ask .na-yes { min-height: 74px; padding: 12px 10px 14px; }
+    #night-ask .na-btn-t { font-size: 24px; }
+  }
