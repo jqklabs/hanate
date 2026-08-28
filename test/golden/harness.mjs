@@ -96,6 +96,8 @@ const norm = (html) => (html || '')
   .replace(/class="\s*"/g, 'class=""')
   // 손패 정렬 썸은 버튼 offsetWidth를 박아 넣는다. 폰트 메트릭이 OS마다 1px 갈린다.
   .replace(/style="width:\s*\d+px;\s*transform:\s*translateX\([^)]+\);?"/g, 'style="width:*;transform:*"')
+  // 드로우 착지 후 transition/transform이 카드 style에 남는 타이밍이 CI에서 갈린다.
+  .replace(/style="transition:\s*transform[^"]*;\s*transform:\s*translate\(\s*0(?:px)?\s*,\s*0(?:px)?\s*\);?"/g, 'style=""')
   .replace(/\s+/g, ' ')
   .replace(/>\s+</g, '><')
   .trim();
