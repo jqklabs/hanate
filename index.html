@@ -111,7 +111,8 @@
       <div class="set-label"><span id="set-bgm-label">BGM</span></div>
       <div class="set-slider-row">
         <input type="range" id="set-bgm" min="0" max="100" step="1" value="30"
-               oninput="setBgmVolume(+this.value / 100)" />
+               oninput="setBgmVolume(+this.value / 100)"
+               onchange="setBgmVolume(+this.value / 100)" />
         <span class="set-val" id="set-bgm-val">30%</span>
       </div>
     </div>
@@ -119,7 +120,8 @@
       <div class="set-label"><span id="set-sfx-label">효과음</span></div>
       <div class="set-slider-row">
         <input type="range" id="set-sfx" min="0" max="100" step="1" value="100"
-               oninput="setSfxVolume(+this.value / 100)" />
+               oninput="setSfxVolume(+this.value / 100)"
+               onchange="setSfxVolume(+this.value / 100)" />
         <span class="set-val" id="set-sfx-val">100%</span>
       </div>
     </div>
