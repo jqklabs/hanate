@@ -12,6 +12,10 @@
       background-attachment: scroll; /* fixed는 모바일에서 깨지기 쉬움 */
     }
     button, .card { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    /* 선택 연타 시 box-shadow 트랜지션이 합성 비용을 키움 */
+    .card {
+      transition: transform .16s cubic-bezier(.22, 1, .36, 1);
+    }
 
     body::before { inset: 0; }
     body::after { inset: 4px; }
