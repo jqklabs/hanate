@@ -1,167 +1,135 @@
-  /* 밤 도전 — 고/스톱 모달과 분리. 판 위에 해가 지고 묻는다. */
+  /* 밤 도전 — 고/스톱 뼈대, 흑막 주막·밤 판 보랏빛 */
   #night-ask {
     position: fixed; inset: 0; z-index: 118; display: none;
     align-items: center; justify-content: center;
-    padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0)
-      env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+    padding: 18px;
+    padding-top: max(18px, env(safe-area-inset-top, 0px));
+    padding-right: max(18px, env(safe-area-inset-right, 0px));
+    padding-bottom: max(18px, env(safe-area-inset-bottom, 0px));
+    padding-left: max(18px, env(safe-area-inset-left, 0px));
     pointer-events: none;
   }
   #night-ask.on { display: flex; pointer-events: auto; }
   #night-ask .na-veil {
     position: absolute; inset: 0;
     background:
-      radial-gradient(ellipse 70% 58% at 50% 42%, rgba(28, 16, 22, .28) 0%, transparent 58%),
-      #0a0708;
-    opacity: 0;
+      radial-gradient(ellipse 58% 54% at 46% 38%, transparent 10%, rgba(14, 4, 22, .42) 46%, rgba(6, 0, 12, .78) 76%, rgba(2, 0, 8, .94) 100%),
+      linear-gradient(180deg, rgba(28, 10, 44, .38), rgba(6, 1, 14, .72));
   }
-  #night-ask.enter .na-veil,
-  #night-ask.ready .na-veil { opacity: 1; }
-  #night-ask.enter .na-veil {
-    animation: naVeilIn .42s ease forwards;
-  }
-  #night-ask .na-stage {
+  #night-ask .na-card {
     position: relative;
-    width: min(92vw, 440px);
-    text-align: center;
-    padding: 8px 12px 4px;
-  }
-  #night-ask .na-mark {
-    font-family: var(--font-overlay);
-    font-weight: 400;
-    font-size: clamp(72px, 16vw, 128px);
-    line-height: .92;
-    letter-spacing: -0.04em;
-    color: var(--paper);
-    text-shadow: 0 7px 0 #140c10, 0 14px 28px rgba(0, 0, 0, .55);
-    opacity: 0;
-  }
-  #night-ask.enter .na-mark {
-    animation: naMarkIn .52s cubic-bezier(.16, 1, .3, 1) .08s forwards;
-  }
-  #night-ask.ready .na-mark { opacity: 1; }
-  #night-ask .na-copy {
-    margin-top: 10px;
-    opacity: 0;
-  }
-  #night-ask.enter .na-copy {
-    animation: naRise .36s ease .32s forwards;
-  }
-  #night-ask.ready .na-copy { opacity: 1; }
-  #night-ask .na-title {
-    margin: 0;
-    font-family: var(--font-overlay);
-    font-weight: 400;
-    font-size: clamp(22px, 4.6vw, 30px);
-    line-height: 1.25;
-    letter-spacing: 0.02em;
-    color: var(--gold-soft);
-  }
-  #night-ask .na-sub {
-    margin: 10px 0 0;
-    font-family: var(--font-ui);
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 1.55;
-    color: var(--ink-4);
+    width: 100%;
+    max-width: 480px;
     word-break: keep-all;
+    overflow-wrap: break-word;
+    padding: 28px 30px 26px;
+    background: rgba(8, 4, 14, .98);
+    border: 1px solid rgba(120, 82, 140, .48);
+    border-radius: 6px;
+    box-shadow:
+      inset 0 0 0 3px rgba(10, 4, 16, .94),
+      inset 0 0 0 4px rgba(88, 56, 104, .38),
+      0 16px 36px rgba(0, 0, 0, .72);
   }
-  #night-ask .na-target {
-    margin-top: 14px;
-    font-family: var(--font-overlay-num);
-    font-weight: 400;
-    font-size: clamp(28px, 6vw, 40px);
-    line-height: 1;
-    color: var(--paper);
-    font-variant-numeric: tabular-nums;
-  }
-  #night-ask .na-target small {
-    font-family: var(--font-overlay);
-    font-size: .48em;
-    margin-left: 2px;
-    vertical-align: .12em;
-    color: var(--gold-soft);
-  }
-  #night-ask .na-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 28px;
-    opacity: 0;
+  #night-ask .na-card::before {
+    content: '';
+    position: absolute; inset: 5px;
+    border: 1px solid rgba(140, 100, 160, .18);
+    border-radius: 2px;
     pointer-events: none;
   }
-  #night-ask.enter .na-actions {
-    animation: naRise .36s ease .48s forwards;
+  #night-ask .na-card::after {
+    content: '';
+    position: absolute; inset: 2px;
+    pointer-events: none;
+    opacity: .9;
+    background:
+      linear-gradient(#8a6e9a, #8a6e9a) 0 0 / 11px 1.5px no-repeat,
+      linear-gradient(#8a6e9a, #8a6e9a) 0 0 / 1.5px 11px no-repeat,
+      linear-gradient(#8a6e9a, #8a6e9a) 100% 0 / 11px 1.5px no-repeat,
+      linear-gradient(#8a6e9a, #8a6e9a) 100% 0 / 1.5px 11px no-repeat,
+      linear-gradient(#8a6e9a, #8a6e9a) 0 100% / 11px 1.5px no-repeat,
+      linear-gradient(#8a6e9a, #8a6e9a) 0 100% / 1.5px 11px no-repeat,
+      linear-gradient(#8a6e9a, #8a6e9a) 100% 100% / 11px 1.5px no-repeat,
+      linear-gradient(#8a6e9a, #8a6e9a) 100% 100% / 1.5px 11px no-repeat;
   }
-  #night-ask.ready .na-actions {
-    opacity: 1;
-    pointer-events: auto;
+  #night-ask .gs-head-row {
+    position: relative; z-index: 1;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 12px; margin-bottom: 14px;
   }
-  #night-ask .na-no,
-  #night-ask .na-yes {
-    flex: 1;
-    min-width: 0;
-    min-height: 86px;
-    padding: 14px 12px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    text-align: center;
-    word-break: keep-all;
-  }
-  #night-ask .na-btn-t {
-    display: block;
-    font-family: var(--font-overlay);
-    font-weight: 400;
-    font-size: 26px;
+  #night-ask .gs-head-row h2 {
+    margin: 0; flex: 1; min-width: 0;
+    color: #ddd0e4;
+    font-size: clamp(26px, 5vw, 34px);
     letter-spacing: 0.06em;
     line-height: 1.15;
   }
-  #night-ask .na-btn-d {
-    display: block;
-    margin-top: 8px;
+  #night-ask .gs-next-target {
+    position: relative; z-index: 1;
+    text-align: center;
+    margin: 2px 0 22px;
+    padding: 20px 14px 16px;
+    border-radius: 2px;
+    background:
+      linear-gradient(145deg, rgba(72, 40, 88, .22), rgba(16, 8, 24, .2) 50%, transparent),
+      rgba(0, 0, 0, .34);
+    border: 1px solid rgba(140, 100, 160, .32);
+  }
+  #night-ask .gs-next-label {
     font-family: var(--font-ui);
-    font-size: 11.5px;
-    font-weight: 600;
-    line-height: 1.4;
+    font-size: 12px; font-weight: 800;
+    color: #9a8190; letter-spacing: 0.08em;
   }
-  /* 거절 = 낮을 닫고 주막으로. 도전 = 밤으로 넘어감. 고/스톱 빨강·금과 자리를 바꿈. */
-  #night-ask .na-no {
-    background: transparent;
-    border: 1.5px solid rgba(232, 205, 122, .42);
-    color: var(--gold-pale);
+  #night-ask .gs-next-score {
+    margin-top: 6px;
+    font-family: var(--font-overlay-num);
+    font-size: 56px; font-weight: 400; line-height: 1;
+    color: #f0e2c4;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 0 #140818;
   }
-  #night-ask .na-no .na-btn-d { color: var(--ink-4); }
-  #night-ask .na-no:hover { background: rgba(232, 205, 122, .08); }
-  #night-ask .na-yes {
-    background: #2a1020;
-    border: 1.5px solid var(--gold);
-    color: var(--gold-soft);
+  #night-ask .gs-next-unit {
+    font-family: var(--font-overlay);
+    font-size: 26px; font-weight: 400;
+    margin-left: 2px; vertical-align: 0.08em;
+    color: #c8b4d4;
   }
-  #night-ask .na-yes .na-btn-d { color: var(--gold-pale); }
-  #night-ask .na-yes:hover { background: #3a1730; }
+  #night-ask .modal-actions {
+    position: relative; z-index: 1;
+    display: flex; gap: 14px; justify-content: center;
+    margin-top: 22px; flex-wrap: wrap;
+  }
+  #night-ask .choicebtn.gs-simple { flex: 1; }
+  #night-ask .choicebtn.btn-go {
+    background: linear-gradient(180deg, #5a2048, #2a1020);
+    border: 1px solid rgba(196, 162, 90, .42);
+  }
+  #night-ask.enter .na-veil {
+    animation: naVeilIn .4s ease both;
+  }
+  #night-ask.enter .na-card {
+    animation: naCardIn .44s cubic-bezier(.16, 1, .3, 1) .05s both;
+  }
   @keyframes naVeilIn {
     from { opacity: 0; }
     to { opacity: 1; }
   }
-  @keyframes naMarkIn {
-    0% { opacity: 0; transform: scale(1.55); filter: blur(3px); }
-    62% { opacity: 1; transform: scale(.97); filter: blur(0); }
-    100% { opacity: 1; transform: scale(1); filter: none; }
-  }
-  @keyframes naRise {
-    from { opacity: 0; transform: translateY(10px); }
+  @keyframes naCardIn {
+    from { opacity: 0; transform: translateY(14px); }
     to { opacity: 1; transform: none; }
   }
   @media (prefers-reduced-motion: reduce) {
     #night-ask.enter .na-veil,
-    #night-ask.enter .na-mark,
-    #night-ask.enter .na-copy,
-    #night-ask.enter .na-actions { animation: none; opacity: 1; }
-    #night-ask.enter .na-actions { pointer-events: auto; }
+    #night-ask.enter .na-card { animation: none; }
   }
   @media (max-width: 720px) {
-    #night-ask .na-mark { font-size: clamp(64px, 22vw, 96px); }
-    #night-ask .na-title { font-size: 22px; }
-    #night-ask .na-actions { flex-direction: column-reverse; gap: 10px; margin-top: 22px; }
-    #night-ask .na-no,
-    #night-ask .na-yes { min-height: 74px; padding: 12px 10px 14px; }
-    #night-ask .na-btn-t { font-size: 24px; }
+    #night-ask { overflow: hidden; }
+    #night-ask .na-card { padding: 22px 18px 18px; }
+    #night-ask .gs-head-row h2 { font-size: 28px; }
+    #night-ask .gs-next-target { margin-bottom: 16px; padding: 14px 10px 12px; }
+    #night-ask .gs-next-score { font-size: 48px; }
+    #night-ask .gs-next-unit { font-size: 22px; }
+    #night-ask .modal-actions { gap: 10px; }
+    #night-ask .choicebtn { min-width: 0; flex: 1 1 140px; }
   }
