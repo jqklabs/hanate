@@ -136,7 +136,15 @@ function firstDiff(a, b) {
   const lb = (b ?? '').split('\n');
   for (let i = 0; i < Math.max(la.length, lb.length); i++) {
     if (la[i] !== lb[i]) {
-      return `    line ${i + 1}\n      golden: ${JSON.stringify(la[i] ?? null)}\n      now   : ${JSON.stringify(lb[i] ?? null)}`;
+      const ga = la[i] ?? '';
+      const na = lb[i] ?? '';
+      let hint = '';
+      if (ga && na) {
+        let k = 0;
+        while (k < ga.length && k < na.length && ga[k] === na[k]) k++;
+        hint = `\n      at ${k}: ${JSON.stringify(ga.slice(Math.max(0, k - 16), k + 32))}\n           vs ${JSON.stringify(na.slice(Math.max(0, k - 16), k + 32))}`;
+      }
+      return `    line ${i + 1}\n      golden: ${JSON.stringify(la[i] ?? null)}\n      now   : ${JSON.stringify(lb[i] ?? null)}${hint}`;
     }
   }
   return '    (길이만 다름)';

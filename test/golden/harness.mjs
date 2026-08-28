@@ -78,6 +78,9 @@ const norm = (html) => (html || '')
   .replace(/https?:\/\/127\.0\.0\.1:\d+/g, 'http://HOST')
   .replace(/\bscore-land\b/g, '')
   .replace(/class="\s*"/g, 'class=""')
+  // 정산 줄은 playSettleJuice가 한 줄씩 on을 붙인다. 스냅샷 시점이 CI마다 갈린다.
+  .replace(/class="([^"]*\bsettle-row\b[^"]*)"/g, (_, cls) =>
+    `class="${cls.split(/\s+/).filter((c) => c && c !== 'on').join(' ')}"`)
   // 손패 정렬 썸은 버튼 offsetWidth를 박아 넣는다. 폰트 메트릭이 OS마다 1px 갈린다.
   .replace(/style="width:\s*\d+px;\s*transform:\s*translateX\([^)]+\);?"/g, 'style="width:*;transform:*"')
   .replace(/\s+/g, ' ')
