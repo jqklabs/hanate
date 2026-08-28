@@ -69,6 +69,13 @@ const DETERMINISM = () => {
   window.webkitAudioContext = undefined;
 };
 
+// 연출 전용 클래스. 타이머가 끝나면 빠져서 CI와 로컬 스냅샷이 갈린다.
+const JUICE_CLASS = new Set([
+  'pop', 'play-fade-out', 'sorting', 'score-land', 'score-pulse',
+  'deal-in', 'discarding', 'juicing', 'prep-open', 'card-sweeping',
+  'settle-out', 'juice-stage', 'pip-out',
+]);
+
 // 실행마다 달라지는 값은 지운다.
 // 카드 그림은 preloadCardImages가 blob URL로 바꿔치기하는데 UUID가 매번 새로 생긴다.
 // 그림의 정체는 data-csig가 card.art 경로를 담고 있어 그대로 검증된다.
@@ -76,11 +83,17 @@ const norm = (html) => (html || '')
   .replace(/<!--[\s\S]*?-->/g, '')
   .replace(/blob:https?:\/\/[^"'\s]+/g, 'blob:*')
   .replace(/https?:\/\/127\.0\.0\.1:\d+/g, 'http://HOST')
-  .replace(/\bscore-land\b/g, '')
+  .replace(/class="([^"]*)"/g, (_, cls) => {
+    const parts = cls.split(/\s+/);
+    const keep = parts.filter((c) => {
+      if (!c || JUICE_CLASS.has(c)) return false;
+      // 정산 줄 on은 playSettleJuice가 한 줄씩 붙인다. 손패 정렬 버튼 on은 유지.
+      if (c === 'on' && parts.includes('settle-row')) return false;
+      return true;
+    });
+    return `class="${keep.join(' ')}"`;
+  })
   .replace(/class="\s*"/g, 'class=""')
-  // 정산 줄은 playSettleJuice가 한 줄씩 on을 붙인다. 스냅샷 시점이 CI마다 갈린다.
-  .replace(/class="([^"]*\bsettle-row\b[^"]*)"/g, (_, cls) =>
-    `class="${cls.split(/\s+/).filter((c) => c && c !== 'on').join(' ')}"`)
   // 손패 정렬 썸은 버튼 offsetWidth를 박아 넣는다. 폰트 메트릭이 OS마다 1px 갈린다.
   .replace(/style="width:\s*\d+px;\s*transform:\s*translateX\([^)]+\);?"/g, 'style="width:*;transform:*"')
   .replace(/\s+/g, ' ')
