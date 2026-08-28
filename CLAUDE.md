@@ -1,18 +1,35 @@
 # 십이화 — 고스톱: 무한의 판
 
-한국 화투 48장 기반 1인용 Balatro라이크 웹 게임 프로토타입. 게임 규칙·시스템 개요는 README.md 참고.
+한국 화투 48장 기반 1인용 Balatro라이크 웹 게임. 게임 규칙·시스템 개요는 README.md 참고.
 
 ## 실행 / 테스트
 
-- 실행: `index.html`을 브라우저에서 열기 (빌드·서버 불필요). 시드 고정 `?seed=42`.
-- 테스트: `node test/test-game.mjs` — 엔진 단위 테스트 + 그리디 봇 300런 시뮬레이션. **엔진 수정 시 반드시 실행.**
+- 개발: `npm run dev` — Vite 개발 서버. 시드 고정 `?seed=42`.
+- 빌드: `npm run build` — `dist/` (게임 번들 + Assets/pages/vendor 복사).
+- 엔진 테스트: `npm test` — 단위 테스트 + 그리디 봇 시뮬레이션. **엔진 수정 시 반드시 실행.**
+- 골든: `npm run golden` / `npm run golden:update` — 시드 고정 플레이스루. UI·스타일 이동 후 필수.
 
 ## 아키텍처 (중요)
 
-`index.html` 하나에 전부 들어있고, `<script>` 내부가 두 층으로 나뉜다:
+TypeScript + Vite 모듈. 의존은 한 방향만 허용한다.
 
-- `==== ENGINE START ====` ~ `==== ENGINE END ====` 마커 사이 = **순수 로직** (카드 데이터, 족보 판정 `detectHand`, 점수 `computeScore`/`cardChip`, 최적 조합 탐색 `evaluateHand`, 밸런스 상수). **DOM 접근 금지** — 테스트가 이 마커로 코드를 추출해 Node에서 실행하므로 마커 위치와 순수성을 깨면 안 됨.
-- 마커 밖 = UI 레이어 (state, 상태 머신 `screen: play|gostop|settle|shop|gameover|victory|help`, `render()` 단방향 렌더링, 인라인 onclick).
+```
+src/
+  engine/      순수 로직 (족보·점수·탐색·밸런스). 다른 패키지를 import 하지 않는 말단.
+  state/       GameState + 판 진행 액션
+  ui/          렌더·연출·춘향
+  platform/    telemetry, sfx, storage, assets
+  i18n/        kr / en / jp
+  styles/      도메인별 CSS (import 순서 보존)
+  bridge.ts    인라인 onclick 55개 전역 노출
+  main.ts      엔트리
+index.html     마크업 + `<script type="module" src="/src/main.ts">`
+```
+
+- `src/engine/` 은 **DOM 접근 금지**. 테스트가 `import`로 바로 실행한다.
+- UI 모듈은 `src/runtime/scope.ts`의 `g`에 함수를 올리고, `bridge.ts`가 인라인 핸들러를 `window`에 노출한다.
+- 순환 import를 만들지 말 것. UI 간 순환은 `g`의 늦은 바인딩으로 끊는다.
+- CSS는 `src/styles/index.css`의 import 순서를 바꾸지 말 것 (동일 특이도 승패가 뒤집힘).
 
 ## 구현 원칙 (기존 버그 예방 체크리스트)
 
@@ -29,7 +46,7 @@
 
 ## 디자인 방향 (사용자 확정 사항)
 
-- **고는 무제한** — n고 = 목표 ×(1+0.6n), 보너스 n×m냥(m=월). 캡 되돌리지 말 것.
+- **고는 무제한** — n고 문턱은 1~2고 1.6/2.2, 3고부터 `(n-2)²` 가속. 보너스 `ceil(n×m/2)`냥. 캡 되돌리지 말 것.
 - **밸런스는 빡빡하게** — 난이도 조정 시 하향보다 상향 우선. 목표 커브(160→14,000, 후반 가속)는 시뮬레이션 기준: 무조커 3월 벽 ~15%, 봇 승률 ~0%.
 - 새 시스템·특수패 네이밍은 고스톱/한국 전통 용어에서 (예: 밤일낮장, 피박보험, 밑장빼기).
 - 캐릭터·연출 요소 환영 (춘향 조력자처럼 표정/대사 있는 인터랙션).

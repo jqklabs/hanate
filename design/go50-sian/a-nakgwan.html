@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 A · 낙관 · 50고</title>
+<link rel="stylesheet" href="sian.css">
+</head>
+<body class="sian-a">
+  <a class="back" href="index.html">시안 목록</a>
+  <button type="button" class="replay" id="replay">다시</button>
+  <div class="stage" id="stage" aria-live="polite">
+    <svg class="inkdefs" aria-hidden="true">
+      <filter id="sealSoak" x="-30%" y="-30%" width="160%" height="160%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="4" seed="14" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="26" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+    </svg>
+    <div class="hanji" id="hanji"></div>
+    <div class="ring" id="ring"></div>
+    <div class="seal bleed" id="bleed" aria-hidden="true"></div>
+    <div class="seal" id="seal">
+      <span class="sf-num">50</span><span class="sf-go">고</span>
+      <span class="grain" aria-hidden="true"></span>
+    </div>
+    <div class="motes" id="motes"></div>
+  </div>
+  <p class="caption">A · 낙관 — 한지가 펴지고 붉은 도장이 내려찍힘</p>
+<script>
+const stage = document.getElementById('stage');
+const hanji = document.getElementById('hanji');
+const seal = document.getElementById('seal');
+const bleed = document.getElementById('bleed');
+const ring = document.getElementById('ring');
+const motes = document.getElementById('motes');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+function burstMotes(n) {
+  motes.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement('i');
+    const ang = (Math.PI * 2 * i) / n + Math.random() * 0.4;
+    const dist = 120 + Math.random() * 260;
+    el.style.setProperty('--x', Math.cos(ang) * dist + 'px');
+    el.style.setProperty('--y', Math.sin(ang) * dist * 0.62 + 'px');
+    el.style.setProperty('--s', (3 + Math.random() * 5).toFixed(1) + 'px');
+    el.style.setProperty('--dur', (0.6 + Math.random() * 0.5).toFixed(2) + 's');
+    el.style.setProperty('--del', (Math.random() * 0.06).toFixed(2) + 's');
+    // 절반은 튀는 인주 — 금먼지만 날리면 도장 찍은 느낌이 안 산다
+    if (i % 2) el.style.setProperty('--c', 'rgba(150, 34, 27, .85)');
+    motes.appendChild(el);
+  }
+}
+
+async function play() {
+  hanji.className = 'hanji';
+  seal.className = 'seal';
+  bleed.className = 'seal bleed';
+  ring.className = 'ring';
+  stage.className = 'stage';
+  motes.innerHTML = '';
+  void hanji.offsetWidth;
+
+  hanji.classList.add('in');
+  await wait(520);
+
+  seal.classList.add('hit');
+  await wait(230);
+
+  stage.classList.add('shake-hard');
+  ring.classList.add('on');
+  bleed.classList.add('on');
+  burstMotes(26);
+  await wait(900);
+  stage.classList.remove('shake-hard');
+}
+
+document.getElementById('replay').onclick = play;
+play();
+</script>
+</body>
+</html>

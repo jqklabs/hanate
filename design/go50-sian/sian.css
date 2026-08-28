@@ -1,0 +1,418 @@
+@font-face {
+  font-family: 'SSRockNum';
+  src: url('../../Assets/Fonts/SSRockRegular.woff2?v=2') format('woff2');
+  unicode-range: U+0030-0039;
+}
+@font-face {
+  font-family: 'SSRock';
+  src: url('../../Assets/Fonts/SSRockRegular.woff2?v=2') format('woff2');
+}
+@font-face {
+  font-family: 'BaigeTianxing';
+  src: url('../../Assets/Fonts/zihun-baige-tianxing.woff2') format('woff2');
+}
+
+:root {
+  --paper: #f7eed8;
+  --gold: #f0c766;
+  --cinnabar: #a5261f;
+  --font-ui: "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-title: 'SSRock', 'BaigeTianxing', Georgia, serif;
+  --font-num: 'SSRockNum', 'SSRock', 'BaigeTianxing', Georgia, serif;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font-ui);
+  background: #080c09;
+  color: var(--paper);
+}
+
+.back, .replay {
+  position: fixed;
+  top: 16px;
+  z-index: 40;
+  padding: 7px 13px;
+  border: 1px solid rgba(240, 199, 102, .3);
+  background: rgba(6, 10, 8, .8);
+  color: var(--gold);
+  font: 600 12px/1 var(--font-ui);
+  cursor: pointer;
+  text-decoration: none;
+}
+.back { left: 16px; }
+.replay { right: 16px; }
+.caption {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  margin: 0;
+  z-index: 40;
+  font-size: 12px;
+  color: rgba(247, 238, 216, .5);
+}
+
+.stage {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+.stage.shake { animation: shake .34s cubic-bezier(.36,.07,.19,.97); }
+.stage.shake-hard { animation: shakeHard .5s cubic-bezier(.36,.07,.19,.97); }
+@keyframes shake {
+  20%, 80% { transform: translate(3px, -1px); }
+  40%, 60% { transform: translate(-4px, 2px); }
+}
+@keyframes shakeHard {
+  12% { transform: translate(-9px, 5px) rotate(-.4deg); }
+  26% { transform: translate(11px, -6px) rotate(.5deg); }
+  44% { transform: translate(-8px, 4px) rotate(-.3deg); }
+  62% { transform: translate(6px, -3px); }
+  80% { transform: translate(-3px, 2px); }
+}
+
+/* 공통 먼지·티끌 */
+.motes { position: absolute; inset: 0; pointer-events: none; }
+.motes i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--s, 5px);
+  height: var(--s, 5px);
+  border-radius: 50%;
+  background: var(--c, rgba(214, 182, 120, .92));
+  opacity: 0;
+  animation: moteFly var(--dur, .8s) cubic-bezier(.16,.72,.3,1) var(--del, 0s) forwards;
+}
+@keyframes moteFly {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(.15); }
+}
+
+/* ════════ A · 낙관 — 붉은 도장이 한지에 내려찍힘 ════════ */
+.sian-a { background: #070605; }
+.sian-a .hanji {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(76vw, 660px);
+  height: min(60vh, 440px);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.87) rotate(-1.2deg);
+  background:
+    repeating-linear-gradient(93deg, rgba(120, 98, 60, .055) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(2deg, rgba(120, 98, 60, .035) 0 1px, transparent 1px 9px),
+    radial-gradient(ellipse at 38% 28%, #f8efda, #e9dab8 62%, #d5c096);
+  box-shadow:
+    0 30px 70px rgba(0, 0, 0, .75),
+    inset 0 0 0 1px rgba(112, 88, 52, .2),
+    inset 0 0 70px rgba(150, 122, 76, .16);
+}
+.sian-a .hanji.in { animation: aHanji .52s cubic-bezier(.2,.9,.3,1) forwards; }
+@keyframes aHanji {
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0); }
+}
+.sian-a .seal {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(35vw, 224px);
+  height: min(35vw, 224px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(3.6) rotate(-13deg);
+  background: linear-gradient(158deg, #bd382d, #8a1c17);
+  box-shadow:
+    inset 0 0 0 4px rgba(248, 239, 218, .92),
+    inset 0 0 0 10px #9e231d,
+    inset 0 0 26px rgba(60, 8, 6, .5),
+    0 12px 26px rgba(0, 0, 0, .5);
+}
+.sian-a .seal .sf-num {
+  font-family: var(--font-num);
+  font-size: min(23vw, 148px);
+  line-height: .82;
+  color: #fbf4e2;
+  text-shadow: 0 2px 3px rgba(70, 10, 8, .45);
+}
+.sian-a .seal .sf-go {
+  font-family: var(--font-title);
+  font-size: min(8vw, 46px);
+  line-height: 1;
+  margin-top: 2px;
+  letter-spacing: .3em;
+  text-indent: .3em;
+  color: rgba(251, 244, 226, .88);
+}
+.sian-a .seal.hit { animation: aSeal .42s cubic-bezier(.2,1.55,.36,1) forwards; }
+@keyframes aSeal {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(3.6) rotate(-13deg); filter: blur(13px); }
+  60% { opacity: 1; transform: translate(-50%, -50%) scale(.93) rotate(-3deg); filter: blur(0); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(-4deg); filter: blur(0); }
+}
+/* 도장 표면의 마모 — 매끈한 사각형이 아니라 파낸 돌 느낌 */
+.sian-a .seal .grain {
+  position: absolute;
+  inset: 10px;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: .5;
+  background:
+    repeating-radial-gradient(circle at 22% 18%, rgba(255, 246, 228, .1) 0 1px, transparent 1px 4px),
+    repeating-radial-gradient(circle at 78% 72%, rgba(30, 0, 0, .16) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(74deg, rgba(255, 240, 220, .05) 0 1px, transparent 1px 7px);
+}
+/* 먹이 종이에 스미는 자리 — 흐리게만 깔면 분홍 후광이 된다.
+   SVG 난류로 테두리를 찢어 인주가 섬유를 타고 번진 것처럼 만든다. */
+.sian-a .bleed {
+  box-shadow: none;
+  background: #8e1c15;
+  border-radius: 0;
+  filter: url(#sealSoak) blur(2px);
+}
+.sian-a .bleed.on { animation: aBleed .9s ease-out forwards; }
+@keyframes aBleed {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(.97) rotate(-4deg); }
+  30% { opacity: .95; }
+  100% { opacity: .82; transform: translate(-50%, -50%) scale(1.07) rotate(-5deg); }
+}
+.sian-a .inkdefs { position: absolute; width: 0; height: 0; }
+.sian-a .ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(35vw, 224px);
+  height: min(35vw, 224px);
+  border: 2px solid rgba(186, 148, 88, .62);
+  border-radius: 4px;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.9);
+}
+.sian-a .ring.on { animation: aRing .62s ease-out forwards; }
+@keyframes aRing {
+  0% { opacity: .9; transform: translate(-50%, -50%) scale(.9); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.4); }
+}
+
+/* ════════ B · 먹 번짐 — 먹이 퍼진 자리에 글자가 남음 ════════ */
+.sian-b { background: #0d0b08; }
+.sian-b .sheet {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(91deg, rgba(118, 96, 58, .05) 0 1px, transparent 1px 5px),
+    radial-gradient(ellipse at 46% 36%, #f5ecd4, #e2d2ab 60%, #c9b488);
+}
+/* 먹은 SVG 난류로 윤곽을 찢는다 — border-radius로는 아무리 굴려도 동글동글해서 먹으로 안 보인다 */
+.sian-b .inksvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.sian-b .inksvg circle {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(0);
+  animation: bBloom .82s cubic-bezier(.2,.86,.28,1) var(--del, 0s) forwards;
+}
+@keyframes bBloom {
+  70% { transform: scale(1.07); }
+  100% { transform: scale(1); }
+}
+.sian-b .num {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.74);
+  font-family: var(--font-num);
+  font-size: clamp(88px, 22vw, 210px);
+  line-height: 1;
+  color: #f8f0da;
+  text-shadow: 0 3px 10px rgba(0, 0, 0, .5);
+}
+.sian-b .num.in { animation: bNum .48s cubic-bezier(.18,1.35,.4,1) forwards; }
+@keyframes bNum {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(.74); filter: blur(6px); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); }
+}
+
+/* ════════ C · 화투 폭풍 — 패가 흩날리며 숫자가 치솟음 ════════ */
+.sian-c { background: radial-gradient(ellipse at 50% 44%, #1d3d28, #08130d 72%); }
+.sian-c .cards { position: absolute; inset: 0; }
+.sian-c .cards img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: clamp(52px, 7vw, 86px);
+  aspect-ratio: 480 / 723;
+  border-radius: 5px;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.35);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, .6);
+  animation: cFly var(--dur) cubic-bezier(.14,.68,.3,1) var(--del) forwards;
+}
+@keyframes cFly {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(.35) rotate(0); }
+  12% { opacity: 1; }
+  76% { opacity: 1; }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1) rotate(var(--rot));
+  }
+}
+.sian-c .count {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 4;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-num);
+  font-size: clamp(82px, 20vw, 190px);
+  line-height: 1;
+  color: var(--paper);
+  text-shadow: 0 7px 0 #5b2313, 0 15px 28px rgba(0, 0, 0, .65);
+}
+.sian-c .count.tick { animation: cTick .1s ease-out; }
+@keyframes cTick {
+  0% { transform: translate(-50%, -50%) scale(1.16); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+.sian-c .count.final {
+  color: #f8dc96;
+  text-shadow:
+    0 0 26px rgba(240, 199, 102, .65),
+    0 0 60px rgba(200, 90, 40, .4),
+    0 8px 0 #7b2911,
+    0 18px 32px rgba(0, 0, 0, .7);
+  animation: cFinal .52s cubic-bezier(.16,1.5,.36,1) forwards;
+}
+@keyframes cFinal {
+  0% { transform: translate(-50%, -50%) scale(1.75); filter: blur(6px); }
+  62% { transform: translate(-50%, -50%) scale(1.04); filter: blur(0); }
+  100% { transform: translate(-50%, -50%) scale(1.12); filter: blur(0); }
+}
+
+/* ════════ D · 계수 폭주 — 숫자가 잔상을 남기고 치솟다 박힘 ════════ */
+.sian-d { background: radial-gradient(ellipse at 50% 46%, #241a11, #090705 72%); }
+.sian-d .rays {
+  position: absolute;
+  left: 50%;
+  top: 47%;
+  width: 160vmax;
+  height: 160vmax;
+  opacity: 0;
+  transition: opacity .7s ease;
+  background: repeating-conic-gradient(from 0deg, rgba(240, 199, 102, .1) 0 1.1deg, transparent 1.1deg 11deg);
+  mask: radial-gradient(circle at center, transparent 3%, #000 11%, transparent 26%);
+  animation: dSpin 26s linear infinite;
+}
+.sian-d .rays.on { opacity: 1; }
+@keyframes dSpin {
+  0% { transform: translate(-50%, -50%) rotate(0); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+.sian-d .waves { position: absolute; inset: 0; }
+.sian-d .waves i {
+  position: absolute;
+  left: 50%;
+  top: 47%;
+  width: min(30vw, 190px);
+  height: min(30vw, 190px);
+  border: 2px solid rgba(240, 199, 102, .5);
+  border-radius: 50%;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.35);
+  animation: dWave .72s ease-out forwards;
+}
+@keyframes dWave {
+  0% { opacity: .85; transform: translate(-50%, -50%) scale(.35); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(4.4); }
+}
+.sian-d .trail { position: absolute; inset: 0; pointer-events: none; }
+.sian-d .trail span,
+.sian-d .num {
+  position: absolute;
+  left: 50%;
+  top: 47%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-num);
+  font-size: clamp(80px, 19vw, 178px);
+  line-height: 1;
+  white-space: nowrap;
+}
+.sian-d .trail span {
+  color: rgba(240, 199, 102, .3);
+  animation: dGhost .32s ease-out forwards;
+}
+@keyframes dGhost {
+  0% { opacity: .55; transform: translate(-50%, -50%) scale(1); filter: blur(0); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); filter: blur(7px); }
+}
+.sian-d .num {
+  z-index: 5;
+  color: var(--paper);
+  text-shadow: 0 6px 0 #5b2b10, 0 14px 26px rgba(0, 0, 0, .65);
+}
+.sian-d .num.tick { animation: dTick .09s ease-out; }
+@keyframes dTick {
+  0% { transform: translate(-50%, -50%) scale(1.13); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+.sian-d .num.locked {
+  color: #f9de9c;
+  text-shadow:
+    0 0 30px rgba(240, 199, 102, .7),
+    0 0 68px rgba(214, 108, 44, .42),
+    0 9px 0 #7c3312,
+    0 20px 34px rgba(0, 0, 0, .72);
+  animation: dLock .58s cubic-bezier(.16,1.55,.34,1) forwards;
+}
+@keyframes dLock {
+  0% { transform: translate(-50%, -50%) scale(2.6); filter: blur(10px); }
+  64% { transform: translate(-50%, -50%) scale(1.08); filter: blur(0); }
+  100% { transform: translate(-50%, -50%) scale(1.2); filter: blur(0); }
+}
+/* 숫자 뒤에 남는 잉걸불 — 링만 퍼지고 끝나면 마무리가 허전하다 */
+.sian-d .ember {
+  position: absolute;
+  left: 50%;
+  top: 47%;
+  z-index: 2;
+  width: min(64vw, 560px);
+  height: min(64vw, 560px);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.5);
+  background: radial-gradient(circle, rgba(240, 199, 102, .32), rgba(206, 92, 34, .16) 42%, transparent 68%);
+}
+.sian-d .ember.on { animation: dEmber .9s ease-out forwards; }
+@keyframes dEmber {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(.5); }
+  26% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+  100% { opacity: .72; transform: translate(-50%, -50%) scale(1); }
+}
+.sian-d .vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(ellipse at 50% 47%, transparent 20%, rgba(46, 20, 8, .58) 64%, rgba(10, 4, 2, .92) 100%);
+}
+.sian-d .vignette.on { animation: dVig .8s ease-out forwards; }
+@keyframes dVig {
+  0% { opacity: 0; }
+  22% { opacity: 1; }
+  100% { opacity: .74; }
+}

@@ -1,21 +1,5 @@
-// index.html의 ENGINE 구간을 추출해 단위 테스트 + 풀런 시뮬레이션 (v2: 12판·계절·밤낮·고 무제한)
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-
-const html = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'index.html'), 'utf8');
-const startMark = html.indexOf('==== ENGINE START ====');
-const codeStart = html.indexOf('*/', startMark) + 2;
-const endMark = html.indexOf('==== ENGINE END ====');
-const codeEnd = html.lastIndexOf('/*', endMark);
-const src = html.slice(codeStart, codeEnd);
-
-const E = new Function(src + `
-return { mulberry32, shuffle, buildDeck, CHIP, effType, baseChip, HANDS, HAND_BY_ID, handDisplayName,
-  ROUNDS, TARGETS, JOKER_SLOT_MAX, jokerSlotCount, BOSS_ROUNDS, MILD_BOSSES, goMult, goBonus, goThreshold, goLevelReached, detectHand, detectHandInfo, cardChip,
-  combosOf, evaluateHand, JOKERS, JOKER_BY_ID, BOSSES, BOSS_BY_ID, computeScore, jokerMarginalGain,
-  rollJokerRarity, rarityWeightsForMonth, gotaryeongMultFromGoes, RARITY_ORDER, RARITY_MONTH_MAX,
-  shopRarityMonth, darkOfferChance, rollShopRarity, bakChipLoss, hasMatdaePair, oppositeMonth };`)();
+// 엔진 단위 테스트 + 풀런 시뮬레이션 (v2: 12판·계절·밤낮·고 무제한)
+import * as E from '../src/engine/index.ts';
 
 let fails = 0;
 const assert = (cond, msg) => {
@@ -198,16 +182,17 @@ console.log('[3.5] 코어/플랫 분리');
 // ─── 4. 고 무제한 공식 ────────────────────────────────────
 console.log('[4] 고 무제한');
 {
-  assert(E.goMult(1) === 1.6 && E.goMult(2) === 2.2 && E.goMult(5) === 4 && E.goMult(10) === 7, 'goMult 1.6/2.2/4/7');
-  assert(E.goBonus(3, 1) === 3 && E.goBonus(3, 2) === 6 && E.goBonus(2, 9) === 18 && E.goBonus(9, 2) === 18,
-    'goBonus n×m');
+  assert(E.goMult(1) === 1.6 && E.goMult(2) === 2.2 && E.goMult(5) === 4.45 && E.goMult(10) === 10.2,
+    'goMult 1.6/2.2/4.45/10.2 (3고부터 가속)');
+  assert(E.goBonus(3, 1) === 2 && E.goBonus(3, 2) === 3 && E.goBonus(2, 9) === 9 && E.goBonus(9, 2) === 9,
+    'goBonus ceil(n×m/2)');
   // 밀치기 고: 이미 넘은 문턱은 전부 소급 인정, 선언 단계 = 아직 못 넘은 첫 문턱
-  // 1고=ceil(160×1.6)=256, 3고=ceil(160×2.8)=448
-  assert(E.goThreshold(160, 1) === 256 && E.goThreshold(160, 3) === 448, 'goThreshold 256/448');
+  // 1고=ceil(160×1.6)=256, 3고=ceil(160×2.85)=456
+  assert(E.goThreshold(160, 1) === 256 && E.goThreshold(160, 3) === 456, 'goThreshold 256/456');
   assert(E.goLevelReached(160, 200, 0) === 0, '문턱 미달이면 소급 없음 (일반 1고)');
   assert(E.goLevelReached(160, 260, 0) === 1, '260점 = 1고 문턱(256) 소급');
-  assert(E.goLevelReached(160, 450, 0) === 3, '450점 = 3고 문턱(448)까지 밀치기');
-  assert(E.goLevelReached(160, 450, 5) === 5, '현재 goLevel 미만으로는 안 내려감');
+  assert(E.goLevelReached(160, 456, 0) === 3, '456점 = 3고 문턱(456)까지 밀치기');
+  assert(E.goLevelReached(160, 456, 5) === 5, '현재 goLevel 미만으로는 안 내려감');
   // 선언 목표는 항상 현재 점수보다 큼 → 고 선언 즉시 재충족(연쇄 고) 불가
   for (const [base, score, cur] of [[160, 200, 0], [160, 260, 0], [160, 450, 0], [160, 3449, 2], [5500, 30000, 1]]) {
     const declared = E.goLevelReached(base, score, cur) + 1;
@@ -347,8 +332,8 @@ console.log('[5] 특수패·박 회귀');
   const w14 = E.rarityWeightsForMonth(14);
   assert(E.RARITY_MONTH_MAX === 14 && E.shopRarityMonth(2, true) === 4 && E.shopRarityMonth(12, true) === 14,
     '암흑 주막 등급 월 = 현재+2 (상한 14)');
-  assert(E.darkOfferChance(0) === 0.01 && E.darkOfferChance(3) === 0.07 && E.darkOfferChance(5) === 0.11,
-    '암흑 등장 (고×2+1)%');
+  assert(E.darkOfferChance(0) === 0.01 && E.darkOfferChance(3) === 0.025 && E.darkOfferChance(5) === 0.035,
+    '암흑 등장 (고×0.5+1)%');
   assert(w1.legendary < 0.006 && w12.legendary <= 0.027,
     `레전 1월 ${w1.legendary} / 12월 ${w12.legendary} (기존 4% 미만)`);
   assert(w1.common > w12.common && w1.epic < w12.epic && w1.legendary < w12.legendary,
@@ -474,8 +459,8 @@ console.log('[7] 풀런 시뮬레이션');
         if (hand.length > 8) throw new Error('손패 8장 초과');
       }
       if (score < target) return { cleared: round - 1 };
-      const interest = Math.min(Math.floor(money / 5), 5);
-      money += interest + (E.BOSS_ROUNDS.includes(round) ? 6 : 3) + playsLeft + (jokers.includes('pibak_boheom') ? 1 : 0);
+      const interest = Math.min(Math.floor(money / 6), 3);
+      money += interest + (E.BOSS_ROUNDS.includes(round) ? 4 : 2) + playsLeft + (jokers.includes('pibak_boheom') ? 1 : 0);
       if (round < E.ROUNDS && buyAI) money = shopBuy(money, jokers, rng, round);
     }
     return { cleared: E.ROUNDS };

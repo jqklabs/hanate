@@ -1,0 +1,410 @@
+  /* ── 주막 등장 팝업 (n고 풀스크린과 동일 슬램) ── */
+  #jumak-cascade {
+    position: fixed; inset: 0; z-index: 125; display: none;
+    align-items: center; justify-content: center;
+    pointer-events: none;
+    overflow: hidden;
+    padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0)
+      env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+    background: radial-gradient(ellipse at 50% 45%, rgba(40,24,10,.55), rgba(0,0,0,.55) 68%);
+  }
+  #jumak-cascade.dark {
+    background: radial-gradient(ellipse at 50% 45%, rgba(28,12,40,.62), rgba(4,0,10,.62) 68%);
+  }
+  #jumak-cascade.on { display: flex; }
+  #jumak-cascade.out {
+    animation: jumakFadeOut .30s ease forwards;
+  }
+  #jumak-cascade.out .jumak-stage {
+    animation: jumakStageFadeOut .30s ease forwards;
+  }
+  @keyframes jumakFadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  @keyframes jumakStageFadeOut {
+    from { opacity: 1; transform: scale(1); filter: brightness(1); }
+    to { opacity: 0; transform: scale(.96); filter: brightness(1.05); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #jumak-cascade.out,
+    #jumak-cascade.out .jumak-stage { animation-duration: .15s; }
+  }
+  #jumak-cascade .jumak-stage {
+    position: relative;
+    width: min(92vw, 560px);
+    aspect-ratio: 3 / 2;
+    max-height: min(70vh, 400px);
+    transform-origin: 50% 50%;
+    will-change: transform, opacity, filter;
+  }
+  #jumak-cascade .jumak-stage.slam {
+    animation: jumakSlamIn .38s cubic-bezier(.15,1.55,.35,1) forwards;
+  }
+  #jumak-cascade .jumak-frame {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    filter: drop-shadow(0 10px 28px rgba(0,0,0,.55));
+  }
+  #jumak-cascade .jumak-label {
+    position: absolute; left: 50%; top: 48%;
+    transform: translate(-50%, -50%);
+    font-family: var(--font-overlay); font-weight: 400;
+    font-size: clamp(34px, 8vw, 56px);
+    line-height: 1.3; letter-spacing: .02em;
+    padding: 0.08em 0.2em;
+    color: var(--paper); white-space: nowrap; text-align: center;
+    text-shadow:
+      0 0 18px rgba(251,191,36,.75),
+      0 0 36px rgba(180,83,9,.45),
+      0 4px 0 #7c2d12,
+      0 8px 18px rgba(0,0,0,.55);
+  }
+  #jumak-cascade.dark .jumak-label {
+    text-shadow:
+      0 0 16px rgba(160, 110, 180, .45),
+      0 0 28px rgba(40, 12, 48, .5),
+      0 4px 0 #2a1030,
+      0 8px 18px rgba(0,0,0,.65);
+  }
+  @keyframes jumakSlamIn {
+    0% { opacity: 0; transform: scale(1.55); filter: brightness(1.6); }
+    60% { opacity: 1; transform: scale(.96); filter: brightness(1.15); }
+    100% { opacity: 1; transform: scale(1); filter: brightness(1); }
+  }
+  @media (max-width: 720px) {
+    #jumak-cascade .jumak-stage {
+      width: min(94vw, 420px);
+      max-height: min(52vh, 280px);
+    }
+    #jumak-cascade .jumak-label {
+      font-size: clamp(26px, 8vw, 40px);
+      top: 49%;
+    }
+    #jumak-cascade .jumak-stage.slam { animation-name: jumakSlamInMobile; }
+    @keyframes jumakSlamInMobile {
+      0% { opacity: 0; transform: scale(1.35); filter: brightness(1.45); }
+      60% { opacity: 1; transform: scale(.97); filter: brightness(1.12); }
+      100% { opacity: 1; transform: scale(1); filter: brightness(1); }
+    }
+  }
+  /* 고 버튼 안 숫자 — 공통 + 프리뷰 연출들 (전체 ease-out) */
+  .choicebtn.btn-go.gs-simple { overflow: visible; position: relative; }
+  .choicebtn.btn-go.go-btn-busy { cursor: wait; }
+  .choicebtn.btn-go.go-btn-juice {
+    animation: goBtnJuicePulse .34s cubic-bezier(.16,1,.3,1);
+  }
+  @keyframes goBtnJuicePulse {
+    0% { filter: brightness(1.35); transform: scale(1.03); }
+    100% { filter: brightness(1); transform: scale(1); }
+  }
+  .choicebtn.btn-go .go-btn-stage {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 1.9em;
+    margin: 0 auto;
+    overflow: visible;
+    text-align: center;
+  }
+  .choicebtn.btn-go .go-btn-stage .go-num {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    transform-origin: center center;
+    font-family: var(--font-overlay-num); font-weight: 400; font-synthesis: none;
+    font-size: 1.7em; letter-spacing: 0.02em;
+    color: var(--paper); white-space: nowrap; line-height: 1;
+    text-align: center;
+    text-shadow: 0 1px 0 rgba(127,29,29,.65), 0 0 12px rgba(254,240,138,.5);
+    will-change: transform, opacity, filter;
+    pointer-events: none;
+  }
+  .choicebtn.btn-go .go-impact {
+    position: absolute; left: 50%; top: 50%;
+    width: 18px; height: 18px; margin: -9px 0 0 -9px;
+    border: 2px solid rgba(254,240,138,.85);
+    border-radius: 50%; pointer-events: none; z-index: 2;
+    animation: goImpactRing .42s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  @keyframes goImpactRing {
+    0% { transform: scale(.4); opacity: .95; }
+    100% { transform: scale(4.2); opacity: 0; }
+  }
+  .choicebtn.btn-go .go-spark {
+    position: absolute; left: 50%; top: 50%;
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--gold-lit); pointer-events: none; z-index: 3;
+    box-shadow: 0 0 6px var(--gold-lit);
+    animation: goSparkFly .48s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  @keyframes goSparkFly {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--sx)), calc(-50% + var(--sy))) scale(0); opacity: 0; }
+  }
+
+  /* A 룰렛+ */
+  .choicebtn.btn-go .go-roulette {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 0.02em; position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    transform-origin: center center;
+    font-family: var(--font-overlay-num); font-weight: 400; font-synthesis: none;
+    font-size: 1.7em; letter-spacing: 0.02em;
+    color: var(--paper); line-height: 1;
+    text-shadow: 0 1px 0 rgba(127,29,29,.65), 0 0 12px rgba(254,240,138,.5);
+    pointer-events: none;
+  }
+  .choicebtn.btn-go .go-roulette.spinning .gr-slot {
+    filter: blur(1.2px) brightness(1.3);
+  }
+  .choicebtn.btn-go .go-roulette.settle {
+    animation: goRouletteSettle .4s cubic-bezier(.16,1,.3,1);
+  }
+  @keyframes goRouletteSettle {
+    0% { transform: translate(-50%, -50%) scale(1.14); filter: brightness(1.45); }
+    100% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
+  }
+  .choicebtn.btn-go .go-roulette .gr-slot {
+    display: inline-block; height: 1.1em; width: 0.78em;
+    overflow: hidden; position: relative; vertical-align: middle;
+    mask-image: linear-gradient(180deg, transparent, #000 18%, #000 82%, transparent);
+    -webkit-mask-image: linear-gradient(180deg, transparent, #000 18%, #000 82%, transparent);
+  }
+  .choicebtn.btn-go .go-roulette .gr-strip {
+    display: flex; flex-direction: column; align-items: center;
+    will-change: transform;
+  }
+  .choicebtn.btn-go .go-roulette .gr-strip span {
+    height: 1.1em; line-height: 1.1em; font-variant-numeric: tabular-nums;
+  }
+
+  /* B 펀치+ */
+  .choicebtn.btn-go .go-num.punch {
+    animation: goBtnPunch .32s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  .choicebtn.btn-go .go-num.punch-final {
+    animation: goBtnPunchFinal .45s cubic-bezier(.16,1,.3,1) forwards;
+    color: var(--gold-lit);
+  }
+  @keyframes goBtnPunch {
+    0% { transform: translate(-50%, -50%) scale(.4); opacity: .25; filter: brightness(2); }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; filter: brightness(1); }
+  }
+  @keyframes goBtnPunchFinal {
+    0% { transform: translate(-50%, -50%) scale(.25); opacity: 0; filter: brightness(2.2); }
+    100% { transform: translate(-50%, -50%) scale(1.06); opacity: 1; filter: brightness(1.12); }
+  }
+
+  /* C 옆 밀치기+ — 빌드업은 부드러운 플로우, 최종만 임팩트 */
+  .choicebtn.btn-go .go-num.slide-in {
+    animation: goBtnSlideIn .48s cubic-bezier(.65,0,.35,1) forwards;
+  }
+  .choicebtn.btn-go .go-num.slide-flow-in {
+    animation: goBtnSlideFlowIn .36s cubic-bezier(.4,.02,.2,1) forwards;
+  }
+  .choicebtn.btn-go .go-num.slide-flow-in-sticky {
+    animation: goBtnSlideFlowInSticky .58s cubic-bezier(.34,.08,.18,1.12) forwards;
+  }
+  .choicebtn.btn-go .go-num.slide-out {
+    animation: goBtnSlideOut .39s cubic-bezier(.65,0,.35,1) forwards;
+  }
+  .choicebtn.btn-go .go-num.slide-flow-out {
+    animation: goBtnSlideFlowOut .36s cubic-bezier(.4,.02,.2,1) forwards;
+  }
+  .choicebtn.btn-go .go-num.slide-flow-out-sticky {
+    animation: goBtnSlideFlowOutSticky .58s cubic-bezier(.34,.08,.18,1.05) forwards;
+  }
+  .choicebtn.btn-go .go-num.slide-out-blast {
+    animation: goBtnSlideOutBlast .45s cubic-bezier(.65,0,.35,1) forwards;
+  }
+  .choicebtn.btn-go .go-num.slide-in-epic {
+    animation: goBtnSlideInEpic .72s cubic-bezier(.65,0,.35,1) forwards;
+    color: var(--gold-lit);
+  }
+  .choicebtn.btn-go .go-num.slide-fake {
+    animation: goBtnSlideFake .55s cubic-bezier(.65,0,.35,1) forwards;
+    color: var(--gold-lit);
+  }
+  .choicebtn.btn-go .go-num.slide-doubt {
+    animation: goBtnSlideDoubt .5s cubic-bezier(.65,0,.35,1) forwards;
+  }
+  @keyframes goBtnSlideIn {
+    0% { opacity: 0; transform: translate(55%, -50%) scale(1.04); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+  @keyframes goBtnSlideOut {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-145%, -50%) scale(.92); }
+  }
+  /* 빌드업: 짧게 겹치며 흐르듯 (스큐·블러·회전 없음) */
+  @keyframes goBtnSlideFlowIn {
+    0% { opacity: 0; transform: translate(28%, -50%); }
+    100% { opacity: 1; transform: translate(-50%, -50%); }
+  }
+  @keyframes goBtnSlideFlowOut {
+    0% { opacity: 1; transform: translate(-50%, -50%); }
+    100% { opacity: 0; transform: translate(-128%, -50%); }
+  }
+  @keyframes goBtnSlideFlowInSticky {
+    0% { opacity: 0; transform: translate(42%, -50%) scale(1.04); }
+    70% { opacity: 1; transform: translate(-52%, -50%) scale(1.06); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+  @keyframes goBtnSlideFlowOutSticky {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-118%, -50%) scale(.94); }
+  }
+  @keyframes goBtnSlideOutBlast {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); filter: brightness(1.4); }
+    35% { opacity: 1; transform: translate(-35%, -50%) scale(1.12) skewX(4deg); }
+    100% { opacity: 0; transform: translate(-210%, -50%) scale(.55) rotate(-14deg); filter: blur(2px) brightness(2); }
+  }
+  @keyframes goBtnSlideInEpic {
+    0% {
+      opacity: 0;
+      transform: translate(100%, -50%) scale(1.35);
+      filter: blur(2px) brightness(2);
+    }
+    60% {
+      opacity: 1;
+      transform: translate(-52%, -50%) scale(1.12);
+      filter: blur(0) brightness(1.35);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1.06);
+      filter: brightness(1.12);
+    }
+  }
+  @keyframes goBtnSlideFake {
+    0% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
+    40% { transform: translate(-50%, -50%) scale(1.12); filter: brightness(1.35); }
+    100% { transform: translate(-50%, -50%) scale(1.04); filter: brightness(1.1); }
+  }
+  @keyframes goBtnSlideDoubt {
+    0%,100% { transform: translate(-50%, -50%) scale(1.04); }
+    25% { transform: translate(-54%, -50%) scale(1.02) rotate(-2deg); filter: brightness(.85); }
+    50% { transform: translate(-46%, -50%) scale(1.08) rotate(2deg); filter: brightness(1.3); }
+    75% { transform: translate(-52%, -50%) scale(.98) rotate(-1deg); }
+  }
+
+  /* D 하이퍼번 */
+  .choicebtn.btn-go .go-num.hyper {
+    animation: goBtnHyper .18s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  .choicebtn.btn-go .go-num.hyper-final {
+    animation: goBtnHyperFinal .48s cubic-bezier(.16,1,.3,1) forwards;
+    color: var(--gold-lit);
+  }
+  @keyframes goBtnHyper {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(1.65); filter: brightness(2) contrast(1.3); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: brightness(1.15); }
+  }
+  @keyframes goBtnHyperFinal {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(2.1); filter: brightness(2.6); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1.06); filter: brightness(1.15); }
+  }
+
+  /* E 임팩트 슬램 */
+  .choicebtn.btn-go .go-num.slam-drop {
+    animation: goBtnSlamDrop .38s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  .choicebtn.btn-go .go-num.slam-crush {
+    animation: goBtnSlamCrush .22s cubic-bezier(.4,0,.7,.2) forwards;
+  }
+  @keyframes goBtnSlamDrop {
+    0% { opacity: 0; transform: translate(-50%, -160%) scale(1.45); filter: blur(2px); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); }
+  }
+  @keyframes goBtnSlamCrush {
+    0% { transform: translate(-50%, -50%) scale(1,1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1.25,.3); opacity: 0; filter: blur(1.5px); }
+  }
+
+  /* F 파편 재조립 — letter-spacing 애니 금지(중앙 틀어짐), scale만 */
+  .choicebtn.btn-go .go-num.assemble {
+    animation: goBtnAssemble .4s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  @keyframes goBtnAssemble {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(1.85);
+      filter: blur(5px) brightness(1.8);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      filter: blur(0) brightness(1);
+    }
+  }
+  .choicebtn.btn-go .go-mini-shard {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    transform-origin: center center;
+    font-weight: 900; font-size: 1.05em; color: var(--gold-lit);
+    letter-spacing: -0.03em; white-space: nowrap; line-height: 1;
+    text-align: center;
+    text-shadow: 0 0 8px rgba(251,191,36,.8);
+    pointer-events: none;
+    animation: goMiniShard .42s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  @keyframes goMiniShard {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0); }
+    100% { opacity: 0; transform: translate(calc(-50% + var(--sx)), calc(-50% + var(--sy))) scale(.35) rotate(var(--rot)); }
+  }
+
+  /* G 열기 상승 */
+  .choicebtn.btn-go .go-num.heat {
+    animation: goBtnHeatIn .32s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  @keyframes goBtnHeatIn {
+    0% { opacity: .35; transform: translate(-50%, 35%) scale(.92); filter: hue-rotate(-16deg) brightness(.85); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: hue-rotate(0) brightness(1.12); }
+  }
+  .choicebtn.btn-go .go-heat-flame {
+    position: absolute; left: 50%; bottom: -4px;
+    font-size: 14px; pointer-events: none; opacity: 0;
+    animation: goHeatFlame .55s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  @keyframes goHeatFlame {
+    0% { opacity: 0; transform: translate(-50%, 8px) scale(.6); }
+    35% { opacity: 1; }
+    100% { opacity: 0; transform: translate(calc(-50% + var(--fx)), -28px) scale(1.15); }
+  }
+
+  /* H 글리치 락 */
+  .choicebtn.btn-go .go-num.glitch {
+    animation: goBtnGlitch .12s steps(2) infinite;
+  }
+  .choicebtn.btn-go .go-num.glitch-lock {
+    animation: goBtnGlitchLock .42s cubic-bezier(.16,1,.3,1) forwards;
+    color: var(--gold-lit);
+  }
+  @keyframes goBtnGlitch {
+    0% { transform: translate(-52%, -48%); text-shadow: 2px 0 #f43f5e, -2px 0 var(--chip-blue); }
+    50% { transform: translate(-48%, -52%); text-shadow: -2px 0 #f43f5e, 2px 0 var(--chip-blue); }
+    100% { transform: translate(-50%, -50%); text-shadow: 0 0 12px rgba(254,240,138,.5); }
+  }
+  @keyframes goBtnGlitchLock {
+    0% { transform: translate(-50%, -50%) scale(1.22); filter: contrast(1.5) brightness(1.35); }
+    100% { transform: translate(-50%, -50%) scale(1.04); filter: contrast(1) brightness(1.08); }
+  }
+
+  /* stack (본게임 임시) */
+  .choicebtn.btn-go .go-num.stack-in {
+    animation: goBtnStackIn .34s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  .choicebtn.btn-go .go-num.stack-out {
+    animation: goBtnStackOut .26s cubic-bezier(.4,0,.7,.2) forwards;
+  }
+  @keyframes goBtnStackIn {
+    0% { opacity: 0; transform: translate(-50%, -90%) scale(.96); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+  @keyframes goBtnStackOut {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, 85%) scale(.82); }
+  }
+

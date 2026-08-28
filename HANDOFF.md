@@ -1,14 +1,22 @@
 # HANDOFF — Cursor 이어서 작업용 컨텍스트
 
-> 마지막 업데이트: 2026-07-15 (Claude Code 세션에서 인수인계)
+> 마지막 업데이트: 2026-08-28 (모듈 리팩터)
 > 프로젝트 규칙·아키텍처·불변 조건은 **CLAUDE.md**, 게임 규칙 개요는 **README.md** 참고. 이 문서는 "지금까지 뭘 했고 다음에 뭘 하기로 했는가"만 담는다.
 
 ## 실행 / 테스트
 
-- 실행: `index.html`을 브라우저에서 열기 (빌드·서버 불필요). 시드 고정 `?seed=42`.
-- 테스트: `node test/test-game.mjs` — **엔진(마커 사이 순수 로직) 수정 시 반드시 실행.**
+- 실행: `npm run dev`. 시드 고정 `?seed=42`.
+- 테스트: `npm test` — **엔진(`src/engine/`) 수정 시 반드시 실행.** UI 이동은 `npm run golden`.
 
-## 최근 세션에서 반영된 변경 (v5 — 밀치기 고)
+## 최근 세션에서 반영된 변경 (v6 — 모듈 리팩터)
+
+- `index.html` 단일 파일을 Vite + TypeScript 모듈로 쪼갬. 동작 무변경이 조건. 안전망은 `test/golden/` (`?seed=42` 플레이스루).
+- 엔진은 `src/engine/` (DOM 금지, 다른 층 import 금지). UI는 `g` 늦은 바인딩 + `bridge.ts`로 인라인 핸들러 55개 노출.
+- 배포: `npm run build` → `dist/`. Vercel `outputDirectory: dist`, CI는 `npm test` + `npm run golden`.
+- 렉: Spine은 idle 이후 지연 로드(720px 이하는 생략). 카드 필터는 `brightness` 1개. 번들은 `engine` / `spine` / 메인으로 분리.
+- 엔진 마커(`==== ENGINE START/END ====`) 규칙은 폐기. 테스트는 `import`로 엔진을 직접 불러온다.
+
+## 이전 변경 (v5 — 밀치기 고)
 
 - **밀치기 고**: 고 선언 시 현재 점수가 이미 넘은 고 문턱(`goThreshold(base,n) = ceil(base×(1+0.6n))`)을 전부 소급 인정하며 단계 점프. 선언 단계 = 아직 못 넘은 첫 문턱 → 목표 > 점수 자동 보장, 기존 "+25% 바닥"(goTarget) 규칙 삭제. 엔진: `goThreshold`, `goLevelReached`. 내기 +1은 선언 1회당 1개. 성공 보너스 `goBonus(n)=n×m`(m=월).
 - **연출**: `playGoCascade(from, to)` — 확정 후 풀스크린 두두둥. 고/스톱 **버튼** 연출: 1고=기본 표기, 2~3고=D(하이퍼번), 4고+=C(옆 밀치기·가짜 피날레). 프리뷰 `?goPreview=1`.
@@ -46,7 +54,7 @@
 
 ## 건드릴 때 조심할 것 (요약 — 전체는 CLAUDE.md)
 
-- `==== ENGINE START/END ====` 마커 사이는 DOM 접근 금지 (테스트가 추출 실행).
+- `src/engine/` 은 DOM 접근 금지. 다른 층을 import 하지 않는 말단.
 - 고 목표는 `goThreshold`/`goLevelReached`만 사용 (밀치기 소급), 현재 target에 거듭 곱하지 말 것.
 - core/flat 분리: 족보 판정과 core 선정은 `detectHandInfo` 한 곳에서.
 - `Math.floor`는 최종 점수에서 1회만. 카드 선택은 uid로. 경제 트리거는 `playSelected()`에서만.

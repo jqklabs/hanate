@@ -1,0 +1,86 @@
+  /* ── 정산 장부 ────────────────────────────── */
+  #modal.settle-modal {
+    max-width: 420px;
+    text-align: center;
+    padding: 26px 22px 20px;
+    background:
+      radial-gradient(ellipse 90% 55% at 50% 0%, rgba(212,175,55,.16), transparent 55%),
+      linear-gradient(165deg, #2a2014 0%, #1a281c 45%, #121a14 100%);
+    border: 2px solid var(--frame);
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,.55),
+      0 14px 32px rgba(0,0,0,.62),
+      inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  #modal.settle-modal .settle-title {
+    margin: 0 0 6px !important;
+    font-family: var(--font-overlay);
+    font-size: clamp(42px, 9vw, 56px); font-weight: 400;
+    letter-spacing: .12em; line-height: 1.05;
+    color: var(--gold-soft);
+    text-shadow: 0 2px 0 #3a2810, 0 0 24px rgba(232,160,60,.28);
+  }
+  .settle-month {
+    font-family: var(--font-ui); font-size: 13px; font-weight: 700;
+    color: #c4b59a; margin: 0 0 16px; letter-spacing: .02em;
+  }
+  .settle-tally {
+    text-align: left;
+    padding: 14px 16px 12px;
+    border-radius: 6px;
+    background:
+      linear-gradient(180deg, rgba(246,232,196,.08), rgba(0,0,0,.2)),
+      repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(196,162,90,.07) 27px, rgba(196,162,90,.07) 28px);
+    border: 1px solid rgba(196,162,90,.38);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.25), inset 0 8px 24px rgba(0,0,0,.18);
+  }
+  .settle-table {
+    width: 100%; border-collapse: collapse;
+    font-family: var(--font-ui); font-size: 13.5px;
+  }
+  .settle-table td {
+    padding: 9px 2px;
+    border-bottom: 1px dashed rgba(196,162,90,.22);
+  }
+  .settle-table td:first-child { color: #d6c7a8; font-weight: 600; }
+  .settle-table td:last-child {
+    text-align: right; font-weight: 800; color: #f0c14a;
+    font-variant-numeric: tabular-nums;
+  }
+  .settle-table tr.total td {
+    border-bottom: none; border-top: 1.5px solid rgba(212,175,55,.45);
+    padding-top: 14px; margin-top: 2px;
+    font-size: 17px; font-weight: 900; color: var(--paper);
+  }
+  .settle-table tr.total .settle-amt { color: var(--gold-lit); }
+  .settle-table tr.settle-row {
+    opacity: 0;
+    transform: translateY(12px) scale(.97);
+  }
+  .settle-table tr.settle-row.on {
+    opacity: 1;
+    transform: none;
+    transition: opacity .22s ease, transform .18s ease;
+  }
+  .settle-table tr.settle-row.on .settle-amt {
+    display: inline-block;
+    animation: settleAmtPop .38s cubic-bezier(.15,1.6,.35,1);
+  }
+  .settle-table tr.settle-row.total.on .settle-amt {
+    animation-name: settleTotalPop;
+    animation-duration: .55s;
+  }
+  @keyframes settleAmtPop {
+    0% { transform: scale(1.5); filter: brightness(1.9); }
+    100% { transform: scale(1); filter: brightness(1); }
+  }
+  @keyframes settleTotalPop {
+    0% { transform: scale(1.85); filter: brightness(2.1); text-shadow: 0 0 22px rgba(253,230,138,.75); }
+    55% { transform: scale(.94); }
+    100% { transform: scale(1); filter: brightness(1); text-shadow: none; }
+  }
+  #modal-overlay.settle-out {
+    transition: opacity .45s ease;
+    opacity: 0;
+    pointer-events: none;
+  }

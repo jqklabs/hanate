@@ -1,0 +1,234 @@
+  /* ── 설정 팝업 ───────────────────────── */
+  #settings-overlay {
+    position: fixed; inset: 0; z-index: 125;
+    display: none; align-items: center; justify-content: center;
+    padding: 18px;
+    background: rgba(4, 12, 8, .64);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+  }
+  #settings-overlay.show { display: flex; }
+  #settings-panel {
+    --font-set: 'Malgun Gothic', 'Apple SD Gothic Neo', 'Hiragino Sans', 'Yu Gothic UI', 'Noto Sans JP', sans-serif;
+    width: min(380px, 94vw);
+    max-height: min(90dvh, 720px);
+    display: flex;
+    flex-direction: column;
+    border-radius: 18px;
+    padding: 22px 22px 0;
+    font-family: var(--font-set);
+    color: #e8e0cc;
+    overflow: hidden;
+    background:
+      linear-gradient(180deg, rgba(232, 205, 122, .10), transparent 56px),
+      linear-gradient(165deg, #2a4030 0%, #152418 100%);
+    border: 1px solid rgba(212, 175, 55, .42);
+    box-shadow:
+      0 12px 28px rgba(0,0,0,.55),
+      inset 0 1px 0 rgba(255,255,255,.07);
+  }
+  #settings-panel .set-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding-bottom: 16px;
+  }
+  #settings-panel .set-head {
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px;
+    margin: 0 2px 6px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(232, 205, 122, .18);
+  }
+  #settings-panel .set-head h2 {
+    margin: 0;
+    font-family: var(--font-overlay);
+    font-weight: 400; font-synthesis: none;
+    font-size: 26px; color: var(--gold-soft);
+    letter-spacing: 0.14em;
+  }
+  #settings-panel .set-close {
+    width: 30px; height: 30px; padding: 0; border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(0,0,0,.28);
+    color: var(--ink-3); font-size: 18px; line-height: 1; cursor: pointer;
+    font-family: var(--font-set);
+  }
+  #settings-panel .set-close:hover {
+    background: rgba(255,255,255,.12); color: #fff;
+    border-color: rgba(232, 205, 122, .35);
+  }
+  #settings-panel .set-row {
+    display: flex; flex-direction: column; gap: 9px;
+    padding: 14px 2px;
+    margin: 0;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  #settings-panel .set-row:last-child { border-bottom: none; }
+  #settings-panel .set-label {
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--font-set);
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.04em;
+    color: rgba(232, 224, 204, .78);
+  }
+  #settings-panel .set-label .set-val {
+    font-variant-numeric: tabular-nums;
+    color: var(--gold-lit); font-weight: 800; font-size: 12px;
+  }
+  #settings-panel .set-row-vol .set-label { margin-bottom: -2px; }
+  #settings-panel .set-slider-row {
+    display: flex; align-items: center; gap: 10px;
+  }
+  #settings-panel .set-slider-row .set-val {
+    flex-shrink: 0; min-width: 2.6em;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--gold-lit); font-weight: 800; font-size: 12px;
+  }
+  #settings-panel input[type="range"] {
+    flex: 1; min-width: 0;
+    width: 100%; height: 28px; padding: 0;
+    cursor: pointer;
+    -webkit-appearance: none; appearance: none;
+    background: transparent;
+    --vol-fill: 0%;
+  }
+  #settings-panel input[type="range"]::-webkit-slider-runnable-track {
+    height: 8px; border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.06);
+    background-color: rgba(255,255,255,.14);
+    background-image: linear-gradient(to right, var(--frame), #e8cd7a);
+    background-size: var(--vol-fill) 100%;
+    background-repeat: no-repeat;
+  }
+  #settings-panel input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px; height: 20px; margin-top: -7px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #efe0a8, var(--frame));
+    border: 2px solid rgba(253, 230, 138, .45);
+    box-shadow: 0 1px 4px rgba(0,0,0,.35);
+    cursor: pointer;
+  }
+  #settings-panel input[type="range"]::-moz-range-track {
+    height: 8px; border-radius: 999px;
+    background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.06);
+  }
+  #settings-panel input[type="range"]::-moz-range-progress {
+    height: 8px; border-radius: 999px 0 0 999px;
+    background: linear-gradient(90deg, var(--frame), #e8cd7a);
+    border: none;
+  }
+  #settings-panel input[type="range"]::-moz-range-thumb {
+    width: 20px; height: 20px;
+    border-radius: 50%; border: none;
+    background: linear-gradient(180deg, #efe0a8, var(--frame));
+    border: 2px solid rgba(253, 230, 138, .45);
+    box-shadow: 0 1px 4px rgba(0,0,0,.35);
+    cursor: pointer;
+  }
+  #settings-panel input[type="range"]:focus-visible::-webkit-slider-thumb {
+    outline: 2px solid rgba(253, 230, 138, .65);
+    outline-offset: 2px;
+  }
+  #settings-panel input[type="range"]:focus-visible::-moz-range-thumb {
+    outline: 2px solid rgba(253, 230, 138, .65);
+    outline-offset: 2px;
+  }
+  #settings-panel .set-seg {
+    display: grid; gap: 6px;
+    padding: 3px;
+    border-radius: 10px;
+    background: rgba(0,0,0,.28);
+    border: 1px solid rgba(255,255,255,.06);
+  }
+  #settings-panel .set-seg-2 { grid-template-columns: 1fr 1fr; }
+  #settings-panel .set-seg-3 { grid-template-columns: 1fr 1fr 1fr; }
+  #settings-panel .set-seg button,
+  #settings-panel .set-toggle {
+    padding: 9px 8px; border-radius: 8px;
+    font-family: var(--font-set);
+    font-size: 13px; font-weight: 700;
+    color: var(--ink-4);
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  #settings-panel .set-seg button:hover {
+    color: var(--ink-2);
+    background: rgba(255,255,255,.05);
+  }
+  #settings-panel .set-seg button.on {
+    color: #1a160e;
+    background: linear-gradient(180deg, #efe0a8, var(--frame));
+    border-color: rgba(253, 230, 138, .35);
+    box-shadow: 0 1px 0 rgba(255,255,255,.2) inset;
+  }
+  #settings-panel .set-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; text-align: left;
+    padding: 2px 0;
+    color: #e8e0cc;
+    font-size: 13.5px; font-weight: 700;
+  }
+  #settings-panel .set-toggle:hover { color: var(--ink-1); }
+  #settings-panel .set-toggle .set-sw {
+    position: relative;
+    width: 42px; height: 24px; min-width: 42px; padding: 0;
+    border-radius: 999px;
+    background: rgba(0,0,0,.4);
+    border: 1px solid rgba(255,255,255,.12);
+    transition: background .15s ease, border-color .15s ease;
+  }
+  #settings-panel .set-toggle .set-sw::after {
+    content: '';
+    position: absolute; top: 2px; left: 2px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--ink-4);
+    transition: transform .18s ease, background .15s ease;
+  }
+  #settings-panel .set-toggle.on .set-sw {
+    background: linear-gradient(180deg, #efe0a8, var(--frame));
+    border-color: rgba(253, 230, 138, .45);
+  }
+  #settings-panel .set-toggle.on .set-sw::after {
+    transform: translateX(18px);
+    background: #1a160e;
+  }
+  #settings-panel .set-linkbtn {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(196, 162, 90, .32);
+    background: rgba(0, 0, 0, .22);
+    color: var(--gold-pale);
+    font-family: var(--font-set);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  #settings-panel .set-linkbtn:hover {
+    border-color: rgba(232, 205, 122, .48);
+    background: rgba(0, 0, 0, .32);
+    color: var(--gold-lit);
+  }
+  /* 옵션 오버레이(월·열끗) 숨김 — 광은 항상, 쌍피는 이중 점, 띠·피·점수는 미표시 */
+  body.hide-card-labels .card .month-badge,
+  body.hide-card-labels .card .month,
+  body.hide-card-labels .card .mname,
+  body.hide-card-labels .card .face-overlay.overlay-opt,
+  body.hide-card-labels .card .tag.tag-opt {
+    display: none !important;
+  }
+

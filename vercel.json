@@ -1,9 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "buildCommand": "node scripts/generate-firebase-config.mjs && node scripts/og-landing-html.mjs",
-  "installCommand": null,
-  "outputDirectory": ".",
+  "buildCommand": "node scripts/generate-firebase-config.mjs && node scripts/og-landing-html.mjs && npm run build",
+  "installCommand": "npm ci",
+  "outputDirectory": "dist",
   "cleanUrls": true,
   "rewrites": [
     { "source": "/guide", "destination": "/pages/guide" },

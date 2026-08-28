@@ -1,0 +1,51 @@
+  /* ── 카드 일러스트 색조 튜너 (?cardTune=1) ── */
+  body:has(#card-tune.on) .card.has-art .face-img {
+    filter:
+      brightness(var(--card-bright, 0.90))
+      saturate(var(--card-sat, 0.96))
+      sepia(var(--card-sepia, 0.20));
+  }
+  #card-tune {
+    display: none; position: fixed; right: 14px; bottom: 14px; z-index: 140;
+    width: min(300px, calc(100vw - 28px));
+    padding: 12px 14px 14px;
+    border-radius: 12px;
+    background: rgba(10, 18, 14, .94);
+    border: 1px solid rgba(196, 162, 90, .5);
+    box-shadow: 0 12px 36px rgba(0,0,0,.5);
+    font-size: 12px; color: var(--ink-2);
+  }
+  #card-tune.on { display: block; }
+  #card-tune .ct-title {
+    font-weight: 900; color: var(--gold-lit); margin-bottom: 4px; font-size: 13px;
+  }
+  #card-tune .ct-sub {
+    color: var(--ink-4); font-size: 11px; line-height: 1.4; margin-bottom: 10px;
+  }
+  #card-tune .ct-row {
+    display: grid; grid-template-columns: 52px 1fr 42px;
+    gap: 8px; align-items: center; margin: 7px 0;
+  }
+  #card-tune .ct-row label { color: var(--ink-3); font-weight: 700; }
+  #card-tune .ct-row output {
+    font-variant-numeric: tabular-nums; text-align: right; color: var(--ink-1); font-weight: 800;
+  }
+  #card-tune input[type="range"] { width: 100%; accent-color: #c4a25a; }
+  #card-tune .ct-css {
+    margin-top: 10px; padding: 8px 9px; border-radius: 8px;
+    background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.1);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10.5px; color: var(--cheong-lit); word-break: break-all; line-height: 1.4;
+  }
+  #card-tune .ct-actions {
+    display: flex; gap: 6px; margin-top: 10px;
+  }
+  #card-tune .ct-actions button {
+    flex: 1; padding: 8px 6px; border-radius: 8px; font-size: 11px; font-weight: 800;
+    background: rgba(255,255,255,.1); color: var(--ink-1);
+    border: 1px solid rgba(255,255,255,.16);
+  }
+  #card-tune .ct-actions button.primary {
+    background: linear-gradient(180deg, #b45309, #92400e); border-color: rgba(251,191,36,.35);
+  }
+

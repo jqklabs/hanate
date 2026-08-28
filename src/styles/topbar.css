@@ -1,0 +1,150 @@
+  /* ── 상단바 ─────────────────────────── */
+  #topbar {
+    display: flex; align-items: center; gap: 14px;
+    padding: 24px 22px 12px 28px;
+    background: transparent;
+    border-bottom: none;
+    flex-wrap: wrap; position: relative; z-index: 40;
+  }
+  #logo {
+    font-family: var(--font-overlay); font-weight: 400; font-size: 22px;
+    color: var(--gold-soft); letter-spacing: 1px; white-space: nowrap;
+    line-height: 1.05; flex-shrink: 0;
+  }
+  #logo small {
+    display: block; font-family: var(--font-overlay); font-size: 11px; font-weight: 400;
+    color: var(--ink-2); letter-spacing: 2px; margin-top: 2px;
+  }
+  #jokerbar { display: flex; gap: 8px; flex: 1; flex-wrap: wrap; }
+  .jokerslot {
+    width: 140px; min-height: 52px; border-radius: 8px; padding: 10px 8px;
+    background: rgba(8, 16, 12, .35);
+    border: 1px dashed rgba(226, 232, 240, .38);
+    font-size: 12px; color: var(--ink-4); display: flex; align-items: center; justify-content: center;
+    text-align: center;
+  }
+  .jokerslot.locked {
+    opacity: .4;
+    border-style: dotted;
+    color: var(--ink-5);
+  }
+  .jokerslot.filled {
+    position: relative;
+    border: 1.5px solid rgba(148, 163, 184, .4);
+    background: linear-gradient(160deg, rgba(22, 36, 28, .92), rgba(12, 22, 16, .95));
+    color: var(--ink-2);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; cursor: help;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+  }
+  .jokerslot .jname {
+    font-family: var(--font-joker); font-weight: 400; font-synthesis: none;
+    font-size: 17px; letter-spacing: .02em; line-height: 1.3;
+    padding: 0.06em 0.1em 0;
+    color: var(--ink-1);
+  }
+  .jokerslot .jkind {
+    font-family: var(--font-ui); font-size: 10px; font-weight: 700;
+    padding: 1px 7px; border-radius: 3px;
+    background: rgba(255,255,255,.08); color: var(--ink-4);
+    border: 1px solid rgba(255,255,255,.1);
+    letter-spacing: .02em; line-height: 1.3; white-space: nowrap;
+  }
+  /* 원신식 등급색: 커먼 회 · 레어 청 · 에픽 자 · 레전 금 (밝기도 단계↑) */
+  .jokerslot.filled.aura-common {
+    border-color: var(--rank-1);
+    background: linear-gradient(160deg, rgba(36, 44, 54, .94), rgba(14, 18, 24, .96));
+    box-shadow: 0 0 8px var(--rank-1-glow);
+  }
+  .jokerslot.filled.aura-rare {
+    border-color: var(--rank-2);
+    background: linear-gradient(160deg, rgba(22, 48, 88, .94), rgba(10, 22, 42, .96));
+    box-shadow: 0 0 12px var(--rank-2-glow);
+  }
+  .jokerslot.filled.aura-epic {
+    border-width: 1.5px; border-color: var(--rank-3);
+    background: linear-gradient(160deg, rgba(58, 28, 88, .94), rgba(28, 12, 46, .96));
+    box-shadow: 0 0 16px var(--rank-3-glow);
+  }
+  .jokerslot.filled.aura-legendary {
+    border-width: 2px; border-color: var(--rank-4);
+    background: linear-gradient(160deg, rgba(78, 52, 12, .95), rgba(36, 24, 8, .97));
+    box-shadow: 0 0 20px var(--rank-4-glow);
+  }
+  .jokerslot.filled.aura-dark {
+    border-width: 1.5px; border-color: #6b2a36;
+    background: linear-gradient(160deg, rgba(48, 16, 22, .96), rgba(14, 8, 10, .97));
+    box-shadow: 0 0 14px rgba(88, 24, 36, .45);
+  }
+  .jokerslot.filled.aura-common .jname { color: #e2e8f0; }
+  .jokerslot.filled.aura-rare .jname { color: #bfdbfe; }
+  .jokerslot.filled.aura-epic .jname { color: #e9d5ff; }
+  .jokerslot.filled.aura-legendary .jname {
+    color: var(--gold-soft);
+  }
+  .jokerslot.filled.aura-dark .jname { color: #e8c4c8; }
+  .jokerslot.filled.aura-rare .jkind { color: #93c5fd; border-color: rgba(96,165,250,.35); background: rgba(37,99,235,.16); }
+  .jokerslot.filled.aura-epic .jkind { color: #d8b4fe; border-color: rgba(192,132,252,.35); background: rgba(126,34,206,.18); }
+  .jokerslot.filled.aura-legendary .jkind { color: #fde68a; border-color: rgba(251,191,36,.4); background: rgba(180,83,9,.22); }
+  .jokerslot.filled.aura-dark .jkind { color: #e8b4b8; border-color: rgba(139,48,62,.45); background: rgba(80,20,32,.28); }
+  /* 효과 발동 — 살짝 뽀용 */
+  .jokerslot.filled.trig {
+    z-index: 6;
+    animation: jokerTrigPop .42s cubic-bezier(.2,1.35,.4,1) !important;
+  }
+  .jokerslot.filled.aura-common.trig {
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 0 18px var(--rank-1-glow) !important;
+  }
+  .jokerslot.filled.aura-rare.trig {
+    border-color: #93c5fd !important;
+    box-shadow: 0 0 20px var(--rank-2-glow) !important;
+  }
+  .jokerslot.filled.aura-epic.trig {
+    border-color: #d8b4fe !important;
+    box-shadow: 0 0 20px var(--rank-3-glow) !important;
+  }
+  .jokerslot.filled.aura-legendary.trig {
+    border-color: var(--gold-soft) !important;
+    box-shadow: 0 0 22px var(--rank-4-glow) !important;
+  }
+  .jokerslot.filled.aura-dark.trig {
+    border-color: #c4a0a4 !important;
+    box-shadow: 0 0 18px rgba(120, 32, 48, .55) !important;
+  }
+  @keyframes jokerTrigPop {
+    0%   { transform: scale(1);    filter: brightness(1); }
+    40%  { transform: scale(1.045); filter: brightness(1.18); }
+    100% { transform: scale(1);    filter: brightness(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .jokerslot.filled.trig {
+      animation: none !important;
+      filter: brightness(1.15);
+      transition: filter .2s ease;
+    }
+  }
+  .jokerslot.filled .jtip {
+    display: none; position: absolute; left: 50%; top: calc(100% + 8px);
+    transform: translateX(-50%); z-index: 130; pointer-events: none;
+    width: max-content; max-width: 240px; padding: 10px 12px; border-radius: 8px;
+    background: #1a160e; border: 1px solid rgba(212,175,55,.45);
+    box-shadow: 0 10px 24px rgba(0,0,0,.5);
+    font-family: var(--font-ui);
+    font-size: 12.5px; font-weight: 500; color: #e8e0cc; line-height: 1.55;
+    letter-spacing: -0.01em; text-align: left;
+  }
+  .jokerslot.filled .jtip-gain {
+    margin-top: 8px; padding-top: 7px;
+    border-top: 1px solid rgba(212,175,55,.28);
+    font-size: 12px; font-weight: 700; color: var(--gold-lit); letter-spacing: -0.01em;
+  }
+  .jokerslot.filled .jtip-gain.empty { color: var(--ink-4); font-weight: 600; }
+  .jokerslot.filled .jtip::after {
+    content: ''; position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%);
+    border: 6px solid transparent; border-bottom-color: rgba(212,175,55,.55);
+  }
+  @media (hover: hover) {
+    .jokerslot.filled:hover .jtip { display: block; }
+  }
+

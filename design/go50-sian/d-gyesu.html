@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 D · 계수 폭주 · 50고</title>
+<link rel="stylesheet" href="sian.css">
+</head>
+<body class="sian-d">
+  <a class="back" href="index.html">시안 목록</a>
+  <button type="button" class="replay" id="replay">다시</button>
+  <div class="stage" id="stage" aria-live="polite">
+    <div class="rays" id="rays"></div>
+    <div class="ember" id="ember"></div>
+    <div class="waves" id="waves"></div>
+    <div class="trail" id="trail"></div>
+    <div class="num" id="num">10고</div>
+    <div class="vignette" id="vignette"></div>
+  </div>
+  <p class="caption">D · 계수 폭주 — 잔상을 남기며 치솟다 50에 박힘</p>
+<script>
+const stage = document.getElementById('stage');
+const rays = document.getElementById('rays');
+const ember = document.getElementById('ember');
+const waves = document.getElementById('waves');
+const trail = document.getElementById('trail');
+const num = document.getElementById('num');
+const vignette = document.getElementById('vignette');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const STEPS = [10, 13, 17, 21, 26, 30, 34, 38, 41, 44, 46, 48, 49, 50];
+
+function ghost(text) {
+  const el = document.createElement('span');
+  el.textContent = text;
+  trail.appendChild(el);
+  setTimeout(() => el.remove(), 340);
+}
+
+function wave() {
+  const el = document.createElement('i');
+  waves.appendChild(el);
+  setTimeout(() => el.remove(), 740);
+}
+
+async function play() {
+  stage.className = 'stage';
+  num.className = 'num';
+  rays.classList.remove('on');
+  ember.className = 'ember';
+  vignette.className = 'vignette';
+  trail.innerHTML = '';
+  waves.innerHTML = '';
+  num.textContent = STEPS[0] + '고';
+  await wait(180);
+
+  for (let i = 1; i < STEPS.length; i++) {
+    const n = STEPS[i];
+    const last = n === 50;
+    ghost(num.textContent);
+    num.textContent = n + '고';
+
+    // 10 단위를 넘길 때마다 충격파 — 자릿수가 올라간 게 눈에 보이게
+    if (Math.floor(n / 10) > Math.floor(STEPS[i - 1] / 10) && !last) {
+      wave();
+      stage.classList.add('shake');
+      setTimeout(() => stage.classList.remove('shake'), 340);
+    }
+
+    if (last) {
+      num.className = 'num locked';
+      rays.classList.add('on');
+      ember.classList.add('on');
+      vignette.classList.add('on');
+      wave();
+      stage.classList.add('shake-hard');
+      await wait(1100);
+      stage.classList.remove('shake-hard');
+      return;
+    }
+
+    num.className = 'num tick';
+    void num.offsetWidth;
+    await wait(Math.max(58, 130 - i * 6));
+    num.classList.remove('tick');
+  }
+}
+
+document.getElementById('replay').onclick = play;
+play();
+</script>
+</body>
+</html>

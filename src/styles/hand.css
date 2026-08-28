@@ -1,0 +1,348 @@
+  /* ── 낸 패 / 손패 ────────────────────── */
+  #playedarea {
+    min-height: 180px; border-radius: 12px; border: 1px dashed rgba(255,255,255,.16);
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    padding: 14px; flex-wrap: wrap; position: relative;
+    transition: opacity .42s ease, transform .42s ease;
+  }
+  #playedarea.play-fade-out {
+    opacity: 0; transform: translateY(-10px) scale(.97); pointer-events: none;
+  }
+  #playedarea .hint { color: rgba(255,255,255,.35); font-size: 14px; }
+  #playresult { text-align: center; width: 100%; }
+  #playresult .r-hand { font-size: 26px; font-weight: 400; color: var(--gold-soft); font-synthesis: none; }
+  #playresult .r-formula { font-size: 15px; color: var(--ink-2); font-weight: 400; font-synthesis: none; }
+  #playresult .r-formula .c { color: var(--chip-blue); font-weight: 400; }
+  #playresult .r-formula .m { color: var(--mult-red); font-weight: 400; }
+  #playresult .r-formula .m.is-div,
+  #playresult .r-formula .op-div { color: var(--mult-div); }
+  .mult-div { color: var(--mult-div); font-family: var(--font-overlay-num); font-weight: 400; }
+  #playresult .r-score { font-size: 30px; font-weight: 400; color: #fff; font-synthesis: none; }
+  /* 숫자는 항상 SSRockNum — bold 합성으로 글리프 깨짐 방지 */
+  #playresult .num,
+  #juice-tally .num,
+  .jt-chips, .jt-mult, .jt-score, .jt-flat {
+    font-family: var(--font-overlay-num);
+    font-weight: 400;
+    font-synthesis: none;
+  }
+  /* pop 애니 제거: 카드 선택 시 render가 DOM을 다시 그리며 반복 재생되던 버그 방지 */
+
+  /* padding: 추천 ✦/↓ 뱃지가 카드 밖으로 나가도 잘리지 않게 */
+  #handarea { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; min-height: 140px; padding: 10px 8px 4px; }
+  #cursor-trail {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 85;
+  }
+  body.card-sweeping { user-select: none; -webkit-user-select: none; }
+  /* 호버를 0으로 끄면 들렸던 패가 내려갔다 다시 올라간다 */
+  body.card-sweeping #handarea .card:hover:not(.sel) {
+    transform: translateY(-5px);
+  }
+  body.card-sweeping #handarea .card.sel {
+    transform: translateY(-18px) scale(1.03);
+  }
+  @media (hover: none), (prefers-reduced-motion: reduce) {
+    #cursor-trail { display: none; }
+  }
+  #jan-aura-hint {
+    text-align: center; font-size: 12px; font-weight: 700; color: #bef264;
+    margin: 0 0 8px; text-shadow: 0 1px 0 rgba(0,0,0,.35);
+  }
+  #jan-aura-hint.junk { color: #fca5a5; }
+  #jan-aura-hint[hidden] { display: none !important; }
+  /* 내기 추천 — 금빛 테두리 + 우상단 ✦ */
+  #handarea .card.coach-aura:not(.sel) {
+    box-shadow:
+      0 3px 8px rgba(0,0,0,.45),
+      0 0 12px rgba(232, 205, 122, .6),
+      inset 0 0 0 2.5px rgba(192,57,43,.85),
+      inset 0 0 0 4px rgba(255,255,255,.6);
+    animation: coachAuraPulse 1.5s ease-in-out infinite;
+    z-index: 2;
+  }
+  #handarea .card.kwang.coach-aura:not(.sel) {
+    box-shadow:
+      0 3px 8px rgba(0,0,0,.45),
+      0 0 12px rgba(232, 205, 122, .6),
+      inset 0 0 0 2.5px var(--gold),
+      inset 0 0 0 4px rgba(255,255,255,.6);
+  }
+  #handarea .card.has-art.coach-aura:not(.sel),
+  #handarea .card.has-art.kwang.coach-aura:not(.sel) {
+    box-shadow:
+      0 3px 8px rgba(0,0,0,.45),
+      0 0 0 2px var(--gold-soft),
+      0 0 14px rgba(232, 205, 122, .7);
+  }
+  #handarea .card.coach-aura:not(.sel)::before {
+    content: '✦';
+    position: absolute;
+    top: -10px; right: -10px;
+    z-index: 5;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 900; line-height: 1;
+    color: var(--ink-deep);
+    background: var(--gold-soft);
+    border: 1.5px solid var(--frame-deep);
+    box-shadow: 0 0 8px rgba(232, 205, 122, .7);
+    pointer-events: none;
+    animation: coachSpark 1.5s ease-in-out infinite;
+  }
+  /* 버리기 추천 — 빨간 글로우 + 우상단 ↓ */
+  #handarea .card.coach-aura-junk:not(.sel) {
+    box-shadow:
+      0 3px 8px rgba(0,0,0,.45),
+      0 0 12px rgba(248, 113, 113, .75),
+      inset 0 0 0 2.5px rgba(185, 28, 28, .9),
+      inset 0 0 0 4px rgba(255,255,255,.55);
+    animation: coachAuraPulse 1.5s ease-in-out infinite;
+    z-index: 2;
+  }
+  #handarea .card.kwang.coach-aura-junk:not(.sel) {
+    box-shadow:
+      0 3px 8px rgba(0,0,0,.45),
+      0 0 12px rgba(248, 113, 113, .75),
+      inset 0 0 0 2.5px #dc2626,
+      inset 0 0 0 4px rgba(255,255,255,.55);
+  }
+  #handarea .card.has-art.coach-aura-junk:not(.sel),
+  #handarea .card.has-art.kwang.coach-aura-junk:not(.sel) {
+    box-shadow:
+      0 3px 8px rgba(0,0,0,.45),
+      0 0 0 2px #f87171,
+      0 0 14px rgba(248, 113, 113, .9);
+  }
+  #handarea .card.coach-aura-junk:not(.sel)::before {
+    content: '↓';
+    position: absolute;
+    top: -10px; right: -10px;
+    z-index: 5;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 900; line-height: 1;
+    color: var(--paper);
+    background: var(--red);
+    border: 1.5px solid #7f1d1d;
+    box-shadow: 0 0 8px rgba(229, 112, 95, .8);
+    pointer-events: none;
+    animation: coachSpark 1.5s ease-in-out infinite;
+  }
+  @keyframes coachAuraPulse {
+    0%,100% { filter: brightness(1.02) saturate(1.08); }
+    50% { filter: brightness(1.1) saturate(1.25); }
+  }
+  @keyframes coachSpark {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.12); }
+  }
+  /* Balatro식 스포트라이트 코치 */
+  #coach-root {
+    display: none; position: fixed; inset: 0; z-index: 125;
+    pointer-events: none;
+  }
+  #coach-root.on { display: block; }
+  #coach-root .coach-block {
+    position: fixed; background: rgba(0,0,0,.72); pointer-events: auto;
+  }
+  #coach-root .coach-ring {
+    position: fixed; pointer-events: none;
+    border: 2px solid rgba(253,224,71,.9);
+    border-radius: 14px;
+    box-shadow: 0 0 0 2px rgba(0,0,0,.25), 0 0 28px rgba(250,204,21,.45);
+  }
+  #coach-root .coach-panel {
+    position: fixed; pointer-events: auto; z-index: 2;
+    max-width: min(340px, calc(100vw - 28px));
+    background: linear-gradient(165deg, #1e3a2a, #122018);
+    border: 1.5px solid var(--gold);
+    border-radius: 14px; padding: 12px 14px 10px;
+    box-shadow: 0 10px 24px rgba(0,0,0,.55);
+    font-family: var(--font-ui); font-weight: 600;
+    color: var(--ink-2); font-size: 14px; line-height: 1.5;
+  }
+  #coach-root .coach-panel b { color: var(--gold-lit); font-weight: 800; }
+  #coach-root .coach-panel .coach-title {
+    font-family: var(--font-ui); font-size: 15px; font-weight: 800;
+    color: var(--gold-pale); margin-bottom: 5px;
+    letter-spacing: 0.02em;
+  }
+  #coach-root .coach-panel .coach-muted {
+    font-family: var(--font-ui); font-size: 12px; font-weight: 600;
+    color: var(--ink-4); line-height: 1.4;
+  }
+  #coach-root .coach-actions {
+    display: flex; gap: 8px; margin-top: 10px; justify-content: flex-end;
+  }
+  #coach-root .coach-actions button {
+    font-family: var(--font-ui); font-weight: 700;
+    border-radius: 8px; padding: 7px 11px; font-size: 12px; cursor: pointer;
+  }
+  #coach-root .coach-next {
+    background: var(--gold); color: var(--ink-deep);
+    border: none;
+  }
+  #coach-root .coach-skip {
+    background: rgba(255,255,255,.08); color: var(--ink-3);
+    border: 1px solid rgba(255,255,255,.18);
+  }
+
+  #actions { display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap; }
+  #hand-sort {
+    position: relative;
+    display: inline-flex; align-items: stretch;
+    border-radius: 999px; overflow: hidden;
+    background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.14);
+    padding: 2px; user-select: none;
+  }
+  #hand-sort .hand-sort-thumb {
+    position: absolute; top: 2px; left: 0;
+    height: calc(100% - 4px);
+    border-radius: 999px;
+    background: rgba(0,0,0,.38);
+    pointer-events: none; z-index: 0;
+    transition: transform .28s cubic-bezier(.33, 1, .68, 1), width .28s cubic-bezier(.33, 1, .68, 1);
+    will-change: transform, width;
+  }
+  #hand-sort button {
+    position: relative; z-index: 1;
+    padding: 9px 11px; border: none; border-radius: 999px;
+    background: transparent; color: var(--ink-4);
+    font-family: var(--font-set);
+    font-size: 12px; font-weight: 800; cursor: pointer;
+    transition: color .2s ease;
+  }
+  #hand-sort button.on { color: var(--gold-lit); }
+  #hand-sort button:hover:not(:disabled):not(.on) { color: var(--ink-2); }
+  #hand-sort.sort-blocked { opacity: .45; pointer-events: none; }
+  #deckbox, .deck-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 11px 12px; border-radius: 999px;
+    background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.14);
+    font-size: 14px; font-weight: 800; color: var(--ink-2);
+    white-space: nowrap; user-select: none;
+    cursor: pointer;
+  }
+  .deck-pill {
+    font-family: inherit; line-height: 1;
+  }
+  #deckbox:hover, .deck-pill:hover {
+    border-color: rgba(253, 230, 138, .45);
+    background: rgba(0,0,0,.38);
+  }
+  #deckbox:focus-visible, .deck-pill:focus-visible {
+    outline: 2px solid rgba(253, 230, 138, .65);
+    outline-offset: 2px;
+  }
+  #deckbox .deck-ico, .deck-pill .deck-ico { font-size: 15px; opacity: .9; }
+  #deckbox b, .deck-pill b { color: var(--gold-lit); font-variant-numeric: tabular-nums; }
+  /* 덱 5장 미만 — 바깥 은은한 빨간 호흡 글로우 */
+  #deckbox.deck-low, .deck-pill.deck-low {
+    border-color: rgba(248, 113, 113, .42);
+    color: #fecaca;
+    background: linear-gradient(180deg, rgba(127, 29, 29, .38), rgba(69, 10, 10, .45));
+    animation: deck-low-breathe 2.4s ease-in-out infinite;
+  }
+  #deckbox.deck-low b, .deck-pill.deck-low b { color: #fff1f2; }
+  #deckbox.deck-blocked {
+    opacity: .42; cursor: not-allowed; pointer-events: none;
+    border-color: rgba(148, 163, 184, .25);
+  }
+  @keyframes deck-low-breathe {
+    0%, 100% {
+      box-shadow:
+        0 0 0 1px rgba(248, 113, 113, .18),
+        0 0 10px 2px rgba(220, 38, 38, .22),
+        0 0 22px 6px rgba(185, 28, 28, .12);
+    }
+    50% {
+      box-shadow:
+        0 0 0 1px rgba(252, 165, 165, .32),
+        0 0 14px 4px rgba(239, 68, 68, .38),
+        0 0 28px 10px rgba(220, 38, 38, .2);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #hand-sort .hand-sort-thumb { transition: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #deckbox.deck-low, .deck-pill.deck-low {
+      animation: none;
+      box-shadow:
+        0 0 0 1px rgba(248, 113, 113, .25),
+        0 0 12px 3px rgba(220, 38, 38, .28);
+    }
+  }
+  .bigbtn {
+    display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px;
+    padding: 11px 28px 10px; font-size: 26px; font-weight: 400;
+    font-family: var(--font-overlay); font-synthesis: none;
+    letter-spacing: 0.06em;
+    border-radius: 10px; box-shadow: 0 3px 0 rgba(0,0,0,.4);
+  }
+  .bigbtn .abtn-label {
+    font-family: var(--font-overlay); font-weight: 400; font-synthesis: none;
+    font-size: inherit; line-height: 1;
+  }
+  /* 시안 D 레이아웃 + 시안 B 젤리(스쿼시&스트레치) */
+  .bigbtn .act-pips {
+    display: flex; align-items: center; justify-content: center;
+    gap: 5px; min-height: 8px; pointer-events: none;
+  }
+  .bigbtn .act-pips i {
+    display: block; width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255, 251, 235, .92);
+    border: 1px solid rgba(255, 255, 255, .75);
+    box-shadow: 0 1px 2px rgba(0,0,0,.35);
+    flex-shrink: 0;
+    transform-origin: center center;
+    transition:
+      width .18s ease,
+      margin .18s ease,
+      opacity .12s ease;
+  }
+  .bigbtn .act-pips i.pip-in {
+    animation: act-pip-b-in .36s cubic-bezier(.34, 1.4, .64, 1) both;
+  }
+  .bigbtn .act-pips i.pip-out {
+    animation: act-pip-b-out .28s cubic-bezier(.4, 0, .2, 1) forwards;
+  }
+  @keyframes act-pip-b-out {
+    0% { opacity: 1; transform: scale(1, 1); }
+    35% { opacity: 1; transform: scale(1.35, .55); }
+    100% {
+      opacity: 0; transform: scale(0, 1.4);
+      width: 0; margin: 0; border-width: 0; box-shadow: none;
+    }
+  }
+  @keyframes act-pip-b-in {
+    0% { opacity: 0; transform: scale(0, 1.6); }
+    55% { opacity: 1; transform: scale(1.2, .7); }
+    78% { transform: scale(.88, 1.18); }
+    100% { opacity: 1; transform: scale(1, 1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bigbtn .act-pips i { transition: none; }
+    .bigbtn .act-pips i.pip-in,
+    .bigbtn .act-pips i.pip-out { animation: none; }
+  }
+  /* 내기 = 주(朱) · 버리기 = 청(靑). 역할은 그대로, 색은 이 팔레트에서 */
+  #btn-play { background: linear-gradient(180deg, #c0392b, #8c2418); color: var(--paper); }
+  #btn-discard { background: linear-gradient(180deg, #35657f, #1e3f55); color: var(--paper); }
+  #btn-play .act-pips i,
+  #btn-discard .act-pips i { background: var(--paper); border-color: rgba(255, 248, 235, .95); }
+  @media (min-width: 721px) {
+    #btn-play, #btn-discard { width: 210px; box-sizing: border-box; }
+  }
+  /* 언어는 설정 패널로 이동 — 구석 토글 비표시 */
+  #locale-toggle { display: none !important; }
+  .smallbtn {
+    background: rgba(12, 24, 18, .92); color: var(--ink-2);
+    border: 1px solid rgba(255,255,255,.14);
+    padding: 7px 12px; font-size: 12px; font-weight: 700;
+  }
+

@@ -86,17 +86,18 @@ npm run og:gen                # OG / invite 랜딩 → pages/
 ## 저장소
 
 ```
-index.html          게임 (ENGINE + UI)
-pages/guide/        게임 규칙·공략 가이드
-pages/              OG·invite 랜딩 생성물
+src/engine/         순수 로직 (족보·점수·탐색·밸런스)
+src/state/          GameState + 판 진행
+src/ui/             렌더·연출
+src/platform/       telemetry · sfx
+src/styles/         도메인별 CSS
+index.html          마크업 + Vite 엔트리
+pages/              가이드 · OG · invite 랜딩
 Assets/             카드 · BGM · SFX · OG · Icons
-config/             firestore.rules 등
-lib/                firebase-telemetry.mjs
-test/               엔진 테스트 + 시뮬
-docs/               기획 · analytics
+test/               엔진 테스트 + 골든 하니스
 ```
 
-`==== ENGINE START/END ====` 사이는 **순수 로직** (DOM 금지). 엔진 수정 후 `npm test` 필수.
+`src/engine/` 은 **순수 로직** (DOM 금지). 엔진 수정 후 `npm test` 필수. UI 이동 후 `npm run golden`.
 
 ---
 

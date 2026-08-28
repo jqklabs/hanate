@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 C · 화투 폭풍 · 50고</title>
+<link rel="stylesheet" href="sian.css">
+</head>
+<body class="sian-c">
+  <a class="back" href="index.html">시안 목록</a>
+  <button type="button" class="replay" id="replay">다시</button>
+  <div class="stage" id="stage" aria-live="polite">
+    <div class="cards" id="cards"></div>
+    <div class="count" id="count">10고</div>
+  </div>
+  <p class="caption">C · 화투 폭풍 — 패가 흩날리는 사이 숫자가 50까지 치솟음</p>
+<script>
+const stage = document.getElementById('stage');
+const cards = document.getElementById('cards');
+const count = document.getElementById('count');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const ART = [
+  '../../Assets/01_january/1-gwang.webp',
+  '../../Assets/03_march/3-gwang.webp',
+  '../../Assets/08_august/8-gwang.webp?v=2',
+  '../../Assets/11_november/11-gwang.webp',
+  '../../Assets/12_december/12-gwang-umbrella.webp',
+  '../../Assets/02_february/2-yeolkkeut-warbler.webp',
+  '../../Assets/04_april/4-yeolkkeut.webp',
+  '../../Assets/08_august/8-yeolkkeut.webp?v=2',
+  '../../Assets/12_december/12-yeolkkeut-swallow.webp',
+  '../../Assets/01_january/1-tti-hongdan.webp',
+  '../../Assets/06_june/6-tti-cheongdan.webp',
+  '../../Assets/12_december/12-tti-bitti.webp',
+];
+
+// 감속하며 50에 닿음 — 커질수록 한 칸이 짧아져 "치솟다 멈춘" 느낌.
+// 총 1.4초 안에 끝나야 패가 아직 공중에 있을 때 50이 박힌다.
+const STEPS = [10, 14, 19, 25, 31, 36, 40, 43, 45, 47, 48, 49, 50];
+
+function storm(n) {
+  cards.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    const img = document.createElement('img');
+    img.src = ART[i % ART.length];
+    img.alt = '';
+    img.draggable = false;
+    const ang = (Math.PI * 2 * i) / n + Math.random() * 0.3;
+    const dist = 320 + Math.random() * 460;
+    img.style.setProperty('--x', Math.cos(ang) * dist + 'px');
+    img.style.setProperty('--y', Math.sin(ang) * dist * 0.74 + 'px');
+    img.style.setProperty('--rot', (Math.random() * 900 - 450).toFixed(0) + 'deg');
+    img.style.setProperty('--dur', (1.6 + Math.random() * 0.8).toFixed(2) + 's');
+    img.style.setProperty('--del', (i * 0.035 + Math.random() * 0.06).toFixed(2) + 's');
+    cards.appendChild(img);
+  }
+}
+
+async function play() {
+  stage.className = 'stage';
+  count.className = 'count';
+  count.textContent = STEPS[0] + '고';
+  storm(28);
+  await wait(150);
+
+  for (let i = 1; i < STEPS.length; i++) {
+    const last = i === STEPS.length - 1;
+    count.textContent = STEPS[i] + '고';
+    count.className = last ? 'count final' : 'count tick';
+    void count.offsetWidth;
+    if (last) {
+      stage.classList.add('shake-hard');
+      await wait(1200);
+      stage.classList.remove('shake-hard');
+    } else {
+      await wait(56 + i * 9);
+      count.classList.remove('tick');
+    }
+  }
+}
+
+document.getElementById('replay').onclick = play;
+play();
+</script>
+</body>
+</html>
