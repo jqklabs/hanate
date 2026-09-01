@@ -1,9 +1,11 @@
   /* ── 설정 팝업 ───────────────────────── */
   #settings-overlay {
     position: fixed; inset: 0; z-index: 125;
-    display: none; align-items: center; justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     padding: 18px;
     background: rgba(4, 12, 8, .72);
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity .22s ease, visibility .22s ease;
   }
   @media (hover: hover) and (min-width: 721px) {
     #settings-overlay {
@@ -12,7 +14,9 @@
       -webkit-backdrop-filter: blur(7px);
     }
   }
-  #settings-overlay.show { display: flex; }
+  #settings-overlay.show {
+    opacity: 1; visibility: visible; pointer-events: auto;
+  }
   #settings-panel {
     --font-set: 'Malgun Gothic', 'Apple SD Gothic Neo', 'Hiragino Sans', 'Yu Gothic UI', 'Noto Sans JP', sans-serif;
     width: min(380px, 94vw);
@@ -31,6 +35,11 @@
     box-shadow:
       0 12px 28px rgba(0,0,0,.55),
       inset 0 1px 0 rgba(255,255,255,.07);
+    transform: translateY(10px); opacity: 0;
+    transition: transform .22s ease, opacity .22s ease;
+  }
+  #settings-overlay.show #settings-panel {
+    transform: none; opacity: 1;
   }
   #settings-panel .set-scroll {
     flex: 1 1 auto;
@@ -211,6 +220,9 @@
     box-shadow: none;
   }
   @media (prefers-reduced-motion: reduce) {
+    #settings-overlay,
+    #settings-overlay.show #settings-panel,
+    #settings-panel { transition: none; }
     #settings-panel #set-lang::before { transition: none; }
   }
   #settings-panel .set-toggle {

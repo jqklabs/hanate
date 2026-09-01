@@ -1,17 +1,25 @@
   /* ── 모바일 특수패 팝업 ─────────────── */
   #joker-pop-overlay {
     position: fixed; inset: 0; z-index: 115;
-    display: none; align-items: center; justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     padding: 18px; background: rgba(0,0,0,.58);
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity .22s ease, visibility .22s ease;
   }
-  #joker-pop-overlay.show { display: flex; }
+  #joker-pop-overlay.show {
+    opacity: 1; visibility: visible; pointer-events: auto;
+  }
   #oegil-overlay {
     position: fixed; inset: 0; z-index: 128;
-    display: none; align-items: center; justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     padding: 18px;
     background: rgba(6, 2, 12, .82);
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity .22s ease, visibility .22s ease;
   }
-  #oegil-overlay.show { display: flex; }
+  #oegil-overlay.show {
+    opacity: 1; visibility: visible; pointer-events: auto;
+  }
   #oegil-panel {
     width: min(440px, 94vw);
     padding: 26px 22px 18px;
@@ -23,6 +31,11 @@
       inset 0 0 0 4px rgba(88, 56, 104, .35),
       0 12px 28px rgba(0, 0, 0, .7);
     text-align: center;
+    transform: translateY(10px); opacity: 0;
+    transition: transform .22s ease, opacity .22s ease;
+  }
+  #oegil-overlay.show #oegil-panel {
+    transform: none; opacity: 1;
   }
   #oegil-panel h2 {
     font-family: var(--font-overlay);
@@ -78,8 +91,13 @@
     width: min(320px, 92vw); border-radius: 16px; padding: 20px 18px 16px;
     background: linear-gradient(170deg, #2a2410, #1a1508);
     border: 1.5px solid rgba(212,175,55,.55);
+    transform: translateY(10px); opacity: 0;
+    transition: transform .22s ease, opacity .22s ease;
     box-shadow: 0 12px 26px rgba(0,0,0,.55);
     text-align: center;
+  }
+  #joker-pop-overlay.show .joker-pop-card {
+    transform: none; opacity: 1;
   }
   .joker-pop-card .jp-icon { font-size: 40px; line-height: 1; margin-bottom: 8px; }
   .joker-pop-card .jp-name {
@@ -143,4 +161,10 @@
     display: none; flex-shrink: 0;
     background: rgba(255,255,255,.14); color: var(--ink-2);
     padding: 7px 10px; font-size: 13px; font-weight: 800; border-radius: 8px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #joker-pop-overlay,
+    #oegil-overlay,
+    #oegil-panel,
+    .joker-pop-card { transition: none; }
   }

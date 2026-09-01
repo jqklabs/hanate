@@ -1,15 +1,31 @@
   /* ── 모달 ────────────────────────────── */
   #modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,.62); display: none;
+    position: fixed; inset: 0; background: rgba(0,0,0,.62); display: flex;
     align-items: center; justify-content: center; z-index: 110; padding: 18px; overflow-y: auto;
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity .22s ease, visibility .22s ease;
   }
-  #modal-overlay.show { display: flex; }
+  #modal-overlay.show {
+    opacity: 1; visibility: visible; pointer-events: auto;
+  }
   #modal-overlay.gostop-open { overflow: visible; }
   #modal {
     background: linear-gradient(170deg, #1f3d2b, #142a1d);
     border: 1.5px solid var(--gold); border-radius: 16px; padding: 22px 26px;
     max-width: 720px; width: 100%; box-shadow: 0 12px 28px rgba(0,0,0,.6);
     max-height: 92vh; overflow-y: auto;
+    transform: translateY(10px); opacity: 0;
+    transition: transform .22s ease, opacity .22s ease;
+  }
+  #modal-overlay.show #modal {
+    transform: none; opacity: 1;
+  }
+  #modal.pop-in {
+    animation: modalPopIn .22s ease;
+  }
+  @keyframes modalPopIn {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: none; opacity: 1; }
   }
   #modal.gostop-modal {
     overflow: visible;
@@ -236,11 +252,15 @@
     background:
       radial-gradient(ellipse 70% 55% at 50% 42%, rgba(212,175,55,.12), transparent 70%),
       rgba(0,0,0,.68);
-    display: none; align-items: center; justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     z-index: 120; padding: 20px;
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity .22s ease, visibility .22s ease;
   }
   #survey-overlay.show,
-  #shortcut-overlay.show { display: flex; }
+  #shortcut-overlay.show {
+    opacity: 1; visibility: visible; pointer-events: auto;
+  }
   #shortcut-overlay { z-index: 119; }
   #survey-overlay .survey-prompt,
   #shortcut-overlay .survey-prompt {
@@ -258,6 +278,12 @@
     text-align: center;
     font-family: var(--font-ui);
     overflow: hidden;
+    transform: translateY(10px); opacity: 0;
+    transition: transform .22s ease, opacity .22s ease;
+  }
+  #survey-overlay.show .survey-prompt,
+  #shortcut-overlay.show .survey-prompt {
+    transform: none; opacity: 1;
   }
   #survey-overlay .survey-prompt::before,
   #survey-overlay .survey-prompt::after,
@@ -297,17 +323,16 @@
   }
   #survey-overlay .survey-badge,
   #shortcut-overlay .survey-badge {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 54px; height: 54px; margin-bottom: 14px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, var(--gold-lit), var(--gold) 55%, #8a6e3a);
-    box-shadow: 0 6px 18px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.45);
-    font-size: 26px; line-height: 1;
+    display: block;
+    width: 88px; height: 88px;
+    margin: 0 auto 16px; padding: 0;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #16110a;
+    border: 1px solid rgba(212, 175, 55, .38);
+    box-shadow: 0 6px 16px rgba(0,0,0,.4);
   }
-  #shortcut-overlay .survey-badge {
-    width: 72px; height: 72px; padding: 0; overflow: hidden;
-    background: #1a1208;
-  }
+  #survey-overlay .survey-badge img,
   #shortcut-overlay .survey-badge img {
     width: 100%; height: 100%; object-fit: cover; display: block;
   }
@@ -429,5 +454,17 @@
       min-width: 100%; max-width: none; font-size: 20px; padding: 16px 18px;
     }
     #shortcut-overlay .survey-actions button { font-size: 18px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #modal-overlay,
+    #modal,
+    #modal.pop-in,
+    #survey-overlay,
+    #shortcut-overlay,
+    #survey-overlay .survey-prompt,
+    #shortcut-overlay .survey-prompt {
+      transition: none;
+      animation: none;
+    }
   }
 

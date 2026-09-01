@@ -222,12 +222,13 @@
       grid-area: hand;
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 8px 7px;
+      grid-auto-rows: min-content;
+      gap: 12px 7px;
       justify-items: center;
       align-content: start;
       align-self: end;
-      padding: 4px 6px 2px;
-      min-height: 0;
+      padding: 10px 6px 2px;
+      min-height: min-content;
       overflow: visible;
     }
     /* 손패 바로 위 한 줄 — table이 contents라 #main 그리드 아이템이 됨 */
@@ -279,7 +280,34 @@
     }
     .card.tti .ribbon { height: 34%; font-size: 8px; }
     .card:hover { transform: none; }
-    .card.sel { transform: translateY(-12px) scale(1.02); }
+    /* 들림+확대는 아래 줄 달 뱃지를 덮는다. 살짝만 띄우고 테두리는 칸 안에. */
+    .card.sel { transform: translateY(-6px); }
+    #handarea .card.sel {
+      z-index: 3;
+      box-shadow:
+        0 6px 10px rgba(0,0,0,.35),
+        0 0 0 2px var(--chip-blue);
+    }
+    #handarea .card.has-art.sel {
+      box-shadow:
+        0 6px 10px rgba(0,0,0,.35),
+        0 0 0 2px var(--chip-blue);
+    }
+    #handarea .card.has-art.kwang.sel,
+    #handarea .card.kwang.sel {
+      box-shadow:
+        0 6px 10px rgba(0,0,0,.35),
+        0 0 0 2px var(--cheong-lit);
+    }
+    #handarea .card.season.has-art.sel {
+      box-shadow:
+        0 6px 10px rgba(0,0,0,.35),
+        0 0 0 2px var(--chip-blue),
+        0 0 0 4px #f59e0b;
+    }
+    body.card-sweeping #handarea .card.sel {
+      transform: translateY(-6px);
+    }
 
     #actions {
       grid-area: act;
@@ -617,6 +645,18 @@
     #handarea .card.coach-aura-junk:not(.sel) {
       animation: none;
     }
+    #handarea .card.has-art.coach-aura:not(.sel),
+    #handarea .card.has-art.kwang.coach-aura:not(.sel) {
+      box-shadow:
+        0 3px 8px rgba(0,0,0,.45),
+        0 0 0 2px var(--gold-soft);
+    }
+    #handarea .card.has-art.coach-aura-junk:not(.sel),
+    #handarea .card.has-art.kwang.coach-aura-junk:not(.sel) {
+      box-shadow:
+        0 3px 8px rgba(0,0,0,.45),
+        0 0 0 2px #f87171;
+    }
     #handarea .card.coach-aura:not(.sel)::before,
     #handarea .card.coach-aura-junk:not(.sel)::before {
       animation: none;
@@ -635,8 +675,9 @@
 
   @media (max-width: 720px) and (max-height: 700px) {
     #seasonline { display: none; }
-    #handarea { padding-top: 6px; gap: 4px; }
-    .card.sel { transform: translateY(-8px) scale(1.02); }
+    #handarea { padding-top: 8px; gap: 10px 4px; }
+    .card.sel { transform: translateY(-4px); }
+    body.card-sweeping #handarea .card.sel { transform: translateY(-4px); }
     #chunhyang { transform: scale(.9); transform-origin: bottom right; }
     #roundpanel, #scorepanel { padding: 5px 6px; }
   }

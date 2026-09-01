@@ -460,7 +460,7 @@ console.log('[7] 풀런 시뮬레이션');
       }
       if (score < target) return { cleared: round - 1 };
       const interest = Math.min(Math.floor(money / 6), 3);
-      money += interest + (E.BOSS_ROUNDS.includes(round) ? 4 : 2) + playsLeft + (jokers.includes('pibak_boheom') ? 1 : 0);
+      money += interest + (E.BOSS_ROUNDS.includes(round) ? 5 : 3) + playsLeft + (jokers.includes('pibak_boheom') ? 1 : 0);
       if (round < E.ROUNDS && buyAI) money = shopBuy(money, jokers, rng, round);
     }
     return { cleared: E.ROUNDS };
