@@ -1,6 +1,6 @@
 // @ts-nocheck — 엔진 본문은 기존 JS를 옮긴 것. 시그니처는 types.ts가 정본.
 export const ROUNDS = 12;
-export const TARGETS = [160, 240, 340, 500, 740, 1100, 1650, 2500, 3800, 5800, 9000, 14000];
+export const TARGETS = [160, 240, 320, 480, 620, 840, 1200, 1800, 2500, 4000, 7000, 12000];
 export const JOKER_SLOT_MAX = 5;
 export function jokerSlotCount(month) {
   return Math.min(JOKER_SLOT_MAX, Math.max(1, month | 0));

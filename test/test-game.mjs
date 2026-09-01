@@ -318,7 +318,7 @@ console.log('[5] 특수패·박 회귀');
   const m7pi = pick((c) => c.month === 7 && c.type === 'pi')[0];
   const rMat = E.computeScore([m1pi, m7pi], env({ jokerIds: ['matdae'] }));
   const rMat0 = E.computeScore([m1pi, m7pi], env());
-  assert(rMat.mult === rMat0.mult + 6, `맞대 1–7월 +6배수 (실제 ${rMat.mult})`);
+  assert(rMat.mult === rMat0.mult + 3, `맞대 1–7월 +3배수 (실제 ${rMat.mult})`);
   const m2pi = pick((c) => c.month === 2 && c.type === 'pi')[0];
   const rMatNo = E.computeScore([m1pi, m2pi], env({ jokerIds: ['matdae'] }));
   assert(rMatNo.mult === E.computeScore([m1pi, m2pi], env()).mult, '맞대 1–2월 미발동');
@@ -336,12 +336,12 @@ console.log('[5] 특수패·박 회귀');
     '암흑 주막 등급 월 = 현재+2 (상한 14)');
   assert(E.darkOfferChance(0) === 0.01 && E.darkOfferChance(3) === 0.025 && E.darkOfferChance(5) === 0.035,
     '암흑 등장 (고×0.5+1)%');
-  assert(w1.legendary < 0.006 && w12.legendary <= 0.027,
-    `레전 1월 ${w1.legendary} / 12월 ${w12.legendary} (기존 4% 미만)`);
+  assert(w1.legendary < 0.006 && w12.legendary > 0.04 && w12.legendary < 0.055,
+    `레전 1월 ${w1.legendary} / 12월 ${w12.legendary}`);
   assert(w1.common > w12.common && w1.epic < w12.epic && w1.legendary < w12.legendary,
     '월이 오를수록 커먼↓ 에픽·레전↑');
-  assert(w14.common > 0.38 && w14.common < 0.43 && w14.legendary > w12.legendary,
-    `14월 커먼 ~40% (실제 ${w14.common.toFixed(3)})`);
+  assert(w14.common > 0.08 && w14.common < 0.14 && w14.legendary > w12.legendary,
+    `14월 커먼 ~11% (실제 ${w14.common.toFixed(3)})`);
   assert(Math.abs(w1.common + w1.rare + w1.epic + w1.legendary - 1) < 1e-9
     && Math.abs(w12.common + w12.rare + w12.epic + w12.legendary - 1) < 1e-9
     && Math.abs(w14.common + w14.rare + w14.epic + w14.legendary - 1) < 1e-9,

@@ -62,8 +62,8 @@ export const JOKERS = [
     desc: '족보에 포함되는 초단마다 배수가 2만큼 증가합니다.',
     addMult: (x) => x.core.filter((c) => c.tags.includes('chodan')).length * 2 },
   { id: 'matdae', name: '맞대', icon: '⚔️', rarity: 'rare', price: 7, kind: '+배수',
-    desc: '한 수에 월 차이가 6인 쌍(1–7, 2–8…)이 있으면 배수가 6 올라갑니다.',
-    addMult: (x) => (hasMatdaePair(x.cards) ? 6 : 0) },
+    desc: '한 수에 월 차이가 6인 쌍(1–7, 2–8…)이 있으면 배수가 3 올라갑니다.',
+    addMult: (x) => (hasMatdaePair(x.cards) ? 3 : 0) },
   { id: 'geumjul', name: '금줄', icon: '🪢', rarity: 'rare', price: 7, kind: '성장',
     desc: '박으로 실제 잃은 칩 10점마다 영구로 배수가 1 올라갑니다. 팔면 초기화됩니다.',
     addMult: (x) => x.geumjulMult },
@@ -125,14 +125,25 @@ export const GOTARYEONG_GOES_PER_MULT = 2;
 export function gotaryeongMultFromGoes(goes) {
   return Math.floor(Math.max(0, goes) / GOTARYEONG_GOES_PER_MULT);
 }
-/** 상점 티어 — 1~14월. t=(m-1)/11 이라 14월은 t≈1.18, 커먼 약 40%. */
+/** 상점 티어 — 1~14월. t=(m-1)/11. 7월부터 커먼이 더 빠르게 빠지고, 9~12월 레전은 소폭만 오른다. */
 export function rarityWeightsForMonth(month) {
   const m = Math.max(1, Math.min(RARITY_MONTH_MAX, month | 0));
   const t = (m - 1) / (ROUNDS - 1);
-  const legendary = 0.004 + t * 0.022; // 0.4% → 12월 2.6% → 14월 ~3.0%
-  const epic      = 0.025 + t * 0.205;
-  const rare      = 0.160 + t * 0.115;
-  const common    = 1 - rare - epic - legendary;
+  let legendary;
+  if (m <= 8) {
+    legendary = 0.004 + t * 0.051; // 0.4% → 8월 3.65%
+  } else {
+    const t8 = 7 / (ROUNDS - 1);
+    legendary = 0.004 + t8 * 0.051 + (m - 8) * 0.0025; // 9월 3.9% → 12월 4.65% → 14월 5.15%
+  }
+  let epic = 0.025 + t * 0.295;
+  let rare = 0.160 + t * 0.160;
+  if (m >= 7) {
+    const extra = Math.min(0.12, 0.04 + (m - 7) * 0.014);
+    rare += extra * 0.4;
+    epic += extra * 0.6;
+  }
+  const common = 1 - rare - epic - legendary;
   return { common, rare, epic, legendary };
 }
 export function shopRarityMonth(month, dark) {
