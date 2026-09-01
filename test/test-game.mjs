@@ -184,8 +184,10 @@ console.log('[4] 고 무제한');
 {
   assert(E.goMult(1) === 1.6 && E.goMult(2) === 2.2 && E.goMult(5) === 4.45 && E.goMult(10) === 10.2,
     'goMult 1.6/2.2/4.45/10.2 (3고부터 가속)');
-  assert(E.goBonus(3, 1) === 2 && E.goBonus(3, 2) === 3 && E.goBonus(2, 9) === 9 && E.goBonus(9, 2) === 9,
-    'goBonus ceil(n×m/2)');
+  assert(E.goBonus(3, 1) === 3 && E.goBonus(3, 2) === 4 && E.goBonus(2, 9) === 9 && E.goBonus(9, 2) === 10,
+    'goBonus ceil(n×m/2), 1~2월 +1');
+  assert(E.goBonus(1, 1) === 2 && E.goBonus(1, 3) === 2 && E.goBonus(0, 1) === 0,
+    '1월 1고 +2 · 3월 이후는 가산 없음 · 0고 0');
   // 밀치기 고: 이미 넘은 문턱은 전부 소급 인정, 선언 단계 = 아직 못 넘은 첫 문턱
   // 1고=ceil(160×1.6)=256, 3고=ceil(160×2.85)=456
   assert(E.goThreshold(160, 1) === 256 && E.goThreshold(160, 3) === 456, 'goThreshold 256/456');
