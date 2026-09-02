@@ -1,4 +1,4 @@
 play.png 1a11433de3cf69de
 gostop.png 57268be2f8f2f78d
 shop.png 29357aa8b999ee80
-gameover.png c950630a2a3e2e58
+gameover.png 6759a0dc59f5626d

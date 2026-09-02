@@ -182,19 +182,20 @@ console.log('[3.5] 코어/플랫 분리');
 // ─── 4. 고 무제한 공식 ────────────────────────────────────
 console.log('[4] 고 무제한');
 {
-  assert(E.goMult(1) === 1.6 && E.goMult(2) === 2.2 && E.goMult(5) === 4.45 && E.goMult(10) === 10.2,
-    'goMult 1.6/2.2/4.45/10.2 (3고부터 가속)');
+  assert(E.goMult(1) === 1.5 && E.goMult(2) === 2 && E.goMult(3) === 2.5
+    && E.goMult(4) === 3 && E.goMult(5) === 3.5 && E.goMult(10) === 8,
+    'goMult 1.5/2/2.5/3/3.5 · 10고 8');
   assert(E.goBonus(3, 1) === 3 && E.goBonus(3, 2) === 4 && E.goBonus(2, 9) === 9 && E.goBonus(9, 2) === 10,
     'goBonus ceil(n×m/2), 1~2월 +1');
   assert(E.goBonus(1, 1) === 2 && E.goBonus(1, 3) === 2 && E.goBonus(0, 1) === 0,
     '1월 1고 +2 · 3월 이후는 가산 없음 · 0고 0');
   // 밀치기 고: 이미 넘은 문턱은 전부 소급 인정, 선언 단계 = 아직 못 넘은 첫 문턱
-  // 1고=ceil(160×1.6)=256, 3고=ceil(160×2.85)=456
-  assert(E.goThreshold(160, 1) === 256 && E.goThreshold(160, 3) === 456, 'goThreshold 256/456');
+  // 1고=ceil(160×1.5)=240, 3고=ceil(160×2.5)=400
+  assert(E.goThreshold(160, 1) === 240 && E.goThreshold(160, 3) === 400, 'goThreshold 240/400');
   assert(E.goLevelReached(160, 200, 0) === 0, '문턱 미달이면 소급 없음 (일반 1고)');
-  assert(E.goLevelReached(160, 260, 0) === 1, '260점 = 1고 문턱(256) 소급');
-  assert(E.goLevelReached(160, 456, 0) === 3, '456점 = 3고 문턱(456)까지 밀치기');
-  assert(E.goLevelReached(160, 456, 5) === 5, '현재 goLevel 미만으로는 안 내려감');
+  assert(E.goLevelReached(160, 240, 0) === 1, '240점 = 1고 문턱(240) 소급');
+  assert(E.goLevelReached(160, 400, 0) === 3, '400점 = 3고 문턱(400)까지 밀치기');
+  assert(E.goLevelReached(160, 400, 5) === 5, '현재 goLevel 미만으로는 안 내려감');
   // 선언 목표는 항상 현재 점수보다 큼 → 고 선언 즉시 재충족(연쇄 고) 불가
   for (const [base, score, cur] of [[160, 200, 0], [160, 260, 0], [160, 450, 0], [160, 3449, 2], [5500, 30000, 1]]) {
     const declared = E.goLevelReached(base, score, cur) + 1;
@@ -362,10 +363,10 @@ console.log('[5] 특수패·박 회귀');
     '거울 양옆');
   assert(JSON.stringify(E.geoulNeighborIds(['geoul', 'geoul', 'meongtta'])) === JSON.stringify(['meongtta']),
     '거울은 재복사 금지');
-  assert(E.applyMorachigiResources(4, 4).plays === 8 && E.applyMorachigiResources(4, 4).discards === 0,
-    '몰아치기 4·4 → 8·0');
-  assert(E.applyMorachigiResources(1, 4).plays === 5 && E.applyMorachigiResources(4, 0).plays === 4,
-    '몰아치기 한 수 올인 5·0 · 버리기 0은 그대로');
+  assert(E.applyMorachigiResources(4, 4).plays === 7 && E.applyMorachigiResources(4, 4).discards === 0,
+    '몰아치기 4·4 → 7·0');
+  assert(E.applyMorachigiResources(1, 4).plays === 4 && E.applyMorachigiResources(4, 0).plays === 7,
+    '몰아치기 한 수 올인 4·0 · 버리기 0이어도 내기 +3');
   const w1 = E.rarityWeightsForMonth(1);
   const w12 = E.rarityWeightsForMonth(12);
   const w14 = E.rarityWeightsForMonth(14);

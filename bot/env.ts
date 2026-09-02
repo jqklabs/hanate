@@ -105,6 +105,8 @@ export class HwatuEnv {
   playsLeft = 4;
   discardsLeft = 4;
   firstPlay = true;
+  playedHandIds: string[] = [];
+  gameunNuneMult = 0;
   shopOffers: { id: string; price: number; rarity: string; sold: boolean }[] = [];
   rerollCost = 2;
   darkShop = false;
@@ -141,6 +143,8 @@ export class HwatuEnv {
     this.monthsCleared = 0;
     this.pendingOegil = -1;
     this.chunhyangNext = false;
+    this.playedHandIds = [];
+    this.gameunNuneMult = 0;
     this.selected.clear();
     this.toggleCount = 0;
     this.startDay();
@@ -179,6 +183,8 @@ export class HwatuEnv {
     e.playsLeft = this.playsLeft;
     e.discardsLeft = this.discardsLeft;
     e.firstPlay = this.firstPlay;
+    e.playedHandIds = [...this.playedHandIds];
+    e.gameunNuneMult = this.gameunNuneMult;
     e.shopOffers = this.shopOffers.map((o) => ({ ...o }));
     e.rerollCost = this.rerollCost;
     e.darkShop = this.darkShop;
@@ -232,6 +238,9 @@ export class HwatuEnv {
       baseChipMult: this.jokers.includes('geokkuro') ? 20 : 0,
       oegilKind: this.oegilKind,
       binjariMult: this.binjariMult,
+      money: this.money,
+      playedHandIds: this.playedHandIds,
+      gameunNuneMult: this.jokers.includes('gameun_nun') ? this.gameunNuneMult : 0,
     };
   }
   private startDay() {
@@ -260,6 +269,13 @@ export class HwatuEnv {
     this.target = base;
     this.playsLeft = this.startPlays();
     this.discardsLeft = this.startDiscards();
+    if (this.jokers.includes('morachigi')) {
+      const next = E.applyMorachigiResources(this.playsLeft, this.discardsLeft);
+      this.playsLeft = next.plays;
+      this.discardsLeft = next.discards;
+    }
+    this.gameunNuneMult = 0;
+    this.playedHandIds = [];
     this.firstPlay = true;
     this.refill();
     this.phase = 'play';
@@ -285,12 +301,15 @@ export class HwatuEnv {
 
   private playCards(cards: Card[]) {
     for (const c of cards) c.faceDown = false;
-    const got = E.computeScore(cards, this.env()).score;
+    const result = E.computeScore(cards, this.env());
+    const got = result.score;
     this.score += got;
     if (this.jokers.includes('geumjul')) {
       this.geumjulLost += E.bakChipLoss(cards, this.env());
       this.geumjulMult = Math.floor(this.geumjulLost / 10);
     }
+    this.playedHandIds.push(result.handId);
+    if (this.jokers.includes('gameun_nun')) this.gameunNuneMult = 0;
     this.firstPlay = false;
     const ids = new Set(cards.map((c) => c.uid));
     this.hand = this.hand.filter((c) => !ids.has(c.uid));
@@ -480,6 +499,10 @@ export class HwatuEnv {
     if (!cards.length) return { reward: -0.02, done: false };
     this.discardsLeft--;
     if (this.jokers.includes('mitjang')) this.mitjang += 10;
+    if (this.jokers.includes('gameun_nun')) {
+      const n = cards.filter((c) => c.type === 'kwang').length;
+      this.gameunNuneMult = E.gameunNuneXMult(n);
+    }
     const drop = new Set(cards.map((c) => c.uid));
     this.hand = this.hand.filter((c) => !drop.has(c.uid));
     this.selected.clear();
@@ -558,6 +581,8 @@ export class HwatuEnv {
     this.geumjulLost = 0;
     this.geumjulMult = 0;
     this.gotaryeongGoes = 0;
+    this.gameunNuneMult = 0;
+    this.playedHandIds = [];
     this.slotsLocked = true;
   }
   private sellJoker(i: number) {
@@ -567,6 +592,7 @@ export class HwatuEnv {
     if (id === 'mitjang') this.mitjang = 0;
     if (id === 'geumjul') { this.geumjulLost = 0; this.geumjulMult = 0; }
     if (id === 'gotaryeong') this.gotaryeongGoes = 0;
+    if (id === 'gameun_nun') this.gameunNuneMult = 0;
     if (id === 'oegil') this.oegilKind = null;
     this.jokers.splice(i, 1);
     this.jokerPaid.splice(i, 1);
@@ -621,7 +647,7 @@ export class HwatuEnv {
     put(this.night ? 1 : 0);
     put(this.score / Math.max(1, this.target));
     put(this.goLevel / 8);
-    put(this.playsLeft / 6);
+    put(this.playsLeft / 7);
     put(this.discardsLeft / 4);
     put(Math.min(1, this.money / 30));
     put(this.cardsLeft() / 48);
@@ -684,9 +710,10 @@ export class HwatuEnv {
 
 const SHOP_PRI: Record<string, number> = {
   mudgo_double: 95, geokkuro: 94, yeokbak: 88, hansu_allin: 70, oegil: 60, binjari: 40,
-  paewang: 92, sipidal: 86, ogwang_kkum: 84, heundeulgi: 82, pibak_boheom: 80,
+  paewang: 92, geoul: 90, sipidal: 86, ogwang_kkum: 84, heundeulgi: 82, pibak_boheom: 80,
   mitjang: 78, gotaryeong: 76, geumjul: 74, dangol: 72, yeol_janchi: 70,
-  poktan: 68, godori_kkun: 66, bigwang_usan: 64, samgwang_nori: 62,
+  jaecheong: 69, gameun_nun: 68, poktan: 67, morachigi: 66, godori_kkun: 65, bigwang_usan: 64,
+  samgwang_nori: 62, jeondangpo: 58,
   ssakssuri: 55, gwang_sujip: 54, pi_ohjang: 52, chodan_aeho: 50, matdae: 48,
   gwangpari: 40, pi_merchant: 38, meongtta: 36, jjokjipge: 34, ssangpi_sarang: 32,
   tti_jjang: 30, cheotsu: 28, janson: 26, makpan: 24,
@@ -702,6 +729,9 @@ function playEnv(env: HwatuEnv) {
     flatBaseChip: env.jokers.includes('mudgo_double') ? 20 : 0,
     baseChipMult: env.jokers.includes('geokkuro') ? 20 : 0,
     oegilKind: env.oegilKind, binjariMult: env.binjariMult,
+    money: env.money,
+    playedHandIds: env.playedHandIds,
+    gameunNuneMult: env.jokers.includes('gameun_nun') ? env.gameunNuneMult : 0,
   };
 }
 

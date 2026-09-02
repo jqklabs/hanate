@@ -98,7 +98,7 @@ export const JOKERS = [
     desc: '이번 판에 이미 낸 족보를 다시 내면 배수가 2배가 됩니다. 바로 직전 수와 같은 족보면 3배가 됩니다. 무조합은 안 됩니다.',
     xMult: (x) => jaecheongXMult(x.handId, x.playedHandIds) },
   { id: 'morachigi', name: '몰아치기', icon: '🌪️', rarity: 'epic', price: 9, kind: '변환',
-    desc: '판이 열릴 때 버리기를 모두 잃고, 그 수만큼 내기를 얻습니다. 4·4면 8·0으로 시작합니다.' },
+    desc: '판이 열릴 때 내기를 3회 더 얻고, 버리기를 모두 잃습니다. 4·4면 7·0으로 시작합니다.' },
   { id: 'gameun_nun', name: '감은 눈', icon: '🙈', rarity: 'epic', price: 10, kind: '×배수',
     desc: '광을 버리면, 버린 장수에 1을 더한 만큼 다음 내기 배수가 곱해집니다. 다시 버리면 덮어쓰고, 다음 내기에 한 번만 적용됩니다.',
     xMult: (x) => (x.gameunNuneMult > 1 ? x.gameunNuneMult : 1) },
@@ -146,10 +146,9 @@ export function gameunNuneXMult(kwangDiscarded) {
   const n = Math.max(0, kwangDiscarded | 0);
   return n > 0 ? n + 1 : 0;
 }
-/** 몰아치기 — 버리기를 내기로 넘긴다. */
-export function applyMorachigiResources(plays, discards) {
-  const d = Math.max(0, discards | 0);
-  return { plays: Math.max(0, plays | 0) + d, discards: 0 };
+/** 몰아치기 — 내기 +3, 버리기 전부 상실. */
+export function applyMorachigiResources(plays, _discards) {
+  return { plays: Math.max(0, plays | 0) + 3, discards: 0 };
 }
 /** 거울 양옆. 거울은 다시 넣지 않는다. */
 export function geoulNeighborIds(jokerIds) {
