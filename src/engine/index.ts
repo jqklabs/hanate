@@ -11,7 +11,7 @@ export {
 } from './balance';
 export {
   HANDS, HAND_BY_ID, DAN_LABEL, handDisplayName,
-  topByBaseChip, detectHandInfo, detectHand,
+  topByBaseChip, handCandidates, detectHandInfo, detectHand, handRank,
 } from './hands';
 export {
   JOKERS, JOKER_BY_ID, RARITY_ORDER, RARITY_MONTH_MAX, GOTARYEONG_GOES_PER_MULT,

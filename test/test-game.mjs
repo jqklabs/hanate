@@ -116,16 +116,16 @@ console.log('[3] 계절 · 이달의 패');
   assert(r.handId === 'month2' && r.score === 16, `계절 통합 16점 (실제 ${r.score})`);
   const rBin = E.computeScore(m1pis, env({ seasonMonth: 1, binjariMult: 20 }));
   assert(rBin.mult === 22 && rBin.score === 8 * 22, `빈 자리 +20배수 (실제 mult ${rBin.mult} score ${rBin.score})`);
-  assert(E.cardChip(m1pi, env({ seasonMonth: 1, jokerIds: ['geokkuro'] })) === 80, '거꾸로: 이달 피 2×20×2=80');
-  assert(E.cardChip(m1kwang, env({ jokerIds: ['geokkuro'] })) === 240, '거꾸로: 광 12×20=240');
+  assert(E.cardChip(m1pi, env({ seasonMonth: 1, jokerIds: ['geokkuro'] })) === 80, '뒤집기: 이달 피 2×20×2=80');
+  assert(E.cardChip(m1kwang, env({ jokerIds: ['geokkuro'] })) === 240, '뒤집기: 광 12×20=240');
   assert(E.cardChip(m1pi, env({ boss: 'pibak', jokerIds: ['yeokbak'] })) === 2, '역박: 피박 칩 유지');
   const rInv = E.computeScore(m1pis, env({ seasonMonth: 1, jokerIds: ['geokkuro'] }));
   assert(rInv.handId === 'month2' && rInv.mult === 0.5 && rInv.score === 80,
-    `거꾸로 month2: 칩 160 × 1/2 = 80 (실제 mult ${rInv.mult} score ${rInv.score})`);
+    `뒤집기 month2: 칩 160 × 1/2 = 80 (실제 mult ${rInv.mult} score ${rInv.score})`);
   const kwangs = pick((c) => c.type === 'kwang').slice(0, 5);
   const rOg = E.computeScore(kwangs, env({ jokerIds: ['geokkuro'] }));
   assert(rOg.handId === 'ogwang' && rOg.mult === 1 / 12 && rOg.score === 100,
-    `거꾸로 오광: 칩 1200 × 1/12 = 100 (실제 mult ${rOg.mult} score ${rOg.score})`);
+    `뒤집기 오광: 칩 1200 × 1/12 = 100 (실제 mult ${rOg.mult} score ${rOg.score})`);
   const rAllin = E.computeScore(m1pis, env({ seasonMonth: 1, jokerIds: ['hansu_allin'] }));
   assert(rAllin.mult === 8 && rAllin.score === 8 * 8, `한 수 올인 ×4 (실제 mult ${rAllin.mult} score ${rAllin.score})`);
   const rYeok = E.computeScore(m1pis, env({ boss: 'pibak', jokerIds: ['yeokbak'] }));
@@ -168,6 +168,23 @@ console.log('[3.5] 코어/플랫 분리');
   const m11 = pick((c) => c.month === 11 && c.type !== 'kwang').slice(0, 2); // 쌍피5+피2 = 7
   const info = E.detectHandInfo([...m1, ...m11]);
   assert(info.handId === 'month2' && info.core.every((c) => c.month === 1), 'month2 짝 2개 → 칩 높은 1월 코어');
+  // 이달의 패면 최종 점수 기준 — 11월 짝이 이달이면 그쪽
+  const rSeasonPair = E.computeScore([...m1, ...m11], env({ seasonMonth: 11 }));
+  assert(rSeasonPair.handId === 'month2' && rSeasonPair.core.every((c) => c.month === 11),
+    'month2 이달 11월 짝이 최종점수 우위');
+  // 고도리=열끗 → 고도리·열끗셋 동시 성립, 평소엔 고도리(점수↑)
+  const birds = pick((c) => c.tags.includes('godori'));
+  assert(E.handCandidates(birds).map((c) => c.handId).sort().join(',') === 'godori,yeol3',
+    '고도리 후보는 godori+yeol3');
+  assert(E.computeScore(birds, env()).handId === 'godori', '고도리 vs 열끗셋 → 점수 큰 고도리');
+  // 뒤집기는 배수 역수 → 열끗셋(×1/3)이 고도리(×1/6)보다 점수 큼
+  assert(E.computeScore(birds, env({ jokerIds: ['geokkuro'] })).handId === 'yeol3',
+    '뒤집기 시 고도리보다 열끗셋');
+  // 홍단 3장: 단·띠셋 동시, 평소엔 단 / 뒤집기면 띠셋
+  const hong = pick((c) => c.tags.includes('hongdan'));
+  assert(E.computeScore(hong, env()).handId === 'dan', '홍단 → 단(점수)');
+  assert(E.computeScore(hong, env({ jokerIds: ['geokkuro'] })).handId === 'tti3',
+    '뒤집기 홍단 → 띠셋이 단보다 점수↑');
   // 무조합은 전부 코어 (flat 0, 배수 1)
   const noneCards = [pick((c) => c.month === 1 && c.type === 'kwang')[0], pick((c) => c.month === 2 && c.type === 'pi')[0]];
   const r3 = E.computeScore(noneCards, env());
@@ -268,7 +285,7 @@ console.log('[5] 특수패·박 회귀');
     `티어 분포 9/11/9/4/6 (실제 ${byR('common')}/${byR('rare')}/${byR('epic')}/${byR('legendary')}/${byR('dark')})`);
   const ssang = pick((c) => c.type === 'ssangpi').slice(0, 1);
   const rSs = E.computeScore(ssang, env({ jokerIds: ['ssangpi_sarang'] }));
-  assert(rSs.flat === 12, `쌍피보따리 flat +12 (실제 ${rSs.flat})`);
+  assert(rSs.flat === 16, `쌍피보따리 flat +16 (실제 ${rSs.flat})`);
   const rYj = E.computeScore(yeol3, env({ jokerIds: ['yeol_janchi'] }));
   assert(rYj.handId === 'yeol3' && rYj.mult === 6, `멍잔치 ×2 (실제 mult ${rYj.mult})`);
   const mixed = [yeol3[0], pick((c) => c.month === 1 && c.type === 'pi')[0], pick((c) => c.month === 3 && c.type === 'pi')[0]];
@@ -305,6 +322,10 @@ console.log('[5] 특수패·박 회귀');
     `피장사 기여도 +8 (실제 ${gainPi})`);
   assert(E.jokerMarginalGain(pi2, env({ jokerIds: ['pi_merchant'] }), 'gwangpari') === 0,
     '미보유 특수패 기여도 0');
+  assert(E.jokerMarginalGain(pi2, env({ jokerIds: ['hansu_allin'] }), 'hansu_allin') === 0,
+    '암흑 특수패는 이득(한계기여) 계산 안 함');
+  assert(E.jokerMarginalGain(pi2, env({ jokerIds: ['geokkuro'] }), 'geokkuro') === 0,
+    '암흑 뒤집기도 이득 계산 안 함');
   // 신규 6종
   const rCheot = E.computeScore([yeol1], env({ jokerIds: ['cheotsu'], isFirstPlay: true }));
   const rCheot2 = E.computeScore([yeol1], env({ jokerIds: ['cheotsu'] }));
@@ -319,7 +340,7 @@ console.log('[5] 특수패·박 회귀');
   const m7pi = pick((c) => c.month === 7 && c.type === 'pi')[0];
   const rMat = E.computeScore([m1pi, m7pi], env({ jokerIds: ['matdae'] }));
   const rMat0 = E.computeScore([m1pi, m7pi], env());
-  assert(rMat.mult === rMat0.mult + 3, `맞대 1–7월 +3배수 (실제 ${rMat.mult})`);
+  assert(rMat.mult === rMat0.mult + 5, `맞대 1–7월 +5배수 (실제 ${rMat.mult})`);
   const m2pi = pick((c) => c.month === 2 && c.type === 'pi')[0];
   const rMatNo = E.computeScore([m1pi, m2pi], env({ jokerIds: ['matdae'] }));
   assert(rMatNo.mult === E.computeScore([m1pi, m2pi], env()).mult, '맞대 1–2월 미발동');
@@ -330,7 +351,7 @@ console.log('[5] 특수패·박 회귀');
   assert(E.gotaryeongMultFromGoes(1) === 0 && E.gotaryeongMultFromGoes(2) === 1
     && E.gotaryeongMultFromGoes(3) === 1 && E.gotaryeongMultFromGoes(4) === 2,
     '고타령은 고 2회당 +1배수');
-  // 신규 5종: 재청·몰아치기·감은 눈·전당포·거울
+  // 신규 5종: 재청·밀어치기·감은 눈·전당포·거울
   assert(E.jaecheongXMult('none', ['yeol3']) === 1, '재청 무조합 1');
   assert(E.jaecheongXMult('yeol3', []) === 1, '재청 첫 수 1');
   assert(E.jaecheongXMult('yeol3', ['godori']) === 1, '재청 다른 족보 1');
@@ -364,9 +385,9 @@ console.log('[5] 특수패·박 회귀');
   assert(JSON.stringify(E.geoulNeighborIds(['geoul', 'geoul', 'meongtta'])) === JSON.stringify(['meongtta']),
     '거울은 재복사 금지');
   assert(E.applyMorachigiResources(4, 4).plays === 7 && E.applyMorachigiResources(4, 4).discards === 0,
-    '몰아치기 4·4 → 7·0');
+    '밀어치기 4·4 → 7·0');
   assert(E.applyMorachigiResources(1, 4).plays === 4 && E.applyMorachigiResources(4, 0).plays === 7,
-    '몰아치기 한 수 올인 4·0 · 버리기 0이어도 내기 +3');
+    '밀어치기 한 수 올인 4·0 · 버리기 0이어도 내기 +3');
   const w1 = E.rarityWeightsForMonth(1);
   const w12 = E.rarityWeightsForMonth(12);
   const w14 = E.rarityWeightsForMonth(14);

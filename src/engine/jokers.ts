@@ -20,8 +20,8 @@ export const JOKERS = [
     desc: '쪽(같은 달 두 장)을 내면 배수가 2 올라갑니다.',
     addMult: (x) => (x.handId === 'month2' ? 2 : 0) },
   { id: 'ssangpi_sarang', name: '쌍피보따리', icon: '🧧', rarity: 'common', price: 4, kind: '+점수',
-    desc: '낸 쌍피마다 12점을 배수 밖에서 더합니다.',
-    addChips: (x) => x.cards.filter((c) => effType(c) === 'ssangpi').length * 12 },
+    desc: '낸 쌍피마다 16점을 배수 밖에서 더합니다.',
+    addChips: (x) => x.cards.filter((c) => effType(c) === 'ssangpi').length * 16 },
   { id: 'tti_jjang', name: '띠장수', icon: '🎀', rarity: 'common', price: 4, kind: '+점수',
     desc: '낸 띠마다 5점을 배수 밖에서 더합니다.',
     addChips: (x) => x.cards.filter((c) => effType(c) === 'tti').length * 5 },
@@ -36,8 +36,8 @@ export const JOKERS = [
     addMult: (x) => (x.isLastPlay ? x.discardsLeft * 2 : 0) },
   // ── 레어 ───────────────────────────────────────────────
   { id: 'ssakssuri', name: '싹쓸이', icon: '🧹', rarity: 'rare', price: 6, kind: '+점수',
-    desc: '다섯 장을 딱 맞춰 내면 35점을 배수 밖에서 더합니다.',
-    addChips: (x) => (x.cards.length === 5 ? 35 : 0) },
+    desc: '다섯 장을 딱 맞춰 내면 50점을 배수 밖에서 더합니다.',
+    addChips: (x) => (x.cards.length === 5 ? 50 : 0) },
   { id: 'godori_kkun', name: '고도리꾼', icon: '🐦', rarity: 'rare', price: 6, kind: '+배수',
     desc: '족보에 포함되는 고도리 새(2·4·8월 멍)마다 배수가 3만큼 증가합니다.',
     addMult: (x) => x.core.filter((c) => c.tags.includes('godori')).length * 3 },
@@ -53,17 +53,17 @@ export const JOKERS = [
       return 1;
     } },
   { id: 'gwang_sujip', name: '광모이', icon: '🌟', rarity: 'rare', price: 6, kind: '+점수',
-    desc: '낸 광마다 10점을 배수 밖에서 더합니다. 비광도 포함됩니다.',
-    addChips: (x) => x.cards.filter((c) => c.type === 'kwang').length * 10 },
+    desc: '낸 광마다 14점을 배수 밖에서 더합니다. 비광도 포함됩니다.',
+    addChips: (x) => x.cards.filter((c) => c.type === 'kwang').length * 14 },
   { id: 'pi_ohjang', name: '피오장', icon: '🖐️', rarity: 'rare', price: 6, kind: '+배수',
-    desc: '피 다섯 장 족보를 내면 배수가 3 올라갑니다.',
-    addMult: (x) => (x.handId === 'pi5' ? 3 : 0) },
+    desc: '피 다섯 장 족보를 내면 배수가 5 올라갑니다.',
+    addMult: (x) => (x.handId === 'pi5' ? 5 : 0) },
   { id: 'chodan_aeho', name: '초단꾼', icon: '🌿', rarity: 'rare', price: 6, kind: '+배수',
     desc: '족보에 포함되는 초단마다 배수가 2만큼 증가합니다.',
     addMult: (x) => x.core.filter((c) => c.tags.includes('chodan')).length * 2 },
   { id: 'matdae', name: '맞대', icon: '⚔️', rarity: 'rare', price: 7, kind: '+배수',
-    desc: '한 수에 월 차이가 6인 쌍(1–7, 2–8…)이 있으면 배수가 3 올라갑니다.',
-    addMult: (x) => (hasMatdaePair(x.cards) ? 3 : 0) },
+    desc: '한 수에 월 차이가 6인 쌍(1–7, 2–8…)이 있으면 배수가 5 올라갑니다.',
+    addMult: (x) => (hasMatdaePair(x.cards) ? 5 : 0) },
   { id: 'geumjul', name: '금줄', icon: '🪢', rarity: 'rare', price: 7, kind: '성장',
     desc: '박으로 실제 잃은 칩 10점마다 영구로 배수가 1 올라갑니다. 팔면 초기화됩니다.',
     addMult: (x) => x.geumjulMult },
@@ -97,7 +97,7 @@ export const JOKERS = [
   { id: 'jaecheong', name: '재청', icon: '📣', rarity: 'epic', price: 10, kind: '×배수',
     desc: '이번 판에 이미 낸 족보를 다시 내면 배수가 2배가 됩니다. 바로 직전 수와 같은 족보면 3배가 됩니다. 무조합은 안 됩니다.',
     xMult: (x) => jaecheongXMult(x.handId, x.playedHandIds) },
-  { id: 'morachigi', name: '몰아치기', icon: '🌪️', rarity: 'epic', price: 9, kind: '변환',
+  { id: 'morachigi', name: '밀어치기', icon: '🌪️', rarity: 'epic', price: 9, kind: '변환',
     desc: '판이 열릴 때 내기를 3회 더 얻고, 버리기를 모두 잃습니다. 4·4면 7·0으로 시작합니다.' },
   { id: 'gameun_nun', name: '감은 눈', icon: '🙈', rarity: 'epic', price: 10, kind: '×배수',
     desc: '광을 버리면, 버린 장수에 1을 더한 만큼 다음 내기 배수가 곱해집니다. 다시 버리면 덮어쓰고, 다음 내기에 한 번만 적용됩니다.',
@@ -122,7 +122,7 @@ export const JOKERS = [
   { id: 'hansu_allin', name: '한 수 올인', icon: '❶', rarity: 'dark', price: 10, kind: '도박',
     desc: '내기가 1회로 줄어듭니다. 그 내기 배수가 4배가 됩니다.',
     xMult: () => 4 },
-  { id: 'geokkuro', name: '거꾸로', icon: '🔃', rarity: 'dark', price: 10, kind: '변환',
+  { id: 'geokkuro', name: '뒤집기', icon: '🔃', rarity: 'dark', price: 10, kind: '변환',
     desc: '족보 배수가 역수가 됩니다. 오광 ×12는 ×1/12. 모든 화투패의 기본 칩이 20배가 됩니다. 이달의 패 ×2, 박 0은 그 위에 그대로 적용됩니다.' },
   { id: 'yeokbak', name: '역박', icon: '⚔', rarity: 'dark', price: 10, kind: '도박',
     desc: '피박·광박·멍박의 칩 0을 무시합니다. 그 박 라운드에서는 배수가 2배가 됩니다.',
@@ -146,7 +146,7 @@ export function gameunNuneXMult(kwangDiscarded) {
   const n = Math.max(0, kwangDiscarded | 0);
   return n > 0 ? n + 1 : 0;
 }
-/** 몰아치기 — 내기 +3, 버리기 전부 상실. */
+/** 밀어치기 — 내기 +3, 버리기 전부 상실. */
 export function applyMorachigiResources(plays, _discards) {
   return { plays: Math.max(0, plays | 0) + 3, discards: 0 };
 }

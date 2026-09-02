@@ -1,7 +1,7 @@
 // @ts-nocheck — 엔진 본문은 기존 JS를 옮긴 것. 시그니처는 types.ts가 정본.
 import type { Card, ScoreEnv, ScoreResult, JokerCtx } from './types';
 import { baseChip, effType, oegilTypeMatch } from './cards';
-import { detectHandInfo, HAND_BY_ID } from './hands';
+import { handCandidates, handRank, HAND_BY_ID } from './hands';
 import { JOKER_BY_ID, geoulNeighborIds } from './jokers';
 
 /** 박으로 실제 잃은 카드 칩. 피박보험이면 0. */
@@ -33,7 +33,7 @@ export function scoreJokerCtx(cards, handId, core, env) {
     gameunNuneMult: env.gameunNuneMult || 0,
   };
 }
-// ── 카드 1장의 칩 (기본칩 → 거꾸로 ×20 → 이달의 패 ×2 → 박 0) ──
+// ── 카드 1장의 칩 (기본칩 → 뒤집기 ×20 → 이달의 패 ×2 → 박 0) ──
 // env: { boss, jokerIds, mitjangChips, seasonMonth?, flatBaseChip?, baseChipMult? }
 export function cardChip(c, env) {
   let chip = env.flatBaseChip ? env.flatBaseChip : baseChip(c);
@@ -55,14 +55,9 @@ export function cardChip(c, env) {
 
 // ── 점수 계산 (순수 함수 — 프리뷰와 실정산이 공유) ─────────
 // 족보 기본칩 없음. (코어 카드칩) × 족보 배수 + 나머지(flat).
+// 성립 족보가 여러 개면 최종 점수가 큰 쪽을 채택 (동점이면 HANDS 앞쪽).
 // 반환: { handId, chips, mult, flat, score, kwangPlayed }
-export function computeScore(cards, env) {
-  const biAsNormal = (env.jokerIds || []).includes('bigwang_usan');
-  let { handId, core } = detectHandInfo(cards, { biAsNormal });
-  if (env.boss === 'no_shake' && ['month2', 'month3', 'chongtong'].includes(handId)) {
-    handId = 'none';
-    core = [...cards]; // 무조합 강등 시엔 전부 코어 (배수 1이라 결과 동일)
-  }
+function scoreFixedHand(cards, env, handId, core) {
   const hd = HAND_BY_ID[handId];
   let chips = 0;
   let mult = hd.mult;
@@ -98,9 +93,35 @@ export function computeScore(cards, env) {
   };
 }
 
-/** 해당 특수패가 이번 내기에 기여한 점수 (leave-one-out) */
+export function computeScore(cards, env) {
+  const biAsNormal = (env.jokerIds || []).includes('bigwang_usan');
+  let cands = handCandidates(cards, { biAsNormal });
+  if (env.boss === 'no_shake') {
+    cands = cands
+      .map((c) => (['month2', 'month3', 'chongtong'].includes(c.handId)
+        ? { handId: 'none', core: [...cards] }
+        : c))
+      // 무조합 강등 중복 제거
+      .filter((c, i, arr) => c.handId !== 'none' || arr.findIndex((x) => x.handId === 'none') === i);
+  }
+  if (!cands.length) cands = [{ handId: 'none', core: [...cards] }];
+
+  let best = null;
+  for (const cand of cands) {
+    const r = scoreFixedHand(cards, env, cand.handId, cand.core);
+    if (!best
+      || r.score > best.score
+      || (r.score === best.score && handRank(r.handId) < handRank(best.handId))) {
+      best = r;
+    }
+  }
+  return best;
+}
+
+/** 해당 특수패가 이번 내기에 기여한 점수 (leave-one-out). 암흑은 이득 계산 안 함. */
 export function jokerMarginalGain(cards, env, jokerId) {
   if (!env.jokerIds.includes(jokerId)) return 0;
+  if (JOKER_BY_ID[jokerId]?.rarity === 'dark') return 0;
   const withAll = computeScore(cards, env).score;
   const without = computeScore(cards, {
     ...env,
