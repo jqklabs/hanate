@@ -35,6 +35,10 @@ export interface ScoreEnv {
   money?: number;
   playedHandIds?: string[];
   gameunNuneMult?: number;
+  /** 팔도유람 — 런 중 이미 득점한 월. 있으면 이번 내기 카드와 합쳐 계산. */
+  scoredMonths?: number[];
+  /** scoredMonths 없을 때 테스트·간이용 월 수 */
+  paldoyuramMonths?: number;
 }
 
 export interface JokerCtx {
@@ -53,6 +57,7 @@ export interface JokerCtx {
   money: number;
   playedHandIds: string[];
   gameunNuneMult: number;
+  paldoyuramMonths: number;
 }
 
 export interface JokerDef {

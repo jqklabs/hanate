@@ -2,7 +2,7 @@
 import type { Card, ScoreEnv, ScoreResult, JokerCtx } from './types';
 import { baseChip, effType, oegilTypeMatch } from './cards';
 import { handCandidates, handRank, HAND_BY_ID } from './hands';
-import { JOKER_BY_ID, geoulNeighborIds } from './jokers';
+import { JOKER_BY_ID, geoulNeighborIds, mergeScoredMonths } from './jokers';
 
 /** 박으로 실제 잃은 카드 칩. 피박보험이면 0. */
 export function bakChipLoss(cards, env) {
@@ -31,6 +31,10 @@ export function scoreJokerCtx(cards, handId, core, env) {
     money: env.money || 0,
     playedHandIds: env.playedHandIds || [],
     gameunNuneMult: env.gameunNuneMult || 0,
+    // scoredMonths가 있으면 이번 내기 카드 월을 합쳐 채택(12번째 달에서 바로 금수강산)
+    paldoyuramMonths: env.scoredMonths
+      ? mergeScoredMonths(env.scoredMonths, cards).length
+      : (env.paldoyuramMonths || 0),
   };
 }
 // ── 카드 1장의 칩 (기본칩 → 뒤집기 ×20 → 이달의 패 ×2 → 박 0) ──

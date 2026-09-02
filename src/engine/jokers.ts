@@ -103,9 +103,10 @@ export const JOKERS = [
     desc: '광을 버리면, 버린 장수에 1을 더한 만큼 다음 내기 배수가 곱해집니다. 다시 버리면 덮어쓰고, 다음 내기에 한 번만 적용됩니다.',
     xMult: (x) => (x.gameunNuneMult > 1 ? x.gameunNuneMult : 1) },
   // ── 레전더리 ───────────────────────────────────────────
-  { id: 'sipidal', name: '열두사철', icon: '🗓️', rarity: 'legendary', price: 13, kind: '+배수',
-    desc: '낸 패에 섞인 달 수마다 배수가 2씩 올라갑니다.',
-    addMult: (x) => new Set(x.cards.map((c) => c.month)).size * 2 },
+  { id: 'paldoyuram', name: '팔도유람', icon: '🗓️', rarity: 'legendary', price: 13, kind: '도감',
+    desc: '득점한 서로 다른 달마다 배수가 1 올라갑니다. 12달을 채우면 금수강산이 되어 +12를 유지하고 배수가 3배가 됩니다. 늦게 사도 이미 낸 달을 소급합니다.',
+    addMult: (x) => paldoyuramAddMult(x.paldoyuramMonths),
+    xMult: (x) => paldoyuramXMult(x.paldoyuramMonths) },
   { id: 'ogwang_kkum', name: '오광소원', icon: '👑', rarity: 'legendary', price: 14, kind: '×배수',
     desc: '광을 세 장 이상 내면 배수가 2.5배가 됩니다. 비광도 포함됩니다.',
     xMult: (x) => (x.cards.filter((c) => c.type === 'kwang').length >= 3 ? 2.5 : 1) },
@@ -132,6 +133,26 @@ export const JOKERS = [
     xMult: (x) => (x.oegilKind ? (oegilHandMatch(x.handId, x.oegilKind) ? 16 : 8) : 1) },
 ];
 export const JOKER_BY_ID = Object.fromEntries(JOKERS.map((j) => [j.id, j]));
+/** 팔도유람 — 런 중 득점한 서로 다른 카드 월. 12면 금수강산. */
+export const PALDOYURAM_GOAL = 12;
+export function paldoyuramAddMult(months) {
+  return Math.min(PALDOYURAM_GOAL, Math.max(0, months | 0));
+}
+export function paldoyuramXMult(months) {
+  return (months | 0) >= PALDOYURAM_GOAL ? 3 : 1;
+}
+export function paldoyuramEvolved(months) {
+  return (months | 0) >= PALDOYURAM_GOAL;
+}
+/** 기존 도감에 이번 내기 카드 월을 합친다. */
+export function mergeScoredMonths(prev, cards) {
+  const set = new Set(Array.isArray(prev) ? prev : []);
+  for (const c of cards || []) {
+    const m = c && (c.month | 0);
+    if (m >= 1 && m <= 12) set.add(m);
+  }
+  return [...set].sort((a, b) => a - b);
+}
 /** 재청 — 이미 낸 족보 ×2, 직전 수와 같으면 ×3. 무조합 1. */
 export function jaecheongXMult(handId, playedHandIds) {
   if (!handId || handId === 'none') return 1;

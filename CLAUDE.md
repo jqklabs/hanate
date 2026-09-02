@@ -39,7 +39,7 @@ index.html     마크업 + `<script type="module" src="/src/main.ts">`
 - 프리뷰는 `computeScore` 드라이런 — 경제 트리거(광팔이 지급, 통계)는 `playSelected()`에서만.
 - 연쇄 고는 `checkAfterPlay()` 재진입으로 처리 (재귀·모달 중첩 금지).
 - 안개(angae) 뒷면 카드: 새로 뽑힌 카드만 뒷면 지정 가능, 공개된 카드는 다시 안 뒤집힘.
-- 판 시작 리셋 제외 항목: money, jokers, mitjangChips, usedBosses, makgeolli, stats, binjariMult, slotsLocked.
+- 판 시작 리셋 제외 항목: money, jokers, mitjangChips, usedBosses, makgeolli, stats, binjariMult, slotsLocked, scoredMonths.
 - 카드 칩 적용 순서: 기본칩(묻고 더블로 가면 20) → 뒤집기 ×20 → 이달의 패 ×2 → 외길(다른 종류 0) → 박 디버프 0 (순서 바꾸면 밸런스 붕괴). 낮/밤 +2 칩은 없음.
 - 점수 = (족보칩 + **족보 구성(core) 카드** 칩) × 배수 + 나머지 카드 칩(flat, 배수 없음). 성립 족보 후보는 `handCandidates`가 모으고, `computeScore`가 **최종 점수 최대**인 쪽을 채택(동점이면 HANDS 앞쪽). 족보·core 정의는 hands 한곳, 선정은 점수.
 - **족보 기본칩 없음** — 점수는 카드칩×배수만. `HANDS[].mult`만 족보 가치. core는 족보 구성에 **필요한 장수**만 (열끗셋·띠셋은 3장, 초과분은 flat).

@@ -289,8 +289,17 @@ console.log('[5] 특수패·박 회귀');
   const rYj = E.computeScore(yeol3, env({ jokerIds: ['yeol_janchi'] }));
   assert(rYj.handId === 'yeol3' && rYj.mult === 6, `멍잔치 ×2 (실제 mult ${rYj.mult})`);
   const mixed = [yeol3[0], pick((c) => c.month === 1 && c.type === 'pi')[0], pick((c) => c.month === 3 && c.type === 'pi')[0]];
-  const rSip = E.computeScore(mixed, env({ jokerIds: ['sipidal'] }));
-  assert(rSip.mult === E.HAND_BY_ID[rSip.handId].mult + 6, `열두사철 달3 × +2 (실제 mult ${rSip.mult})`);
+  const rPal = E.computeScore(mixed, env({ jokerIds: ['paldoyuram'], paldoyuramMonths: 3 }));
+  assert(rPal.mult === E.HAND_BY_ID[rPal.handId].mult + 3, `팔도유람 도감3 +3 (실제 mult ${rPal.mult})`);
+  const atlas = E.mergeScoredMonths([1, 2], mixed);
+  assert(atlas.length >= 3 && atlas.includes(1), `팔도유람 도감 합치기 (실제 ${atlas})`);
+  const rEvo = E.computeScore(mixed, env({ jokerIds: ['paldoyuram'], paldoyuramMonths: 12 }));
+  assert(E.paldoyuramEvolved(12) && rEvo.mult === (E.HAND_BY_ID[rEvo.handId].mult + 12) * 3,
+    `금수강산 +12×3 (실제 mult ${rEvo.mult})`);
+  const rLive = E.computeScore(mixed, env({ jokerIds: ['paldoyuram'], scoredMonths: [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12] }));
+  // mixed에 새 월이 있어도 이미 11종+이면 합쳐 12 → ×3 (이번 내기 소급)
+  assert(rLive.mult === (E.HAND_BY_ID[rLive.handId].mult + 12) * 3,
+    `팔도유람 이번 내기 합쳐 금수강산 (실제 mult ${rLive.mult})`);
   const rPae = E.computeScore(yeol3, env({ jokerIds: ['paewang'] }));
   assert(rPae.mult === 6, `명인 무조합 아니면 ×2 (실제 ${rPae.mult})`);
   const rPaeNone = E.computeScore([yeol1], env({ jokerIds: ['paewang'] }));

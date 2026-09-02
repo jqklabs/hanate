@@ -90,6 +90,7 @@ export class HwatuEnv {
   geumjulLost = 0;
   geumjulMult = 0;
   gotaryeongGoes = 0;
+  scoredMonths: number[] = [];
   usedBosses: string[] = [];
   nextBoss: string | null = null;
   bossCandidates: string[] = [];
@@ -134,6 +135,7 @@ export class HwatuEnv {
     this.geumjulLost = 0;
     this.geumjulMult = 0;
     this.gotaryeongGoes = 0;
+    this.scoredMonths = [];
     this.usedBosses = [];
     this.nextBoss = null;
     this.bossCandidates = [];
@@ -168,6 +170,7 @@ export class HwatuEnv {
     e.geumjulLost = this.geumjulLost;
     e.geumjulMult = this.geumjulMult;
     e.gotaryeongGoes = this.gotaryeongGoes;
+    e.scoredMonths = [...this.scoredMonths];
     e.usedBosses = [...this.usedBosses];
     e.nextBoss = this.nextBoss;
     e.bossCandidates = [...this.bossCandidates];
@@ -241,6 +244,7 @@ export class HwatuEnv {
       money: this.money,
       playedHandIds: this.playedHandIds,
       gameunNuneMult: this.jokers.includes('gameun_nun') ? this.gameunNuneMult : 0,
+      scoredMonths: this.jokers.includes('paldoyuram') ? this.scoredMonths : undefined,
     };
   }
   private startDay() {
@@ -309,6 +313,7 @@ export class HwatuEnv {
       this.geumjulMult = Math.floor(this.geumjulLost / 10);
     }
     this.playedHandIds.push(result.handId);
+    this.scoredMonths = E.mergeScoredMonths(this.scoredMonths, cards);
     if (this.jokers.includes('gameun_nun')) this.gameunNuneMult = 0;
     this.firstPlay = false;
     const ids = new Set(cards.map((c) => c.uid));
@@ -710,7 +715,7 @@ export class HwatuEnv {
 
 const SHOP_PRI: Record<string, number> = {
   mudgo_double: 95, geokkuro: 94, yeokbak: 88, hansu_allin: 70, oegil: 60, binjari: 40,
-  paewang: 92, geoul: 90, sipidal: 86, ogwang_kkum: 84, heundeulgi: 82, pibak_boheom: 80,
+  paewang: 92, geoul: 90, paldoyuram: 86, ogwang_kkum: 84, heundeulgi: 82, pibak_boheom: 80,
   mitjang: 78, gotaryeong: 76, geumjul: 74, dangol: 72, yeol_janchi: 70,
   jaecheong: 69, gameun_nun: 68, poktan: 67, morachigi: 66, godori_kkun: 65, bigwang_usan: 64,
   samgwang_nori: 62, jeondangpo: 58,
@@ -732,6 +737,7 @@ function playEnv(env: HwatuEnv) {
     money: env.money,
     playedHandIds: env.playedHandIds,
     gameunNuneMult: env.jokers.includes('gameun_nun') ? env.gameunNuneMult : 0,
+    scoredMonths: env.jokers.includes('paldoyuram') ? env.scoredMonths : undefined,
   };
 }
 
@@ -768,7 +774,7 @@ export function cheapAction(env: HwatuEnv): number {
 function cheapOegil(env: HwatuEnv): number {
   const ids = env.jokers.join(' ');
   if (/ogwang|samgwang|gwang_sujip|bikwang/.test(ids)) return ACT.OEGIL_KWANG;
-  if (/paewang|sipidal|yeol_janchi/.test(ids)) return ACT.OEGIL_YEOL;
+  if (/paewang|paldoyuram|yeol_janchi/.test(ids)) return ACT.OEGIL_YEOL;
   if (/godori|chodan|tti_jjang/.test(ids)) return ACT.OEGIL_TTI;
   return ACT.OEGIL_PI;
 }

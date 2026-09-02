@@ -16,7 +16,8 @@ export {
 export {
   JOKERS, JOKER_BY_ID, RARITY_ORDER, RARITY_MONTH_MAX, GOTARYEONG_GOES_PER_MULT,
   gotaryeongMultFromGoes, jaecheongXMult, gameunNuneXMult, applyMorachigiResources,
-  geoulNeighborIds, rarityWeightsForMonth, shopRarityMonth,
+  geoulNeighborIds, PALDOYURAM_GOAL, paldoyuramAddMult, paldoyuramXMult, paldoyuramEvolved,
+  mergeScoredMonths, rarityWeightsForMonth, shopRarityMonth,
   darkOfferChance, rollJokerRarity, rollShopRarity,
 } from './jokers';
 export { BOSSES, BOSS_BY_ID } from './bosses';
