@@ -3,7 +3,7 @@ import type { JokerDef, Rarity, RngFn } from './types';
 import { effType, oegilHandMatch, hasMatdaePair } from './cards';
 import { ROUNDS } from './balance';
 
-// ── 특수패 34종 (커먼 / 레어 / 에픽 / 레전더리 / 암흑) ────
+// ── 특수패 39종 (커먼 / 레어 / 에픽 / 레전더리 / 암흑) ────
 // 오버레이 붓글씨(SSRock)에 없는 한글: 암·묻·잃 등. 제목·패 이름은 있는 글자만.
 // 훅 ctx: scoreJokerCtx(...)
 export const JOKERS = [
@@ -70,6 +70,9 @@ export const JOKERS = [
   { id: 'gotaryeong', name: '고타령', icon: '🥁', rarity: 'rare', price: 7, kind: '성장',
     desc: '고를 두 번 선언할 때마다 영구로 배수가 1 올라갑니다. 팔면 초기화됩니다.',
     addMult: (x) => x.gotaryeongMult },
+  { id: 'jeondangpo', name: '전당포', icon: '🪙', rarity: 'rare', price: 7, kind: '+점수',
+    desc: '보유 냥 1개마다 3점을 배수 밖에서 더합니다. 냥을 쓰지 않습니다.',
+    addChips: (x) => (x.money || 0) * 3 },
   // ── 에픽 ───────────────────────────────────────────────
   { id: 'bigwang_usan', name: '비광우산', icon: '☔', rarity: 'epic', price: 9, kind: '×배수',
     desc: '12월 패를 삼광·고도리·초단·띠셋에 쓸 수 있게 해 줍니다(비삼광·비고도리 대신). 족보에 포함되는 12월이 있으면 배수가 2배가 됩니다. 무조합에는 적용되지 않습니다.',
@@ -91,6 +94,14 @@ export const JOKERS = [
   { id: 'samgwang_nori', name: '삼광판', icon: '✨', rarity: 'epic', price: 10, kind: '+배수',
     desc: '족보에 포함되는 광마다 배수가 3만큼 증가합니다. 비광도 포함됩니다.',
     addMult: (x) => x.core.filter((c) => c.type === 'kwang').length * 3 },
+  { id: 'jaecheong', name: '재청', icon: '📣', rarity: 'epic', price: 10, kind: '×배수',
+    desc: '이번 판에 이미 낸 족보를 다시 내면 배수가 2배가 됩니다. 바로 직전 수와 같은 족보면 3배가 됩니다. 무조합은 안 됩니다.',
+    xMult: (x) => jaecheongXMult(x.handId, x.playedHandIds) },
+  { id: 'morachigi', name: '몰아치기', icon: '🌪️', rarity: 'epic', price: 9, kind: '변환',
+    desc: '판이 열릴 때 버리기를 모두 잃고, 그 수만큼 내기를 얻습니다. 4·4면 8·0으로 시작합니다.' },
+  { id: 'gameun_nun', name: '감은 눈', icon: '🙈', rarity: 'epic', price: 10, kind: '×배수',
+    desc: '광을 버리면, 버린 장수에 1을 더한 만큼 다음 내기 배수가 곱해집니다. 다시 버리면 덮어쓰고, 다음 내기에 한 번만 적용됩니다.',
+    xMult: (x) => (x.gameunNuneMult > 1 ? x.gameunNuneMult : 1) },
   // ── 레전더리 ───────────────────────────────────────────
   { id: 'sipidal', name: '열두사철', icon: '🗓️', rarity: 'legendary', price: 13, kind: '+배수',
     desc: '낸 패에 섞인 달 수마다 배수가 2씩 올라갑니다.',
@@ -101,24 +112,57 @@ export const JOKERS = [
   { id: 'paewang', name: '명인', icon: '🥋', rarity: 'legendary', price: 15, kind: '×배수',
     desc: '족보가 성립하면 배수가 2배가 됩니다. 무조합에는 적용되지 않습니다.',
     xMult: (x) => (x.handId !== 'none' ? 2 : 1) },
+  { id: 'geoul', name: '거울', icon: '🪞', rarity: 'legendary', price: 15, kind: '복사',
+    desc: '왼쪽과 오른쪽 특수패의 효과를 한 번씩 더 발동합니다. 빈 칸은 건너뛰고, 거울은 다시 복사하지 않습니다.' },
   // ── 암흑 (암흑 주막 전용) ────────────────────────────────
-  { id: 'mudgo_double', name: '더블로 가', icon: '♠️', rarity: 'dark', price: 16, kind: '변환',
+  { id: 'mudgo_double', name: '더블로 가', icon: '♠️', rarity: 'dark', price: 10, kind: '변환',
     desc: '버리기 2회를 줄입니다. 모든 화투패의 기본 칩이 20이 됩니다. 이달의 패 ×2, 박 0은 그 위에 그대로 적용됩니다.' },
-  { id: 'binjari', name: '모두가 빈 자리', icon: '◻', rarity: 'dark', price: 18, kind: '올인',
+  { id: 'binjari', name: '모두가 빈 자리', icon: '◻', rarity: 'dark', price: 10, kind: '올인',
     desc: '사는 즉시 보유 특수패를 전부 반값에 팝니다. 슬롯이 모두 잠기고, 이후 모든 내기에 (팔기 직전 보유 수 × 10) 배수를 더합니다.' },
-  { id: 'hansu_allin', name: '한 수 올인', icon: '❶', rarity: 'dark', price: 17, kind: '도박',
+  { id: 'hansu_allin', name: '한 수 올인', icon: '❶', rarity: 'dark', price: 10, kind: '도박',
     desc: '내기가 1회로 줄어듭니다. 그 내기 배수가 4배가 됩니다.',
     xMult: () => 4 },
-  { id: 'geokkuro', name: '거꾸로', icon: '🔃', rarity: 'dark', price: 16, kind: '변환',
+  { id: 'geokkuro', name: '거꾸로', icon: '🔃', rarity: 'dark', price: 10, kind: '변환',
     desc: '족보 배수가 역수가 됩니다. 오광 ×12는 ×1/12. 모든 화투패의 기본 칩이 20배가 됩니다. 이달의 패 ×2, 박 0은 그 위에 그대로 적용됩니다.' },
-  { id: 'yeokbak', name: '역박', icon: '⚔', rarity: 'dark', price: 17, kind: '도박',
+  { id: 'yeokbak', name: '역박', icon: '⚔', rarity: 'dark', price: 10, kind: '도박',
     desc: '피박·광박·멍박의 칩 0을 무시합니다. 그 박 라운드에서는 배수가 2배가 됩니다.',
     xMult: (x) => (x.boss && ['pibak', 'gwangbak', 'meongbak'].includes(x.boss) ? 2 : 1) },
-  { id: 'oegil', name: '외길', icon: '一', rarity: 'dark', price: 17, kind: '올인',
+  { id: 'oegil', name: '외길', icon: '一', rarity: 'dark', price: 10, kind: '올인',
     desc: '살 때 광·열끗·띠·피 중 하나를 고릅니다. 그 종류만 칩이 남고 배수가 8배가 됩니다. 그 종류 족보면 한 번 더 2배입니다.',
     xMult: (x) => (x.oegilKind ? (oegilHandMatch(x.handId, x.oegilKind) ? 16 : 8) : 1) },
 ];
 export const JOKER_BY_ID = Object.fromEntries(JOKERS.map((j) => [j.id, j]));
+/** 재청 — 이미 낸 족보 ×2, 직전 수와 같으면 ×3. 무조합 1. */
+export function jaecheongXMult(handId, playedHandIds) {
+  if (!handId || handId === 'none') return 1;
+  const prev = playedHandIds || [];
+  if (!prev.length) return 1;
+  if (prev[prev.length - 1] === handId) return 3;
+  if (prev.includes(handId)) return 2;
+  return 1;
+}
+/** 감은 눈 — 버린 광 N장 → 다음 내기 ×(N+1). 0장이면 꺼짐. */
+export function gameunNuneXMult(kwangDiscarded) {
+  const n = Math.max(0, kwangDiscarded | 0);
+  return n > 0 ? n + 1 : 0;
+}
+/** 몰아치기 — 버리기를 내기로 넘긴다. */
+export function applyMorachigiResources(plays, discards) {
+  const d = Math.max(0, discards | 0);
+  return { plays: Math.max(0, plays | 0) + d, discards: 0 };
+}
+/** 거울 양옆. 거울은 다시 넣지 않는다. */
+export function geoulNeighborIds(jokerIds) {
+  const ids = jokerIds || [];
+  const out = [];
+  ids.forEach((id, i) => {
+    if (id !== 'geoul') return;
+    for (const n of [ids[i - 1], ids[i + 1]]) {
+      if (n && n !== 'geoul' && !out.includes(n)) out.push(n);
+    }
+  });
+  return out;
+}
 export const RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'];
 export const RARITY_MONTH_MAX = 14;
 export const GOTARYEONG_GOES_PER_MULT = 2;

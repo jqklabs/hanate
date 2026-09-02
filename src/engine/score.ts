@@ -2,7 +2,7 @@
 import type { Card, ScoreEnv, ScoreResult, JokerCtx } from './types';
 import { baseChip, effType, oegilTypeMatch } from './cards';
 import { detectHandInfo, HAND_BY_ID } from './hands';
-import { JOKER_BY_ID } from './jokers';
+import { JOKER_BY_ID, geoulNeighborIds } from './jokers';
 
 /** 박으로 실제 잃은 카드 칩. 피박보험이면 0. */
 export function bakChipLoss(cards, env) {
@@ -28,6 +28,9 @@ export function scoreJokerCtx(cards, handId, core, env) {
     geumjulMult: env.geumjulMult || 0,
     gotaryeongMult: env.gotaryeongMult || 0,
     oegilKind: env.oegilKind || null,
+    money: env.money || 0,
+    playedHandIds: env.playedHandIds || [],
+    gameunNuneMult: env.gameunNuneMult || 0,
   };
 }
 // ── 카드 1장의 칩 (기본칩 → 거꾸로 ×20 → 이달의 패 ×2 → 박 0) ──
@@ -73,11 +76,20 @@ export function computeScore(cards, env) {
   }
 
   const ctx = scoreJokerCtx(cards, handId, core, env);
+  const ids = env.jokerIds || [];
   // +칩 특수패는 배수 밖(flat)으로만 가산
-  for (const id of env.jokerIds) { const j = JOKER_BY_ID[id]; if (j.addChips) flat += j.addChips(ctx); }
-  for (const id of env.jokerIds) { const j = JOKER_BY_ID[id]; if (j.addMult)  mult  += j.addMult(ctx); }
+  for (const id of ids) { const j = JOKER_BY_ID[id]; if (j?.addChips) flat += j.addChips(ctx); }
+  for (const id of ids) { const j = JOKER_BY_ID[id]; if (j?.addMult)  mult  += j.addMult(ctx); }
   if (env.binjariMult) mult += env.binjariMult;
-  for (const id of env.jokerIds) { const j = JOKER_BY_ID[id]; if (j.xMult)    mult  *= j.xMult(ctx); }
+  for (const id of ids) { const j = JOKER_BY_ID[id]; if (j?.xMult)    mult  *= j.xMult(ctx); }
+  // 거울 — 양옆을 한 번 더. 거울은 다시 복사하지 않음
+  for (const id of geoulNeighborIds(ids)) {
+    const j = JOKER_BY_ID[id];
+    if (!j) continue;
+    if (j.addChips) flat += j.addChips(ctx);
+    if (j.addMult) mult += j.addMult(ctx);
+    if (j.xMult) mult *= j.xMult(ctx);
+  }
 
   return {
     handId, core, chips, mult, flat,

@@ -11,6 +11,9 @@
     "golden": "node test/golden/run.mjs",
     "golden:update": "node test/golden/run.mjs --update",
     "golden:check": "node test/golden/run.mjs --twice",
+    "bot:train": "vite-node bot/train.ts",
+    "bot:train:until": "vite-node bot/train.ts --until-month 10 --workers 4",
+    "bot:eval": "vite-node bot/train.ts --eval",
     "og:gen": "node scripts/og-landing-html.mjs",
     "firebase:config": "node scripts/generate-firebase-config.mjs"
   },

@@ -124,10 +124,6 @@
     display: inline; opacity: 1; transform: scale(1);
     transition: transform .18s ease, opacity .15s;
   }
-  #juice-tally .jt-times.is-div,
-  #jsp-tally .jt-times.is-div,
-  #juice-tally .jt-mult.is-div,
-  #jsp-tally .jt-mult.is-div { color: var(--mult-div); }
   #juice-tally .jt-mult,
   #jsp-tally .jt-mult {
     font-size: 34px; color: var(--mult-red);

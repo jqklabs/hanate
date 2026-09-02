@@ -32,6 +32,9 @@ export interface ScoreEnv {
   discardsLeft?: number;
   geumjulMult?: number;
   gotaryeongMult?: number;
+  money?: number;
+  playedHandIds?: string[];
+  gameunNuneMult?: number;
 }
 
 export interface JokerCtx {
@@ -47,6 +50,9 @@ export interface JokerCtx {
   geumjulMult: number;
   gotaryeongMult: number;
   oegilKind: OegilKind | null;
+  money: number;
+  playedHandIds: string[];
+  gameunNuneMult: number;
 }
 
 export interface JokerDef {

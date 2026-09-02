@@ -54,7 +54,6 @@
     --font-overlay-num: 'SSRockNum', 'SSRock', 'BaigeTianxing', 'Malgun Gothic', sans-serif;
     --font-ui: 'SSRockNum', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
     --font-joker: 'SSRock', 'BaigeTianxing', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
-    --mult-div: #3a1650;
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }

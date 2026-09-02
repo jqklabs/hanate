@@ -261,10 +261,10 @@ console.log('[5] 특수패·박 회귀');
   assert(rPi.flat === 8 && rPi.score === rPi.chips * rPi.mult + 8,
     `피장사도 flat (실제 flat ${rPi.flat} score ${rPi.score})`);
   // 4티어 로스터·신규 훅
-  assert(E.JOKERS.length === 34, `특수패 34종 (실제 ${E.JOKERS.length})`);
+  assert(E.JOKERS.length === 39, `특수패 39종 (실제 ${E.JOKERS.length})`);
   const byR = (r) => E.JOKERS.filter((j) => j.rarity === r).length;
-  assert(byR('common') === 9 && byR('rare') === 10 && byR('epic') === 6 && byR('legendary') === 3 && byR('dark') === 6,
-    `티어 분포 9/10/6/3/6 (실제 ${byR('common')}/${byR('rare')}/${byR('epic')}/${byR('legendary')}/${byR('dark')})`);
+  assert(byR('common') === 9 && byR('rare') === 11 && byR('epic') === 9 && byR('legendary') === 4 && byR('dark') === 6,
+    `티어 분포 9/11/9/4/6 (실제 ${byR('common')}/${byR('rare')}/${byR('epic')}/${byR('legendary')}/${byR('dark')})`);
   const ssang = pick((c) => c.type === 'ssangpi').slice(0, 1);
   const rSs = E.computeScore(ssang, env({ jokerIds: ['ssangpi_sarang'] }));
   assert(rSs.flat === 12, `쌍피보따리 flat +12 (실제 ${rSs.flat})`);
@@ -329,6 +329,43 @@ console.log('[5] 특수패·박 회귀');
   assert(E.gotaryeongMultFromGoes(1) === 0 && E.gotaryeongMultFromGoes(2) === 1
     && E.gotaryeongMultFromGoes(3) === 1 && E.gotaryeongMultFromGoes(4) === 2,
     '고타령은 고 2회당 +1배수');
+  // 신규 5종: 재청·몰아치기·감은 눈·전당포·거울
+  assert(E.jaecheongXMult('none', ['yeol3']) === 1, '재청 무조합 1');
+  assert(E.jaecheongXMult('yeol3', []) === 1, '재청 첫 수 1');
+  assert(E.jaecheongXMult('yeol3', ['godori']) === 1, '재청 다른 족보 1');
+  assert(E.jaecheongXMult('yeol3', ['godori', 'yeol3']) === 3, '재청 직전 같으면 ×3');
+  assert(E.jaecheongXMult('yeol3', ['yeol3', 'godori']) === 2, '재청 예전에 냈으면 ×2');
+  const rJae0 = E.computeScore(yeol3, env({ jokerIds: ['jaecheong'] }));
+  assert(rJae0.mult === rMak0.mult, '재청 첫 수는 ×1');
+  const rJae2 = E.computeScore(yeol3, env({ jokerIds: ['jaecheong'], playedHandIds: ['yeol3', 'godori'] }));
+  assert(rJae2.mult === rMak0.mult * 2, `재청 이미 낸 족보 ×2 (실제 ${rJae2.mult})`);
+  const rJae3 = E.computeScore(yeol3, env({ jokerIds: ['jaecheong'], playedHandIds: ['godori', 'yeol3'] }));
+  assert(rJae3.mult === rMak0.mult * 3, `재청 직전 같은 족보 ×3 (실제 ${rJae3.mult})`);
+  const rJaeNone = E.computeScore([yeol1], env({ jokerIds: ['jaecheong'], playedHandIds: ['none'] }));
+  assert(rJaeNone.handId === 'none' && rJaeNone.mult === 1, '재청 무조합 ×1');
+  assert(E.gameunNuneXMult(0) === 0 && E.gameunNuneXMult(1) === 2 && E.gameunNuneXMult(2) === 3,
+    '감은 눈 광N → ×(N+1), 0이면 꺼짐');
+  const rGn0 = E.computeScore(yeol3, env({ jokerIds: ['gameun_nun'] }));
+  assert(rGn0.mult === rMak0.mult, '감은 눈 0이면 배수 그대로');
+  const rGn3 = E.computeScore(yeol3, env({ jokerIds: ['gameun_nun'], gameunNuneMult: 3 }));
+  assert(rGn3.mult === rMak0.mult * 3, `감은 눈 광2 → ×3 (실제 ${rGn3.mult})`);
+  const rJd = E.computeScore(yeol3, env({ jokerIds: ['jeondangpo'], money: 12 }));
+  assert(rJd.flat === rMak0.flat + 36, `전당포 12냥 ×3 = +36 (실제 ${rJd.flat})`);
+  const rMir0 = E.computeScore(yeol3, env({ jokerIds: ['meongtta'] }));
+  const rMir = E.computeScore(yeol3, env({ jokerIds: ['meongtta', 'geoul'] }));
+  assert(rMir.flat === rMir0.flat + 18, `거울이 멍따 +18을 한 번 더 (실제 ${rMir.flat} vs ${rMir0.flat})`);
+  const rPaeG = E.computeScore(yeol3, env({ jokerIds: ['paewang', 'geoul'] }));
+  assert(rPaeG.mult === 12, `거울+명인 ×2×2 (실제 ${rPaeG.mult})`);
+  const rMirOnly = E.computeScore(yeol3, env({ jokerIds: ['geoul'] }));
+  assert(rMirOnly.mult === rMak0.mult && rMirOnly.flat === rMak0.flat, '거울만 있으면 빈 칸 스킵');
+  assert(JSON.stringify(E.geoulNeighborIds(['a', 'geoul', 'b'])) === JSON.stringify(['a', 'b']),
+    '거울 양옆');
+  assert(JSON.stringify(E.geoulNeighborIds(['geoul', 'geoul', 'meongtta'])) === JSON.stringify(['meongtta']),
+    '거울은 재복사 금지');
+  assert(E.applyMorachigiResources(4, 4).plays === 8 && E.applyMorachigiResources(4, 4).discards === 0,
+    '몰아치기 4·4 → 8·0');
+  assert(E.applyMorachigiResources(1, 4).plays === 5 && E.applyMorachigiResources(4, 0).plays === 4,
+    '몰아치기 한 수 올인 5·0 · 버리기 0은 그대로');
   const w1 = E.rarityWeightsForMonth(1);
   const w12 = E.rarityWeightsForMonth(12);
   const w14 = E.rarityWeightsForMonth(14);

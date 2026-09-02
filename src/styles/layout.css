@@ -121,10 +121,6 @@
   }
   #previewbox .pv-box.chips .val { color: var(--chip-blue); }
   #previewbox .pv-box.mult .val { color: var(--mult-red); }
-  #previewbox .pv-box.mult .val .mult-num { color: var(--mult-red); }
-  #previewbox .pv-box.mult .val .mult-div { color: var(--mult-div); }
-  #previewbox .pv-box.mult.is-div .val { color: var(--mult-div); }
-  #previewbox .pv-op.is-div { color: var(--mult-div); }
   #previewbox .pv-box.flat .val { color: var(--ink-3); }
   #previewbox .pv-box.flat.off { opacity: .45; }
   #previewbox .pv-op {

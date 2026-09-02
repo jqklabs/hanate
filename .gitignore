@@ -9,6 +9,11 @@ test/golden/__actual__/
 # Vite
 dist/
 
+# 봇 학습 산출물 (코드는 커밋, 가중치·로그는 로컬)
+bot/weights.json
+bot/weights.best.json
+bot/runs/
+
 # macOS
 .DS_Store
 
